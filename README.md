@@ -1,4 +1,4 @@
-# WA Admin Portal - WhatsApp Gateway untuk ISP Management
+# Genieacs - Mikrotik - WhatsApp Gateway untuk ISP Management
 
 Rekening Donasi Untuk Pembangunan Masjid
 # 4206 0101 2214 534 BRI an DKM BAITUR ROHMAN <br>
@@ -8,7 +8,7 @@ link chanell tele : https://t.me/alijayaNetwork
 
 ## Deskripsi Aplikasi
 
-WA Admin Portal adalah sistem manajemen ISP terintegrasi yang menggabungkan WhatsApp Gateway dengan portal admin web untuk mengelola:
+Gembok (GenieAcs Mikrotik dan WA Gateway adalah sistem manajemen ISP terintegrasi yang menggabungkan WhatsApp Gateway dengan portal admin web untuk mengelola:
 
 - **GenieACS** - Monitoring dan manajemen perangkat ONU/ONT
 - **Mikrotik PPPoE** - Manajemen user PPPoE dan profile
