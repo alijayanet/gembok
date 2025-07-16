@@ -1,0 +1,803 @@
+<!-- Halaman Tab Setting Admin -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Setting</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; }
+        .sidebar { min-height: 100vh; background: #222e3c; color: #fff; padding-top: 32px; }
+        .sidebar a { color: #fff; text-decoration: none; display: block; padding: 12px 24px; border-radius: 4px; margin-bottom: 8px; }
+        .sidebar a.active, .sidebar a:hover { background: #3b4a5a; }
+        .sidebar .sidebar-header { font-size: 1.3rem; font-weight: 600; letter-spacing: 1px; padding: 0 24px 24px 24px; }
+        .main-content { padding: 32px 24px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .form-label { font-weight: 600; }
+        .form-section { 
+            background: white; 
+            border-radius: 16px; 
+            padding: 25px; 
+            margin-bottom: 20px;
+            height: 100%;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .qr-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        #wa-qr-container {
+            min-height: 250px;
+            align-items: center;
+        }
+        #wa-qr-div {
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .command-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .command-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .command-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .command-list {
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        .command-list code {
+            background: #e9ecef;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+        .logo-preview {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            background: #f8f9fa;
+        }
+        .logo-preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .logo-preview img[src$=".svg"] {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 120px;
+        }
+        .status-badge {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+        .alert-custom {
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        .alert-warning {
+            border-left-color: #ffc107;
+        }
+        .alert-info {
+            border-left-color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
+            <div class="sidebar-header mb-4 text-center">
+                <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
+            </div>
+            <a href="/admin/dashboard"><i class="bi bi-house"></i> Dashboard</a>
+            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
+            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
+            <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
+            <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
+            <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
+            <a href="/admin/setting" class="active"><i class="bi bi-gear"></i> Setting</a>
+            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+        <main class="col-md-10 main-content ms-sm-auto">
+            <button class="hamburger" id="hamburgerBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
+            <h3 class="mb-4">Pengaturan Sistem</h3>
+            
+            <div class="row">
+                <!-- Kolom 1: Form Settings -->
+                <div class="col-lg-4 mb-4">
+                    <div class="form-section">
+                        <h5 class="mb-3">
+                            <i class="bi bi-gear text-primary"></i> Pengaturan Sistem
+                        </h5>
+                        <form id="settingsForm">
+                            <div id="settingsFields">
+                                <!-- Semua field dari settings.json akan di-render di sini oleh JS -->
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Simpan Perubahan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Kolom 2: WhatsApp Gateway -->
+                <div class="col-lg-4 mb-4">
+                    <div class="form-section">
+                        <h5 class="mb-3">
+                            <i class="bi bi-whatsapp text-success"></i> WhatsApp Gateway
+                        </h5>
+                        
+                        <!-- Status WhatsApp -->
+                        <div class="text-center mb-3">
+                            <div id="wa-status" class="mb-2"></div>
+                            <div id="wa-qr-container" class="d-flex justify-content-center mb-2 d-none">
+                                <div class="position-relative">
+                                    <img id="wa-qr" src="#" alt="QR Code WhatsApp" class="img-fluid rounded shadow" style="max-width: 100%; height: auto; display: none;">
+                                    <div id="wa-qr-div" class="d-flex justify-content-center"></div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button class="btn btn-success btn-sm" id="btnRefreshQR">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh QR
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" id="btnDeleteSession">
+                                    <i class="bi bi-trash"></i> Hapus Session
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Peringatan Scan QR Code -->
+                        <div class="alert alert-warning alert-custom mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+                                <div>
+                                    <strong>⚠️ PENTING!</strong>
+                                    <br>
+                                    <small>
+                                        Gunakan nomor WhatsApp <strong>BUKAN nomor admin</strong> untuk scan QR code ini. 
+                                        Nomor yang digunakan untuk scan akan menjadi bot yang menerima dan memproses pesan WhatsApp.
+                                        <br><br>
+                                        <strong>Nomor Admin:</strong> Hanya untuk mengirim perintah, tidak untuk scan QR code.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Perintah Admin WhatsApp -->
+                        <div class="mt-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-info-circle"></i> Perintah Admin WhatsApp
+                            </h6>
+                            
+                            <!-- GenieACS Commands -->
+                            <div class="command-card mb-2">
+                                <div class="command-title text-success">
+                                    <i class="bi bi-hdd-network"></i> GenieACS
+                                </div>
+                                <div class="command-list">
+                                    <ul class="list-unstyled mb-0 small">
+                                        <li><code>devices</code> - Daftar perangkat</li>
+                                        <li><code>cekall</code> - Cek semua perangkat</li>
+                                        <li><code>search [nomor]</code> - Cari perangkat</li>
+                                        <li><code>cek [nomor]</code> - Cek status ONU</li>
+                                        <li><code>cekstatus [nomor]</code> - Cek status pelanggan</li>
+                                        <li><code>admincheck [nomor]</code> - Cek perangkat admin</li>
+                                        <li><code>gantissid [nomor] [ssid]</code> - Ubah SSID</li>
+                                        <li><code>gantipass [nomor] [pass]</code> - Ubah password</li>
+                                        <li><code>reboot [nomor]</code> - Restart ONU</li>
+                                        <li><code>factory reset [nomor]</code> - Reset factory</li>
+                                        <li><code>refresh</code> - Refresh data perangkat</li>
+                                        <li><code>tag [nomor] [tag]</code> - Tambah tag pelanggan</li>
+                                        <li><code>untag [nomor] [tag]</code> - Hapus tag</li>
+                                        <li><code>tags [nomor]</code> - Lihat tags</li>
+                                        <li><code>adminssid [nomor] [ssid]</code> - Admin ubah SSID</li>
+                                        <li><code>adminrestart [nomor]</code> - Admin restart ONU</li>
+                                        <li><code>adminfactory [nomor]</code> - Admin factory reset</li>
+                                        <li><code>confirm admin factory reset [nomor]</code> - Konfirmasi factory reset</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- PPPoE Commands -->
+                            <div class="command-card mb-2">
+                                <div class="command-title text-primary">
+                                    <i class="bi bi-router"></i> PPPoE & Mikrotik
+                                </div>
+                                <div class="command-list">
+                                    <ul class="list-unstyled mb-0 small">
+                                        <li><code>interfaces</code> - Daftar interface</li>
+                                        <li><code>interface [nama]</code> - Detail interface</li>
+                                        <li><code>enableif [nama]</code> - Aktifkan interface</li>
+                                        <li><code>disableif [nama]</code> - Nonaktifkan interface</li>
+                                        <li><code>ipaddress</code> - Alamat IP</li>
+                                        <li><code>routes</code> - Tabel routing</li>
+                                        <li><code>dhcp</code> - DHCP leases</li>
+                                        <li><code>ping [ip] [count]</code> - Test ping</li>
+                                        <li><code>logs [topics] [count]</code> - Log Mikrotik</li>
+                                        <li><code>firewall [chain]</code> - Status firewall</li>
+                                        <li><code>users</code> - Daftar semua user</li>
+                                        <li><code>profiles [type]</code> - Daftar profile</li>
+                                        <li><code>identity [nama]</code> - Info router</li>
+                                        <li><code>clock</code> - Waktu router</li>
+                                        <li><code>resource</code> - Info resource</li>
+                                        <li><code>reboot</code> - Restart router</li>
+                                        <li><code>confirm restart</code> - Konfirmasi restart</li>
+                                        <li><code>addtag [device_id] [nomor]</code> - Tambah tag perangkat</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Hotspot & PPPoE Management -->
+                            <div class="command-card mb-2">
+                                <div class="command-title text-warning">
+                                    <i class="bi bi-wifi"></i> Hotspot & PPPoE Management
+                                </div>
+                                <div class="command-list">
+                                    <ul class="list-unstyled mb-0 small">
+                                        <li><code>vcr [user] [profile] [nomor]</code> - Buat voucher</li>
+                                        <li><code>hotspot</code> - User hotspot aktif</li>
+                                        <li><code>pppoe</code> - User PPPoE aktif</li>
+                                        <li><code>offline</code> - User PPPoE offline</li>
+                                        <li><code>addhotspot [user] [pass] [profile]</code> - Tambah user</li>
+                                        <li><code>addpppoe [user] [pass] [profile] [ip]</code> - Tambah PPPoE</li>
+                                        <li><code>setprofile [user] [profile]</code> - Ubah profile</li>
+                                        <li><code>delhotspot [username]</code> - Hapus user hotspot</li>
+                                        <li><code>delpppoe [username]</code> - Hapus user PPPoE</li>
+                                        <li><code>addpppoe_tag [user] [nomor]</code> - Tambah tag PPPoE</li>
+                                        <li><code>member [username] [profile] [nomor]</code> - Tambah member</li>
+                                        <li><code>list</code> - Daftar semua user</li>
+                                        <li><code>remove [username]</code> - Hapus user (generic)</li>
+                                        <li><code>addadmin [nomor]</code> - Tambah nomor admin</li>
+                                        <li><code>removeadmin [nomor]</code> - Hapus nomor admin</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Sistem & Admin -->
+                            <div class="command-card mb-2">
+                                <div class="command-title text-info">
+                                    <i class="bi bi-shield-check"></i> Sistem & Admin
+                                </div>
+                                <div class="command-list">
+                                    <ul class="list-unstyled mb-0 small">
+                                        <li><code>otp [nomor]</code> - Kirim OTP</li>
+                                        <li><code>status</code> - Status sistem</li>
+                                        <li><code>logs</code> - Log aplikasi</li>
+                                        <li><code>restart</code> - Restart aplikasi</li>
+                                        <li><code>debug resource</code> - Debug resource</li>
+                                        <li><code>checkgroup</code> - Cek status group</li>
+                                        <li><code>setadmin [nomor]</code> - Set nomor admin</li>
+                                        <li><code>settechnician [nomor]</code> - Set nomor teknisi</li>
+                                        <li><code>setheader [teks]</code> - Set header pesan</li>
+                                        <li><code>setfooter [teks]</code> - Set footer pesan</li>
+                                        <li><code>setgenieacs [url] [user] [pass]</code> - Set GenieACS</li>
+                                        <li><code>setmikrotik [host] [port] [user] [pass]</code> - Set Mikrotik</li>
+                                        <li><code>genieacs stop</code> - Stop GenieACS</li>
+                                        <li><code>genieacs start060111</code> - Start GenieACS</li>
+                                        <li><code>admin</code> - Menu admin</li>
+                                        <li><code>help</code> - Bantuan perintah</li>
+                                        <li><code>ya/iya/yes</code> - Konfirmasi ya</li>
+                                        <li><code>tidak/no/batal</code> - Konfirmasi tidak</li>
+                                        <li><code>addwan [interface]</code> - Tambah WAN</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- WiFi & Layanan -->
+                            <div class="command-card mb-0">
+                                <div class="command-title text-secondary">
+                                    <i class="bi bi-wifi"></i> WiFi & Layanan
+                                </div>
+                                <div class="command-list">
+                                    <ul class="list-unstyled mb-0 small">
+                                        <li><code>info wifi</code> - Info WiFi pelanggan</li>
+                                        <li><code>info</code> - Info layanan</li>
+                                        <li><code>gantiwifi [ssid]</code> - Ganti nama WiFi</li>
+                                        <li><code>gantipass [password]</code> - Ganti password WiFi</li>
+                                        <li><code>speedtest</code> - Test kecepatan</li>
+                                        <li><code>diagnostic</code> - Diagnostik perangkat</li>
+                                        <li><code>history</code> - Riwayat perangkat</li>
+                                        <li><code>menu</code> - Menu utama</li>
+                                        <li><code>factory reset</code> - Reset factory (pelanggan)</li>
+                                        <li><code>confirm factory reset</code> - Konfirmasi factory reset</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kolom 3: Logo Aplikasi -->
+                <div class="col-lg-4 mb-4">
+                    <div class="form-section">
+                        <h5 class="mb-3">
+                            <i class="bi bi-image text-success"></i> Logo Aplikasi
+                        </h5>
+                        <form id="logoUploadForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label class="form-label">Upload Logo Baru</label>
+                                <input type="file" name="logo" accept="image/*,.svg" class="form-control" required>
+                                <div class="form-text">Format: PNG, JPG, JPEG, GIF, BMP, WEBP, SVG. Maksimal 5MB.</div>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-upload"></i> Upload Logo
+                            </button>
+                        </form>
+                        <div class="logo-preview mt-3">
+                            <label class="form-label">Logo Saat Ini:</label>
+                            <img id="logoPreview" src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:200px;max-height:120px;">
+                        </div>
+                        <!-- Keterangan Donasi Masjid (di dalam section logo) -->
+                        <div class="alert alert-info mt-3" style="border-radius: 10px; font-size: 1rem;">
+                            <strong>Rekening Donasi Pembangunan Masjid</strong><br>
+                            <span style="font-size:1.2em; letter-spacing:2px; font-weight:bold;">4206 0101 2214 534</span><br>
+                            <span>BRI a.n. DKM BAITUR ROHMAN</span><br>
+                            <hr class="my-2">
+                            <span class="d-block">Desa Ujunggebang Kecamatan Sukra Kabupaten Indramayu Jawa Barat</span>
+                            <span class="d-block mt-2"><strong>Konfirmasi donasi:</strong><br>
+                                081947215703 (Ust. WARJAYA)<br>
+                                085210939803 (Ust. FIKI)<br>
+                                082130257144 (Ust. KARONI)
+                            </span>
+                            <span class="d-block mt-2">Terima kasih atas partisipasi dan dukungan Anda 🙏</span>
+                        </div>
+
+                        <!-- Kalkulator Burst Limit -->
+                        <div class="mt-4 pt-3 border-top">
+                            <h5 class="mb-3"><i class="bi bi-calculator"></i> Kalkulator Burst Limit</h5>
+                            <p class="small text-muted mb-3">Untuk profil Hotspot atau PPPoE.</p>
+                            
+                            <!-- Rate Limit -->
+                            <label class="form-label small fw-bold">Rate Limit (dan Threshold)</label>
+                            <div class="row g-2 mb-3">
+                                <div class="col-7">
+                                    <input type="number" class="form-control form-control-sm" id="uploadRate" placeholder="Upload">
+                                </div>
+                                <div class="col-5">
+                                    <select class="form-select form-select-sm" id="uploadUnit">
+                                        <option value="k" selected>Kbps</option>
+                                        <option value="M">Mbps</option>
+                                    </select>
+                                </div>
+                                <div class="col-7">
+                                    <input type="number" class="form-control form-control-sm" id="downloadRate" placeholder="Download">
+                                </div>
+                                <div class="col-5">
+                                    <select class="form-select form-select-sm" id="downloadUnit">
+                                        <option value="k">Kbps</option>
+                                        <option value="M" selected>Mbps</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Burst Limit -->
+                            <label class="form-label small fw-bold">Burst Limit</label>
+                            <div class="row g-2 mb-3">
+                                <div class="col-7">
+                                    <input type="number" class="form-control form-control-sm" id="uploadBurstRate" placeholder="Upload Burst">
+                                </div>
+                                <div class="col-5">
+                                    <select class="form-select form-select-sm" id="uploadBurstUnit">
+                                        <option value="k" selected>Kbps</option>
+                                        <option value="M">Mbps</option>
+                                    </select>
+                                </div>
+                                <div class="col-7">
+                                    <input type="number" class="form-control form-control-sm" id="downloadBurstRate" placeholder="Download Burst">
+                                </div>
+                                <div class="col-5">
+                                    <select class="form-select form-select-sm" id="downloadBurstUnit">
+                                        <option value="k">Kbps</option>
+                                        <option value="M" selected>Mbps</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Burst Time -->
+                            <div class="mb-3">
+                                <label for="burstTime" class="form-label small fw-bold">Burst Time (detik)</label>
+                                <input type="number" class="form-control form-control-sm" id="burstTime" value="8" placeholder="cth: 8">
+                            </div>
+
+                            <!-- Hasil -->
+                            <div>
+                                <label for="burstResult" class="form-label small fw-bold">Hasil</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm bg-light" id="burstResult" readonly placeholder="Hasil akan muncul di sini">
+                                    <button class="btn btn-outline-secondary btn-sm" type="button" id="copyBurstBtn">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </main>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Load QRCode.js from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+$(function() {
+    // Field yang tidak perlu ditampilkan di form
+    const hiddenFields = [
+        'pppoe_notifications.monitorInterval',
+        'secret_key',
+        'reconnect_interval',
+        'log_level',
+        'rx_power_notification_interval',
+        'whatsapp_log_level',
+        'pppoe_monitor_interval',
+        'server_port',
+        'whatsapp_session_path',
+        'admin_enabled',
+        'logo_filename'
+    ];
+    // Ambil data settings.json
+    $.get('/admin/setting/data', function(data) {
+        var html = '';
+        function renderField(key, val) {
+            if (hiddenFields.includes(key)) return; // Sembunyikan field tertentu
+            if (typeof val === 'object' && val !== null) {
+                Object.keys(val).forEach(function(subkey) {
+                    renderField(key + '.' + subkey, val[subkey]);
+                });
+            } else {
+                html += '<div class="mb-3">';
+                html += '<label class="form-label">'+key+'</label>';
+                if (typeof val === 'boolean' || val === true || val === false || val === 'true' || val === 'false') {
+                    var checked = (val === true || val === 'true') ? 'checked' : '';
+                    html += '<div class="form-check">';
+                    html += '<input class="form-check-input" type="checkbox" name="'+key+'" id="setting_'+key+'" '+checked+'> ';
+                    html += '<label class="form-check-label" for="setting_'+key+'">'+(checked ? 'Aktif' : 'Tidak Aktif')+'</label>';
+                    html += '</div>';
+                } else {
+                    html += '<input type="text" class="form-control" name="'+key+'" value="'+val+'">';
+                }
+                html += '</div>';
+            }
+        }
+        Object.keys(data).forEach(function(key) {
+            renderField(key, data[key]);
+        });
+        $('#settingsFields').html(html);
+    });
+    // Submit form settings
+    $('#settingsForm').on('submit', function(e) {
+        e.preventDefault();
+        var formData = {};
+        // Handle semua input
+        $('#settingsForm').find('input').each(function() {
+            var name = $(this).attr('name');
+            if ($(this).attr('type') === 'checkbox') {
+                formData[name] = $(this).is(':checked');
+            } else {
+                formData[name] = $(this).val();
+            }
+        });
+        $.ajax({
+            url: '/admin/setting/save',
+            method: 'POST',
+            data: formData,
+            success: function(res) {
+                alert('Pengaturan berhasil disimpan!');
+            },
+            error: function() {
+                alert('Gagal menyimpan pengaturan!');
+            }
+        });
+    });
+    // WhatsApp QR & Status
+    function loadWAStatus() {
+        $.ajax({
+            url: '/admin/setting/wa-status',
+            method: 'GET',
+            dataType: 'json',
+            success: function(res) {
+                console.log('WA Status Response:', res); // Debug log
+                
+                // Update status koneksi
+                if (res.connected) {
+                    let statusHtml = '<span class="badge bg-success status-badge"><i class="bi bi-check-circle"></i> Terhubung';
+                    if (res.phoneNumber) {
+                        statusHtml += ` (${res.phoneNumber})`;
+                    }
+                    if (res.connectedSince) {
+                        const connectedDate = new Date(res.connectedSince);
+                        statusHtml += `<br><small>Terhubung sejak: ${connectedDate.toLocaleString()}</small>`;
+                    }
+                    statusHtml += '</span>';
+                    $('#wa-status').html(statusHtml);
+                    $('#wa-qr-container').addClass('d-none');
+                } else {
+                    $('#wa-status').html('<span class="badge bg-warning text-dark status-badge"><i class="bi bi-exclamation-triangle"></i> Belum Terhubung</span>');
+                    
+                    // Tampilkan QR code jika tersedia
+                    if (res.qr) {
+                        console.log('QR Code received, length:', res.qr.length);
+                        $('#wa-qr-container').removeClass('d-none');
+                        
+                        // Hapus QR lama jika ada
+                        $('#wa-qr').attr('src', '').hide();
+                        const qrDiv = $('#wa-qr-div');
+                        qrDiv.empty().show();
+                        
+                        try {
+                            // Coba buat QR code langsung
+                            new QRCode(qrDiv[0], {
+                                text: res.qr,
+                                width: 220,
+                                height: 220,
+                                colorDark: '#000000',
+                                colorLight: '#ffffff',
+                                correctLevel: 2
+                            });
+                            console.log('QR Code generated successfully');
+                        } catch (e) {
+                            console.error('Error generating QR code:', e);
+                            // Fallback: area kosong saja, tidak tampilkan pesan apapun
+                            qrDiv.html("");
+                        }
+                    } else {
+                        console.log('No QR code received from server');
+                        $('#wa-qr-container').addClass('d-none');
+                        if (res.error) {
+                            $('#wa-status').append(`<div class="alert alert-danger mt-2">${res.error}</div>`);
+                        }
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error getting WhatsApp status:', error);
+                const errorMsg = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : error;
+                $('#wa-status').html(`
+                    <span class="badge bg-danger status-badge">
+                        <i class="bi bi-x-circle"></i> Gagal memuat status
+                    </span>
+                    <div class="alert alert-danger mt-2">${errorMsg || 'Tidak dapat terhubung ke server'}</div>
+                `);
+                $('#wa-qr-container').addClass('d-none');
+            }
+        });
+    }
+    loadWAStatus();
+    $('#btnRefreshQR').on('click', function(e) {
+        e.preventDefault();
+        $.post('/admin/setting/wa-refresh', function() {
+            loadWAStatus();
+        });
+    });
+    $('#btnDeleteSession').on('click', function(e) {
+        e.preventDefault();
+        if (confirm('Yakin hapus sesi WhatsApp?')) {
+            $.post('/admin/setting/wa-delete', function() {
+                loadWAStatus();
+            });
+        }
+    });
+    // Auto refresh status tiap 10 detik
+    setInterval(loadWAStatus, 10000);
+});
+</script>
+<script>
+$('#logoUploadForm').on('submit', function(e){
+  e.preventDefault();
+  
+  // Validasi file
+  const fileInput = $(this).find('input[type="file"]')[0];
+  if (!fileInput.files || fileInput.files.length === 0) {
+    alert('Pilih file logo terlebih dahulu!');
+    return;
+  }
+  
+  const file = fileInput.files[0];
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/bmp', 'image/webp', 'image/svg+xml'];
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  
+  // Validasi tipe file (termasuk SVG berdasarkan ekstensi)
+  const isSvgFile = file.name.toLowerCase().endsWith('.svg');
+  if (!allowedTypes.includes(file.type) && !isSvgFile) {
+    alert('Tipe file tidak didukung. Gunakan PNG, JPG, JPEG, GIF, BMP, WEBP, atau SVG.');
+    return;
+  }
+  
+  // Validasi ukuran file
+  if (file.size > maxSize) {
+    alert('Ukuran file terlalu besar. Maksimal 5MB.');
+    return;
+  }
+  
+  // Tampilkan loading state
+  const submitBtn = $(this).find('button[type="submit"]');
+  const originalText = submitBtn.text();
+  submitBtn.prop('disabled', true).text('Uploading...');
+  
+  var formData = new FormData(this);
+  $.ajax({
+    url: '/admin/setting/upload-logo',
+    type: 'POST',
+    data: formData,
+    processData: false,
+    contentType: false,
+    success: function(res){
+      if(res.success){
+        // Update preview tanpa reload
+        $('#logoPreview').attr('src', '/img/' + res.filename + '?ts=' + Date.now());
+        alert('Logo berhasil diupload!');
+        
+        // Reset form
+        $('#logoUploadForm')[0].reset();
+      } else {
+        alert('Gagal upload logo: ' + (res.error || 'Unknown error'));
+      }
+    },
+    error: function(xhr, status, error){
+      let errorMessage = 'Gagal upload logo!';
+      
+      // Coba ambil pesan error dari response
+      if (xhr.responseJSON && xhr.responseJSON.error) {
+        errorMessage = xhr.responseJSON.error;
+      } else if (xhr.status === 413) {
+        errorMessage = 'Ukuran file terlalu besar. Maksimal 5MB.';
+      } else if (xhr.status === 400) {
+        errorMessage = 'File tidak valid atau tipe file tidak didukung.';
+      } else if (xhr.status === 500) {
+        errorMessage = 'Terjadi kesalahan server. Coba lagi nanti.';
+      }
+      
+      alert(errorMessage);
+      console.error('Upload error:', xhr.responseText);
+    },
+    complete: function() {
+      // Reset loading state
+      submitBtn.prop('disabled', false).text(originalText);
+    }
+  });
+});
+</script>
+<script>
+// Hamburger & sidebar logic
+const hamburger = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('adminSidebar');
+const overlay = document.getElementById('sidebarOverlay');
+if (hamburger && sidebar && overlay) {
+  hamburger.addEventListener('click', function() {
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click', function() {
+    sidebar.classList.remove('show');
+    overlay.classList.remove('show');
+  });
+}
+</script>
+<script>
+// Burst Limit Calculator
+document.addEventListener('DOMContentLoaded', function() {
+    // Elemen Rate Limit & Threshold
+    const uploadRateEl = document.getElementById('uploadRate');
+    const uploadUnitEl = document.getElementById('uploadUnit');
+    const downloadRateEl = document.getElementById('downloadRate');
+    const downloadUnitEl = document.getElementById('downloadUnit');
+    
+    // Elemen Burst Limit
+    const uploadBurstRateEl = document.getElementById('uploadBurstRate');
+    const uploadBurstUnitEl = document.getElementById('uploadBurstUnit');
+    const downloadBurstRateEl = document.getElementById('downloadBurstRate');
+    const downloadBurstUnitEl = document.getElementById('downloadBurstUnit');
+
+    // Elemen Lainnya
+    const burstTimeEl = document.getElementById('burstTime');
+    const resultEl = document.getElementById('burstResult');
+    const copyBtn = document.getElementById('copyBurstBtn');
+
+    function calculateBurst() {
+        // Rate Limit (juga digunakan untuk Threshold)
+        const upRate = parseFloat(uploadRateEl.value) || 0;
+        const upUnit = uploadUnitEl.value;
+        const downRate = parseFloat(downloadRateEl.value) || 0;
+        const downUnit = downloadUnitEl.value;
+
+        // Burst Limit
+        const upBurstRate = parseFloat(uploadBurstRateEl.value) || 0;
+        const upBurstUnit = uploadBurstUnitEl.value;
+        const downBurstRate = parseFloat(downloadBurstRateEl.value) || 0;
+        const downBurstUnit = downloadBurstUnitEl.value;
+
+        const burstTime = parseInt(burstTimeEl.value) || 0;
+
+        if (upRate === 0 || downRate === 0 || upBurstRate === 0 || downBurstRate === 0) {
+            resultEl.value = '';
+            return;
+        }
+
+        // --- Perhitungan Burst Threshold (75% dari Rate Limit) ---
+        function calculateThreshold(rate, unit) {
+            let rateInKbps = (unit === 'M') ? rate * 1024 : rate;
+            let thresholdInKbps = Math.floor(rateInKbps * 0.75);
+
+            if (thresholdInKbps >= 1000) {
+                // Jika lebih dari 1000K, tampilkan dalam M dengan 2 desimal jika perlu
+                let thresholdInMbps = (thresholdInKbps / 1024).toFixed(2);
+                // Hapus .00 jika tidak ada desimal
+                return `${thresholdInMbps.replace(/\.00$/, '')}M`;
+            } else {
+                return `${thresholdInKbps}k`;
+            }
+        }
+
+        const upThreshold = calculateThreshold(upRate, upUnit);
+        const downThreshold = calculateThreshold(downRate, downUnit);
+
+        // Format: rate-limit/rate-limit burst-limit/burst-limit burst-threshold/burst-threshold burst-time/burst-time
+        const rateLimitStr = `${upRate}${upUnit}/${downRate}${downUnit}`;
+        const burstLimitStr = `${upBurstRate}${upBurstUnit}/${downBurstRate}${downBurstUnit}`;
+        const burstThresholdStr = `${upThreshold}/${downThreshold}`;
+        const burstTimeStr = `${burstTime}/${burstTime}`;
+
+        resultEl.value = `${rateLimitStr} ${burstLimitStr} ${burstThresholdStr} ${burstTimeStr}`;
+    }
+
+    const allInputs = [
+        uploadRateEl, uploadUnitEl, downloadRateEl, downloadUnitEl,
+        uploadBurstRateEl, uploadBurstUnitEl, downloadBurstRateEl, downloadBurstUnitEl,
+        burstTimeEl
+    ];
+
+    allInputs.forEach(el => {
+        if(el) el.addEventListener('input', calculateBurst);
+    });
+
+    if(copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            if (!resultEl.value) return;
+
+            navigator.clipboard.writeText(resultEl.value).then(() => {
+                const originalIcon = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="bi bi-check-lg text-success"></i>';
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalIcon;
+                }, 2000);
+            }).catch(err => {
+                console.error('Gagal menyalin:', err);
+                alert('Gagal menyalin teks.');
+            });
+        });
+    }
+
+    // Initial calculation on load if values exist
+    calculateBurst();
+});
+</script>
+</body>
+</html>

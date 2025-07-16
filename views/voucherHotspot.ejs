@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Voucher Hotspot</title>
+    <style>
+        @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+        }
+        body { font-family: Arial, sans-serif; background: #f8f8f8; }
+        .voucher-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .voucher-card {
+            background: #fff;
+            border: 1.5px dashed #333;
+            border-radius: 8px;
+            width: 31%;
+            min-width: 250px;
+            max-width: 350px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px #0001;
+            padding: 16px 18px 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            page-break-inside: avoid;
+        }
+        .voucher-header {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2255a6;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .voucher-username {
+            font-size: 1.3em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #222;
+        }
+        .voucher-password {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #d7263d;
+            margin-bottom: 6px;
+        }
+        .voucher-profile {
+            font-size: 0.98em;
+            color: #555;
+            margin-bottom: 3px;
+        }
+        .voucher-footer {
+            font-size: 0.9em;
+            color: #444;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .voucher-contact {
+            font-size: 0.9em;
+            color: #333;
+            margin-top: 2px;
+        }
+        .voucher-logo {
+            height: 36px;
+            margin-bottom: 4px;
+        }
+        .voucher-instruksi {
+            font-size: 0.9em;
+            background: #f0f6ff;
+            border-radius: 5px;
+            padding: 4px 8px;
+            margin-top: 6px;
+            color: #2255a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="margin: 16px 0 0 16px;">
+        <button onclick="window.print()" style="padding:8px 18px;font-size:1em;">Print Voucher</button>
+        <a href="/admin/hotspot" style="margin-left:24px;">Kembali ke Hotspot</a>
+    </div>
+    <div class="voucher-grid">
+        <% vouchers.forEach(function(v, idx) { %>
+        <div class="voucher-card">
+            <div class="voucher-header"><%= namaHotspot %></div>
+            <div class="voucher-username">User: <%= v.username %></div>
+            <div class="voucher-password">Pass: <%= v.password %></div>
+            <div class="voucher-profile">Profile: <%= v.profile %></div>
+            <div class="voucher-instruksi">Login di halaman WiFi: <b>http://192.168.88.1</b> atau scan WiFi lalu masukkan user & password di atas.</div>
+            <div class="voucher-footer">
+                Hubungi Admin: <span class="voucher-contact"><%= adminKontak %></span>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+</body>
+</html>

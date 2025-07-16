@@ -1,0 +1,750 @@
+<!-- Halaman Profile Hotspot -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile Hotspot - Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/dataTables.responsive.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; }
+        .form-label { font-weight: 600; }
+        .sidebar {
+            min-height: 100vh;
+            background: #222e3c;
+            color: #fff;
+            padding-top: 32px;
+        }
+        .sidebar a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            padding: 12px 24px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .sidebar a.active, .sidebar a:hover {
+            background: #3b4a5a;
+        }
+        .sidebar .sidebar-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 0 24px 24px 24px;
+        }
+        .main-content {
+            padding: 32px 24px;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            padding: 4px 10px;
+        }
+        .profile-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .profile-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .profile-details {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        /* Mobile responsive table styles */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        @media (max-width: 768px) {
+            .table td, .table th {
+                white-space: nowrap;
+                min-width: 120px;
+            }
+            .table .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
+            <div class="sidebar-header mb-4 text-center">
+                <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
+            </div>
+            <a href="/admin/dashboard"><i class="bi bi-house"></i> Dashboard</a>
+            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
+            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
+            <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
+            <a href="/admin/mikrotik/hotspot-profiles" class="active"><i class="bi bi-wifi"></i> Profile Hotspot</a>
+            <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
+            <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
+            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+
+        <main class="col-md-10 main-content ms-sm-auto">
+            <button class="hamburger" id="hamburgerBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Profile Hotspot</h3>
+                <button class="btn btn-primary" id="btnTambahProfile">
+                    <i class="bi bi-plus-circle"></i> Tambah Profile
+                </button>
+            </div>
+
+            <!-- Statistik -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Profile</h5>
+                            <h3 id="totalProfiles">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Aktif</h5>
+                            <h3 id="activeProfiles">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Rate Limited</h5>
+                            <h3 id="rateLimitedProfiles">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Shared Users</h5>
+                            <h3 id="sharedUsersProfiles">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter dan Pencarian -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="searchProfile" class="form-label">Cari Profile</label>
+                            <input type="text" class="form-control" id="searchProfile" placeholder="Nama profile...">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterStatus" class="form-label">Status</label>
+                            <select class="form-select" id="filterStatus">
+                                <option value="">Semua Status</option>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Tidak Aktif</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterType" class="form-label">Tipe</label>
+                            <select class="form-select" id="filterType">
+                                <option value="">Semua Tipe</option>
+                                <option value="simple">Simple</option>
+                                <option value="shared">Shared</option>
+                                <option value="rate-limited">Rate Limited</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-outline-secondary w-100" id="btnRefresh">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Profile -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="profileTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama Profile</th>
+                                    <th>Rate Limit</th>
+                                    <th>Session Timeout</th>
+                                    <th>Idle Timeout</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="profileTableBody">
+                                <!-- Data akan diisi via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal Tambah/Edit Profile Hotspot -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <form id="profileForm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="profileModalLabel">Tambah Profile Hotspot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="profileId" name="id">
+                    
+                    <!-- Basic Settings -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="profileName" class="form-label">Nama Profile *</label>
+                                <input type="text" class="form-control" id="profileName" name="name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="profileComment" class="form-label">Komentar</label>
+                                <input type="text" class="form-control" id="profileComment" name="comment">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rate Limit Settings -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="rateLimit" class="form-label">Rate Limit</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="rateLimit" name="rateLimit" placeholder="0">
+                                    <select class="form-select" id="rateLimitUnit" name="rateLimitUnit" style="max-width: 80px;">
+                                        <option value="k">k</option>
+                                        <option value="M">M</option>
+                                        <option value="G">G</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="sessionTimeout" class="form-label">Session Timeout</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="sessionTimeout" name="sessionTimeout" placeholder="0">
+                                    <select class="form-select" id="sessionTimeoutUnit" name="sessionTimeoutUnit" style="max-width: 80px;">
+                                        <option value="s">detik</option>
+                                        <option value="m">menit</option>
+                                        <option value="h">jam</option>
+                                        <option value="d">hari</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="idleTimeout" class="form-label">Idle Timeout</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="idleTimeout" name="idleTimeout" placeholder="0">
+                                    <select class="form-select" id="idleTimeoutUnit" name="idleTimeoutUnit" style="max-width: 80px;">
+                                        <option value="s">detik</option>
+                                        <option value="m">menit</option>
+                                        <option value="h">jam</option>
+                                        <option value="d">hari</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Settings -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="localAddress" class="form-label">Local Address</label>
+                                <input type="text" class="form-control" id="localAddress" name="localAddress" placeholder="0.0.0.0/0">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="remoteAddress" class="form-label">Remote Address</label>
+                                <input type="text" class="form-control" id="remoteAddress" name="remoteAddress" placeholder="0.0.0.0/0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DNS Settings -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="dnsServer" class="form-label">DNS Server</label>
+                                <input type="text" class="form-control" id="dnsServer" name="dnsServer" placeholder="8.8.8.8,8.8.4.4">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="parentQueue" class="form-label">Parent Queue</label>
+                                <input type="text" class="form-control" id="parentQueue" name="parentQueue" placeholder="default">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="addressList" class="form-label">Address List</label>
+                                <input type="text" class="form-control" id="addressList" name="addressList" placeholder="whitelist">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sharedUsers" class="form-label">Shared Users</label>
+                                <input type="number" class="form-control" id="sharedUsers" name="sharedUsers" placeholder="1" min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preset Buttons -->
+                    <div class="mb-3">
+                        <label class="form-label">Preset Rate Limit</label>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm preset-btn" data-rate="512" data-unit="k">512k</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm preset-btn" data-rate="1" data-unit="M">1M</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm preset-btn" data-rate="2" data-unit="M">2M</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm preset-btn" data-rate="5" data-unit="M">5M</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm preset-btn" data-rate="10" data-unit="M">10M</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm preset-btn" data-rate="20" data-unit="M">20M</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Profile</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Detail Profile -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailModalLabel">Detail Profile Hotspot</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detailModalBody">
+                <!-- Loading spinner -->
+                <div class="text-center" id="detailLoading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Memuat detail profile...</p>
+                </div>
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<script>
+$(function() {
+    let profiles = [];
+    let dataTable;
+
+    // Initialize DataTable
+    function initDataTable() {
+        dataTable = $('#profileTable').DataTable({
+            data: profiles,
+            columns: [
+                { 
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return meta.row + 1;
+                    }
+                },
+                { data: 'name' },
+                { 
+                    data: null,
+                    render: function(data, type, row) {
+                        // Try different possible field names for rate limit
+                        const rateLimit = row['rate-limit'] || row.rateLimit || row['rx-rate'] || null;
+                        if (rateLimit && rateLimit !== '0' && rateLimit !== '') {
+                            return rateLimit;
+                        }
+                        return '-';
+                    }
+                },
+                { 
+                    data: null,
+                    render: function(data, type, row) {
+                        // Try different possible field names for session timeout
+                        const sessionTimeout = row['session-timeout'] || row.sessionTimeout || null;
+                        if (sessionTimeout && sessionTimeout !== '0' && sessionTimeout !== '') {
+                            return sessionTimeout;
+                        }
+                        return '-';
+                    }
+                },
+                { 
+                    data: null,
+                    render: function(data, type, row) {
+                        // Try different possible field names for idle timeout
+                        const idleTimeout = row['idle-timeout'] || row.idleTimeout || null;
+                        if (idleTimeout && idleTimeout !== '0' && idleTimeout !== '') {
+                            return idleTimeout;
+                        }
+                        return '-';
+                    }
+                },
+                { 
+                    "data": null, // Prevent error if 'disabled' is not in data
+                    "width": "10%",
+                    "render": function(data, type, row) {
+                        // Mikrotik API might return 'true'/'false' as strings or boolean
+                        const isDisabled = row.disabled === 'true' || row.disabled === true;
+                        return isDisabled 
+                            ? '<span class="badge bg-danger">Tidak Aktif</span>' 
+                            : '<span class="badge bg-success">Aktif</span>';
+                    }
+                },
+                {
+                    data: null,
+                    render: function(data, type, row) {
+                        return `
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-info btn-detail" data-id="${row['.id']}" title="Detail">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-warning btn-edit" data-id="${row['.id']}" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-delete" data-id="${row['.id']}" data-name="${row.name}" title="Hapus">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
+            ],
+            responsive: true,
+            scrollX: true,
+            columnDefs: [
+                {
+                    targets: [0], // No column
+                    responsivePriority: 1
+                },
+                {
+                    targets: [1], // Profile name column
+                    responsivePriority: 2
+                },
+                {
+                    targets: [-1], // Action column (last column)
+                    responsivePriority: 3,
+                    orderable: false
+                }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+            }
+        });
+    }
+
+    // Load profiles
+    function loadProfiles() {
+        $('#btnRefresh').prop('disabled', true).html('<i class="bi bi-arrow-clockwise spin"></i> Loading...');
+        
+        $.get('/admin/mikrotik/hotspot-profiles/api', function(res) {
+            if (res.success) {
+                profiles = res.profiles || [];
+                updateStatistics();
+                
+                if (dataTable) {
+                    dataTable.clear().rows.add(profiles).draw();
+                } else {
+                    initDataTable();
+                }
+            } else {
+                alert('Gagal memuat data profile: ' + (res.message || 'Unknown error'));
+            }
+        }).fail(function() {
+            alert('Gagal memuat data profile hotspot');
+        }).always(function() {
+            $('#btnRefresh').prop('disabled', false).html('<i class="bi bi-arrow-clockwise"></i> Refresh');
+        });
+    }
+
+    // Update statistics
+    function updateStatistics() {
+        const total = profiles.length;
+        const active = profiles.filter(p => !p.disabled).length;
+        const rateLimited = profiles.filter(p => p.rateLimit).length;
+        const sharedUsers = profiles.filter(p => p.sharedUsers && p.sharedUsers > 1).length;
+
+        $('#totalProfiles').text(total);
+        $('#activeProfiles').text(active);
+        $('#rateLimitedProfiles').text(rateLimited);
+        $('#sharedUsersProfiles').text(sharedUsers);
+    }
+
+    // Search and filter
+    $('#searchProfile').on('keyup', function() {
+        dataTable.search(this.value).draw();
+    });
+
+    $('#filterStatus').on('change', function() {
+        const status = $(this).val();
+        dataTable.column(5).search(status === 'active' ? 'Aktif' : status === 'inactive' ? 'Tidak Aktif' : '').draw();
+    });
+
+    $('#filterType').on('change', function() {
+        const type = $(this).val();
+        // Filter based on profile characteristics
+        dataTable.draw();
+    });
+
+    // Refresh button
+    $('#btnRefresh').on('click', function() {
+        loadProfiles();
+    });
+
+    // Tambah Profile
+    $('#btnTambahProfile').on('click', function() {
+        resetForm();
+        $('#profileModalLabel').text('Tambah Profile Hotspot');
+        $('#profileModal').modal('show');
+    });
+
+    // Edit Profile
+    $(document).on('click', '.btn-edit', function() {
+        const id = $(this).data('id');
+        const profile = profiles.find(p => p['.id'] === id);
+        
+        if (profile) {
+            fillForm(profile);
+            $('#profileModalLabel').text('Edit Profile Hotspot');
+            $('#profileModal').modal('show');
+        }
+    });
+
+    // Detail Profile
+    $(document).on('click', '.btn-detail', function() {
+        const id = $(this).data('id');
+        showDetail(id);
+    });
+
+    // Delete Profile
+    $(document).on('click', '.btn-delete', function() {
+        const id = $(this).data('id');
+        const name = $(this).data('name');
+        
+        if (confirm(`Yakin ingin menghapus profile "${name}"?`)) {
+            deleteProfile(id);
+        }
+    });
+
+    // Preset buttons
+    $('.preset-btn').on('click', function() {
+        const rate = $(this).data('rate');
+        const unit = $(this).data('unit');
+        $('#rateLimit').val(rate);
+        $('#rateLimitUnit').val(unit);
+    });
+
+    // Form submission
+    $('#profileForm').on('submit', function(e) {
+        e.preventDefault();
+        saveProfile();
+    });
+
+    // Helper functions
+    function resetForm() {
+        $('#profileForm')[0].reset();
+        $('#profileId').val('');
+    }
+
+    function fillForm(profile) {
+        $('#profileId').val(profile['.id']);
+        $('#profileName').val(profile.name);
+        $('#profileComment').val(profile.comment);
+        // Handle different possible field names for rate limit
+        const rateLimit = profile['rate-limit'] || profile.rateLimit || '';
+        $('#rateLimit').val(rateLimit);
+        $('#rateLimitUnit').val(profile.rateLimitUnit || 'k');
+        // Handle different possible field names for timeouts
+        const sessionTimeout = profile['session-timeout'] || profile.sessionTimeout || '';
+        $('#sessionTimeout').val(sessionTimeout);
+        $('#sessionTimeoutUnit').val(profile.sessionTimeoutUnit || 'h');
+        const idleTimeout = profile['idle-timeout'] || profile.idleTimeout || '';
+        $('#idleTimeout').val(idleTimeout);
+        $('#idleTimeoutUnit').val(profile.idleTimeoutUnit || 'm');
+        // Handle address fields
+        $('#localAddress').val(profile['local-address'] || profile.localAddress || '');
+        $('#remoteAddress').val(profile['remote-address'] || profile.remoteAddress || '');
+        $('#dnsServer').val(profile['dns-server'] || profile.dnsServer || '');
+        $('#parentQueue').val(profile['parent-queue'] || profile.parentQueue || '');
+        $('#addressList').val(profile['address-list'] || profile.addressList || '');
+        $('#sharedUsers').val(profile['shared-users'] || profile.sharedUsers || '1');
+    }
+
+    function saveProfile() {
+        const formData = {
+            id: $('#profileId').val(),
+            name: $('#profileName').val(),
+            comment: $('#profileComment').val(),
+            rateLimit: $('#rateLimit').val(),
+            rateLimitUnit: $('#rateLimitUnit').val(),
+            sessionTimeout: $('#sessionTimeout').val(),
+            sessionTimeoutUnit: $('#sessionTimeoutUnit').val(),
+            idleTimeout: $('#idleTimeout').val(),
+            idleTimeoutUnit: $('#idleTimeoutUnit').val(),
+            localAddress: $('#localAddress').val(),
+            remoteAddress: $('#remoteAddress').val(),
+            dnsServer: $('#dnsServer').val(),
+            parentQueue: $('#parentQueue').val(),
+            addressList: $('#addressList').val(),
+            sharedUsers: $('#sharedUsers').val()
+        };
+
+        const url = formData.id ? '/admin/mikrotik/hotspot-profiles/edit' : '/admin/mikrotik/hotspot-profiles/add';
+        
+        $.post(url, formData, function(res) {
+            if (res.success) {
+                alert('Profile berhasil disimpan!');
+                $('#profileModal').modal('hide');
+                loadProfiles();
+            } else {
+                alert('Gagal menyimpan profile: ' + (res.message || 'Unknown error'));
+            }
+        });
+    }
+
+    function deleteProfile(id) {
+        $.post('/admin/mikrotik/hotspot-profiles/delete', { id }, function(res) {
+            if (res.success) {
+                alert('Profile berhasil dihapus!');
+                loadProfiles();
+            } else {
+                alert('Gagal menghapus profile: ' + (res.message || 'Unknown error'));
+            }
+        });
+    }
+
+    function showDetail(id) {
+        $('#detailModal').modal('show');
+        $('#detailLoading').show();
+        $('#detailModalBody').html('');
+
+        $.get(`/admin/mikrotik/hotspot-profiles/detail/${id}`, function(res) {
+            $('#detailLoading').hide();
+            if (res.success) {
+                const profile = res.profile;
+                $('#detailModalBody').html(`
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Informasi Dasar</h6>
+                            <table class="table table-sm">
+                                <tr><td>Nama</td><td>: ${profile.name}</td></tr>
+                                <tr><td>Komentar</td><td>: ${profile.comment || '-'}</td></tr>
+                                <tr><td>Status</td><td>: ${profile.disabled ? 'Tidak Aktif' : 'Aktif'}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Rate Limit</h6>
+                            <table class="table table-sm">
+                                <tr><td>Rate Limit</td><td>: ${profile.rateLimit ? profile.rateLimit + (profile.rateLimitUnit || '') : '-'}</td></tr>
+                                <tr><td>Session Timeout</td><td>: ${profile.sessionTimeout ? profile.sessionTimeout + (profile.sessionTimeoutUnit || '') : '-'}</td></tr>
+                                <tr><td>Idle Timeout</td><td>: ${profile.idleTimeout ? profile.idleTimeout + (profile.idleTimeoutUnit || '') : '-'}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>Address Settings</h6>
+                            <table class="table table-sm">
+                                <tr><td>Local Address</td><td>: ${profile.localAddress || '-'}</td></tr>
+                                <tr><td>Remote Address</td><td>: ${profile.remoteAddress || '-'}</td></tr>
+                                <tr><td>DNS Server</td><td>: ${profile.dnsServer || '-'}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Advanced Settings</h6>
+                            <table class="table table-sm">
+                                <tr><td>Parent Queue</td><td>: ${profile.parentQueue || '-'}</td></tr>
+                                <tr><td>Address List</td><td>: ${profile.addressList || '-'}</td></tr>
+                                <tr><td>Shared Users</td><td>: ${profile.sharedUsers || '1'}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `);
+            } else {
+                $('#detailModalBody').html('<div class="alert alert-danger">Gagal memuat detail profile</div>');
+            }
+        });
+    }
+
+    // Initial load
+    loadProfiles();
+});
+</script>
+
+<script>
+// Hamburger & sidebar logic
+const hamburger = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('adminSidebar');
+const overlay = document.getElementById('sidebarOverlay');
+if (hamburger && sidebar && overlay) {
+    hamburger.addEventListener('click', function() {
+        sidebar.classList.toggle('show');
+        overlay.classList.toggle('show');
+    });
+    overlay.addEventListener('click', function() {
+        sidebar.classList.remove('show');
+        overlay.classList.remove('show');
+    });
+}
+</script>
+
+<%- include('partials/footer') %> 

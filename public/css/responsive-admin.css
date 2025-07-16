@@ -1,0 +1,52 @@
+/* Responsive sidebar & hamburger for admin panel */
+
+/* Hide sidebar by default on mobile */
+@media (max-width: 991.98px) {
+  .sidebar {
+    position: fixed;
+    left: -220px;
+    top: 0;
+    width: 220px;
+    height: 100vh;
+    background: #222e3c;
+    z-index: 1050;
+    transition: left 0.3s;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.07);
+  }
+  .sidebar.show {
+    left: 0;
+  }
+  .main-content {
+    padding: 24px 8px;
+  }
+  .hamburger {
+    display: inline-block;
+    cursor: pointer;
+    padding: 12px 18px;
+    font-size: 1.7rem;
+    color: #222e3c;
+    background: transparent;
+    border: none;
+    outline: none;
+    margin-bottom: 18px;
+  }
+}
+
+/* Show sidebar as column on desktop */
+@media (min-width: 992px) {
+  .hamburger {
+    display: none;
+  }
+}
+
+/* Overlay for mobile sidebar */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.2);
+  z-index: 1049;
+}
+.sidebar-overlay.show {
+  display: block;
+}

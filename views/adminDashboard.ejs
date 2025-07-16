@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; }
+        .sidebar {
+            min-height: 100vh;
+            background: #222e3c;
+            color: #fff;
+            padding-top: 32px;
+        }
+        .sidebar a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            padding: 12px 24px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .sidebar a.active, .sidebar a:hover {
+            background: #3b4a5a;
+        }
+        .sidebar .sidebar-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 0 24px 24px 24px;
+        }
+        .main-content {
+            padding: 32px 24px;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
+            <div class="sidebar-header mb-4 text-center">
+              <img src="/img/<%= (settings && settings.logo_filename) ? settings.logo_filename : 'logo.svg' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
+            </div>
+            <a href="/admin/dashboard" class="active"><i class="bi bi-house"></i> Dashboard</a>
+            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
+            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
+            <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
+            <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
+            <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
+            <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
+            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+        <main class="col-md-10 ms-sm-auto main-content">
+            <button class="hamburger" id="hamburgerBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
+            <!-- GENIEACS CARDS -->
+            <div class="row mb-4">
+              <div class="col-md-4 mb-3">
+                <div class="card text-bg-primary">
+                  <div class="card-body text-center">
+                    <i class="bi bi-hdd-network fs-2 mb-2"></i>
+                    <div class="fw-bold">Total Device GenieACS</div>
+                    <div class="fs-3" id="genieacs-total"><%= typeof genieacsTotal !== 'undefined' ? genieacsTotal : '-' %></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <div class="card text-bg-success">
+                  <div class="card-body text-center">
+                    <i class="bi bi-wifi fs-2 mb-2"></i>
+                    <div class="fw-bold">Device Online</div>
+                    <div class="fs-3" id="genieacs-online"><%= typeof genieacsOnline !== 'undefined' ? genieacsOnline : '-' %></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <div class="card text-bg-danger">
+                  <div class="card-body text-center">
+                    <i class="bi bi-wifi-off fs-2 mb-2"></i>
+                    <div class="fw-bold">Device Offline</div>
+                    <div class="fs-3" id="genieacs-offline"><%= typeof genieacsOffline !== 'undefined' ? genieacsOffline : '-' %></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- MIKROTIK CARDS -->
+            <div class="row mb-4">
+              <div class="col-md-4 mb-3">
+                <div class="card text-bg-secondary">
+                  <div class="card-body text-center">
+                    <i class="bi bi-person-badge fs-2 mb-2"></i>
+                    <div class="fw-bold">Total User PPPoE</div>
+                    <div class="fs-3" id="mikrotik-total"><%= typeof mikrotikTotal !== 'undefined' ? mikrotikTotal : '-' %></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <div class="card text-bg-success">
+                  <div class="card-body text-center">
+                    <i class="bi bi-person-check fs-2 mb-2"></i>
+                    <div class="fw-bold">PPPoE Aktif</div>
+                    <div class="fs-3" id="mikrotik-aktif"><%= typeof mikrotikAktif !== 'undefined' ? mikrotikAktif : '-' %></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <div class="card text-bg-danger">
+                  <div class="card-body text-center">
+                    <i class="bi bi-person-x fs-2 mb-2"></i>
+                    <div class="fw-bold">PPPoE Offline</div>
+                    <div class="fs-3" id="mikrotik-offline"><%= typeof mikrotikOffline !== 'undefined' ? mikrotikOffline : '-' %></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- GRAFIK INTERNET -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <div class="card text-bg-info">
+                  <div class="card-body">
+                    <div class="fw-bold mb-2"><i class="bi bi-graph-up-arrow"></i> Grafik Internet (Ether ISP)</div>
+                    <canvas id="internetChart" height="60"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+            <script>
+            // Grafik bandwidth real-time
+const ctx = document.getElementById('internetChart').getContext('2d');
+const maxPoints = 30; // tampilkan 30 data terakhir
+const chart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [
+      {
+        label: 'RX (Mbps)',
+        data: [],
+        fill: true,
+        backgroundColor: 'rgba(13,202,240,0.2)',
+        borderColor: 'rgba(13,202,240,1)',
+        tension: 0.4
+      },
+      {
+        label: 'TX (Mbps)',
+        data: [],
+        fill: true,
+        backgroundColor: 'rgba(40,167,69,0.2)',
+        borderColor: 'rgba(40,167,69,1)',
+        tension: 0.4
+      }
+    ]
+  },
+  options: {
+    plugins: { legend: { display: true } },
+    scales: { y: { beginAtZero: true } }
+  }
+});
+
+function addTrafficData(rx, tx) {
+  const now = new Date();
+  const label = now.toLocaleTimeString('id-ID', { hour12: false });
+  if (chart.data.labels.length >= maxPoints) {
+    chart.data.labels.shift();
+    chart.data.datasets[0].data.shift();
+    chart.data.datasets[1].data.shift();
+  }
+  chart.data.labels.push(label);
+  chart.data.datasets[0].data.push((rx/1000000).toFixed(2)); // Mbps
+  chart.data.datasets[1].data.push((tx/1000000).toFixed(2)); // Mbps
+  chart.update();
+}
+
+async function fetchTraffic() {
+  try {
+    const res = await fetch('/api/dashboard/traffic');
+    const data = await res.json();
+    if (data.success) {
+      addTrafficData(data.rx, data.tx);
+    }
+  } catch (e) { /* ignore */ }
+}
+setInterval(fetchTraffic, 2000);
+fetchTraffic();
+            </script>
+        </main>
+    </div>
+</div>
+<script>
+// Hamburger & sidebar logic
+const hamburger = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('adminSidebar');
+const overlay = document.getElementById('sidebarOverlay');
+if (hamburger && sidebar && overlay) {
+  hamburger.addEventListener('click', function() {
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click', function() {
+    sidebar.classList.remove('show');
+    overlay.classList.remove('show');
+  });
+}
+</script>
+</body>
+</html>

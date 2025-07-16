@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Pelanggan | Portal ISP</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      max-width: 400px;
+      width: 100%;
+    }
+    .login-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    .logo-container {
+      width: auto;
+      height: auto;
+      background: none;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeInLogo 1s ease 0.2s forwards;
+      padding: 0;
+    }
+    .logo-container img {
+      width: auto;
+      height: auto;
+      max-width: 150px;
+      max-height: 150px;
+      object-fit: contain;
+      box-shadow: 0 8px 32px rgba(102,126,234,0.18);
+      transition: transform 0.3s cubic-bezier(.4,2,.6,1), box-shadow 0.3s;
+      border-radius: 12px;
+      animation: floating 3s ease-in-out infinite;
+    }
+    .logo-container img:hover {
+      transform: scale(1.08) rotate(-2deg);
+      box-shadow: 0 16px 40px rgba(102,126,234,0.25);
+      animation: none;
+    }
+    @keyframes fadeInLogo {
+      to { opacity: 1; }
+    }
+    @keyframes floating {
+      0% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-10px) rotate(1deg);
+      }
+      100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+    }
+    .form-container {
+      padding: 30px 25px;
+    }
+    .form-floating {
+      margin-bottom: 20px;
+    }
+    .form-control {
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 15px 20px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    .form-control:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .btn-login {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    .footer-text {
+      color: #6c757d;
+      font-size: 12px;
+      margin-top: 20px;
+    }
+    @media (max-width: 576px) {
+      .login-container {
+        padding: 10px;
+      }
+      .login-card {
+        border-radius: 15px;
+      }
+      .form-container {
+        padding: 25px 20px;
+      }
+      .logo-container img {
+        max-width: 100px;
+        max-height: 100px;
+      }
+    }
+    /* Ornamen dinamis */
+    #logo-ornament.ornament-square {
+      border-radius: 20px;
+      box-shadow: 0 0 20px #667eea;
+      background: #f8f9fa;
+      padding: 18px;
+      border: 3px solid #667eea;
+    }
+    #logo-ornament.ornament-rectangle {
+      border-radius: 10px 30px 10px 30px;
+      box-shadow: 0 0 10px #764ba2;
+      background: #f8f9fa;
+      padding: 14px 28px;
+      border: 3px solid #764ba2;
+    }
+    #logo-ornament.ornament-circle {
+      border-radius: 50%;
+      box-shadow: 0 0 30px #667eea;
+      background: #f8f9fa;
+      padding: 18px;
+      border: 3px solid #667eea;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="logo-container" id="logo-ornament">
+          <img id="logo-img" src="/img/<%= (settings && settings.logo_filename) ? settings.logo_filename : 'logo.svg' %>?ts=<%= Date.now() %>" alt="Logo">
+        </div>
+        <h4 class="mb-1 fw-bold">Portal Pelanggan</h4>
+        <p class="mb-0 opacity-75"><%= settings.company_header %></p>
+      </div>
+      <div class="form-container">
+        <form method="POST" action="/customer/login">
+          <div class="form-floating">
+            <input type="text" class="form-control" id="phone" name="phone" placeholder="Nomor HP" required autofocus pattern="08[0-9]{8,13}">
+            <label for="phone">
+              <i class="bi bi-phone me-2"></i>Nomor HP
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-login w-100">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Masuk
+          </button>
+        </form>
+		<% if (error) { %>
+		<div class="alert alert-danger mt-3 text-center">
+			<i class="bi bi-exclamation-triangle me-2"></i><%= error %>
+		</div>
+		<% } %>
+        <div class="text-center footer-text">
+          &copy; <%= new Date().getFullYear() %> <%= typeof settings !== 'undefined' && settings.footer_info ? settings.footer_info : 'ALIJAYA DIGITAL NETWORK' %>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Ornamen dinamis untuk logo
+    window.addEventListener('DOMContentLoaded', function() {
+      const logoImg = document.getElementById('logo-img');
+      const ornament = document.getElementById('logo-ornament');
+      function updateOrnament() {
+        if (!logoImg.naturalWidth || !logoImg.naturalHeight) return;
+        const w = logoImg.naturalWidth;
+        const h = logoImg.naturalHeight;
+        ornament.classList.remove('ornament-square', 'ornament-rectangle', 'ornament-circle');
+        if (Math.abs(w - h) < 10) {
+          ornament.classList.add('ornament-square');
+        } else if (w > h * 1.2) {
+          ornament.classList.add('ornament-rectangle');
+        } else if (h > w * 1.2) {
+          ornament.classList.add('ornament-rectangle');
+        } else {
+          ornament.classList.add('ornament-square');
+        }
+        // Jika ingin otomatis jadi lingkaran untuk logo bulat, aktifkan baris berikut:
+        // ornament.classList.add('ornament-circle');
+      }
+      if (logoImg.complete) {
+        updateOrnament();
+      } else {
+        logoImg.onload = updateOrnament;
+      }
+    });
+  </script>
+</body>
+</html> 

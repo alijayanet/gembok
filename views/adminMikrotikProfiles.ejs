@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile PPPoE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; }
+        .form-label { font-weight: 600; }
+        .sidebar {
+            min-height: 100vh;
+            background: #222e3c;
+            color: #fff;
+            padding-top: 32px;
+        }
+        .sidebar a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            padding: 12px 24px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .sidebar a.active, .sidebar a:hover {
+            background: #3b4a5a;
+        }
+        .sidebar .sidebar-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 0 24px 24px 24px;
+        }
+        .main-content {
+            padding: 32px 24px;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .card.bg-primary, .card.bg-success, .card.bg-info, .card.bg-warning {
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .card-text {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            padding: 4px 10px;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .table td {
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+        .badge {
+            font-size: 0.75rem;
+        }
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        .table-responsive {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .alert-info {
+            background-color: #e7f3ff;
+            border-color: #b3d9ff;
+            color: #0c5460;
+        }
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .table-sm td, .table-sm th {
+            padding: 0.3rem;
+            font-size: 0.85rem;
+        }
+        
+        /* Mobile responsive improvements */
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .table th, .table td {
+                white-space: nowrap;
+                min-width: 120px;
+            }
+            
+            .table th:first-child, .table td:first-child {
+                min-width: 50px;
+            }
+            
+            .btn-sm {
+                padding: 0.2rem 0.4rem;
+                font-size: 0.75rem;
+            }
+            
+            .card-title {
+                font-size: 1.5rem;
+            }
+            
+            .main-content {
+                padding: 16px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
+            <div class="sidebar-header mb-4 text-center">
+                <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
+            </div>
+            <a href="/admin/dashboard"><i class="bi bi-house"></i> Dashboard</a>
+            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
+            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
+            <a href="/admin/mikrotik/profiles" class="active"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
+            <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
+            <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
+            <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
+            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+
+        <main class="col-md-10 main-content ms-sm-auto">
+            <button class="hamburger" id="hamburgerBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
+
+            <h3 class="mb-4">Daftar Profile PPPoE Mikrotik</h3>
+            
+            <!-- Statistik Profile -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title"><%= profiles.length %></h5>
+                            <p class="card-text">Total Profile</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title"><%= profiles.filter(p => p.default === 'true').length %></h5>
+                            <p class="card-text">Profile Default</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title"><%= profiles.filter(p => p['rate-limit']).length %></h5>
+                            <p class="card-text">Dengan Rate Limit</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title"><%= profiles.filter(p => p.comment).length %></h5>
+                            <p class="card-text">Dengan Komentar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-success mb-3" id="btnTambahProfile">Tambah Profile PPPoE</button>
+            <button class="btn btn-outline-primary mb-3 ms-2" id="btnRefresh">
+                <i class="bi bi-arrow-clockwise"></i> Refresh Data
+            </button>
+            
+            <!-- Filter dan Pencarian -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Cari profile...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Semua Status</option>
+                        <option value="default">Default</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="rateFilter">
+                        <option value="">Semua Rate</option>
+                        <option value="has-rate">Dengan Rate Limit</option>
+                        <option value="no-rate">Tanpa Rate Limit</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="profileTable" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Profile</th>
+                            <th>Rate Limit</th>
+                            <th>Local Address</th>
+                            <th>Remote Address</th>
+                            <th>DNS Server</th>
+                            <th>Status</th>
+                            <th>Komentar</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% profiles.forEach(function(profile, i) { %>
+                        <tr>
+                            <td><%= i+1 %></td>
+                            <td>
+                                <strong><%= profile.name %></strong>
+                                <% if(profile.default === 'true') { %>
+                                    <span class="badge bg-primary ms-1">Default</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if(profile['rate-limit']) { %>
+                                    <code class="text-success"><%= profile['rate-limit'] %></code>
+                                <% } else { %>
+                                    <span class="text-muted">-</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if(profile['local-address']) { %>
+                                    <code><%= profile['local-address'] %></code>
+                                <% } else { %>
+                                    <span class="text-muted">-</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if(profile['remote-address']) { %>
+                                    <code><%= profile['remote-address'] %></code>
+                                <% } else { %>
+                                    <span class="text-muted">-</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if(profile['dns-server']) { %>
+                                    <code><%= profile['dns-server'] %></code>
+                                <% } else { %>
+                                    <span class="text-muted">-</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if(profile.default === 'true') { %>
+                                    <span class="badge bg-success">Default</span>
+                                <% } else { %>
+                                    <span class="badge bg-secondary">Custom</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if(profile.comment) { %>
+                                    <small class="text-muted"><%= profile.comment %></small>
+                                <% } else { %>
+                                    <span class="text-muted">-</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info view-profile-btn" 
+                                        data-id="<%= profile['.id'] %>" 
+                                        data-name="<%= profile.name %>"
+                                        title="Lihat Detail">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <% if(profile.default !== 'true') { %>
+                                <button class="btn btn-sm btn-warning edit-profile-btn" 
+                                        data-id="<%= profile['.id'] %>" 
+                                        data-name="<%= profile.name %>" 
+                                        data-rate-limit="<%= profile['rate-limit'] || '' %>"
+                                        data-local-address="<%= profile['local-address'] || '' %>"
+                                        data-remote-address="<%= profile['remote-address'] || '' %>"
+                                        data-dns-server="<%= profile['dns-server'] || '' %>"
+                                        data-parent-queue="<%= profile['parent-queue'] || '' %>"
+                                        data-address-list="<%= profile['address-list'] || '' %>"
+                                        data-comment="<%= profile.comment || '' %>"
+                                        data-bridge-learning="<%= profile['bridge-learning'] || 'default' %>"
+                                        data-use-mpls="<%= profile['use-mpls'] || 'default' %>"
+                                        data-use-compression="<%= profile['use-compression'] || 'default' %>"
+                                        data-use-encryption="<%= profile['use-encryption'] || 'default' %>"
+                                        data-only-one="<%= profile['only-one'] || 'default' %>"
+                                        data-change-tcp-mss="<%= profile['change-tcp-mss'] || 'default' %>"
+                                        title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-profile-btn" 
+                                        data-id="<%= profile['.id'] %>" 
+                                        data-name="<%= profile.name %>"
+                                        title="Hapus">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <% } %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal Tambah/Edit Profile PPPoE -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <form id="profileForm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="profileModalLabel">Tambah Profile PPPoE</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="profileId" name="id">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="profileName" class="form-label">Nama Profile *</label>
+                                <input type="text" class="form-control" id="profileName" name="name" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="rateLimit" class="form-label">Rate Limit</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="rateLimit" name="rate-limit" 
+                                           placeholder="Contoh: 1M/1M atau 756K/756K 1M/1M 384K/384K">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Preset
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="setRateLimit('1M/1M')">1 Mbps</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setRateLimit('2M/2M')">2 Mbps</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setRateLimit('5M/5M')">5 Mbps</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setRateLimit('10M/10M')">10 Mbps</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setRateLimit('756K/756K 1M/1M 384K/384K')">1M (Queue)</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setRateLimit('2M/2M 5M/5M 1500K/1500K')">2M (Queue)</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setRateLimit('3M/3M 5M/5M 2250K/2250K')">3M (Queue)</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setRateLimit('5M/5M 10M/10M 3750K/3750K')">5M (Queue)</a></li>
+                                    </ul>
+                                </div>
+                                <small class="text-muted">Format: upload/download atau upload/download max-limit burst-limit</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="localAddress" class="form-label">Local Address</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="localAddress" name="local-address" 
+                                           placeholder="Contoh: 192.168.10.1">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Preset
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="setLocalAddress('192.168.10.1')">192.168.10.1</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setLocalAddress('192.168.1.1')">192.168.1.1</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setLocalAddress('192.168.2.1')">192.168.2.1</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setLocalAddress('192.168.205.1')">192.168.205.1</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="remoteAddress" class="form-label">Remote Address</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="remoteAddress" name="remote-address" 
+                                           placeholder="Contoh: pool_pppoe atau 192.168.10.100-192.168.10.200">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Preset
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="setRemoteAddress('pool_pppoe')">pool_pppoe</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setRemoteAddress('dhcp_vlan-GenieAcs')">dhcp_vlan-GenieAcs</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setRemoteAddress('isolir')">isolir</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setRemoteAddress('192.168.10.100-192.168.10.200')">192.168.10.100-200</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setRemoteAddress('192.168.1.100-192.168.1.200')">192.168.1.100-200</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="dnsServer" class="form-label">DNS Server</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="dnsServer" name="dns-server" 
+                                           placeholder="Contoh: 8.8.8.8,8.8.4.4">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Preset
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="setDnsServer('8.8.8.8,8.8.4.4')">Google DNS</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setDnsServer('1.1.1.1,1.0.0.1')">Cloudflare DNS</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setDnsServer('208.67.222.222,208.67.220.220')">OpenDNS</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setDnsServer('192.168.10.1')">Local Router</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="setDnsServer('8.8.8.8')">Google DNS (Primary)</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="parentQueue" class="form-label">Parent Queue</label>
+                                <input type="text" class="form-control" id="parentQueue" name="parent-queue" 
+                                       placeholder="Contoh: none atau nama queue">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="addressList" class="form-label">Address List</label>
+                                <input type="text" class="form-control" id="addressList" name="address-list" 
+                                       placeholder="Contoh: nama address list">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="profileComment" class="form-label">Komentar</label>
+                                <textarea class="form-control" id="profileComment" name="comment" rows="3" 
+                                          placeholder="Komentar opsional untuk profile ini"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6 class="text-info">Konfigurasi Lanjutan</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="bridgeLearning" class="form-label">Bridge Learning</label>
+                                <select class="form-select" id="bridgeLearning" name="bridge-learning">
+                                    <option value="default">Default</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="useMpls" class="form-label">Use MPLS</label>
+                                <select class="form-select" id="useMpls" name="use-mpls">
+                                    <option value="default">Default</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="useCompression" class="form-label">Use Compression</label>
+                                <select class="form-select" id="useCompression" name="use-compression">
+                                    <option value="default">Default</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="useEncryption" class="form-label">Use Encryption</label>
+                                <select class="form-select" id="useEncryption" name="use-encryption">
+                                    <option value="default">Default</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="onlyOne" class="form-label">Only One</label>
+                                <select class="form-select" id="onlyOne" name="only-one">
+                                    <option value="default">Default</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="changeTcpMss" class="form-label">Change TCP MSS</label>
+                                <select class="form-select" id="changeTcpMss" name="change-tcp-mss">
+                                    <option value="default">Default</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Detail Profile PPPoE -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailModalLabel">Detail Profile PPPoE</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="profileDetailContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<script>
+$(function() {
+    let profileTable = new DataTable('#profileTable', {
+        "pageLength": 25,
+        "order": [[1, "asc"]],
+        "responsive": true,
+        "scrollX": true,
+        "columnDefs": [
+            {
+                "targets": [0], // No column
+                "responsivePriority": 1
+            },
+            {
+                "targets": [1], // Nama Profile column
+                "responsivePriority": 2
+            },
+            {
+                "targets": [-1], // Aksi column (last column)
+                "responsivePriority": 3,
+                "orderable": false
+            }
+        ]
+    });
+
+    // Tambah Profile
+    $('#btnTambahProfile').on('click', function() {
+        $('#profileId').val('');
+        $('#profileName').val('');
+        $('#rateLimit').val('');
+        $('#localAddress').val('');
+        $('#remoteAddress').val('');
+        $('#dnsServer').val('');
+        $('#parentQueue').val('');
+        $('#addressList').val('');
+        $('#profileComment').val('');
+        $('#bridgeLearning').val('default');
+        $('#useMpls').val('default');
+        $('#useCompression').val('default');
+        $('#useEncryption').val('default');
+        $('#onlyOne').val('default');
+        $('#changeTcpMss').val('default');
+        $('#profileModalLabel').text('Tambah Profile PPPoE');
+        $('#profileModal').modal('show');
+    });
+
+    // View Detail Profile
+    $(document).on('click', '.view-profile-btn', function() {
+        const profileId = $(this).data('id');
+        const profileName = $(this).data('name');
+        
+        // Tampilkan loading
+        $('#detailModalLabel').text(`Loading...`);
+        $('#profileDetailContent').html('<div class="text-center"><i class="bi bi-arrow-clockwise spin"></i> Loading...</div>');
+        $('#detailModal').modal('show');
+        
+        // Ambil detail profile dari API
+        $.get(`/admin/mikrotik/profile/${profileId}`, function(res) {
+            if(res.success && res.profile) {
+                const profile = res.profile;
+                
+                let detailHtml = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Informasi Dasar</h6>
+                            <table class="table table-sm">
+                                <tr><td><strong>Nama Profile:</strong></td><td><code>${profile.name || '-'}</code></td></tr>
+                                <tr><td><strong>Rate Limit:</strong></td><td><code class="text-success">${profile['rate-limit'] || '-'}</code></td></tr>
+                                <tr><td><strong>Local Address:</strong></td><td><code>${profile['local-address'] || '-'}</code></td></tr>
+                                <tr><td><strong>Remote Address:</strong></td><td><code>${profile['remote-address'] || '-'}</code></td></tr>
+                                <tr><td><strong>DNS Server:</strong></td><td><code>${profile['dns-server'] || '-'}</code></td></tr>
+                                <tr><td><strong>Parent Queue:</strong></td><td><code>${profile['parent-queue'] || '-'}</code></td></tr>
+                                <tr><td><strong>Address List:</strong></td><td><code>${profile['address-list'] || '-'}</code></td></tr>
+                                <tr><td><strong>Komentar:</strong></td><td><small class="text-muted">${profile.comment || '-'}</small></td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-info">Konfigurasi Lanjutan</h6>
+                            <table class="table table-sm">
+                                <tr><td><strong>Bridge Learning:</strong></td><td><code>${profile['bridge-learning'] || 'default'}</code></td></tr>
+                                <tr><td><strong>Use MPLS:</strong></td><td><code>${profile['use-mpls'] || 'default'}</code></td></tr>
+                                <tr><td><strong>Use Compression:</strong></td><td><code>${profile['use-compression'] || 'default'}</code></td></tr>
+                                <tr><td><strong>Use Encryption:</strong></td><td><code>${profile['use-encryption'] || 'default'}</code></td></tr>
+                                <tr><td><strong>Only One:</strong></td><td><code>${profile['only-one'] || 'default'}</code></td></tr>
+                                <tr><td><strong>Change TCP MSS:</strong></td><td><code>${profile['change-tcp-mss'] || 'default'}</code></td></tr>
+                                <tr><td><strong>Use UPnP:</strong></td><td><code>${profile['use-upnp'] || 'default'}</code></td></tr>
+                                <tr><td><strong>Default:</strong></td><td><span class="badge ${profile.default === 'true' ? 'bg-success' : 'bg-secondary'}">${profile.default === 'true' ? 'Ya' : 'Tidak'}</span></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                
+                // Tambahkan script on-up dan on-down jika ada
+                if(profile['on-up'] || profile['on-down']) {
+                    detailHtml += `
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6 class="text-warning">Script Konfigurasi</h6>
+                                <div class="row">
+                                    ${profile['on-up'] ? `
+                                    <div class="col-md-6">
+                                        <strong>On-Up Script:</strong>
+                                        <pre class="bg-light p-2 rounded" style="font-size: 0.8rem; max-height: 200px; overflow-y: auto;">${profile['on-up']}</pre>
+                                    </div>
+                                    ` : ''}
+                                    ${profile['on-down'] ? `
+                                    <div class="col-md-6">
+                                        <strong>On-Down Script:</strong>
+                                        <pre class="bg-light p-2 rounded" style="font-size: 0.8rem; max-height: 200px; overflow-y: auto;">${profile['on-down']}</pre>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                $('#detailModalLabel').text(`Detail Profile: ${profileName}`);
+                $('#profileDetailContent').html(detailHtml);
+            } else {
+                $('#detailModalLabel').text('Error');
+                $('#profileDetailContent').html(`<div class="alert alert-danger">Gagal mengambil detail profile: ${res.message || 'Unknown error'}</div>`);
+            }
+        }).fail(function() {
+            $('#detailModalLabel').text('Error');
+            $('#profileDetailContent').html('<div class="alert alert-danger">Gagal menghubungi server</div>');
+        });
+    });
+
+    // Edit Profile
+    $(document).on('click', '.edit-profile-btn', function() {
+        $('#profileId').val($(this).data('id'));
+        $('#profileName').val($(this).data('name'));
+        $('#rateLimit').val($(this).data('rate-limit') || '');
+        $('#localAddress').val($(this).data('local-address') || '');
+        $('#remoteAddress').val($(this).data('remote-address') || '');
+        $('#dnsServer').val($(this).data('dns-server') || '');
+        $('#parentQueue').val($(this).data('parent-queue') || '');
+        $('#addressList').val($(this).data('address-list') || '');
+        $('#profileComment').val($(this).data('comment') || '');
+        $('#bridgeLearning').val($(this).data('bridge-learning') || 'default');
+        $('#useMpls').val($(this).data('use-mpls') || 'default');
+        $('#useCompression').val($(this).data('use-compression') || 'default');
+        $('#useEncryption').val($(this).data('use-encryption') || 'default');
+        $('#onlyOne').val($(this).data('only-one') || 'default');
+        $('#changeTcpMss').val($(this).data('change-tcp-mss') || 'default');
+        $('#profileModalLabel').text('Edit Profile PPPoE');
+        $('#profileModal').modal('show');
+    });
+
+    // Submit Tambah/Edit Profile
+    $('#profileForm').submit(function(e) {
+        e.preventDefault();
+        const formData = {
+            id: $('#profileId').val(),
+            name: $('#profileName').val(),
+            'rate-limit': $('#rateLimit').val(),
+            'local-address': $('#localAddress').val(),
+            'remote-address': $('#remoteAddress').val(),
+            'dns-server': $('#dnsServer').val(),
+            'parent-queue': $('#parentQueue').val(),
+            'address-list': $('#addressList').val(),
+            comment: $('#profileComment').val(),
+            'bridge-learning': $('#bridgeLearning').val(),
+            'use-mpls': $('#useMpls').val(),
+            'use-compression': $('#useCompression').val(),
+            'use-encryption': $('#useEncryption').val(),
+            'only-one': $('#onlyOne').val(),
+            'change-tcp-mss': $('#changeTcpMss').val()
+        };
+        
+        const url = formData.id ? '/admin/mikrotik/edit-profile' : '/admin/mikrotik/add-profile';
+        
+        $.post(url, formData, function(res) {
+            if(res.success) {
+                alert('Profile berhasil disimpan!');
+                location.reload();
+            } else {
+                alert('Gagal menyimpan profile: ' + (res.message || 'Unknown error'));
+            }
+        });
+    });
+
+     // Hapus Profile
+     $(document).on('click', '.delete-profile-btn', function() {
+         const name = $(this).data('name');
+         if(confirm('Yakin ingin menghapus profile PPPoE "' + name + '"?')) {
+             const id = $(this).data('id');
+             $.post('/admin/mikrotik/delete-profile', { id }, function(res) {
+                 if(res.success) {
+                     alert('Profile berhasil dihapus!');
+                     location.reload();
+                 } else {
+                     alert('Gagal menghapus profile: ' + (res.message || 'Unknown error'));
+                 }
+             });
+         }
+     });
+
+     // Refresh Data
+     $('#btnRefresh').on('click', function() {
+         location.reload();
+     });
+
+     // Filter dan Pencarian
+     $('#searchInput').on('keyup', function() {
+         profileTable.search($(this).val()).draw();
+     });
+
+     $('#statusFilter').on('change', function() {
+         const status = $(this).val();
+         $.fn.dataTable.ext.search.pop(); // Hapus filter sebelumnya
+         
+         if (status) {
+             $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                 const statusText = data[6]; // Kolom Status
+                 return statusText.includes(status === 'default' ? 'Default' : 'Custom');
+             });
+         }
+         profileTable.draw();
+     });
+
+     $('#rateFilter').on('change', function() {
+         const rateFilter = $(this).val();
+         $.fn.dataTable.ext.search.pop(); // Hapus filter sebelumnya
+         
+         if (rateFilter) {
+             $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                 const rateText = data[2]; // Kolom Rate Limit
+                 if (rateFilter === 'has-rate') {
+                     return rateText !== '-' && rateText.trim() !== '';
+                 } else if (rateFilter === 'no-rate') {
+                     return rateText === '-' || rateText.trim() === '';
+                 }
+                 return true;
+             });
+         }
+         profileTable.draw();
+     });
+ });
+ </script>
+
+ <script>
+ // Fungsi untuk set preset rate limit
+ function setRateLimit(value) {
+     document.getElementById('rateLimit').value = value;
+ }
+ 
+ // Fungsi untuk set preset local address
+ function setLocalAddress(value) {
+     document.getElementById('localAddress').value = value;
+ }
+
+ // Fungsi untuk set preset remote address
+ function setRemoteAddress(value) {
+     document.getElementById('remoteAddress').value = value;
+ }
+
+ // Fungsi untuk set preset DNS server
+ function setDnsServer(value) {
+     document.getElementById('dnsServer').value = value;
+ }
+ 
+ // Hamburger & sidebar logic
+ const hamburger = document.getElementById('hamburgerBtn');
+ const sidebar = document.getElementById('adminSidebar');
+ const overlay = document.getElementById('sidebarOverlay');
+ if (hamburger && sidebar && overlay) {
+     hamburger.addEventListener('click', function() {
+         sidebar.classList.toggle('show');
+         overlay.classList.toggle('show');
+     });
+     overlay.addEventListener('click', function() {
+         sidebar.classList.remove('show');
+         overlay.classList.remove('show');
+     });
+ }
+ </script>
+
+ <%- include('partials/footer') %>
+ </body>
+ </html>

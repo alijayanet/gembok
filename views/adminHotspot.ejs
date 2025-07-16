@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Hotspot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; }
+        .form-label { font-weight: 600; }
+        .sidebar {
+            min-height: 100vh;
+            background: #222e3c;
+            color: #fff;
+            padding-top: 32px;
+        }
+        .sidebar a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            padding: 12px 24px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .sidebar a.active, .sidebar a:hover {
+            background: #3b4a5a;
+        }
+        .sidebar .sidebar-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 0 24px 24px 24px;
+        }
+        .main-content {
+            padding: 32px 24px;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .card.bg-primary, .card.bg-success, .card.bg-warning, .card.bg-info {
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+        .card.bg-primary:hover, .card.bg-success:hover, .card.bg-warning:hover, .card.bg-info:hover {
+            transform: translateY(-2px);
+        }
+        .card-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .card-text {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body data-company-header="<%= company_header || 'Nama Hotspot' %>" data-admin-kontak="<%= adminKontak || 'Kontak Admin' %>">
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
+            <div class="sidebar-header mb-4 text-center">
+                <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
+            </div>
+            <a href="/admin/dashboard"><i class="bi bi-house"></i> Dashboard</a>
+            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
+            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
+            <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
+            <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
+            <a href="/admin/hotspot" class="active"><i class="bi bi-wifi"></i> Hotspot</a>
+            <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
+            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+
+        <main class="col-md-10 main-content ms-sm-auto">
+            <button class="hamburger" id="hamburgerBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
+            <h3 class="mb-4">Manajemen User Hotspot</h3>
+
+            <!-- Statistik User Hotspot -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title" id="totalHotspotUsers">-</h5>
+                            <p class="card-text">Total User Hotspot</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title" id="totalProfiles">-</h5>
+                            <p class="card-text">Total Profile</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title" id="activeUsers">-</h5>
+                            <p class="card-text">User Aktif</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title" id="voucherCount">0</h5>
+                            <p class="card-text">Voucher Dibuat</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Refresh Button -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <button class="btn btn-outline-secondary" id="btnRefreshHotspotStats">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Statistik
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notifikasi -->
+            <% if (success) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i> <%= success %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+            
+            <% if (error) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i> <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+
+            <div class="row">
+                <!-- Kolom Kiri: Form dan Hasil Generate -->
+                <div class="col-lg-5">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Tambah User</h5>
+                            <form action="/admin/hotspot" method="POST">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="text" class="form-control" id="password" name="password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="profile" class="form-label">Profile</label>
+                                    <select class="form-select" id="profile" name="profile" required>
+                                        <% if (profiles && profiles.length > 0) { %>
+                                            <% profiles.forEach(function(p) { %>
+                                            <option value="<%= p.name %>"><%= p.name %></option>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <option value="">Tidak ada profile tersedia</option>
+                                        <% } %>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-success">Tambah Manual</button>
+                                <button type="button" class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#generateVoucherModal">
+                                    <i class="bi bi-ticket-detailed"></i> Generate Voucher
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- Hasil Generate Voucher akan muncul di sini -->
+                    <div id="voucherResult" class="mb-4"></div>
+                </div>
+
+                <!-- Kolom Kanan: Tabel Semua User -->
+                <div class="col-lg-7">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Semua User Hotspot</h5>
+                            <div class="input-group" style="max-width: 300px;">
+                                <input type="text" id="searchUserInput" class="form-control" placeholder="Cari username...">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered" id="allUsersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Password</th>
+                                            <th>Profile</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="userTableBody">
+                                        <% if (allUsers && allUsers.length > 0) { %>
+                                            <% allUsers.forEach(function(user) { %>
+                                            <tr class="user-row">
+                                                <td class="username"><%= user.name %></td>
+                                                <td><%= user.password || '-' %></td>
+                                                <td><%= user.profile %></td>
+                                                <td>
+                                                    <form action="/admin/hotspot/delete" method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus user <%= user.name %>?')">
+                                                        <input type="hidden" name="username" value="<%= user.name %>">
+                                                        <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="4" class="text-center">Tidak ada user tersimpan.</td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                                <div class="mt-2 text-muted" id="userCount">
+                                    Menampilkan <span id="showingCount"><%= allUsers.length %></span> dari <%= allUsers.length %> user
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Modal Generate Voucher -->
+        <div class="modal fade" id="generateVoucherModal" tabindex="-1" aria-labelledby="generateVoucherModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="generateVoucherModalLabel">Generate Voucher Hotspot</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="generateVoucherForm">
+                            <div class="mb-3">
+                                <label for="quantity" class="form-label">Jumlah Voucher</label>
+                                <input type="number" class="form-control" id="quantity" name="quantity" value="10" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="length" class="form-label">Panjang Karakter</label>
+                                <input type="number" class="form-control" id="length" name="length" value="5" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="profileModal" class="form-label">Profile</label>
+                                <select class="form-select" id="profileModal" name="profile" required>
+                                    <% if (profiles && profiles.length > 0) { %>
+                                        <% profiles.forEach(function(p) { %>
+                                        <option value="<%= p.name %>"><%= p.name %></option>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <option value="">Tidak ada profile tersedia</option>
+                                    <% } %>
+                                </select>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="price" class="form-label">Harga</label>
+                                    <input type="number" class="form-control" id="price" name="price" placeholder="Contoh: 5000" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="voucherModel" class="form-label">Model Voucher</label>
+                                    <select class="form-select" id="voucherModel" name="voucherModel">
+                                        <option value="default" selected>Default</option>
+                                        <option value="model1">Model 1 (Simple)</option>
+                                        <option value="model2">Model 2 (Standard)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="type" class="form-label">Tipe</label>
+                                    <select class="form-select" id="type" name="type">
+                                        <option value="voucher" selected>Username = Password</option>
+                                        <option value="member">Username & Password Beda</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="charType" class="form-label">Jenis Karakter</label>
+                                    <select class="form-select" id="charType" name="charType">
+                                        <option value="alphanumeric" selected>Alfanumerik</option>
+                                        <option value="numeric">Numerik</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Generate</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Global variable to hold voucher data for printing
+window.vouchersToPrint = {};
+
+// Template for Model 1 (Simple)
+function getModel1VoucherHTML(voucher, price, companyHeader, adminKontak) {
+    const colors = { '5000': '#1433FD', '10000': '#663399', '20000': '#0000FF', '50000': '#FF8C00' };
+    const color = colors[price] || '#FF69B4';
+    const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
+
+    return `
+        <div style="border: 1px solid ${color}; border-radius: 5px; margin: 4px; padding: 5px; width: 220px; text-align: center; font-family: 'Courier New', monospace; page-break-inside: avoid; background-color: #fff;">
+            <div style="font-weight: bold; font-size: 14px;">${companyHeader}</div>
+            <div style="font-size: 12px; margin: 5px 0;">Paket ${formattedPrice}</div>
+            <div style="border: 1px solid ${color}; border-radius: 5px; padding: 8px; margin: 5px 0; font-weight: bold; font-size: 16px;">
+                ${voucher.username}
+            </div>
+            <div style="font-size: 10px;">Login: ${voucher.username}</div>
+            ${voucher.username !== voucher.password ? `<div style="font-size: 10px;">Pass: ${voucher.password}</div>` : ''}
+            <div style="font-size: 10px; margin-top: 5px;">Kontak: ${adminKontak}</div>
+        </div>
+    `;
+}
+
+// Template for Model 2 (Standard)
+function getModel2VoucherHTML(voucher, price, companyHeader, adminKontak) {
+    const color = '#bf0000';
+    const formattedPrice = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(price);
+    return `
+        <div style="border: 1px solid ${color}; border-radius: 4px; text-align: center; font-size: 12px; font-weight:bold; width: 245px; margin: 4px; page-break-inside: avoid; background-color: #f2f2f2;">
+            <div style="background-color: #E6E6E6; border: 1px solid ${color}; border-radius: 4px; padding: 5px;">
+                <div style="font-size: 16px; font-weight: bold;">${companyHeader}</div>
+            </div>
+            <div style="font-weight:bold; font-size:28px; color:#555; margin-top: 5px;">
+                <small style="font-size:18px;">Rp</small>${formattedPrice}
+            </div>
+            <div style="font-weight:bold; color:#555; font-size:13px;">Kode Voucher</div>
+            <div style="border: 1px solid #000; border-radius: 6px; font-weight:bold; font-size:22px; color: #FFF; background-color: ${color}; margin: 5px; padding: 5px;">
+                ${voucher.username}
+            </div>
+            <div style="font-size: 10px;">Login dengan kode di atas</div>
+             ${voucher.username !== voucher.password ? `<div style="font-size: 10px;">Password: ${voucher.password}</div>` : ''}
+            <div style="font-size: 10px; margin-top: 5px;">${adminKontak}</div>
+        </div>
+    `;
+}
+
+// Template for Default Model
+function getDefaultVoucherHTML(voucher, price, companyHeader, adminKontak) {
+    const priceValue = typeof price === 'string' ? parseInt(price) || 0 : price || 0;
+    const formattedPrice = new Intl.NumberFormat('id-ID', { 
+        style: 'currency', 
+        currency: 'IDR', 
+        minimumFractionDigits: 0 
+    }).format(priceValue);
+    
+    const header = companyHeader || 'Nama Hotspot';
+    const contact = adminKontak || 'Kontak Admin';
+    
+    return `
+        <div class="voucher-card">
+            <div class="header">${header}</div>
+            <div class="price">${formattedPrice}</div>
+            <div class="login-info">
+                <div>Login: @hotspot</div>
+                <div class="credentials">
+                    <div class="username">${voucher.username}</div>
+                    ${voucher.username !== voucher.password ? 
+                        `<div class="password">Pass: ${voucher.password}</div>` : ''}
+                </div>
+            </div>
+            <div class="footer">Hubungi: ${contact}</div>
+        </div>
+    `;
+}
+
+function printVouchers() {
+    if (!window.vouchersToPrint || !window.vouchersToPrint.vouchers || window.vouchersToPrint.vouchers.length === 0) {
+        alert('Tidak ada data voucher untuk dicetak.');
+        return;
+    }
+
+    const { vouchers, price, model } = window.vouchersToPrint;
+    const companyHeader = document.body.getAttribute('data-company-header') || 'Nama Hotspot';
+    const adminKontak = document.body.getAttribute('data-admin-kontak') || 'Kontak Admin';
+
+    let content = '<div class="voucher-container">';
+    vouchers.forEach((voucher, index) => {
+        let voucherHTML = '';
+        switch (model) {
+            case 'model1':
+                voucherHTML = getModel1VoucherHTML(voucher, price, companyHeader, adminKontak);
+                break;
+            case 'model2':
+                voucherHTML = getModel2VoucherHTML(voucher, price, companyHeader, adminKontak);
+                break;
+            default:
+                voucherHTML = getDefaultVoucherHTML(voucher, price, companyHeader, adminKontak);
+        }
+        if (index > 0 && index % 8 === 0) {
+            content += '<div class="page-break"></div>';
+        }
+        content += voucherHTML;
+    });
+    content += '</div>';
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Cetak Voucher</title>
+            <meta charset="UTF-8">
+            <style>
+                @page { size: A4; margin: 0.5cm; }
+                @media print {
+                    body { 
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                        margin: 0; padding: 0;
+                    }
+                    .voucher-container { page-break-after: always; page-break-inside: avoid; }
+                    .page-break { page-break-after: always; break-after: page; }
+                }
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0; padding: 0.5cm;
+                    width: 21cm; min-height: 29.7cm;
+                    box-sizing: border-box;
+                }
+                .voucher-container {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 0.5cm; width: 100%;
+                }
+                .voucher-card {
+                    width: 100%; border: 1px solid #ccc;
+                    border-radius: 10px; padding: 10px;
+                    box-sizing: border-box; break-inside: avoid;
+                    page-break-inside: avoid; background-color: #fff;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
+                .header {
+                    font-weight: bold; font-size: 0.9em; color: #fff;
+                    background-color: #007bff; padding: 8px;
+                    border-radius: 5px 5px 0 0;
+                    margin: -10px -10px 10px -10px;
+                }
+                .price {
+                    font-size: 1em; font-weight: bold; margin: 5px 0; color: #333;
+                }
+                .login-info { margin: 8px 0; font-size: 0.8em; }
+                .credentials {
+                    border: 1px dashed #666; padding: 5px; margin: 8px 0;
+                    background-color: #f9f9f9; border-radius: 4px;
+                }
+                .username { font-size: 1.1em; font-weight: bold; word-break: break-all; }
+                .password { font-size: 0.9em; color: #555; word-break: break-all; }
+                .footer {
+                    font-size: 0.8em; margin-top: 8px; color: #666;
+                    border-top: 1px solid #eee; padding-top: 5px;
+                }
+            </style>
+        </head>
+        <body onload="window.print();">${content}</body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const generateVoucherForm = document.getElementById('generateVoucherForm');
+    const voucherResultDiv = document.getElementById('voucherResult');
+
+    generateVoucherForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const btn = this.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+
+        const formData = new FormData(generateVoucherForm);
+        const data = Object.fromEntries(formData.entries());
+
+        if (!data.price) {
+            alert('Harga tidak boleh kosong.');
+            btn.disabled = false;
+            btn.innerHTML = 'Generate';
+            return;
+        }
+
+        try {
+            const response = await fetch('/admin/hotspot/generate-vouchers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                window.vouchersToPrint = {
+                    vouchers: result.vouchers,
+                    price: data.price,
+                    model: data.voucherModel
+                };
+
+                let resultHTML = `
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Voucher Berhasil Dibuat (${result.vouchers.length})</h5>
+                            <button class="btn btn-success mb-3" onclick="printVouchers()"><i class="bi bi-printer"></i> Print / Preview</button>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead><tr><th>Username</th><th>Password</th><th>Profile</th></tr></thead>
+                                    <tbody>
+                                        ${result.vouchers.map(v => `<tr><td>${v.username}</td><td>${v.password}</td><td>${v.profile}</td></tr>`).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>`;
+                voucherResultDiv.innerHTML = resultHTML;
+                
+                // Update voucher count in statistics
+                const currentCount = parseInt($('#voucherCount').text()) || 0;
+                $('#voucherCount').text(currentCount + result.vouchers.length);
+                
+                bootstrap.Modal.getInstance(document.getElementById('generateVoucherModal')).hide();
+
+            } else {
+                alert('Gagal membuat voucher: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menghubungi server.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Generate';
+        }
+    });
+
+    // Search functionality
+    function filterUsers() {
+        const searchTerm = document.getElementById('searchUserInput').value.toLowerCase();
+        const rows = document.querySelectorAll('.user-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const username = row.querySelector('.username').textContent.toLowerCase();
+            if (username.includes(searchTerm)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        document.getElementById('showingCount').textContent = visibleCount;
+    }
+
+    document.getElementById('searchUserInput').addEventListener('input', filterUsers);
+    document.getElementById('clearSearchBtn').addEventListener('click', function() {
+        document.getElementById('searchUserInput').value = '';
+        filterUsers();
+    });
+
+    // Auto-hide notifications
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            const fadeEffect = setInterval(() => {
+                if (!alert.style.opacity) {
+                    alert.style.opacity = 1;
+                }
+                if (alert.style.opacity > 0) {
+                    alert.style.opacity -= 0.1;
+                } else {
+                    clearInterval(fadeEffect);
+                    alert.remove();
+                }
+            }, 100);
+        }, 5000);
+    });
+
+    // Update active users count (real data from Mikrotik API)
+    function updateActiveUsers() {
+        fetch('/admin/hotspot/active-users')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('activeUsers').textContent = data.activeUsers || 0;
+                } else {
+                    console.error('Failed to get active users:', data.message);
+                    document.getElementById('activeUsers').textContent = '-';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching active users:', error);
+                document.getElementById('activeUsers').textContent = '-';
+            });
+    }
+    
+    // Initialize statistics
+    updateActiveUsers();
+    
+    // Update total users and profiles count
+    function updateHotspotStats() {
+        // Update total users count
+        const totalUsers = parseInt('<%= allUsers.length %>') || 0;
+        document.getElementById('totalHotspotUsers').textContent = totalUsers;
+        
+        // Update total profiles count
+        const totalProfiles = parseInt('<%= profiles.length %>') || 0;
+        document.getElementById('totalProfiles').textContent = totalProfiles;
+    }
+    
+    // Initialize all statistics
+    updateHotspotStats();
+    
+    // Update active users every 30 seconds (simulate real-time updates)
+    setInterval(updateActiveUsers, 30000);
+    
+    // Refresh hotspot stats button
+    document.getElementById('btnRefreshHotspotStats').addEventListener('click', function() {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Loading...';
+        
+        // Update all statistics
+        updateActiveUsers();
+        updateHotspotStats();
+        
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh Statistik';
+        }, 2000);
+    });
+
+    // Hamburger & sidebar logic
+    const hamburger = document.getElementById('hamburgerBtn');
+    const sidebar = document.getElementById('adminSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (hamburger && sidebar && overlay) {
+        hamburger.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        });
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+    }
+});
+</script>
+</body>
+</html> 

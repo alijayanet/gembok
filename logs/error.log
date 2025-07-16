@@ -1,0 +1,487 @@
+2025-07-12 10:19:36 error: Error getting interface traffic:
+2025-07-13 05:40:34 error: Error finding device with phone number 6281947215703: No device found with phone number: 6281947215703
+2025-07-13 22:12:57 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-13 22:13:00 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-13 22:13:03 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-13 22:31:57 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-13 22:32:00 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-13 22:32:03 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-13 23:42:07 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-13 23:42:10 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-13 23:42:13 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 04:40:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 04:40:48 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 04:40:51 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 04:43:30 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 04:43:33 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 04:43:36 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 05:03:23 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 05:03:26 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 05:03:29 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 05:09:43 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 05:10:16 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 05:10:43 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 05:10:49 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 05:11:16 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 05:11:49 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 05:19:44 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 05:20:17 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 05:20:44 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 05:20:50 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 05:21:17 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 05:21:50 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 05:57:14 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 05:57:17 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 05:57:20 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 06:07:14 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 06:07:17 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 06:07:20 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 08:14:18 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 08:14:51 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 08:21:03 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 08:21:36 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 08:22:03 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 08:22:09 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 08:22:36 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 08:23:09 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 08:27:09 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 08:27:42 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-14 08:28:09 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-14 08:28:15 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-14 08:33:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:35 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:37 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:39 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:41 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:43 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:45 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:48 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:50 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:52 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:54 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:56 error: Error connecting to Mikrotik: 
+2025-07-14 08:33:58 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:11 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:11 error: No Mikrotik connection available
+2025-07-14 08:34:13 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:15 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:15 error: No Mikrotik connection available
+2025-07-14 08:34:17 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:19 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:21 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:23 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:25 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:27 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:29 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:31 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:32 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:32 error: No Mikrotik connection available
+2025-07-14 08:34:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:33 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 08:34:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:35 error: Error connecting to Mikrotik: 
+2025-07-14 08:34:37 error: Error connecting to Mikrotik: 
+2025-07-14 08:35:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:35:33 error: No Mikrotik connection available
+2025-07-14 08:35:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:35:33 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 08:36:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:36:33 error: No Mikrotik connection available
+2025-07-14 08:36:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:36:33 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 08:37:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:37:33 error: No Mikrotik connection available
+2025-07-14 08:37:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:37:33 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 08:38:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:38:33 error: No Mikrotik connection available
+2025-07-14 08:38:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:38:33 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 08:38:37 error: Error connecting to Mikrotik: 
+2025-07-14 08:39:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:39:33 error: No Mikrotik connection available
+2025-07-14 08:39:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:39:33 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 08:40:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:40:33 error: No Mikrotik connection available
+2025-07-14 08:40:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:40:33 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 08:41:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:41:33 error: No Mikrotik connection available
+2025-07-14 08:41:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:41:33 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 08:42:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:42:33 error: No Mikrotik connection available
+2025-07-14 08:42:33 error: Error connecting to Mikrotik: 
+2025-07-14 08:42:33 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:05:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:05:35 error: No Mikrotik connection available
+2025-07-14 12:05:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:05:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:06:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:06:35 error: No Mikrotik connection available
+2025-07-14 12:06:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:06:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:07:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:07:35 error: No Mikrotik connection available
+2025-07-14 12:07:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:07:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:08:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:08:35 error: No Mikrotik connection available
+2025-07-14 12:08:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:08:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:09:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:09:35 error: No Mikrotik connection available
+2025-07-14 12:09:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:09:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:09:38 error: Error connecting to Mikrotik: 
+2025-07-14 12:10:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:10:35 error: No Mikrotik connection available
+2025-07-14 12:10:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:10:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:11:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:11:35 error: No Mikrotik connection available
+2025-07-14 12:11:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:11:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:12:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:12:35 error: No Mikrotik connection available
+2025-07-14 12:12:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:12:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:13:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:13:35 error: No Mikrotik connection available
+2025-07-14 12:13:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:13:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:14:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:14:35 error: No Mikrotik connection available
+2025-07-14 12:14:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:14:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:15:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:15:35 error: No Mikrotik connection available
+2025-07-14 12:15:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:15:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:16:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:16:35 error: No Mikrotik connection available
+2025-07-14 12:16:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:16:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:17:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:17:35 error: No Mikrotik connection available
+2025-07-14 12:17:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:17:35 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:39:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:39:54 error: No Mikrotik connection available
+2025-07-14 12:39:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:39:54 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:39:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:39:54 error: No Mikrotik connection available
+2025-07-14 12:39:56 error: Error connecting to Mikrotik: 
+2025-07-14 12:39:58 error: Error connecting to Mikrotik: 
+2025-07-14 12:39:58 error: No Mikrotik connection available
+2025-07-14 12:40:00 error: Error connecting to Mikrotik: 
+2025-07-14 12:40:02 error: Error connecting to Mikrotik: 
+2025-07-14 12:40:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:40:54 error: No Mikrotik connection available
+2025-07-14 12:40:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:40:54 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:41:08 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:08 error: No Mikrotik connection available
+2025-07-14 12:41:10 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:12 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:12 error: No Mikrotik connection available
+2025-07-14 12:41:14 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:16 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:18 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:20 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:22 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:24 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:26 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:28 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:31 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:33 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:35 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:37 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:39 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:41 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:43 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:45 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:54 error: No Mikrotik connection available
+2025-07-14 12:41:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:41:54 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:42:11 error: Error connecting to Mikrotik: 
+2025-07-14 12:42:11 error: No Mikrotik connection available
+2025-07-14 12:42:13 error: Error connecting to Mikrotik: 
+2025-07-14 12:42:15 error: Error connecting to Mikrotik: 
+2025-07-14 12:42:15 error: No Mikrotik connection available
+2025-07-14 12:42:18 error: Error connecting to Mikrotik: 
+2025-07-14 12:42:20 error: Error connecting to Mikrotik: 
+2025-07-14 12:42:22 error: Error connecting to Mikrotik: 
+2025-07-14 12:42:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:42:54 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:42:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:42:54 error: No Mikrotik connection available
+2025-07-14 12:43:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:43:54 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:43:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:43:54 error: No Mikrotik connection available
+2025-07-14 12:43:59 error: Error connecting to Mikrotik: 
+2025-07-14 12:44:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:44:54 error: No Mikrotik connection available
+2025-07-14 12:44:54 error: Error connecting to Mikrotik: 
+2025-07-14 12:44:54 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:46:02 error: Error connecting to Mikrotik: 
+2025-07-14 12:46:02 error: No Mikrotik connection available
+2025-07-14 12:46:04 error: Error connecting to Mikrotik: 
+2025-07-14 12:46:06 error: Error connecting to Mikrotik: 
+2025-07-14 12:46:06 error: No Mikrotik connection available
+2025-07-14 12:46:09 error: Error connecting to Mikrotik: 
+2025-07-14 12:46:47 error: Error connecting to Mikrotik: 
+2025-07-14 12:46:47 error: No Mikrotik connection available
+2025-07-14 12:46:47 error: Error connecting to Mikrotik: 
+2025-07-14 12:46:47 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:47:47 error: Error connecting to Mikrotik: 
+2025-07-14 12:47:47 error: No Mikrotik connection available
+2025-07-14 12:47:47 error: Error connecting to Mikrotik: 
+2025-07-14 12:47:47 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:48:47 error: Error connecting to Mikrotik: 
+2025-07-14 12:48:47 error: No Mikrotik connection available
+2025-07-14 12:48:47 error: Error connecting to Mikrotik: 
+2025-07-14 12:48:47 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-14 12:49:21 error: Error connecting to Mikrotik: 
+2025-07-14 12:49:21 error: No Mikrotik connection available
+2025-07-14 12:49:23 error: Error connecting to Mikrotik: 
+2025-07-14 12:49:23 error: No Mikrotik connection available
+2025-07-14 12:49:25 error: Error connecting to Mikrotik: 
+2025-07-14 12:49:27 error: Error connecting to Mikrotik: 
+2025-07-14 12:49:27 error: No Mikrotik connection available
+2025-07-14 12:49:47 error: Error connecting to Mikrotik: 
+2025-07-14 12:49:47 error: No Mikrotik connection available
+2025-07-14 12:49:47 error: Error connecting to Mikrotik: 
+2025-07-14 12:49:47 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-15 19:11:55 error: Error connecting to Mikrotik: 
+2025-07-15 19:11:55 error: No Mikrotik connection available
+2025-07-15 19:11:57 error: Error connecting to Mikrotik: 
+2025-07-15 19:11:59 error: Error connecting to Mikrotik: 
+2025-07-15 19:11:59 error: No Mikrotik connection available
+2025-07-15 19:12:02 error: Error connecting to Mikrotik: 
+2025-07-15 19:12:04 error: Error connecting to Mikrotik: 
+2025-07-15 19:12:17 error: Error connecting to Mikrotik: 
+2025-07-15 19:12:17 error: No Mikrotik connection available
+2025-07-15 19:12:17 error: Error connecting to Mikrotik: 
+2025-07-15 19:12:17 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-15 19:12:36 error: Error connecting to Mikrotik: 
+2025-07-15 19:12:36 error: No Mikrotik connection available
+2025-07-15 19:12:38 error: Error connecting to Mikrotik: 
+2025-07-15 19:12:40 error: Error connecting to Mikrotik: 
+2025-07-15 19:12:40 error: No Mikrotik connection available
+2025-07-15 19:12:42 error: Error connecting to Mikrotik: 
+2025-07-15 19:12:45 error: Error connecting to Mikrotik: 
+2025-07-15 19:12:47 error: Error connecting to Mikrotik: 
+2025-07-15 19:12:49 error: Error connecting to Mikrotik: 
+2025-07-15 19:12:51 error: Error connecting to Mikrotik: 
+2025-07-15 19:13:17 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-15 19:13:21 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-15 19:13:24 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-15 19:40:51 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-15 19:41:24 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-15 19:41:51 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-15 19:41:57 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-15 19:42:24 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-15 19:42:57 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-15 19:49:21 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-15 19:49:24 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-15 19:49:27 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-15 19:51:21 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-15 19:51:24 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-15 19:51:27 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-15 20:19:52 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-15 20:20:25 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-15 20:20:52 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-15 20:20:58 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-15 20:21:25 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-15 20:21:58 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-15 20:28:22 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-15 20:28:25 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-15 20:28:28 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-15 20:49:17 error: Error connecting to Mikrotik: 
+2025-07-15 20:49:17 error: No Mikrotik connection available
+2025-07-15 20:49:19 error: Error connecting to Mikrotik: 
+2025-07-15 20:49:21 error: Error connecting to Mikrotik: 
+2025-07-15 20:49:21 error: No Mikrotik connection available
+2025-07-15 20:49:24 error: Error connecting to Mikrotik: 
+2025-07-15 20:49:26 error: Error connecting to Mikrotik: 
+2025-07-15 20:49:28 error: Error connecting to Mikrotik: 
+2025-07-16 10:03:43 error: Error connecting to Mikrotik: 
+2025-07-16 10:03:43 error: No Mikrotik connection available
+2025-07-16 10:03:45 error: Error connecting to Mikrotik: 
+2025-07-16 10:03:47 error: Error connecting to Mikrotik: 
+2025-07-16 10:03:47 error: No Mikrotik connection available
+2025-07-16 10:03:54 error: Error connecting to Mikrotik: 
+2025-07-16 10:03:54 error: No Mikrotik connection available
+2025-07-16 10:03:56 error: Error connecting to Mikrotik: 
+2025-07-16 10:03:58 error: Error connecting to Mikrotik: 
+2025-07-16 10:03:58 error: No Mikrotik connection available
+2025-07-16 10:04:00 error: Error connecting to Mikrotik: 
+2025-07-16 10:04:02 error: Error connecting to Mikrotik: 
+2025-07-16 10:04:02 error: Error connecting to Mikrotik: 
+2025-07-16 10:04:02 error: No Mikrotik connection available
+2025-07-16 10:04:02 error: Error connecting to Mikrotik: 
+2025-07-16 10:04:02 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-16 10:04:04 error: Error connecting to Mikrotik: 
+2025-07-16 10:04:06 error: Error connecting to Mikrotik: 
+2025-07-16 10:04:08 error: Error connecting to Mikrotik: 
+2025-07-16 10:04:10 error: Error connecting to Mikrotik: 
+2025-07-16 10:04:12 error: Error connecting to Mikrotik: 
+2025-07-16 10:05:02 error: Error connecting to Mikrotik: 
+2025-07-16 10:05:02 error: No Mikrotik connection available
+2025-07-16 10:05:02 error: Error connecting to Mikrotik: 
+2025-07-16 10:05:02 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-16 10:06:02 error: Error connecting to Mikrotik: 
+2025-07-16 10:06:02 error: No Mikrotik connection available
+2025-07-16 10:06:02 error: Error connecting to Mikrotik: 
+2025-07-16 10:06:02 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-16 10:07:02 error: Error connecting to Mikrotik: 
+2025-07-16 10:07:02 error: No Mikrotik connection available
+2025-07-16 10:07:02 error: Error connecting to Mikrotik: 
+2025-07-16 10:07:02 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-16 10:08:02 error: Error connecting to Mikrotik: 
+2025-07-16 10:08:02 error: No Mikrotik connection available
+2025-07-16 10:08:02 error: Error connecting to Mikrotik: 
+2025-07-16 10:08:02 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-16 10:08:07 error: Error connecting to Mikrotik: 
+2025-07-16 11:47:58 error: Error connecting to Mikrotik: 
+2025-07-16 11:47:58 error: No Mikrotik connection available
+2025-07-16 11:48:00 error: Error connecting to Mikrotik: 
+2025-07-16 11:48:02 error: Error connecting to Mikrotik: 
+2025-07-16 11:48:02 error: No Mikrotik connection available
+2025-07-16 11:48:05 error: Error connecting to Mikrotik: 
+2025-07-16 11:48:07 error: Error connecting to Mikrotik: 
+2025-07-16 11:48:09 error: Error connecting to Mikrotik: 
+2025-07-16 11:48:26 error: Error connecting to Mikrotik: 
+2025-07-16 11:48:26 error: No Mikrotik connection available
+2025-07-16 11:48:26 error: Error connecting to Mikrotik: 
+2025-07-16 11:48:26 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-16 11:49:56 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 11:50:29 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 11:50:56 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 11:50:59 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 11:51:02 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 11:51:02 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 12:04:39 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:05:12 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 12:05:39 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:05:45 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 12:06:12 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 12:06:45 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 12:12:28 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:13:01 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 12:13:28 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:13:34 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 12:14:01 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 12:14:34 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 12:41:00 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:41:33 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 12:42:00 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:42:06 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 12:42:33 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 12:43:06 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 12:43:30 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:43:33 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 12:45:09 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:45:42 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 12:46:09 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:46:15 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 12:46:42 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 12:47:15 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 12:49:53 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:50:26 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 12:50:53 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:50:59 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 12:51:26 error: Failed to send PPPoE notification to 6283807665111 after 2 retries
+2025-07-16 12:51:59 error: Failed to send PPPoE notification to 6282218094111 after 2 retries
+2025-07-16 12:54:23 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:54:26 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 12:54:29 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 12:55:23 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 12:55:26 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 12:55:29 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 19:40:34 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 19:41:07 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 19:41:33 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 19:41:40 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 19:42:06 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 19:42:39 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 19:45:32 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 19:46:05 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 19:46:32 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 19:46:38 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 19:47:05 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 19:47:38 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 19:58:02 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 19:58:05 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 19:58:08 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 19:59:02 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 19:59:05 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 19:59:08 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 20:06:15 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 20:06:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 20:07:15 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 20:07:21 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 20:07:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 20:08:21 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 20:22:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 20:22:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 20:22:51 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 20:23:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 20:23:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 20:23:51 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 20:27:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 20:27:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 20:27:51 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 20:28:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 20:28:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 20:28:51 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 20:29:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 20:29:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 20:29:51 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 20:30:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 20:30:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 20:30:51 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 20:44:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 20:44:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 20:44:51 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 20:48:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 20:48:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 20:48:51 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 21:02:48 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 21:03:21 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 21:03:48 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 21:03:54 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 21:04:21 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 21:04:54 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 21:09:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 21:09:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 21:09:51 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 21:10:18 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 21:10:21 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 21:10:24 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 21:10:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 21:10:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 21:10:51 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 21:11:18 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 21:11:21 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 21:11:24 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 21:12:45 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 21:12:48 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 21:12:51 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 21:13:18 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-16 21:13:21 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-16 21:13:24 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-16 21:40:54 error: Error connecting to Mikrotik: 
+2025-07-16 21:41:27 error: Error connecting to Mikrotik: 
+2025-07-16 21:41:27 error: No Mikrotik connection available
+2025-07-16 21:41:27 error: Error connecting to Mikrotik: 
+2025-07-16 21:41:27 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-16 21:42:27 error: Error connecting to Mikrotik: 
+2025-07-16 21:42:27 error: No Mikrotik connection available
+2025-07-16 21:42:27 error: Error connecting to Mikrotik: 
+2025-07-16 21:42:27 error: No Mikrotik connection available for PPPoE monitoring

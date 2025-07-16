@@ -1,0 +1,77 @@
+2025-07-12 10:37:31 error: uncaughtException: options.port should be >= 0 and < 65536. Received type string ('30011000').
+RangeError [ERR_SOCKET_BAD_PORT]: options.port should be >= 0 and < 65536. Received type string ('30011000').
+    at Server.listen (node:net:2088:5)
+    at Function.listen (C:\Users\DELL\Documents\wa-admin1\node_modules\express\lib\application.js:635:24)
+    at Server.<anonymous> (C:\Users\DELL\Documents\wa-admin1\app-whatsapp-only.js:234:47)
+    at Server.emit (node:events:524:28)
+    at emitErrorNT (node:net:1973:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+2025-07-12 11:47:27 error: uncaughtException: await is only valid in async functions and the top level bodies of modules
+C:\Users\DELL\Documents\wa-admin1\config\whatsapp.js:5282
+                await sendCustomerMenu(remoteJid);
+                ^^^^^
+
+SyntaxError: await is only valid in async functions and the top level bodies of modules
+    at wrapSafe (node:internal/modules/cjs/loader:1512:18)
+    at Module._compile (node:internal/modules/cjs/loader:1534:20)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (C:\Users\DELL\Documents\wa-admin1\app-whatsapp-only.js:6:18)
+2025-07-13 23:39:39 error: uncaughtException: Cannot find module 'multer'
+Require stack:
+- C:\Users\DELL\Documents\wa-admin1\routes\adminSetting.js
+- C:\Users\DELL\Documents\wa-admin1\app-whatsapp-only.js
+Error: Cannot find module 'multer'
+Require stack:
+- C:\Users\DELL\Documents\wa-admin1\routes\adminSetting.js
+- C:\Users\DELL\Documents\wa-admin1\app-whatsapp-only.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1244:15)
+    at Function._load (node:internal/modules/cjs/loader:1070:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (C:\Users\DELL\Documents\wa-admin1\routes\adminSetting.js:5:16)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+2025-07-14 05:06:35 error: uncaughtException: Connection Closed
+Error: Connection Closed
+    at sendRawMessage (C:\Users\DELL\Documents\wa-admin1\node_modules\@whiskeysockets\baileys\lib\Socket\socket.js:60:19)
+    at sendNode (C:\Users\DELL\Documents\wa-admin1\node_modules\@whiskeysockets\baileys\lib\Socket\socket.js:79:16)
+    at Object.logout (C:\Users\DELL\Documents\wa-admin1\node_modules\@whiskeysockets\baileys\lib\Socket\socket.js:347:19)
+    at deleteWhatsAppSession (C:\Users\DELL\Documents\wa-admin1\config\whatsapp.js:3739:22)
+    at C:\Users\DELL\Documents\wa-admin1\routes\adminSetting.js:197:15
+    at Layer.handle [as handle_request] (C:\Users\DELL\Documents\wa-admin1\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\DELL\Documents\wa-admin1\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\DELL\Documents\wa-admin1\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\DELL\Documents\wa-admin1\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\DELL\Documents\wa-admin1\node_modules\express\lib\router\index.js:284:15
+2025-07-14 07:57:06 error: uncaughtException: (no error message)
+RosException
+    at Connector.onError (C:\Users\DELL\Documents\wa-admin1\node_modules\node-routeros\dist\connector\Connector.js:176:15)
+    at Socket.emit (node:events:524:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+2025-07-15 19:13:33 error: uncaughtException: Connection Closed
+Error: Connection Closed
+    at sendRawMessage (C:\Users\DELL\Documents\wa-admin1\node_modules\@whiskeysockets\baileys\lib\Socket\socket.js:60:19)
+    at sendNode (C:\Users\DELL\Documents\wa-admin1\node_modules\@whiskeysockets\baileys\lib\Socket\socket.js:79:16)
+    at Object.logout (C:\Users\DELL\Documents\wa-admin1\node_modules\@whiskeysockets\baileys\lib\Socket\socket.js:347:19)
+    at deleteWhatsAppSession (C:\Users\DELL\Documents\wa-admin1\config\whatsapp.js:3663:22)
+    at C:\Users\DELL\Documents\wa-admin1\routes\adminSetting.js:226:15
+    at Layer.handle [as handle_request] (C:\Users\DELL\Documents\wa-admin1\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\DELL\Documents\wa-admin1\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\DELL\Documents\wa-admin1\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\DELL\Documents\wa-admin1\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\DELL\Documents\wa-admin1\node_modules\express\lib\router\index.js:284:15
+2025-07-16 20:03:17 error: uncaughtException: Cannot access 'settings' before initialization
+ReferenceError: Cannot access 'settings' before initialization
+    at C:\Users\DELL\Documents\wa-admin1\routes\customerPortal.js:264:23
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

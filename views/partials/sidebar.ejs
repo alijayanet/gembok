@@ -1,0 +1,46 @@
+<!-- Sidebar Admin -->
+<div class="d-flex flex-column flex-shrink-0 p-3 bg-light" style="width: 250px; min-height: 100vh;">
+  <a href="/admin/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+    <span class="fs-4">Admin Panel</span>
+  </a>
+  <hr>
+  <ul class="nav nav-pills flex-column mb-auto">
+    <li class="nav-item">
+      <a href="/admin/dashboard" class="nav-link <%= page === 'dashboard' ? 'active' : 'link-dark' %>">
+        <i class="bi bi-speedometer2"></i> Dashboard
+      </a>
+    </li>
+    <li>
+      <a href="/admin/genieacs" class="nav-link <%= page === 'genieacs' ? 'active' : 'link-dark' %>">
+        <i class="bi bi-hdd-network"></i> GenieACS
+      </a>
+    </li>
+    <li>
+      <a href="/admin/mikrotik" class="nav-link <%= page === 'mikrotik' ? 'active' : 'link-dark' %>">
+        <i class="bi bi-router"></i> Mikrotik
+      </a>
+    </li>
+    <li>
+      <a href="/admin/setting" class="nav-link <%= page === 'setting' ? 'active' : 'link-dark' %>">
+        <i class="bi bi-gear"></i> Setting
+      </a>
+    </li>
+    <li>
+      <a href="/admin/logout" class="nav-link link-dark">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </a>
+    </li>
+  </ul>
+  <hr>
+  <div class="dropdown">
+    <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+      <img src="/public/img/admin.png" alt="" width="32" height="32" class="rounded-circle me-2">
+      <strong>Admin</strong>
+    </a>
+    <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser">
+      <li><a class="dropdown-item" href="/admin/setting">Settings</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item" href="/admin/logout">Sign out</a></li>
+    </ul>
+  </div>
+</div>
