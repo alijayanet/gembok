@@ -4482,3 +4482,44 @@
 2025-07-17 08:47:40 info: Monitoring PPPoE connections: 162 active connections
 2025-07-17 08:48:40 info: Monitoring PPPoE connections: 162 active connections
 2025-07-17 08:49:41 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 09:13:22 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 09:13:22 info: Attempting to start server on configured port: 3001
+2025-07-17 09:13:22 info: Memulai server pada port yang dikonfigurasi: 3001
+2025-07-17 09:13:22 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 09:13:22 info: ✅ Server berhasil berjalan pada port 3001
+2025-07-17 09:13:22 info: 🌐 Web Portal tersedia di: http://localhost:3001
+2025-07-17 09:13:22 info: Environment: development
+2025-07-17 09:13:22 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 09:13:22 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 09:13:22 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 09:13:22 info: WhatsApp connected successfully
+2025-07-17 09:13:22 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 09:13:22 info: RX Power monitoring initialized
+2025-07-17 09:13:22 info: PPPoE monitoring auto-started on initialization
+2025-07-17 09:13:22 info: PPPoE monitoring initialized
+2025-07-17 09:13:58 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-17 09:14:05 info: Found 47 active hotspot users
+2025-07-17 09:14:08 info: Found 47 active hotspot users
+2025-07-17 09:14:22 info: PPPoE LOGIN detected: karmanda, icha, erni, tester, kus, erul, runaeni, alam, fajar, gadel, nalda@rawagunda2, antony@ps, karsih, brohim, nurudin, aqiel, memble@, karban, nina@kesin, koriya, junanto@rawagunda, rangdu, darim, ros_pppoe, jami@sut, nadiva, RT-KARONI, tinih, tariman, rudibengkel@tanjungpura, raeni, bunga, rom@lah, Uchi, server@ilik, dasta, tarci, kasdi@rawagunda, wendy@tanjungpura, gunawan, wiwin@seblak, winata, rintem, kendo@tanjungpura, aang, nesa, @cimun, server@arep, mastobari@, sarwan, rasta, codet, Tarci@lor, elis@rawagunda, winata@laut, opang@tanjungpura, eka, mardi, warungyuni@laut, dedy@sarkim, tibil, muktar@ompong, hany@tarsiti, maktub, wakeng, dhea_tile@rawagunda, sanyo, lussy, suliwa, server@yayan, yuni@rawagunda, wadi@rawagunda, handoko, kincling, yudi, h.juroh, aldo, toyinah, atam, daruni@rawagunda, andi, eva, salsa, kandar, darim@lor, abibah, santo, damar, iman@, test, kama@, alan@pentud, ooh, indah@tanjungpura, luwih@, aang2, toko@sayur, yessy, ejun, seka, dedi@aira, elvano1, nuriyah, oland, sandi@rajan, nana, warung_elisa@laut, talita, mella, suminih@rawagunda, sumi, ajri, windah, lina@ujungmulya, turidah, murdani, surminih@pegagan, pabudi@genjong, khofik@janggar, leha, sudini@pegagan, setiyadi@genjong, ety@pegagan, eva@pegagan, mangasep@janggar, durniyah@pegagan, nani, umikulsum@janggar, soleh@pegagan, gemblung, uung@pegagan, F663, novita, wendy@genjong, astri@pegagan, intan@ujungmulya, waidah@pegagan, sang, sutara@pegagan, Endra@genjong1, denihamdani@pegagan, dadang@genjong, wilda, anwar@janggar, yuni@ujungmulya, eryanto@pegagan, kurnati, adinesep@ujungmulya, sarna@pegagan, abas@pegagan, yusuf, lisan@banteng, toax, kasmuri, yogi, nalda@pegagan, murba, adiiman, SDNUG1, coyih, pandi@tanjungpura, warsana, walong@asep
+2025-07-17 09:14:22 warn: No technician group configured for PPPoE notifications
+2025-07-17 09:14:22 info: PPPoE LOGIN:
+2025-07-17 09:14:22 info: Monitoring PPPoE connections: 163 active connections
+2025-07-17 09:14:22 info: PPPoE notification sent to 6281947215703
+2025-07-17 09:14:23 info: PPPoE notification sent to 6283807665697
+2025-07-17 09:14:25 info: PPPoE notification sent to 6282218094778
+2025-07-17 09:14:25 info: PPPoE notification sent to 3/3 valid recipients (3 total)
+2025-07-17 09:14:25 info: PPPoE monitoring: 163 active connections, 163 login, 0 logout
+2025-07-17 09:14:38 info: Found 48 active hotspot users
+2025-07-17 09:15:08 info: Found 48 active hotspot users
+2025-07-17 09:15:22 info: Monitoring PPPoE connections: 163 active connections
+2025-07-17 09:15:38 info: Found 48 active hotspot users
+2025-07-17 09:16:08 info: Found 48 active hotspot users
+2025-07-17 09:16:22 info: Monitoring PPPoE connections: 163 active connections
+2025-07-17 09:16:38 info: Found 48 active hotspot users
+2025-07-17 09:17:08 info: Found 48 active hotspot users
+2025-07-17 09:17:22 info: Monitoring PPPoE connections: 163 active connections
+2025-07-17 09:18:22 info: Monitoring PPPoE connections: 163 active connections
+2025-07-17 09:19:22 info: Monitoring PPPoE connections: 163 active connections
+2025-07-17 09:19:41 info: Message received
+2025-07-17 09:20:09 info: Message received
+2025-07-17 09:20:22 info: Monitoring PPPoE connections: 163 active connections
