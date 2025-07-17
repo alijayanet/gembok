@@ -3825,3 +3825,660 @@
 2025-07-16 21:42:27 error: Error connecting to Mikrotik: 
 2025-07-16 21:42:27 error: No Mikrotik connection available for PPPoE monitoring
 2025-07-16 21:42:27 warn: Failed to get PPPoE connections: Unknown error
+2025-07-17 08:04:28 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:04:28 info: Attempting to start server on configured port: 4005
+2025-07-17 08:04:28 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:04:28 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:04:28 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:04:28 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:04:28 info: Environment: development
+2025-07-17 08:04:28 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:04:28 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:04:28 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:04:28 info: WhatsApp connected successfully
+2025-07-17 08:04:28 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:04:28 info: RX Power monitoring initialized
+2025-07-17 08:04:28 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:04:28 info: PPPoE monitoring initialized
+2025-07-17 08:05:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:05:30 error: No Mikrotik connection available
+2025-07-17 08:05:30 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-17 08:05:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:05:30 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-17 08:05:30 warn: Failed to get PPPoE connections: Unknown error
+2025-07-17 08:05:50 error: Error connecting to Mikrotik: 
+2025-07-17 08:05:50 error: No Mikrotik connection available
+2025-07-17 08:05:52 error: Error connecting to Mikrotik: 
+2025-07-17 08:05:54 error: Error connecting to Mikrotik: 
+2025-07-17 08:05:54 error: No Mikrotik connection available
+2025-07-17 08:05:57 error: Error connecting to Mikrotik: 
+2025-07-17 08:05:59 error: Error connecting to Mikrotik: 
+2025-07-17 08:06:02 error: Error connecting to Mikrotik: 
+2025-07-17 08:06:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:06:30 error: No Mikrotik connection available
+2025-07-17 08:06:30 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-17 08:06:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:06:30 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-17 08:06:30 warn: Failed to get PPPoE connections: Unknown error
+2025-07-17 08:07:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:07:30 error: No Mikrotik connection available
+2025-07-17 08:07:30 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-17 08:07:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:07:30 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-17 08:07:30 warn: Failed to get PPPoE connections: Unknown error
+2025-07-17 08:08:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:08:30 error: No Mikrotik connection available
+2025-07-17 08:08:30 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-17 08:08:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:08:30 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-17 08:08:30 warn: Failed to get PPPoE connections: Unknown error
+2025-07-17 08:09:12 info: Message received
+2025-07-17 08:09:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:09:30 error: No Mikrotik connection available
+2025-07-17 08:09:30 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-17 08:09:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:09:30 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-17 08:09:30 warn: Failed to get PPPoE connections: Unknown error
+2025-07-17 08:09:34 error: Error connecting to Mikrotik: 
+2025-07-17 08:10:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:10:30 error: No Mikrotik connection available
+2025-07-17 08:10:30 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-17 08:10:30 error: Error connecting to Mikrotik: 
+2025-07-17 08:10:30 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-17 08:10:30 warn: Failed to get PPPoE connections: Unknown error
+2025-07-17 08:10:32 error: Error connecting to Mikrotik: 
+2025-07-17 08:10:32 error: No Mikrotik connection available
+2025-07-17 08:10:35 error: Error connecting to Mikrotik: 
+2025-07-17 08:10:35 error: No Mikrotik connection available
+2025-07-17 08:10:41 error: Error connecting to Mikrotik: 
+2025-07-17 08:10:41 error: No Mikrotik connection available
+2025-07-17 08:10:43 error: Error connecting to Mikrotik: 
+2025-07-17 08:10:43 error: No Mikrotik connection available
+2025-07-17 08:10:43 error: Error connecting to Mikrotik: 
+2025-07-17 08:10:43 error: No Mikrotik connection available
+2025-07-17 08:11:27 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-17 08:11:27 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-17 08:11:28 warn: No technician group configured for PPPoE notifications
+2025-07-17 08:11:28 info: PPPoE LOGIN:
+2025-07-17 08:11:28 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:11:28 info: PPPoE LOGIN detected: karmanda, icha, erni, tester, kus, erul, runaeni, alam, fajar, gadel, nalda@rawagunda2, antony@ps, karsih, brohim, nurudin, aqiel, memble@, karban, nina@kesin, koriya, junanto@rawagunda, rangdu, darim, ros_pppoe, jami@sut, nadiva, RT-KARONI, tinih, tariman, rudibengkel@tanjungpura, raeni, bunga, rom@lah, Uchi, server@ilik, dasta, tarci, kasdi@rawagunda, wendy@tanjungpura, gunawan, wiwin@seblak, winata, rintem, kendo@tanjungpura, aang, nesa, @cimun, server@arep, mastobari@, sarwan, rasta, codet, Tarci@lor, elis@rawagunda, winata@laut, opang@tanjungpura, eka, mardi, warungyuni@laut, dedy@sarkim, tibil, muktar@ompong, hany@tarsiti, maktub, wakeng, dhea_tile@rawagunda, sanyo, lussy, suliwa, server@yayan, yuni@rawagunda, wadi@rawagunda, handoko, kincling, yudi, h.juroh, aldo, toyinah, atam, daruni@rawagunda, andi, eva, salsa, kandar, darim@lor, abibah, santo, damar, iman@, test, kama@, alan@pentud, ooh, indah@tanjungpura, luwih@, aang2, toko@sayur, yessy, ejun, seka, dedi@aira, elvano1, nuriyah, oland, sandi@rajan, nana, warung_elisa@laut, talita, mella, suminih@rawagunda, sumi, ajri, windah, lina@ujungmulya, turidah, murdani, surminih@pegagan, pabudi@genjong, khofik@janggar, leha, sudini@pegagan, setiyadi@genjong, ety@pegagan, eva@pegagan, mangasep@janggar, durniyah@pegagan, nani, umikulsum@janggar, soleh@pegagan, gemblung, uung@pegagan, F663, novita, wendy@genjong, astri@pegagan, intan@ujungmulya, waidah@pegagan, sang, sutara@pegagan, Endra@genjong1, denihamdani@pegagan, dadang@genjong, wilda, anwar@janggar, yuni@ujungmulya, eryanto@pegagan, kurnati, adinesep@ujungmulya, sarna@pegagan, abas@pegagan, yusuf, lisan@banteng, toax, kasmuri, warsana, yogi, nalda@pegagan, murba, adiiman, SDNUG1, coyih, pandi@tanjungpura
+2025-07-17 08:11:28 warn: Error validating WhatsApp number 6281947215703: Connection Closed
+2025-07-17 08:11:28 warn: Retry 1/2 failed for 6281947215703: Connection Closed
+2025-07-17 08:11:30 warn: Retry 2/2 failed for 6281947215703: Connection Closed
+2025-07-17 08:11:30 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-07-17 08:11:31 warn: Error validating WhatsApp number 6283807665697: Connection Closed
+2025-07-17 08:11:31 warn: Retry 1/2 failed for 6283807665697: Connection Closed
+2025-07-17 08:11:33 warn: Retry 2/2 failed for 6283807665697: Connection Closed
+2025-07-17 08:11:33 error: Failed to send PPPoE notification to 6283807665697 after 2 retries
+2025-07-17 08:11:34 warn: Error validating WhatsApp number 6282218094778: Connection Closed
+2025-07-17 08:11:34 warn: Retry 1/2 failed for 6282218094778: Connection Closed
+2025-07-17 08:11:36 warn: Retry 2/2 failed for 6282218094778: Connection Closed
+2025-07-17 08:11:36 error: Failed to send PPPoE notification to 6282218094778 after 2 retries
+2025-07-17 08:11:36 info: PPPoE notification sent to 0/3 valid recipients (3 total)
+2025-07-17 08:11:36 info: PPPoE monitoring: 162 active connections, 162 login, 0 logout
+2025-07-17 08:11:40 info: Found 45 active hotspot users
+2025-07-17 08:11:41 info: Found 45 active hotspot users
+2025-07-17 08:12:28 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:13:28 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:14:28 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:15:28 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:16:28 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:17:28 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:18:28 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:19:28 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:20:20 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:20:20 info: Attempting to start server on configured port: 4005
+2025-07-17 08:20:20 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:20:20 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:20:20 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:20:20 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:20:20 info: Environment: development
+2025-07-17 08:20:20 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:20:20 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:20:20 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:20:20 info: WhatsApp connected successfully
+2025-07-17 08:20:20 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:20:20 info: RX Power monitoring initialized
+2025-07-17 08:20:20 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:20:20 info: PPPoE monitoring initialized
+2025-07-17 08:21:20 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-17 08:21:20 info: PPPoE LOGIN detected: karmanda, icha, erni, tester, kus, erul, runaeni, alam, fajar, gadel, nalda@rawagunda2, antony@ps, karsih, brohim, nurudin, aqiel, memble@, karban, nina@kesin, koriya, junanto@rawagunda, rangdu, darim, ros_pppoe, jami@sut, nadiva, RT-KARONI, tinih, tariman, rudibengkel@tanjungpura, raeni, bunga, rom@lah, Uchi, server@ilik, dasta, tarci, kasdi@rawagunda, wendy@tanjungpura, gunawan, wiwin@seblak, winata, rintem, kendo@tanjungpura, aang, nesa, @cimun, server@arep, mastobari@, sarwan, rasta, codet, Tarci@lor, elis@rawagunda, winata@laut, opang@tanjungpura, eka, mardi, warungyuni@laut, dedy@sarkim, tibil, muktar@ompong, hany@tarsiti, maktub, wakeng, dhea_tile@rawagunda, sanyo, lussy, suliwa, server@yayan, yuni@rawagunda, wadi@rawagunda, handoko, kincling, yudi, h.juroh, aldo, toyinah, atam, daruni@rawagunda, andi, eva, salsa, kandar, darim@lor, abibah, santo, damar, iman@, test, kama@, alan@pentud, ooh, indah@tanjungpura, luwih@, aang2, toko@sayur, yessy, ejun, seka, dedi@aira, elvano1, nuriyah, oland, sandi@rajan, nana, warung_elisa@laut, talita, mella, suminih@rawagunda, sumi, ajri, windah, lina@ujungmulya, turidah, murdani, surminih@pegagan, pabudi@genjong, khofik@janggar, leha, sudini@pegagan, setiyadi@genjong, ety@pegagan, eva@pegagan, mangasep@janggar, durniyah@pegagan, nani, umikulsum@janggar, soleh@pegagan, gemblung, uung@pegagan, F663, novita, wendy@genjong, astri@pegagan, intan@ujungmulya, waidah@pegagan, sang, sutara@pegagan, Endra@genjong1, denihamdani@pegagan, dadang@genjong, wilda, anwar@janggar, yuni@ujungmulya, eryanto@pegagan, kurnati, adinesep@ujungmulya, sarna@pegagan, abas@pegagan, yusuf, lisan@banteng, toax, kasmuri, warsana, yogi, nalda@pegagan, murba, adiiman, SDNUG1, coyih, pandi@tanjungpura
+2025-07-17 08:21:20 warn: No technician group configured for PPPoE notifications
+2025-07-17 08:21:20 info: PPPoE LOGIN:
+2025-07-17 08:21:20 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:21:20 info: PPPoE notification sent to 6281947215703
+2025-07-17 08:21:22 info: PPPoE notification sent to 6283807665697
+2025-07-17 08:21:23 info: PPPoE notification sent to 6282218094778
+2025-07-17 08:21:23 info: PPPoE notification sent to 3/3 valid recipients (3 total)
+2025-07-17 08:21:23 info: PPPoE monitoring: 162 active connections, 162 login, 0 logout
+2025-07-17 08:22:12 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:12 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:12 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:12 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:12 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:12 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:12 info: Environment: development
+2025-07-17 08:22:12 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:12 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:12 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:12 info: WhatsApp connected successfully
+2025-07-17 08:22:12 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:12 info: RX Power monitoring initialized
+2025-07-17 08:22:12 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:12 info: PPPoE monitoring initialized
+2025-07-17 08:22:15 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:15 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:15 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:15 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:15 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:15 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:15 info: Environment: development
+2025-07-17 08:22:15 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:15 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:15 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:15 info: WhatsApp connected successfully
+2025-07-17 08:22:15 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:15 info: RX Power monitoring initialized
+2025-07-17 08:22:15 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:15 info: PPPoE monitoring initialized
+2025-07-17 08:22:17 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:17 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:17 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:17 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:17 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:17 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:17 info: Environment: development
+2025-07-17 08:22:17 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:17 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:17 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:17 info: WhatsApp connected successfully
+2025-07-17 08:22:17 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:17 info: RX Power monitoring initialized
+2025-07-17 08:22:17 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:17 info: PPPoE monitoring initialized
+2025-07-17 08:22:19 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:19 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:19 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:19 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:19 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:19 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:19 info: Environment: development
+2025-07-17 08:22:20 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:20 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:20 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:20 info: WhatsApp connected successfully
+2025-07-17 08:22:20 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:20 info: RX Power monitoring initialized
+2025-07-17 08:22:20 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:20 info: PPPoE monitoring initialized
+2025-07-17 08:22:22 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:22 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:22 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:22 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:22 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:22 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:22 info: Environment: development
+2025-07-17 08:22:22 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:22 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:22 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:22 info: WhatsApp connected successfully
+2025-07-17 08:22:22 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:22 info: RX Power monitoring initialized
+2025-07-17 08:22:22 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:22 info: PPPoE monitoring initialized
+2025-07-17 08:22:24 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:24 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:24 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:24 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:24 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:24 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:24 info: Environment: development
+2025-07-17 08:22:24 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:24 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:24 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:24 info: WhatsApp connected successfully
+2025-07-17 08:22:24 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:24 info: RX Power monitoring initialized
+2025-07-17 08:22:24 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:24 info: PPPoE monitoring initialized
+2025-07-17 08:22:27 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:27 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:27 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:27 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:27 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:27 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:27 info: Environment: development
+2025-07-17 08:22:27 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:27 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:27 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:27 info: WhatsApp connected successfully
+2025-07-17 08:22:27 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:27 info: RX Power monitoring initialized
+2025-07-17 08:22:27 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:27 info: PPPoE monitoring initialized
+2025-07-17 08:22:30 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:30 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:30 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:30 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:30 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:30 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:30 info: Environment: development
+2025-07-17 08:22:30 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:30 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:30 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:30 info: WhatsApp connected successfully
+2025-07-17 08:22:30 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:30 info: RX Power monitoring initialized
+2025-07-17 08:22:30 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:30 info: PPPoE monitoring initialized
+2025-07-17 08:22:33 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:33 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:33 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:33 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:33 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:33 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:33 info: Environment: development
+2025-07-17 08:22:33 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:33 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:33 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:33 info: WhatsApp connected successfully
+2025-07-17 08:22:33 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:33 info: RX Power monitoring initialized
+2025-07-17 08:22:33 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:33 info: PPPoE monitoring initialized
+2025-07-17 08:22:35 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:35 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:35 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:35 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:35 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:35 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:35 info: Environment: development
+2025-07-17 08:22:35 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:35 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:35 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:35 info: WhatsApp connected successfully
+2025-07-17 08:22:35 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:35 info: RX Power monitoring initialized
+2025-07-17 08:22:35 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:35 info: PPPoE monitoring initialized
+2025-07-17 08:22:38 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:38 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:38 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:38 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:38 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:38 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:38 info: Environment: development
+2025-07-17 08:22:38 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:38 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:38 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:38 info: WhatsApp connected successfully
+2025-07-17 08:22:38 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:38 info: RX Power monitoring initialized
+2025-07-17 08:22:38 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:38 info: PPPoE monitoring initialized
+2025-07-17 08:22:40 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:40 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:40 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:40 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:40 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:40 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:40 info: Environment: development
+2025-07-17 08:22:40 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:40 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:40 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:40 info: WhatsApp connected successfully
+2025-07-17 08:22:40 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:40 info: RX Power monitoring initialized
+2025-07-17 08:22:40 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:40 info: PPPoE monitoring initialized
+2025-07-17 08:22:42 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:42 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:42 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:42 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:42 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:42 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:42 info: Environment: development
+2025-07-17 08:22:42 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:42 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:42 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:42 info: WhatsApp connected successfully
+2025-07-17 08:22:42 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:42 info: RX Power monitoring initialized
+2025-07-17 08:22:42 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:42 info: PPPoE monitoring initialized
+2025-07-17 08:22:45 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:45 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:45 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:45 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:45 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:45 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:45 info: Environment: development
+2025-07-17 08:22:45 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:45 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:45 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:45 info: WhatsApp connected successfully
+2025-07-17 08:22:45 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:45 info: RX Power monitoring initialized
+2025-07-17 08:22:45 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:45 info: PPPoE monitoring initialized
+2025-07-17 08:22:47 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:47 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:47 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:47 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:47 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:47 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:47 info: Environment: development
+2025-07-17 08:22:47 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:47 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:47 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:47 info: WhatsApp connected successfully
+2025-07-17 08:22:47 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:47 info: RX Power monitoring initialized
+2025-07-17 08:22:47 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:47 info: PPPoE monitoring initialized
+2025-07-17 08:22:50 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:50 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:50 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:50 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:50 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:50 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:50 info: Environment: development
+2025-07-17 08:22:50 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:50 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:50 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:50 info: WhatsApp connected successfully
+2025-07-17 08:22:50 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:50 info: RX Power monitoring initialized
+2025-07-17 08:22:50 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:50 info: PPPoE monitoring initialized
+2025-07-17 08:22:52 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:52 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:52 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:52 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:52 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:52 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:52 info: Environment: development
+2025-07-17 08:22:53 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:53 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:53 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:53 info: WhatsApp connected successfully
+2025-07-17 08:22:53 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:53 info: RX Power monitoring initialized
+2025-07-17 08:22:53 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:53 info: PPPoE monitoring initialized
+2025-07-17 08:22:55 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:55 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:55 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:55 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:55 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:55 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:55 info: Environment: development
+2025-07-17 08:22:55 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:55 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:55 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:55 info: WhatsApp connected successfully
+2025-07-17 08:22:55 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:55 info: RX Power monitoring initialized
+2025-07-17 08:22:55 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:55 info: PPPoE monitoring initialized
+2025-07-17 08:22:57 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:57 info: Attempting to start server on configured port: 4005
+2025-07-17 08:22:57 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:22:57 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:22:57 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:22:57 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:22:57 info: Environment: development
+2025-07-17 08:22:58 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:22:58 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:22:58 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:22:58 info: WhatsApp connected successfully
+2025-07-17 08:22:58 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:22:58 info: RX Power monitoring initialized
+2025-07-17 08:22:58 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:22:58 info: PPPoE monitoring initialized
+2025-07-17 08:23:00 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:00 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:00 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:00 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:00 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:00 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:00 info: Environment: development
+2025-07-17 08:23:00 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:00 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:00 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:00 info: WhatsApp connected successfully
+2025-07-17 08:23:00 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:00 info: RX Power monitoring initialized
+2025-07-17 08:23:00 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:00 info: PPPoE monitoring initialized
+2025-07-17 08:23:02 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:02 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:02 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:02 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:02 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:02 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:02 info: Environment: development
+2025-07-17 08:23:02 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:02 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:02 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:02 info: WhatsApp connected successfully
+2025-07-17 08:23:02 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:02 info: RX Power monitoring initialized
+2025-07-17 08:23:02 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:02 info: PPPoE monitoring initialized
+2025-07-17 08:23:05 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:05 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:05 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:05 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:05 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:05 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:05 info: Environment: development
+2025-07-17 08:23:05 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:05 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:05 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:05 info: WhatsApp connected successfully
+2025-07-17 08:23:05 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:05 info: RX Power monitoring initialized
+2025-07-17 08:23:05 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:05 info: PPPoE monitoring initialized
+2025-07-17 08:23:08 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:08 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:08 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:08 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:08 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:08 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:08 info: Environment: development
+2025-07-17 08:23:08 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:08 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:08 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:08 info: WhatsApp connected successfully
+2025-07-17 08:23:08 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:08 info: RX Power monitoring initialized
+2025-07-17 08:23:08 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:08 info: PPPoE monitoring initialized
+2025-07-17 08:23:10 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:10 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:10 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:10 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:10 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:10 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:10 info: Environment: development
+2025-07-17 08:23:11 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:11 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:11 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:11 info: WhatsApp connected successfully
+2025-07-17 08:23:11 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:11 info: RX Power monitoring initialized
+2025-07-17 08:23:11 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:11 info: PPPoE monitoring initialized
+2025-07-17 08:23:13 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:13 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:13 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:13 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:13 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:13 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:13 info: Environment: development
+2025-07-17 08:23:13 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:13 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:13 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:13 info: WhatsApp connected successfully
+2025-07-17 08:23:13 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:13 info: RX Power monitoring initialized
+2025-07-17 08:23:13 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:13 info: PPPoE monitoring initialized
+2025-07-17 08:23:16 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:16 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:16 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:16 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:16 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:16 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:16 info: Environment: development
+2025-07-17 08:23:16 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:16 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:16 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:16 info: WhatsApp connected successfully
+2025-07-17 08:23:16 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:16 info: RX Power monitoring initialized
+2025-07-17 08:23:16 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:16 info: PPPoE monitoring initialized
+2025-07-17 08:23:18 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:18 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:18 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:18 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:18 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:18 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:18 info: Environment: development
+2025-07-17 08:23:18 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:18 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:18 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:18 info: WhatsApp connected successfully
+2025-07-17 08:23:18 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:18 info: RX Power monitoring initialized
+2025-07-17 08:23:18 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:18 info: PPPoE monitoring initialized
+2025-07-17 08:23:21 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:21 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:21 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:21 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:21 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:21 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:21 info: Environment: development
+2025-07-17 08:23:21 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:21 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:21 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:21 info: WhatsApp connected successfully
+2025-07-17 08:23:21 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:21 info: RX Power monitoring initialized
+2025-07-17 08:23:21 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:21 info: PPPoE monitoring initialized
+2025-07-17 08:23:24 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:24 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:24 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:24 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:24 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:24 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:24 info: Environment: development
+2025-07-17 08:23:24 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:24 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:24 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:24 info: WhatsApp connected successfully
+2025-07-17 08:23:24 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:24 info: RX Power monitoring initialized
+2025-07-17 08:23:24 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:24 info: PPPoE monitoring initialized
+2025-07-17 08:23:26 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:26 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:26 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:26 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:26 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:26 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:26 info: Environment: development
+2025-07-17 08:23:26 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:26 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:26 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:26 info: WhatsApp connected successfully
+2025-07-17 08:23:26 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:26 info: RX Power monitoring initialized
+2025-07-17 08:23:26 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:26 info: PPPoE monitoring initialized
+2025-07-17 08:23:28 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:28 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:28 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:28 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:29 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:29 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:29 info: Environment: development
+2025-07-17 08:23:29 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:29 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:29 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:29 info: WhatsApp connected successfully
+2025-07-17 08:23:29 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:29 info: RX Power monitoring initialized
+2025-07-17 08:23:29 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:29 info: PPPoE monitoring initialized
+2025-07-17 08:23:31 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:31 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:31 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:31 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:31 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:31 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:31 info: Environment: development
+2025-07-17 08:23:31 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:31 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:31 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:31 info: WhatsApp connected successfully
+2025-07-17 08:23:31 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:31 info: RX Power monitoring initialized
+2025-07-17 08:23:31 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:31 info: PPPoE monitoring initialized
+2025-07-17 08:23:40 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:40 info: Attempting to start server on configured port: 4005
+2025-07-17 08:23:40 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-17 08:23:40 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-17 08:23:40 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-17 08:23:40 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-17 08:23:40 info: Environment: development
+2025-07-17 08:23:40 info: WhatsApp socket set in pppoe-notifications module
+2025-07-17 08:23:40 info: WhatsApp socket set in pppoe-commands module
+2025-07-17 08:23:40 info: WhatsApp socket set in genieacs-commands module
+2025-07-17 08:23:40 info: WhatsApp connected successfully
+2025-07-17 08:23:40 info: PPPoE monitoring started with interval 60000ms
+2025-07-17 08:23:40 info: RX Power monitoring initialized
+2025-07-17 08:23:40 info: PPPoE monitoring auto-started on initialization
+2025-07-17 08:23:40 info: PPPoE monitoring initialized
+2025-07-17 08:24:08 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-17 08:24:40 warn: No technician group configured for PPPoE notifications
+2025-07-17 08:24:40 info: PPPoE LOGIN:
+2025-07-17 08:24:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:24:40 info: PPPoE LOGIN detected: karmanda, icha, erni, tester, kus, erul, runaeni, alam, fajar, gadel, nalda@rawagunda2, antony@ps, karsih, brohim, nurudin, aqiel, memble@, karban, nina@kesin, koriya, junanto@rawagunda, rangdu, darim, ros_pppoe, jami@sut, nadiva, RT-KARONI, tinih, tariman, rudibengkel@tanjungpura, raeni, bunga, rom@lah, Uchi, server@ilik, dasta, tarci, kasdi@rawagunda, wendy@tanjungpura, gunawan, wiwin@seblak, winata, rintem, kendo@tanjungpura, aang, nesa, @cimun, server@arep, mastobari@, sarwan, rasta, codet, Tarci@lor, elis@rawagunda, winata@laut, opang@tanjungpura, eka, mardi, warungyuni@laut, dedy@sarkim, tibil, muktar@ompong, hany@tarsiti, maktub, wakeng, dhea_tile@rawagunda, sanyo, lussy, suliwa, server@yayan, yuni@rawagunda, wadi@rawagunda, handoko, kincling, yudi, h.juroh, aldo, toyinah, atam, daruni@rawagunda, andi, eva, salsa, kandar, darim@lor, abibah, santo, damar, iman@, test, kama@, alan@pentud, ooh, indah@tanjungpura, luwih@, aang2, toko@sayur, yessy, ejun, seka, dedi@aira, elvano1, nuriyah, oland, sandi@rajan, nana, warung_elisa@laut, talita, mella, suminih@rawagunda, sumi, ajri, windah, lina@ujungmulya, turidah, murdani, surminih@pegagan, pabudi@genjong, khofik@janggar, leha, sudini@pegagan, setiyadi@genjong, ety@pegagan, eva@pegagan, mangasep@janggar, durniyah@pegagan, nani, umikulsum@janggar, soleh@pegagan, gemblung, uung@pegagan, F663, novita, wendy@genjong, astri@pegagan, intan@ujungmulya, waidah@pegagan, sang, sutara@pegagan, Endra@genjong1, denihamdani@pegagan, dadang@genjong, wilda, anwar@janggar, yuni@ujungmulya, eryanto@pegagan, kurnati, adinesep@ujungmulya, sarna@pegagan, abas@pegagan, yusuf, lisan@banteng, toax, kasmuri, warsana, yogi, nalda@pegagan, murba, adiiman, SDNUG1, coyih, pandi@tanjungpura
+2025-07-17 08:24:41 info: PPPoE notification sent to 6281947215703
+2025-07-17 08:24:42 info: PPPoE notification sent to 6283807665697
+2025-07-17 08:24:44 info: PPPoE notification sent to 6282218094778
+2025-07-17 08:24:44 info: PPPoE notification sent to 3/3 valid recipients (3 total)
+2025-07-17 08:24:44 info: PPPoE monitoring: 162 active connections, 162 login, 0 logout
+2025-07-17 08:25:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:26:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:27:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:28:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:29:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:30:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:31:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:32:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:33:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:34:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:35:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:36:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:37:12 info: Message received
+2025-07-17 08:37:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:38:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:39:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:40:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:41:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:42:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:43:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:44:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:45:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:46:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:47:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:48:40 info: Monitoring PPPoE connections: 162 active connections
+2025-07-17 08:49:41 info: Monitoring PPPoE connections: 162 active connections
