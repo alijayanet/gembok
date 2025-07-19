@@ -85,6 +85,36 @@
                 font-size: 0.75rem;
             }
         }
+        @media (max-width: 991.98px) {
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 0;
+                width: 260px;
+                height: 100vh;
+                z-index: 1050;
+                transition: left 0.3s;
+            }
+            .sidebar.show {
+                left: 0;
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.3);
+                z-index: 1049;
+            }
+            .sidebar-overlay.show {
+                display: block;
+            }
+            .main-content {
+                padding-left: 0 !important;
+            }
+            .row.mb-4 > [class^='col-'] {
+                margin-bottom: 1rem !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -101,12 +131,13 @@
             <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
             <a href="/admin/mikrotik/hotspot-profiles" class="active"><i class="bi bi-wifi"></i> Profile Hotspot</a>
             <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
+            <a href="/admin/trouble"><i class="bi bi-exclamation-triangle"></i> Laporan Gangguan</a>
             <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
             <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
 
         <main class="col-md-10 main-content ms-sm-auto">
-            <button class="hamburger" id="hamburgerBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
+            <button class="hamburger d-block d-md-none mb-3" id="hamburgerBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
 
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3>Profile Hotspot</h3>
@@ -117,7 +148,7 @@
 
             <!-- Statistik -->
             <div class="row mb-4">
-                <div class="col-md-3">
+                <div class="col-md-3 mb-3">
                     <div class="card bg-primary text-white">
                         <div class="card-body">
                             <h5 class="card-title">Total Profile</h5>
@@ -125,7 +156,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 mb-3">
                     <div class="card bg-success text-white">
                         <div class="card-body">
                             <h5 class="card-title">Aktif</h5>
@@ -133,7 +164,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 mb-3">
                     <div class="card bg-warning text-white">
                         <div class="card-body">
                             <h5 class="card-title">Rate Limited</h5>
@@ -141,7 +172,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 mb-3">
                     <div class="card bg-info text-white">
                         <div class="card-body">
                             <h5 class="card-title">Shared Users</h5>

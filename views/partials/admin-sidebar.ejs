@@ -1,0 +1,14 @@
+<nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
+    <div class="sidebar-header mb-4 text-center">
+        <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
+    </div>
+    <a href="/admin/dashboard" class="<%= typeof page !== 'undefined' && page === 'dashboard' ? 'active' : '' %>"><i class="bi bi-house"></i> Dashboard</a>
+    <a href="/admin/genieacs" class="<%= typeof page !== 'undefined' && page === 'genieacs' ? 'active' : '' %>"><i class="bi bi-hdd-network"></i> GenieACS</a>
+    <a href="/admin/mikrotik" class="<%= typeof page !== 'undefined' && page === 'mikrotik' ? 'active' : '' %>"><i class="bi bi-router"></i> PPPoE</a>
+    <a href="/admin/mikrotik/profiles" class="<%= typeof page !== 'undefined' && page === 'mikrotik-profiles' ? 'active' : '' %>"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
+    <a href="/admin/mikrotik/hotspot-profiles" class="<%= typeof page !== 'undefined' && page === 'hotspot-profiles' ? 'active' : '' %>"><i class="bi bi-wifi"></i> Profile Hotspot</a>
+    <a href="/admin/hotspot" class="<%= typeof page !== 'undefined' && page === 'hotspot' ? 'active' : '' %>"><i class="bi bi-wifi"></i> Hotspot</a>
+    <a href="/admin/trouble" class="<%= typeof page !== 'undefined' && page === 'trouble' ? 'active' : '' %>"><i class="bi bi-exclamation-triangle"></i> Laporan Gangguan</a>
+    <a href="/admin/setting" class="<%= typeof page !== 'undefined' && page === 'setting' ? 'active' : '' %>"><i class="bi bi-gear"></i> Setting</a>
+    <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+</nav>

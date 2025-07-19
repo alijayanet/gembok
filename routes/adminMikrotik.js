@@ -17,6 +17,7 @@ const {
     deleteHotspotProfile,
     getHotspotProfileDetail
 } = require('../config/mikrotik');
+const { kickPPPoEUser } = require('../config/mikrotik2');
 const fs = require('fs');
 const path = require('path');
 
@@ -236,6 +237,18 @@ router.post('/mikrotik/hotspot-profiles/delete', adminAuth, async (req, res) => 
     } else {
       res.json({ success: false, message: result.message });
     }
+  } catch (err) {
+    res.json({ success: false, message: err.message });
+  }
+});
+
+// POST: Putuskan sesi PPPoE user
+router.post('/mikrotik/disconnect-session', adminAuth, async (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username) return res.json({ success: false, message: 'Username tidak boleh kosong' });
+    const result = await kickPPPoEUser(username);
+    res.json(result);
   } catch (err) {
     res.json({ success: false, message: err.message });
   }

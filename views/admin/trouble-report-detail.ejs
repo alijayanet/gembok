@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %> - Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/dataTables.responsive.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; }
+        .form-label { font-weight: 600; }
+        .sidebar {
+            min-height: 100vh;
+            background: #222e3c;
+            color: #fff;
+            padding-top: 32px;
+        }
+        .sidebar a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            padding: 12px 24px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .sidebar a.active, .sidebar a:hover {
+            background: #3b4a5a;
+        }
+        .sidebar .sidebar-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 0 24px 24px 24px;
+        }
+        .main-content {
+            padding: 32px 24px;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .page-title {
+            font-weight: 700;
+            color: #343a40;
+            margin-bottom: 0;
+        }
+        .badge-status {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 500;
+        }
+        .detail-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        .detail-value {
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        .avatar-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: #e9ecef;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 25px;
+        }
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -30px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b7ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7rem;
+        }
+        .timeline-content {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+        .btn-action:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
+            <div class="sidebar-header mb-4 text-center">
+                <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
+            </div>
+            <a href="/admin/dashboard"><i class="bi bi-house"></i> Dashboard</a>
+            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
+            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
+            <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
+            <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
+            <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
+            <a href="/admin/trouble" class="active"><i class="bi bi-exclamation-triangle"></i> Laporan Gangguan</a>
+            <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
+            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+        
+        <main class="col-md-10 main-content ms-sm-auto">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4">
+                <div>
+                    <h1 class="page-title">Detail Laporan Gangguan</h1>
+                    <p class="text-muted">Informasi lengkap dan penanganan laporan #<%= report.id %></p>
+                </div>
+                <div>
+                    <a href="/admin/trouble" class="btn btn-outline-secondary rounded-pill me-2">
+                        <i class="bi bi-arrow-left me-1"></i> Kembali
+                    </a>
+                    <a href="https://wa.me/<%= report.phone.replace(/^0/, '62') %>" target="_blank" class="btn btn-success rounded-pill">
+                        <i class="bi bi-whatsapp me-1"></i> Hubungi Pelanggan
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Status dan Info Laporan -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="avatar-circle bg-primary text-white">
+                                    <%= report.name.charAt(0).toUpperCase() %>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1"><%= report.name %></h5>
+                                    <p class="text-muted mb-0"><i class="bi bi-telephone me-2"></i><%= report.phone %></p>
+                                </div>
+                                <div class="ms-auto">
+                                    <span class="badge badge-status <%= 
+                                        report.status === 'open' ? 'bg-danger' : 
+                                        report.status === 'in_progress' ? 'bg-warning text-dark' : 
+                                        report.status === 'resolved' ? 'bg-success' : 
+                                        'bg-secondary' 
+                                    %>">
+                                        <% if (report.status === 'open') { %>
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                        <% } else if (report.status === 'in_progress') { %>
+                                            <i class="bi bi-gear me-1"></i>
+                                        <% } else if (report.status === 'resolved') { %>
+                                            <i class="bi bi-check-circle me-1"></i>
+                                        <% } else { %>
+                                            <i class="bi bi-archive me-1"></i>
+                                        <% } %>
+                                        <%= 
+                                            report.status === 'open' ? 'Belum Ditangani' : 
+                                            report.status === 'in_progress' ? 'Sedang Ditangani' : 
+                                            report.status === 'resolved' ? 'Terselesaikan' : 
+                                            'Ditutup' 
+                                        %>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="detail-label">ID Tiket</div>
+                                    <div class="detail-value">#<%= report.id %></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-label">Kategori</div>
+                                    <div class="detail-value">
+                                        <span class="badge bg-light text-dark rounded-pill px-3 py-2">
+                                            <% if (report.category === 'internet') { %>
+                                                <i class="bi bi-globe me-1"></i>
+                                            <% } else if (report.category === 'wifi') { %>
+                                                <i class="bi bi-wifi me-1"></i>
+                                            <% } else if (report.category === 'perangkat') { %>
+                                                <i class="bi bi-router me-1"></i>
+                                            <% } else { %>
+                                                <i class="bi bi-question-circle me-1"></i>
+                                            <% } %>
+                                            <%= report.category %>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-label">Tanggal Laporan</div>
+                                    <div class="detail-value">
+                                        <i class="bi bi-calendar-event me-2"></i>
+                                        <%= new Date(report.createdAt).toLocaleDateString('id-ID') %>
+                                        <small class="text-muted ms-2"><%= new Date(report.createdAt).toLocaleTimeString('id-ID') %></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-label">Terakhir Diupdate</div>
+                                    <div class="detail-value">
+                                        <i class="bi bi-clock-history me-2"></i>
+                                        <%= new Date(report.updatedAt).toLocaleDateString('id-ID') %>
+                                        <small class="text-muted ms-2"><%= new Date(report.updatedAt).toLocaleTimeString('id-ID') %></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-label">Prioritas</div>
+                                    <div class="detail-value">
+                                        <% if (report.priority === 'high') { %>
+                                            <span class="badge bg-danger rounded-pill px-3 py-2">
+                                                <i class="bi bi-exclamation-triangle me-1"></i> Tinggi
+                                            </span>
+                                        <% } else if (report.priority === 'medium') { %>
+                                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                                                <i class="bi bi-exclamation me-1"></i> Sedang
+                                            </span>
+                                        <% } else { %>
+                                            <span class="badge bg-info text-dark rounded-pill px-3 py-2">
+                                                <i class="bi bi-info-circle me-1"></i> Normal
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <div class="detail-label">Deskripsi Masalah</div>
+                                <div class="p-3 bg-light rounded">
+                                    <%= report.description %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3"><i class="bi bi-arrow-clockwise me-2"></i>Update Status</h5>
+                            <form id="updateStatusForm">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status Laporan</label>
+                                    <div class="status-options">
+                                        <div class="form-check form-check-inline status-radio">
+                                            <input class="form-check-input" type="radio" name="status" id="statusOpen" value="open" <%= report.status === 'open' ? 'checked' : '' %>>
+                                            <label class="form-check-label status-label open" for="statusOpen">
+                                                <i class="bi bi-exclamation-circle"></i> Belum Ditangani
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline status-radio">
+                                            <input class="form-check-input" type="radio" name="status" id="statusInProgress" value="in_progress" <%= report.status === 'in_progress' ? 'checked' : '' %>>
+                                            <label class="form-check-label status-label in-progress" for="statusInProgress">
+                                                <i class="bi bi-gear"></i> Sedang Ditangani
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline status-radio">
+                                            <input class="form-check-input" type="radio" name="status" id="statusResolved" value="resolved" <%= report.status === 'resolved' ? 'checked' : '' %>>
+                                            <label class="form-check-label status-label resolved" for="statusResolved">
+                                                <i class="bi bi-check-circle"></i> Terselesaikan
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline status-radio">
+                                            <input class="form-check-input" type="radio" name="status" id="statusClosed" value="closed" <%= report.status === 'closed' ? 'checked' : '' %>>
+                                            <label class="form-check-label status-label closed" for="statusClosed">
+                                                <i class="bi bi-archive"></i> Ditutup
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Catatan Update</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Tambahkan catatan atau update terkait penanganan laporan..." required></textarea>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="sendNotification" name="sendNotification" checked>
+                                    <label class="form-check-label" for="sendNotification">
+                                        <i class="bi bi-bell me-1"></i> Kirim notifikasi ke pelanggan
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 rounded-pill">
+                                    <i class="bi bi-save me-2"></i> Update Status
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3"><i class="bi bi-info-circle me-2"></i>Informasi Tambahan</h5>
+                            <div class="info-item mb-3">
+                                <div class="detail-label">Perangkat</div>
+                                <div class="detail-value">
+                                    <% if (report.device_id) { %>
+                                        <a href="/admin/genieacs/device/<%= report.device_id %>" class="text-decoration-none">
+                                            <i class="bi bi-router me-1"></i> <%= report.device_id %>
+                                        </a>
+                                    <% } else { %>
+                                        <span class="text-muted">Tidak ada data perangkat</span>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="detail-label">Lokasi</div>
+                                <div class="detail-value">
+                                    <% if (report.location) { %>
+                                        <i class="bi bi-geo-alt me-1"></i> <%= report.location %>
+                                    <% } else { %>
+                                        <span class="text-muted">Tidak ada data lokasi</span>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Timeline Aktivitas -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title mb-0"><i class="bi bi-clock-history me-2"></i>Riwayat Aktivitas</h5>
+                        <span class="badge bg-primary rounded-pill"><%= report.notes ? report.notes.length + 1 : 1 %> aktivitas</span>
+                    </div>
+                    
+                    <div class="timeline">
+                        <!-- Item pertama selalu pembuatan tiket -->
+                        <div class="timeline-item">
+                            <div class="timeline-dot">
+                                <i class="bi bi-plus"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0 fw-bold">Tiket Dibuat</h6>
+                                    <span class="badge bg-primary rounded-pill">Baru</span>
+                                </div>
+                                <p class="text-muted small mb-2">
+                                    <i class="bi bi-calendar-event me-1"></i> <%= new Date(report.createdAt).toLocaleDateString('id-ID') %>
+                                    <i class="bi bi-clock ms-2 me-1"></i> <%= new Date(report.createdAt).toLocaleTimeString('id-ID') %>
+                                </p>
+                                <div class="timeline-message">
+                                    <p class="mb-0">Laporan gangguan dibuat oleh pelanggan melalui <%= report.source || 'WhatsApp' %>.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notes/aktivitas lainnya -->
+                        <% if (report.notes && report.notes.length > 0) { %>
+                            <% report.notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(note => { %>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot <%= 
+                                        note.status === 'open' ? 'bg-danger' : 
+                                        note.status === 'in_progress' ? 'bg-warning' : 
+                                        note.status === 'resolved' ? 'bg-success' : 
+                                        'bg-secondary' 
+                                    %>">
+                                        <i class="bi <%= 
+                                            note.status === 'open' ? 'bi-exclamation' : 
+                                            note.status === 'in_progress' ? 'bi-gear' : 
+                                            note.status === 'resolved' ? 'bi-check' : 
+                                            'bi-archive' 
+                                        %>"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0 fw-bold">
+                                                Status: 
+                                                <span class="<%= 
+                                                    note.status === 'open' ? 'text-danger' : 
+                                                    note.status === 'in_progress' ? 'text-warning' : 
+                                                    note.status === 'resolved' ? 'text-success' : 
+                                                    'text-secondary' 
+                                                %>">
+                                                    <%= 
+                                                        note.status === 'open' ? 'Belum Ditangani' : 
+                                                        note.status === 'in_progress' ? 'Sedang Ditangani' : 
+                                                        note.status === 'resolved' ? 'Terselesaikan' : 
+                                                        'Ditutup' 
+                                                    %>
+                                                </span>
+                                            </h6>
+                                            <% if (note.admin) { %>
+                                                <span class="badge bg-dark rounded-pill">Admin: <%= note.admin %></span>
+                                            <% } %>
+                                        </div>
+                                        <p class="text-muted small mb-2">
+                                            <i class="bi bi-calendar-event me-1"></i> <%= new Date(note.timestamp).toLocaleDateString('id-ID') %>
+                                            <i class="bi bi-clock ms-2 me-1"></i> <%= new Date(note.timestamp).toLocaleTimeString('id-ID') %>
+                                        </p>
+                                        <div class="timeline-message">
+                                            <p class="mb-0"><%= note.content %></p>
+                                            <% if (note.notificationSent) { %>
+                                                <div class="notification-sent mt-2">
+                                                    <i class="bi bi-check-circle-fill text-success me-1"></i>
+                                                    <small class="text-muted">Notifikasi terkirim ke pelanggan</small>
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="empty-timeline text-center py-4">
+                                <i class="bi bi-clock" style="font-size: 2rem; color: #dee2e6;"></i>
+                                <p class="text-muted mt-2 mb-0">Belum ada update aktivitas</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+    </div>
+</div>
+
+<!-- Modal Notifikasi -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="notificationModalLabel">Notifikasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="notificationMessage">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="modalOkButton">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Status Radio Buttons */
+    .status-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .status-radio {
+        margin: 0;
+    }
+    .status-radio input {
+        display: none;
+    }
+    .status-label {
+        display: inline-block;
+        padding: 8px 15px;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        border: 1px solid #dee2e6;
+        background: #f8f9fa;
+    }
+    .status-label.open {
+        color: #dc3545;
+    }
+    .status-label.in-progress {
+        color: #ffc107;
+    }
+    .status-label.resolved {
+        color: #198754;
+    }
+    .status-label.closed {
+        color: #6c757d;
+    }
+    .status-radio input:checked + .status-label.open {
+        background: #dc3545;
+        color: white;
+        border-color: #dc3545;
+    }
+    .status-radio input:checked + .status-label.in-progress {
+        background: #ffc107;
+        color: #212529;
+        border-color: #ffc107;
+    }
+    .status-radio input:checked + .status-label.resolved {
+        background: #198754;
+        color: white;
+        border-color: #198754;
+    }
+    .status-radio input:checked + .status-label.closed {
+        background: #6c757d;
+        color: white;
+        border-color: #6c757d;
+    }
+    
+    /* Timeline Styling */
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 12px;
+        width: 2px;
+        background: linear-gradient(to bottom, #dee2e6 0%, #3b7ddd 100%);
+        z-index: 1;
+    }
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+        padding-left: 40px;
+        animation: fadeInRight 0.5s ease-in-out;
+    }
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+    .timeline-dot {
+        position: absolute;
+        left: 0;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        text-align: center;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        z-index: 2;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .timeline-item:hover .timeline-dot {
+        transform: scale(1.2);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    @keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    .timeline-content {
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .timeline-content:hover {
+        background-color: #fff;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    }
+    .notification-sent {
+        padding: 5px 10px;
+        background: rgba(25, 135, 84, 0.1);
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+    }
+    .empty-timeline {
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    .timeline-message {
+        background: white;
+        border-radius: 6px;
+        padding: 10px;
+        border-left: 3px solid #3b7ddd;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const updateStatusForm = document.getElementById('updateStatusForm');
+        const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+        const notificationMessage = document.getElementById('notificationMessage');
+        const modalOkButton = document.getElementById('modalOkButton');
+        
+        // Animasi untuk status radio buttons
+        const statusRadios = document.querySelectorAll('.status-radio input');
+        statusRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Highlight label yang dipilih dengan animasi
+                const label = this.nextElementSibling;
+                label.classList.add('animate__animated', 'animate__pulse');
+                setTimeout(() => {
+                    label.classList.remove('animate__animated', 'animate__pulse');
+                }, 500);
+            });
+        });
+        
+        // Handle form submission
+        updateStatusForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Dapatkan status dari radio button yang dipilih
+            const statusRadio = document.querySelector('input[name="status"]:checked');
+            const status = statusRadio ? statusRadio.value : '';
+            const notes = document.getElementById('notes').value;
+            const sendNotification = document.getElementById('sendNotification').checked;
+            
+            // Tampilkan loading state pada button
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Memproses...';
+            submitBtn.disabled = true;
+            
+            fetch('/admin/trouble/update-status/<%= report.id %>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    status, 
+                    notes,
+                    sendNotification
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Kembalikan button ke state normal
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                
+                if (data.success) {
+                    notificationMessage.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle-fill me-2"></i> ${data.message}
+                        </div>
+                    `;
+                    
+                    // Reset form dan refresh halaman setelah berhasil
+                    document.getElementById('notes').value = '';
+                    modalOkButton.addEventListener('click', function() {
+                        window.location.reload();
+                    }, { once: true });
+                } else {
+                    notificationMessage.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> ${data.message}
+                        </div>
+                    `;
+                }
+                
+                notificationModal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                notificationMessage.innerHTML = `
+                    <div class="alert alert-danger">
+                        Terjadi kesalahan saat mengupdate status. Silakan coba lagi.
+                    </div>
+                `;
+                notificationModal.show();
+            });
+        });
+    });
+</script>
+
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

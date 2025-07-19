@@ -48,6 +48,103 @@ const adminSettingRouter = require('./routes/adminSetting');
 const { adminAuth } = require('./routes/adminAuth');
 app.use('/admin/setting', adminAuth, adminSettingRouter);
 
+// Import dan gunakan route adminTroubleReport
+const adminTroubleReportRouter = require('./routes/adminTroubleReport');
+app.use('/admin/trouble', adminAuth, adminTroubleReportRouter);
+
+// Import dan gunakan route testTroubleReport untuk debugging
+const testTroubleReportRouter = require('./routes/testTroubleReport');
+app.use('/test/trouble', testTroubleReportRouter);
+
+// Route untuk halaman test trouble report
+app.get('/test-trouble-report', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'test-trouble-report.html'));
+});
+
+// Route test trouble report langsung
+app.get('/test-trouble-direct', async (req, res) => {
+    try {
+        const { createTroubleReport, updateTroubleReportStatus } = require('./config/troubleReport');
+        const { logger } = require('./config/logger');
+        
+        logger.info('🧪 Test trouble report langsung dimulai...');
+        
+        const testReport = {
+            phone: '081234567890',
+            name: 'Test User Direct',
+            location: 'Test Location Direct',
+            category: 'Internet Lambat',
+            description: 'Test deskripsi masalah internet lambat untuk testing notifikasi WhatsApp - test langsung'
+        };
+        
+        const newReport = createTroubleReport(testReport);
+        
+        if (newReport) {
+            logger.info(`✅ Laporan gangguan berhasil dibuat dengan ID: ${newReport.id}`);
+            
+            // Test update status setelah 3 detik
+            setTimeout(async () => {
+                logger.info(`🔄 Test update status untuk laporan ${newReport.id}...`);
+                const updatedReport = updateTroubleReportStatus(
+                    newReport.id, 
+                    'in_progress', 
+                    'Test update status dari test langsung - sedang ditangani',
+                    true // sendNotification = true
+                );
+                
+                if (updatedReport) {
+                    logger.info(`✅ Status laporan berhasil diupdate ke: ${updatedReport.status}`);
+                }
+            }, 3000);
+            
+            res.json({
+                success: true,
+                message: 'Test trouble report berhasil dijalankan',
+                report: newReport,
+                note: 'Status akan diupdate otomatis dalam 3 detik. Cek log server untuk melihat notifikasi WhatsApp.'
+            });
+        } else {
+            logger.error('❌ Gagal membuat laporan gangguan');
+            res.status(500).json({
+                success: false,
+                message: 'Gagal membuat laporan gangguan'
+            });
+        }
+    } catch (error) {
+        console.error('❌ Error dalam test trouble report:', error.message);
+        res.status(500).json({
+            success: false,
+            message: 'Error dalam test trouble report',
+            error: error.message
+        });
+    }
+});
+
+// Route test restart device
+app.get('/test-restart-device', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-restart-device.html'));
+});
+
+// Route test session
+app.get('/test-session', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-session.html'));
+});
+
+// Route test restart device web interface
+app.get('/test-restart-web', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-restart-web.html'));
+});
+
+// Route test frontend debug
+app.get('/test-frontend-debug', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-frontend-debug.html'));
+});
+
+// Route test dashboard simple
+app.get('/test-dashboard-simple', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-dashboard-simple.html'));
+});
+
 // Route test upload logo tanpa auth
 app.get('/test-upload-logo', (req, res) => {
     res.send(`
@@ -234,6 +331,10 @@ try {
 
             // Set sock instance untuk RX Power Monitor
             rxPowerMonitor.setSock(sock);
+
+            // Set sock instance untuk trouble report
+            const troubleReport = require('./config/troubleReport');
+            troubleReport.setSockInstance(sock);
 
             logger.info('WhatsApp connected successfully');
 

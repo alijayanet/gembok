@@ -11,9 +11,9 @@
   "mikrotik_password": "admin",
   "main_interface": "ether1-ISP",
   "pppoe_monitor_enable": "true",
-  "technician_numbers.0": "6283807665697",
-  "technician_numbers.1": "6282218094778",
-  "technician_group_id": "120363029715729@g.us",
+  "technician_numbers.0": "62838076656xx",
+  "technician_numbers.1": "62822180947xx",
+  "technician_group_id": "1203630314957962xx@g.us",
   "whatsapp_keep_alive": "true",
   "whatsapp_restart_on_error": "true",
   "rx_power_warning": "-40",
@@ -31,5 +31,8 @@
   "pppoe_notifications.logoutNotifications": "true",
   "pppoe_notifications.includeOfflineList": "true",
   "pppoe_notifications.maxOfflineListCount": "20",
-  "logo_filename": "logo.svg"
+  "logo_filename": "logo.svg",
+  "trouble_report.enabled": "true",
+  "trouble_report.categories": "Internet Lambat,Tidak Bisa Browsing,WiFi Tidak Muncul,Koneksi Putus-Putus,Lainnya",
+  "trouble_report.auto_ticket": "true"
 }

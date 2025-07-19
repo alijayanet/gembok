@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Trouble Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Trouble Report System</h1>
+        
+        <!-- Test 1: Buat Laporan Baru -->
+        <div class="test-section">
+            <h3>📝 Test 1: Buat Laporan Gangguan Baru</h3>
+            <form id="createReportForm">
+                <div class="form-group">
+                    <label for="phone">Nomor HP:</label>
+                    <input type="text" id="phone" name="phone" value="081234567890" required>
+                </div>
+                <div class="form-group">
+                    <label for="name">Nama Pelanggan:</label>
+                    <input type="text" id="name" name="name" value="Test User" required>
+                </div>
+                <div class="form-group">
+                    <label for="location">Lokasi:</label>
+                    <input type="text" id="location" name="location" value="Test Location" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Kategori:</label>
+                    <select id="category" name="category" required>
+                        <option value="Internet Lambat">Internet Lambat</option>
+                        <option value="Tidak Bisa Browsing">Tidak Bisa Browsing</option>
+                        <option value="WiFi Tidak Muncul">WiFi Tidak Muncul</option>
+                        <option value="Koneksi Putus-Putus">Koneksi Putus-Putus</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Deskripsi Masalah:</label>
+                    <textarea id="description" name="description" rows="4" required>Test deskripsi masalah internet lambat untuk testing notifikasi WhatsApp</textarea>
+                </div>
+                <button type="submit">Buat Laporan Gangguan</button>
+            </form>
+            <div id="createResult"></div>
+        </div>
+
+        <!-- Test 2: Update Status Laporan -->
+        <div class="test-section">
+            <h3>🔄 Test 2: Update Status Laporan</h3>
+            <form id="updateStatusForm">
+                <div class="form-group">
+                    <label for="reportId">ID Laporan:</label>
+                    <input type="text" id="reportId" name="reportId" placeholder="Masukkan ID laporan dari test 1" required>
+                </div>
+                <div class="form-group">
+                    <label for="status">Status Baru:</label>
+                    <select id="status" name="status" required>
+                        <option value="open">Belum Ditangani</option>
+                        <option value="in_progress" selected>Sedang Ditangani</option>
+                        <option value="resolved">Terselesaikan</option>
+                        <option value="closed">Ditutup</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Catatan Update:</label>
+                    <textarea id="notes" name="notes" rows="3" required>Test update status dari halaman test - sedang ditangani oleh teknisi</textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="sendNotification" name="sendNotification" checked>
+                        Kirim notifikasi ke pelanggan
+                    </label>
+                </div>
+                <button type="submit">Update Status</button>
+            </form>
+            <div id="updateResult"></div>
+        </div>
+
+        <!-- Test 3: Kirim Notifikasi Manual -->
+        <div class="test-section">
+            <h3>📤 Test 3: Kirim Notifikasi Manual</h3>
+            <form id="notifyForm">
+                <div class="form-group">
+                    <label for="notifyReportId">ID Laporan:</label>
+                    <input type="text" id="notifyReportId" name="notifyReportId" placeholder="Masukkan ID laporan" required>
+                </div>
+                <div class="form-group">
+                    <label>Kirim ke:</label>
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" id="toTechnicians" name="toTechnicians" checked>
+                            Grup Teknisi
+                        </label>
+                        <label>
+                            <input type="checkbox" id="toCustomer" name="toCustomer" checked>
+                            Pelanggan
+                        </label>
+                    </div>
+                </div>
+                <button type="submit">Kirim Notifikasi</button>
+            </form>
+            <div id="notifyResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // Helper function untuk menampilkan hasil
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            const className = isError ? 'error' : 'success';
+            element.innerHTML = `<div class="result ${className}">${JSON.stringify(data, null, 2)}</div>`;
+        }
+
+        // Test 1: Buat laporan gangguan
+        document.getElementById('createReportForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/test/trouble/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResult('createResult', result, !result.success);
+                
+                // Auto-fill report ID untuk test selanjutnya
+                if (result.success && result.report) {
+                    document.getElementById('reportId').value = result.report.id;
+                    document.getElementById('notifyReportId').value = result.report.id;
+                }
+            } catch (error) {
+                showResult('createResult', { error: error.message }, true);
+            }
+        });
+
+        // Test 2: Update status laporan
+        document.getElementById('updateStatusForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            data.sendNotification = document.getElementById('sendNotification').checked;
+            
+            const reportId = data.reportId;
+            delete data.reportId;
+            
+            try {
+                const response = await fetch(`/test/trouble/update/${reportId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResult('updateResult', result, !result.success);
+            } catch (error) {
+                showResult('updateResult', { error: error.message }, true);
+            }
+        });
+
+        // Test 3: Kirim notifikasi manual
+        document.getElementById('notifyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const reportId = document.getElementById('notifyReportId').value;
+            const toTechnicians = document.getElementById('toTechnicians').checked;
+            const toCustomer = document.getElementById('toCustomer').checked;
+            
+            try {
+                const response = await fetch(`/test/trouble/notify/${reportId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        toTechnicians,
+                        toCustomer
+                    })
+                });
+                
+                const result = await response.json();
+                showResult('notifyResult', result, !result.success);
+            } catch (error) {
+                showResult('notifyResult', { error: error.message }, true);
+            }
+        });
+    </script>
+</body>
+</html>

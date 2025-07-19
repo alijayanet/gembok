@@ -56,6 +56,7 @@
             <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
             <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
             <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
+            <a href="/admin/trouble"><i class="bi bi-exclamation-triangle"></i> Laporan Gangguan</a>
             <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
             <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
@@ -126,8 +127,56 @@
               <div class="col-md-12">
                 <div class="card text-bg-info">
                   <div class="card-body">
-                    <div class="fw-bold mb-2"><i class="bi bi-graph-up-arrow"></i> Grafik Internet (Ether ISP)</div>
-                    <canvas id="internetChart" height="60"></canvas>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <div class="fw-bold" style="font-size: 1.1rem;"><i class="bi bi-graph-up-arrow"></i> Grafik Traffic Internet - <span id="currentInterface">Ether1</span></div>
+                      <div class="d-flex align-items-center">
+                        <label for="interfaceSelect" class="form-label me-2 mb-0" style="font-size: 0.9rem;">Interface:</label>
+                        <select id="interfaceSelect" class="form-select form-select-sm" style="width: auto; font-size: 0.9rem;">
+                          <option value="ether1-ISP">Ether1-ISP (ISP)</option>
+                          <!-- Interface akan di-load secara dinamis -->
+                        </select>
+                      </div>
+                    </div>
+                    
+                    <!-- Real-time bandwidth info -->
+                    <div class="row mb-2">
+                      <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                          <div class="card-body text-center py-1">
+                            <small class="d-block" style="font-size: 0.75rem;">Download</small>
+                            <strong id="currentRx" style="font-size: 1.1rem;">0 Mbps</strong>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                          <div class="card-body text-center py-1">
+                            <small class="d-block" style="font-size: 0.75rem;">Upload</small>
+                            <strong id="currentTx" style="font-size: 1.1rem;">0 Mbps</strong>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                          <div class="card-body text-center py-1">
+                            <small class="d-block" style="font-size: 0.75rem;">Total</small>
+                            <strong id="currentTotal" style="font-size: 1.1rem;">0 Mbps</strong>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                          <div class="card-body text-center py-1">
+                            <small class="d-block" style="font-size: 0.75rem;">Status</small>
+                            <strong id="currentStatus" style="font-size: 1.1rem;">Idle</strong>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div style="height: 300px;">
+                      <canvas id="internetChart"></canvas>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -137,7 +186,8 @@
             // Grafik bandwidth real-time
 const ctx = document.getElementById('internetChart').getContext('2d');
 const maxPoints = 30; // tampilkan 30 data terakhir
-const chart = new Chart(ctx, {
+let currentInterface = localStorage.getItem('selectedInterface') || 'ether1-ISP'; // Ambil dari localStorage atau default sesuai settings.json
+let chart = new Chart(ctx, {
   type: 'line',
   data: {
     labels: [],
@@ -161,34 +211,255 @@ const chart = new Chart(ctx, {
     ]
   },
   options: {
-    plugins: { legend: { display: true } },
-    scales: { y: { beginAtZero: true } }
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { 
+      legend: { 
+        display: true,
+        position: 'top',
+        labels: {
+          padding: 10,
+          usePointStyle: true
+        }
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        titleColor: 'white',
+        bodyColor: 'white',
+        callbacks: {
+          label: function(context) {
+            return context.dataset.label + ': ' + context.parsed.y + ' Mbps';
+          }
+        }
+      }
+    },
+    scales: { 
+      y: { 
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Bandwidth (Mbps)',
+          font: {
+            size: 12
+          }
+        },
+        ticks: {
+          callback: function(value) {
+            return value + ' Mbps';
+          },
+          font: {
+            size: 10
+          }
+        },
+        grid: {
+          color: 'rgba(0,0,0,0.1)'
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Time',
+          font: {
+            size: 12
+          }
+        },
+        ticks: {
+          font: {
+            size: 10
+          }
+        },
+        grid: {
+          color: 'rgba(0,0,0,0.1)'
+        }
+      }
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false
+    },
+    elements: {
+      point: {
+        radius: 2,
+        hoverRadius: 4
+      },
+      line: {
+        borderWidth: 2
+      }
+    }
   }
 });
 
-function addTrafficData(rx, tx) {
+function addTrafficData(rx, tx, interface) {
   const now = new Date();
   const label = now.toLocaleTimeString('id-ID', { hour12: false });
+  
+  // Konversi ke Mbps
+  const rxMbps = (rx/1000000).toFixed(2);
+  const txMbps = (tx/1000000).toFixed(2);
+  const totalMbps = (parseFloat(rxMbps) + parseFloat(txMbps)).toFixed(2);
+  
+  // Update real-time info
+  document.getElementById('currentRx').textContent = rxMbps + ' Mbps';
+  document.getElementById('currentTx').textContent = txMbps + ' Mbps';
+  document.getElementById('currentTotal').textContent = totalMbps + ' Mbps';
+  
+  // Update status berdasarkan traffic
+  const statusElement = document.getElementById('currentStatus');
+  if (parseFloat(totalMbps) > 10) {
+    statusElement.textContent = 'High';
+    statusElement.parentElement.parentElement.className = 'card bg-danger text-white';
+  } else if (parseFloat(totalMbps) > 1) {
+    statusElement.textContent = 'Medium';
+    statusElement.parentElement.parentElement.className = 'card bg-warning text-white';
+  } else if (parseFloat(totalMbps) > 0.1) {
+    statusElement.textContent = 'Low';
+    statusElement.parentElement.parentElement.className = 'card bg-info text-white';
+  } else {
+    statusElement.textContent = 'Idle';
+    statusElement.parentElement.parentElement.className = 'card bg-secondary text-white';
+  }
+  
+  // Update chart
   if (chart.data.labels.length >= maxPoints) {
     chart.data.labels.shift();
     chart.data.datasets[0].data.shift();
     chart.data.datasets[1].data.shift();
   }
   chart.data.labels.push(label);
-  chart.data.datasets[0].data.push((rx/1000000).toFixed(2)); // Mbps
-  chart.data.datasets[1].data.push((tx/1000000).toFixed(2)); // Mbps
+  chart.data.datasets[0].data.push(parseFloat(rxMbps));
+  chart.data.datasets[1].data.push(parseFloat(txMbps));
+  chart.update();
+}
+
+function resetChart() {
+  // Reset chart data ketika interface berubah
+  chart.data.labels = [];
+  chart.data.datasets[0].data = [];
+  chart.data.datasets[1].data = [];
   chart.update();
 }
 
 async function fetchTraffic() {
   try {
-    const res = await fetch('/api/dashboard/traffic');
+    const res = await fetch(`/api/dashboard/traffic?interface=${currentInterface}`);
     const data = await res.json();
     if (data.success) {
-      addTrafficData(data.rx, data.tx);
+      addTrafficData(data.rx, data.tx, data.interface);
     }
-  } catch (e) { /* ignore */ }
+  } catch (e) { 
+    console.error('Error fetching traffic data:', e);
+  }
 }
+
+// Load interface secara dinamis dari Mikrotik
+async function loadInterfaces() {
+  try {
+    console.log('🔄 Loading interfaces from Mikrotik...');
+    const response = await fetch('/api/dashboard/interfaces');
+    const data = await response.json();
+    
+    console.log('📋 API Response:', data);
+    
+    if (data.success && data.interfaces && data.interfaces.length > 0) {
+      const select = document.getElementById('interfaceSelect');
+      
+      // Hapus semua option kecuali yang pertama (default)
+      while (select.children.length > 1) {
+        select.removeChild(select.lastChild);
+      }
+      
+      // Tambahkan interface yang terdeteksi
+      data.interfaces.forEach(iface => {
+        const option = document.createElement('option');
+        option.value = iface.name;
+        
+        // Buat label yang informatif
+        let label = iface.name;
+        
+        // Tambahkan label khusus untuk interface tertentu
+        if (iface.name === 'ether1-ISP') {
+          label = 'ether1-ISP (ISP)';
+        } else if (iface.name === 'ether2-CADANGAN ISP') {
+          label = 'ether2-CADANGAN ISP (Backup)';
+        } else if (iface.name === 'ether3-LOKAL') {
+          label = 'ether3-LOKAL (Local)';
+        } else if (iface.name === 'ether4-LOKAL-LEPTOP') {
+          label = 'ether4-LOKAL-LEPTOP (Laptop)';
+        } else if (iface.name === 'ether5-LOKAL-REMOT OLT') {
+          label = 'ether5-LOKAL-REMOT OLT (Remote)';
+        } else if (iface.name === 'ether6-OLT-SFP1-TANJUNGPURA') {
+          label = 'ether6-OLT-SFP1-TANJUNGPURA (OLT1)';
+        } else if (iface.name === 'ether7-OLT-SFP2-TANJUNGPURA2') {
+          label = 'ether7-OLT-SFP2-TANJUNGPURA2 (OLT2)';
+        } else if (iface.name === 'ether8-HOTSPOT-RADIO') {
+          label = 'ether8-HOTSPOT-RADIO (Hotspot)';
+        } else if (iface.name === 'ether9-HOTSPOT-SWICTHHUB') {
+          label = 'ether9-HOTSPOT-SWICTHHUB (Switch)';
+        } else if (iface.name === 'ether10-POP PEGAGAN/JANGGAR') {
+          label = 'ether10-POP PEGAGAN/JANGGAR (POP)';
+        } else if (iface.name === 'bridge1-HOTSPOT') {
+          label = 'bridge1-HOTSPOT (Bridge)';
+        } else if (iface.name === 'bridge2_OLT') {
+          label = 'bridge2_OLT (Bridge OLT)';
+        } else if (iface.name === 'vlan6-1100') {
+          label = 'vlan6-1100 (VLAN)';
+        }
+        
+        // Tambahkan status
+        if (iface.disabled) {
+          label += ' [Disabled]';
+        } else if (!iface.running) {
+          label += ' [Down]';
+        } else {
+          label += ' [Active]';
+        }
+        
+        option.textContent = label;
+        select.appendChild(option);
+      });
+      
+      console.log(`✅ Loaded ${data.interfaces.length} interfaces from Mikrotik`);
+      
+      // Update current interface jika tidak ada di list
+      const currentOption = select.querySelector(`option[value="${currentInterface}"]`);
+      if (!currentOption && data.interfaces.length > 0) {
+        currentInterface = data.interfaces[0].name;
+        localStorage.setItem('selectedInterface', currentInterface);
+        document.getElementById('currentInterface').textContent = currentInterface;
+        select.value = currentInterface;
+      }
+      
+    } else {
+      console.warn('⚠️ Failed to load interfaces, using default options');
+      console.warn('Response:', data);
+    }
+  } catch (error) {
+    console.error('❌ Error loading interfaces:', error);
+    console.error('Error details:', error.message);
+  }
+}
+
+// Set interface yang tersimpan ke dropdown
+document.getElementById('interfaceSelect').value = currentInterface;
+document.getElementById('currentInterface').textContent = currentInterface;
+
+// Event listener untuk perubahan interface
+document.getElementById('interfaceSelect').addEventListener('change', function() {
+  currentInterface = this.value;
+  localStorage.setItem('selectedInterface', currentInterface); // Simpan ke localStorage
+  document.getElementById('currentInterface').textContent = currentInterface; // Update tampilan
+  console.log('Interface changed to:', currentInterface);
+  resetChart();
+  fetchTraffic(); // Fetch data baru segera
+});
+
+// Load interfaces saat halaman dimuat
+loadInterfaces();
+
+// Set interval untuk update data
 setInterval(fetchTraffic, 2000);
 fetchTraffic();
             </script>

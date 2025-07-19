@@ -165,13 +165,17 @@ router.post('/genieacs/restart-onu', adminAuth, async (req, res) => {
     const genieacsUsername = getSetting('genieacs_username', 'admin');
     const genieacsPassword = getSetting('genieacs_password', 'password');
 
-    // Kirim perintah restart ke GenieACS
+    // Kirim perintah restart ke GenieACS menggunakan endpoint yang benar
     const taskData = {
-      name: 'reboot',
-      device: id
+      name: 'reboot'
     };
 
-    await axios.post(`${genieacsUrl}/tasks`, taskData, {
+    // Pastikan device ID di-encode dengan benar untuk menghindari masalah karakter khusus
+    const encodedDeviceId = encodeURIComponent(id);
+    console.log(`🔧 Admin restart - Device ID: ${id}`);
+    console.log(`🔧 Admin restart - Encoded Device ID: ${encodedDeviceId}`);
+
+    await axios.post(`${genieacsUrl}/devices/${encodedDeviceId}/tasks?connection_request`, taskData, {
       auth: { username: genieacsUsername, password: genieacsPassword },
       headers: { 'Content-Type': 'application/json' }
     });

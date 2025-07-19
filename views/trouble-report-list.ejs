@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Laporan Gangguan - <%= companyHeader %></title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/customer-portal.css">
+    <style>
+        .report-list {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .report-item {
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .report-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .report-item.open {
+            border-left-color: #dc3545;
+        }
+        .report-item.in_progress {
+            border-left-color: #ffc107;
+        }
+        .report-item.resolved {
+            border-left-color: #28a745;
+        }
+        .report-item.closed {
+            border-left-color: #6c757d;
+        }
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+        .status-open {
+            background-color: #dc3545;
+            color: white;
+        }
+        .status-in_progress {
+            background-color: #ffc107;
+            color: black;
+        }
+        .status-resolved {
+            background-color: #28a745;
+            color: white;
+        }
+        .status-closed {
+            background-color: #6c757d;
+            color: white;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <!-- Header -->
+                <div class="text-center mb-4 mt-4">
+                    <h2><%= companyHeader %></h2>
+                    <h4>Daftar Laporan Gangguan</h4>
+                </div>
+                
+                <!-- Daftar Laporan -->
+                <div class="report-list">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5>Riwayat Laporan Gangguan</h5>
+                        <a href="/customer/trouble/report" class="btn btn-primary">Buat Laporan Baru</a>
+                    </div>
+                    
+                    <% if (reports && reports.length > 0) { %>
+                        <% reports.forEach(report => { %>
+                            <div class="report-item <%= report.status %>">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-1">Tiket #<%= report.id %></h6>
+                                    <span class="status-badge status-<%= report.status %>">
+                                        <%= report.status === 'open' ? 'Dibuka' : 
+                                           report.status === 'in_progress' ? 'Sedang Ditangani' : 
+                                           report.status === 'resolved' ? 'Terselesaikan' : 'Ditutup' %>
+                                    </span>
+                                </div>
+                                <p class="mb-1"><strong>Kategori:</strong> <%= report.category %></p>
+                                <p class="mb-1"><strong>Tanggal:</strong> <%= new Date(report.createdAt).toLocaleString('id-ID') %></p>
+                                <p class="mb-2"><strong>Deskripsi:</strong> <%= report.description.length > 100 ? report.description.substring(0, 100) + '...' : report.description %></p>
+                                <div class="d-grid">
+                                    <a href="/customer/trouble/detail/<%= report.id %>" class="btn btn-sm btn-outline-primary">Lihat Detail</a>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <div class="mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#dee2e6" class="bi bi-clipboard-x" viewBox="0 0 16 16">
+                                    <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/>
+                                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1ZM8 7.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 8l1.147 1.146a.5.5 0 0 1-.708.708L8 8.707 6.854 9.854a.5.5 0 0 1-.708-.708L7.293 8 6.146 6.854a.5.5 0 1 1 .708-.708L8 7.293Z"/>
+                                </svg>
+                            </div>
+                            <h6>Belum Ada Laporan Gangguan</h6>
+                            <p>Anda belum pernah membuat laporan gangguan sebelumnya.</p>
+                            <a href="/customer/trouble/report" class="btn btn-primary mt-2">Buat Laporan Baru</a>
+                        </div>
+                    <% } %>
+                </div>
+                
+                <!-- Tombol Kembali -->
+                <div class="d-grid gap-2">
+                    <a href="/customer/dashboard" class="btn btn-outline-secondary">Kembali ke Dashboard</a>
+                </div>
+                
+                <!-- Footer -->
+                <div class="text-center mt-4 mb-4">
+                    <p><%= footerInfo %></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

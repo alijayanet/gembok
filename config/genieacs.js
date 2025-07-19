@@ -118,7 +118,7 @@ const genieacsApi = {
             };
 
             const response = await axiosInstance.post(
-                `/devices/${encodeURIComponent(deviceId)}/tasks`,
+                `/devices/${encodeURIComponent(deviceId)}/tasks?connection_request`,
                 task
             );
 
@@ -131,7 +131,7 @@ const genieacsApi = {
             };
 
             const refreshResponse = await axiosInstance.post(
-                `/devices/${encodeURIComponent(deviceId)}/tasks`,
+                `/devices/${encodeURIComponent(deviceId)}/tasks?connection_request`,
                 refreshTask
             );
 

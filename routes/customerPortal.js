@@ -152,7 +152,7 @@ async function updateSSID(phone, newSSID) {
     const password = settings.genieacs_password || '';
     // Update SSID 2.4GHz
     await axios.post(
-      `${genieacsUrl}/devices/${encodedDeviceId}/tasks`,
+      `${genieacsUrl}/devices/${encodedDeviceId}/tasks?connection_request`,
       {
         name: "setParameterValues",
         parameterValues: [
@@ -167,7 +167,7 @@ async function updateSSID(phone, newSSID) {
     for (const idx of ssid5gIndexes) {
       try {
         await axios.post(
-          `${genieacsUrl}/devices/${encodedDeviceId}/tasks`,
+          `${genieacsUrl}/devices/${encodedDeviceId}/tasks?connection_request`,
           {
             name: "setParameterValues",
             parameterValues: [
@@ -181,7 +181,7 @@ async function updateSSID(phone, newSSID) {
     }
     // Hanya refresh, tidak perlu reboot
     await axios.post(
-      `${genieacsUrl}/devices/${encodedDeviceId}/tasks`,
+      `${genieacsUrl}/devices/${encodedDeviceId}/tasks?connection_request`,
       { name: "refreshObject", objectName: "InternetGatewayDevice.LANDevice.1.WLANConfiguration" },
       { auth: { username, password } }
     );
@@ -220,7 +220,7 @@ async function updatePassword(phone, newPassword) {
     const password = settings.genieacs_password || '';
     const tasksUrl = `${genieacsUrl}/devices/${encodedDeviceId}/tasks`;
     // Update password 2.4GHz
-    await axios.post(tasksUrl, {
+    await axios.post(`${tasksUrl}?connection_request`, {
       name: "setParameterValues",
       parameterValues: [
         ["InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.KeyPassphrase", newPassword, "xsd:string"],
@@ -228,7 +228,7 @@ async function updatePassword(phone, newPassword) {
       ]
     }, { auth: { username, password } });
     // Update password 5GHz
-    await axios.post(tasksUrl, {
+    await axios.post(`${tasksUrl}?connection_request`, {
       name: "setParameterValues",
       parameterValues: [
         ["InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.KeyPassphrase", newPassword, "xsd:string"],
@@ -236,7 +236,7 @@ async function updatePassword(phone, newPassword) {
       ]
     }, { auth: { username, password } });
     // Refresh
-    await axios.post(tasksUrl, {
+    await axios.post(`${tasksUrl}?connection_request`, {
       name: "refreshObject",
       objectName: "InternetGatewayDevice.LANDevice.1.WLANConfiguration"
     }, { auth: { username, password } });
@@ -362,55 +362,141 @@ router.post('/restart-device', async (req, res) => {
   if (!phone) return res.status(401).json({ success: false, message: 'Session tidak valid' });
   
   try {
+    console.log(`🔄 Restart device request from phone: ${phone}`);
+    
     // Cari device berdasarkan nomor pelanggan
     const device = await findDeviceByTag(phone);
     if (!device) {
+      console.log(`❌ Device not found for phone: ${phone}`);
       return res.status(404).json({ success: false, message: 'Device tidak ditemukan' });
     }
+
+    console.log(`✅ Device found: ${device._id}`);
+
+    // Cek status device (online/offline) - gunakan threshold yang lebih longgar
+    const lastInform = device._lastInform ? new Date(device._lastInform) : null;
+    const now = Date.now();
+    const thirtyMinutes = 30 * 60 * 1000; // 30 menit
+    
+    const isOnline = lastInform && (now - lastInform.getTime()) < thirtyMinutes;
+    
+    if (!isOnline) {
+      const minutesAgo = lastInform ? Math.round((now - lastInform.getTime()) / 60000) : 'Unknown';
+      console.log(`⚠️ Device is offline. Last inform: ${lastInform ? lastInform.toLocaleString() : 'Never'}`);
+      console.log(`⏰ Time since last inform: ${minutesAgo} minutes`);
+      
+      let offlineMessage = 'Device sedang offline.';
+      if (minutesAgo !== 'Unknown' && minutesAgo > 60) {
+        offlineMessage = `Device offline sejak ${Math.floor(minutesAgo / 60)} jam ${minutesAgo % 60} menit yang lalu.`;
+      } else if (minutesAgo !== 'Unknown') {
+        offlineMessage = `Device offline sejak ${minutesAgo} menit yang lalu.`;
+      }
+      
+      return res.status(400).json({ 
+        success: false, 
+        message: offlineMessage + ' Silakan coba lagi dalam beberapa menit setelah device online kembali.' 
+      });
+    }
+    
+    console.log(`✅ Device is online. Last inform: ${lastInform.toLocaleString()}`);
 
     const genieacsUrl = getSetting('genieacs_url', 'http://localhost:7557');
     const genieacsUsername = getSetting('genieacs_username', 'admin');
     const genieacsPassword = getSetting('genieacs_password', 'password');
 
-    // Kirim perintah restart ke GenieACS
+    console.log(`🔗 GenieACS URL: ${genieacsUrl}`);
+
+    // Gunakan device ID asli (tidak di-decode) karena GenieACS memerlukan format yang di-encode
+    const deviceId = device._id;
+    console.log(`🔧 Using original device ID: ${deviceId}`);
+
+    // Kirim perintah restart ke GenieACS menggunakan endpoint yang benar
     const taskData = {
-      name: 'reboot',
-      device: device._id
+      name: 'reboot'
     };
 
-    await axios.post(`${genieacsUrl}/tasks`, taskData, {
-      auth: { username: genieacsUsername, password: genieacsPassword },
-      headers: { 'Content-Type': 'application/json' }
-    });
+    console.log(`📤 Sending restart task to GenieACS for device: ${deviceId}`);
+
+    // Gunakan endpoint yang benar sesuai dokumentasi GenieACS
+    // Pastikan device ID di-encode dengan benar untuk menghindari masalah karakter khusus
+    const encodedDeviceId = encodeURIComponent(deviceId);
+    console.log(`🔧 Using encoded device ID: ${encodedDeviceId}`);
+
+    try {
+      const response = await axios.post(`${genieacsUrl}/devices/${encodedDeviceId}/tasks?connection_request`, taskData, {
+        auth: { username: genieacsUsername, password: genieacsPassword },
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      console.log(`✅ GenieACS response:`, response.data);
+
+      // Jika task berhasil dibuat, berarti restart command berhasil dikirim
+      // Device akan offline selama proses restart (1-2 menit)
+      console.log(`🔄 Restart command sent successfully. Device will be offline during restart process.`);
+      
+    } catch (taskError) {
+      console.error(`❌ Error sending restart task:`, taskError.response?.data || taskError.message);
+      
+      // Jika device tidak ditemukan saat mengirim task, berarti device baru saja offline
+      if (taskError.response?.status === 404) {
+        throw new Error('Device tidak dapat menerima perintah restart. Device mungkin baru saja offline atau sedang dalam proses restart.');
+      }
+      
+      throw taskError;
+    }
 
     // Kirim notifikasi WhatsApp ke pelanggan
     try {
       const waJid = phone.replace(/^0/, '62') + '@s.whatsapp.net';
       const msg = `🔄 *RESTART PERANGKAT*\n\n` +
-        `Perangkat Anda sedang direstart.\n\n` +
+        `Perintah restart berhasil dikirim ke perangkat Anda.\n\n` +
         `⏰ Proses restart memakan waktu 1-2 menit\n` +
-        `📶 Koneksi internet akan kembali normal setelah restart selesai\n\n` +
+        `📶 Koneksi internet akan terputus sementara\n` +
+        `✅ Internet akan kembali normal setelah restart selesai\n\n` +
         `Terima kasih atas kesabaran Anda.`;
       await sendMessage(waJid, msg);
+      console.log(`✅ WhatsApp notification sent to ${phone}`);
     } catch (e) {
-      console.error('Gagal mengirim notifikasi restart:', e);
+      console.error('❌ Gagal mengirim notifikasi restart:', e);
     }
 
     res.json({ success: true, message: 'Perintah restart berhasil dikirim' });
   } catch (err) {
-    console.error('Error restart device:', err.message);
+    console.error('❌ Error restart device:', err.message);
+    console.error('❌ Error details:', err.response?.data || err);
+    
+    let errorMessage = 'Gagal mengirim perintah restart';
+    
+    // Berikan pesan yang lebih informatif berdasarkan error
+    if (err.response?.status === 404) {
+      errorMessage = 'Device tidak ditemukan atau sedang offline. Silakan coba lagi dalam beberapa menit.';
+    } else if (err.response?.data?.message) {
+      errorMessage = err.response.data.message;
+    } else if (err.message) {
+      errorMessage = err.message;
+    }
+    
     res.status(500).json({ 
       success: false, 
-      message: 'Gagal mengirim perintah restart: ' + (err.response?.data?.message || err.message)
+      message: errorMessage
     });
   }
 });
 
-// POST: Logout pelanggan (letakkan sebelum module.exports)
+// POST: Logout pelanggan
 router.post('/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/customer/login');
   });
+});
+
+// Import dan gunakan route laporan gangguan
+const troubleReportRouter = require('./troubleReport');
+router.use('/trouble', troubleReportRouter);
+
+// Route form trouble report simpel (tanpa session)
+router.get('/trouble/simple', (req, res) => {
+  res.render('customer-trouble-simple');
 });
 
 module.exports = router; 

@@ -39,21 +39,27 @@
             text-align: center;
         }
         .voucher-username {
-            font-size: 1.3em;
+            font-size: 2.1em;
             font-weight: bold;
             letter-spacing: 1px;
             color: #222;
         }
         .voucher-password {
-            font-size: 1.1em;
+            font-size: 1.7em;
             font-weight: bold;
             color: #d7263d;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         .voucher-profile {
-            font-size: 0.98em;
+            font-size: 1.2em;
             color: #555;
             margin-bottom: 3px;
+        }
+        .voucher-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 6px;
         }
         .voucher-footer {
             font-size: 0.9em;
@@ -85,19 +91,86 @@
         <button onclick="window.print()" style="padding:8px 18px;font-size:1em;">Print Voucher</button>
         <a href="/admin/hotspot" style="margin-left:24px;">Kembali ke Hotspot</a>
     </div>
-    <div class="voucher-grid">
-        <% vouchers.forEach(function(v, idx) { %>
-        <div class="voucher-card">
-            <div class="voucher-header"><%= namaHotspot %></div>
-            <div class="voucher-username">User: <%= v.username %></div>
-            <div class="voucher-password">Pass: <%= v.password %></div>
-            <div class="voucher-profile">Profile: <%= v.profile %></div>
-            <div class="voucher-instruksi">Login di halaman WiFi: <b>http://192.168.88.1</b> atau scan WiFi lalu masukkan user & password di atas.</div>
-            <div class="voucher-footer">
-                Hubungi Admin: <span class="voucher-contact"><%= adminKontak %></span>
+    <div class="voucher-grid" id="voucherContainer">
+        <% if (vouchers && vouchers.length > 0) { %>
+            <% vouchers.forEach(function(v, idx) { %>
+            <div class="voucher-card">
+                <div class="voucher-header"><%= namaHotspot %></div>
+                <% if (v.price) { %>
+                <div class="voucher-price">Rp <%= v.price.toLocaleString('id-ID') %></div>
+                <% } %>
+                <div class="voucher-username">User: <%= v.username %></div>
+                <div class="voucher-password">Pass: <%= v.password %></div>
+                <div class="voucher-profile">Profile: <%= v.profile %></div>
+                <div class="voucher-instruksi">Login di halaman WiFi: <b>http://192.168.88.1</b> atau scan WiFi lalu masukkan user & password di atas.</div>
+                <div class="voucher-footer">
+                    Hubungi Admin: <span class="voucher-contact"><%= adminKontak %></span>
+                </div>
             </div>
-        </div>
-        <% }); %>
+            <% }); %>
+        <% } else { %>
+            <div class="text-center py-5">
+                <p>Menunggu data voucher...</p>
+            </div>
+        <% } %>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tambahkan tombol print di bagian atas
+        const printButton = document.createElement('button');
+        printButton.className = 'print-button';
+        printButton.innerHTML = '<i class="bi bi-printer"></i> Print Voucher';
+        document.body.insertBefore(printButton, document.body.firstChild);
+        
+        printButton.addEventListener('click', function() {
+            window.print();
+        });
+
+        // Dengarkan pesan dari halaman admin
+        window.addEventListener('message', function(event) {
+            // Verifikasi origin jika diperlukan
+            if (event.data && event.data.type === 'PRINT_VOUCHERS') {
+                const voucherData = event.data.data;
+                if (voucherData && voucherData.vouchers && voucherData.vouchers.length > 0) {
+                    renderVouchers(voucherData);
+                    // Auto print setelah render
+                    setTimeout(() => {
+                        window.print();
+                    }, 500);
+                }
+            }
+        });
+
+        // Fungsi untuk render voucher
+        function renderVouchers(data) {
+            const container = document.getElementById('voucherContainer');
+            const vouchers = data.vouchers;
+            const model = data.model || 'standard';
+            const namaHotspot = data.namaHotspot || '<%= namaHotspot %>';
+            const adminKontak = data.adminKontak || '<%= adminKontak %>';
+            
+            // Tambahkan class sesuai model
+            container.className = 'voucher-grid ' + model;
+            
+            let html = '';
+            vouchers.forEach(function(v) {
+                html += `
+                <div class="voucher-card">
+                    <div class="voucher-header">${namaHotspot}</div>
+                    <div class="voucher-username">User: ${v.username}</div>
+                    <div class="voucher-password">Pass: ${v.password}</div>
+                    <div class="voucher-profile">Profile: ${v.profile}</div>
+                    <div class="voucher-instruksi">Login di halaman WiFi: <b>http://192.168.88.1</b> atau scan WiFi lalu masukkan user & password di atas.</div>
+                    <div class="voucher-footer">
+                        Hubungi Admin: <span class="voucher-contact">${adminKontak}</span>
+                    </div>
+                </div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+    });
+    </script>
 </body>
 </html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %> - Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.responsive.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        body { 
+            background: #f8f9fa; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .form-label { 
+            font-weight: 600; 
+            color: #495057;
+        }
+        .sidebar {
+            min-height: 100vh;
+            background: #222e3c;
+            color: #fff;
+            padding-top: 32px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .sidebar a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            padding: 12px 24px;
+            border-radius: 6px;
+            margin: 4px 12px;
+            transition: all 0.3s ease;
+        }
+        .sidebar a.active, .sidebar a:hover {
+            background: #3b4a5a;
+            transform: translateX(5px);
+        }
+        .sidebar .sidebar-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 0 24px 24px 24px;
+        }
+        .main-content {
+            padding: 32px 24px;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 24px;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .stats-card {
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+        .stats-card .card-body {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+        }
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            z-index: 1;
+        }
+        .stats-card .card-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        .stats-card .card-text {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+        .stats-card .stats-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            opacity: 0.4;
+        }
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            padding: 15px;
+        }
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(0,123,255,0.03);
+        }
+        .badge {
+            padding: 8px 12px;
+            font-weight: 500;
+            border-radius: 30px;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box .form-control {
+            padding-left: 40px;
+            border-radius: 30px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+        }
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+        .btn-action:hover {
+            transform: translateY(-3px);
+        }
+        .page-title {
+            font-weight: 700;
+            color: #343a40;
+            margin-bottom: 0;
+        }
+        .filter-card {
+            background: #fff;
+            border-radius: 12px;
+        }
+        .filter-card .form-select {
+            border-radius: 6px;
+            padding: 10px 15px;
+        }
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        @media (max-width: 991.98px) {
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 0;
+                width: 260px;
+                height: 100vh;
+                z-index: 1050;
+                transition: left 0.3s;
+            }
+            .sidebar.show {
+                left: 0;
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.3);
+                z-index: 1049;
+            }
+            .sidebar-overlay.show {
+                display: block;
+            }
+            .main-content {
+                padding-left: 0 !important;
+            }
+            .row.mb-4 > [class^='col-'] {
+                margin-bottom: 1rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
+            <div class="sidebar-header mb-4 text-center">
+                <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
+            </div>
+            <a href="/admin/dashboard"><i class="bi bi-house"></i> Dashboard</a>
+            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
+            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
+            <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
+            <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
+            <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
+            <a href="/admin/trouble" class="active"><i class="bi bi-exclamation-triangle"></i> Laporan Gangguan</a>
+            <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
+            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+        
+        <main class="col-md-10 main-content ms-sm-auto">
+            <button class="hamburger d-block d-md-none mb-3" id="hamburgerBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4">
+                <div>
+                    <h1 class="page-title">Manajemen Laporan Gangguan</h1>
+                    <p class="text-muted">Kelola dan pantau semua laporan gangguan dari pelanggan</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary rounded-pill">
+                        <i class="bi bi-file-earmark-text me-2"></i> Export Laporan
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Statistik Laporan -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card stats-card text-white bg-primary">
+                        <div class="card-body">
+                            <div class="stats-icon"><i class="bi bi-clipboard-data"></i></div>
+                            <h5 class="card-title">Total Laporan</h5>
+                            <h2 class="card-text"><%= stats.total %></h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stats-card text-white bg-danger">
+                        <div class="card-body">
+                            <div class="stats-icon"><i class="bi bi-exclamation-circle"></i></div>
+                            <h5 class="card-title">Belum Ditangani</h5>
+                            <h2 class="card-text"><%= stats.open %></h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stats-card text-dark bg-warning">
+                        <div class="card-body">
+                            <div class="stats-icon"><i class="bi bi-gear"></i></div>
+                            <h5 class="card-title">Sedang Ditangani</h5>
+                            <h2 class="card-text"><%= stats.inProgress %></h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stats-card text-white bg-success">
+                        <div class="card-body">
+                            <div class="stats-icon"><i class="bi bi-check-circle"></i></div>
+                            <h5 class="card-title">Terselesaikan</h5>
+                            <h2 class="card-text"><%= stats.resolved + stats.closed %></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filter dan Pencarian -->
+            <div class="card filter-card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-end">
+                        <div class="col-md-4 mb-3">
+                            <label for="statusFilter" class="form-label"><i class="bi bi-funnel me-2"></i>Filter Status</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="all">Semua Status</option>
+                                <option value="open">Belum Ditangani</option>
+                                <option value="in_progress">Sedang Ditangani</option>
+                                <option value="resolved">Terselesaikan</option>
+                                <option value="closed">Ditutup</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="categoryFilter" class="form-label"><i class="bi bi-tag me-2"></i>Filter Kategori</label>
+                            <select class="form-select" id="categoryFilter">
+                                <option value="all">Semua Kategori</option>
+                                <% 
+                                const categories = new Set();
+                                reports.forEach(report => {
+                                    if (report.category) categories.add(report.category);
+                                });
+                                Array.from(categories).forEach(category => { 
+                                %>
+                                    <option value="<%= category %>"><%= category %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="searchInput" class="form-label"><i class="bi bi-search me-2"></i>Pencarian</label>
+                            <div class="search-box">
+                                <i class="bi bi-search"></i>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Cari berdasarkan ID, nama, atau nomor HP...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabel Laporan -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                        <h5 class="card-title mb-0"><i class="bi bi-list-ul me-2"></i>Daftar Laporan Gangguan</h5>
+                        <span class="badge bg-primary rounded-pill"><%= reports ? reports.length : 0 %> Laporan</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">ID Tiket</th>
+                                    <th>Pelanggan</th>
+                                    <th>Kategori</th>
+                                    <th>Tanggal Laporan</th>
+                                    <th>Status</th>
+                                    <th>Terakhir Diupdate</th>
+                                    <th class="text-end pe-4">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <% if (reports && reports.length > 0) { %>
+                                    <% reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(report => { %>
+                                        <tr class="report-row" 
+                                            data-status="<%= report.status %>" 
+                                            data-category="<%= report.category %>"
+                                            data-search="<%= report.id %> <%= report.name %> <%= report.phone %>">
+                                            <td class="ps-4">
+                                                <span class="fw-bold">#<%= report.id %></span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle bg-primary text-white me-2">
+                                                        <%= report.name.charAt(0).toUpperCase() %>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium"><%= report.name %></div>
+                                                        <div class="text-muted small"><i class="bi bi-telephone me-1"></i><%= report.phone %></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark rounded-pill px-3 py-2">
+                                                    <% if (report.category === 'internet') { %>
+                                                        <i class="bi bi-globe me-1"></i>
+                                                    <% } else if (report.category === 'wifi') { %>
+                                                        <i class="bi bi-wifi me-1"></i>
+                                                    <% } else if (report.category === 'perangkat') { %>
+                                                        <i class="bi bi-router me-1"></i>
+                                                    <% } else { %>
+                                                        <i class="bi bi-question-circle me-1"></i>
+                                                    <% } %>
+                                                    <%= report.category %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div><i class="bi bi-calendar-event me-1"></i><%= new Date(report.createdAt).toLocaleDateString('id-ID') %></div>
+                                                <small class="text-muted"><%= new Date(report.createdAt).toLocaleTimeString('id-ID') %></small>
+                                            </td>
+                                            <td>
+                                                <span class="badge <%= 
+                                                    report.status === 'open' ? 'bg-danger' : 
+                                                    report.status === 'in_progress' ? 'bg-warning text-dark' : 
+                                                    report.status === 'resolved' ? 'bg-success' : 
+                                                    'bg-secondary' 
+                                                %> rounded-pill px-3 py-2">
+                                                    <% if (report.status === 'open') { %>
+                                                        <i class="bi bi-exclamation-circle me-1"></i>
+                                                    <% } else if (report.status === 'in_progress') { %>
+                                                        <i class="bi bi-gear me-1"></i>
+                                                    <% } else if (report.status === 'resolved') { %>
+                                                        <i class="bi bi-check-circle me-1"></i>
+                                                    <% } else { %>
+                                                        <i class="bi bi-archive me-1"></i>
+                                                    <% } %>
+                                                    <%= 
+                                                        report.status === 'open' ? 'Belum Ditangani' : 
+                                                        report.status === 'in_progress' ? 'Sedang Ditangani' : 
+                                                        report.status === 'resolved' ? 'Terselesaikan' : 
+                                                        'Ditutup' 
+                                                    %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div><i class="bi bi-clock-history me-1"></i><%= new Date(report.updatedAt).toLocaleDateString('id-ID') %></div>
+                                                <small class="text-muted"><%= new Date(report.updatedAt).toLocaleTimeString('id-ID') %></small>
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <a href="/admin/trouble/detail/<%= report.id %>" class="btn btn-primary btn-action me-1" title="Lihat Detail">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="https://wa.me/<%= report.phone.replace(/^0/, '62') %>" target="_blank" class="btn btn-success btn-action" title="Hubungi via WhatsApp">
+                                                    <i class="bi bi-whatsapp"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5">
+                                            <div class="empty-state">
+                                                <i class="bi bi-clipboard-x" style="font-size: 3rem; color: #dee2e6;"></i>
+                                                <p class="mt-3 mb-0 text-muted">Belum ada laporan gangguan</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusFilter = document.getElementById('statusFilter');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const searchInput = document.getElementById('searchInput');
+        const reportRows = document.querySelectorAll('.report-row');
+        
+        // Fungsi untuk memfilter tabel
+        function filterTable() {
+            const statusValue = statusFilter.value;
+            const categoryValue = categoryFilter.value;
+            const searchValue = searchInput.value.toLowerCase();
+            
+            reportRows.forEach(row => {
+                const rowStatus = row.getAttribute('data-status');
+                const rowCategory = row.getAttribute('data-category');
+                const rowSearchText = row.getAttribute('data-search').toLowerCase();
+                
+                const statusMatch = statusValue === 'all' || rowStatus === statusValue;
+                const categoryMatch = categoryValue === 'all' || rowCategory === categoryValue;
+                const searchMatch = rowSearchText.includes(searchValue);
+                
+                if (statusMatch && categoryMatch && searchMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // Event listeners untuk filter
+        statusFilter.addEventListener('change', filterTable);
+        categoryFilter.addEventListener('change', filterTable);
+        searchInput.addEventListener('input', filterTable);
+
+        // Hamburger & sidebar logic
+        const hamburger = document.getElementById('hamburgerBtn');
+        const sidebar = document.getElementById('adminSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (hamburger && sidebar && overlay) {
+            hamburger.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+            });
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+            });
+        }
+    });
+</script>
+
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

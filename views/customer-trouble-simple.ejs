@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Laporan Gangguan Sederhana</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; padding: 30px; }
+        .result-box { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px #0001; padding: 20px; margin-top: 20px; }
+        .form-label { font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 500px;">
+        <h2 class="mb-4">Form Laporan Gangguan Sederhana</h2>
+        <form id="simpleTroubleForm">
+            <div class="mb-3">
+                <label class="form-label">Nama</label>
+                <input type="text" class="form-control" id="name" name="name" value="" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Nomor HP</label>
+                <input type="text" class="form-control" id="phone" name="phone" value="" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Lokasi</label>
+                <input type="text" class="form-control" id="location" name="location" value="" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Kategori Masalah</label>
+                <select class="form-select" id="category" name="category" required>
+                    <option value="">Pilih kategori</option>
+                    <option value="Internet Lambat">Internet Lambat</option>
+                    <option value="Tidak Bisa Browsing">Tidak Bisa Browsing</option>
+                    <option value="WiFi Tidak Muncul">WiFi Tidak Muncul</option>
+                    <option value="Koneksi Putus-Putus">Koneksi Putus-Putus</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Deskripsi Masalah</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Kirim Laporan</button>
+        </form>
+        <div id="resultBox" class="result-box d-none"></div>
+        <div id="backBtnBox" class="d-none mt-3 text-center">
+            <a href="/customer/dashboard" class="btn btn-secondary">Kembali ke Dashboard</a>
+        </div>
+    </div>
+    <script>
+        const form = document.getElementById('simpleTroubleForm');
+        const resultBox = document.getElementById('resultBox');
+        const backBtnBox = document.getElementById('backBtnBox');
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            resultBox.classList.add('d-none');
+            backBtnBox.classList.add('d-none');
+            resultBox.innerHTML = '';
+            const data = {
+                name: form.name.value,
+                phone: form.phone.value,
+                location: form.location.value,
+                category: form.category.value,
+                description: form.description.value
+            };
+            if (!data.category || !data.description) {
+                resultBox.innerHTML = '<div class="alert alert-warning">Kategori dan deskripsi wajib diisi.</div>';
+                resultBox.classList.remove('d-none');
+                backBtnBox.classList.remove('d-none');
+                return;
+            }
+            // Coba POST ke /customer/trouble/report
+            let response, json;
+            try {
+                response = await fetch('/customer/trouble/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (response.headers.get('content-type')?.includes('application/json')) {
+                    json = await response.json();
+                } else {
+                    throw new Error('Bukan JSON, kemungkinan session tidak valid');
+                }
+            } catch (err) {
+                // Fallback ke GET /customer/trouble/test
+                try {
+                    const params = new URLSearchParams(data);
+                    response = await fetch('/customer/trouble/test?' + params.toString());
+                    json = await response.json();
+                } catch (err2) {
+                    resultBox.innerHTML = '<div class="alert alert-danger">Gagal mengirim laporan. Silakan coba lagi.</div>';
+                    resultBox.classList.remove('d-none');
+                    backBtnBox.classList.remove('d-none');
+                    return;
+                }
+            }
+            if (json && json.success) {
+                resultBox.innerHTML = `<div class="alert alert-success">${json.message}<br><b>ID Tiket:</b> ${json.reportId}<br><small>Anda akan diarahkan ke dashboard dalam 3 detik...</small></div>`;
+                setTimeout(() => { window.location.href = '/customer/dashboard'; }, 3000);
+            } else {
+                resultBox.innerHTML = `<div class="alert alert-danger">${json && json.message ? json.message : 'Gagal mengirim laporan.'}</div>`;
+            }
+            resultBox.classList.remove('d-none');
+            backBtnBox.classList.remove('d-none');
+        });
+    </script>
+</body>
+</html> 

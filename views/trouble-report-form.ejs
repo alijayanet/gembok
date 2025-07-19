@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Gangguan - <%= companyHeader %></title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/customer-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --info-color: #560bad;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --card-border-radius: 16px;
+            --btn-border-radius: 50px;
+            --transition-speed: 0.3s;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            padding-top: 30px;
+            padding-bottom: 30px;
+        }
+        
+        /* Header Styling */
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header-section h2 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+        
+        .header-section h4 {
+            font-weight: 600;
+            color: var(--secondary-color);
+            opacity: 0.9;
+        }
+        
+        /* Form Styling */
+        .report-form {
+            background-color: #fff;
+            border-radius: var(--card-border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .report-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .report-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+        }
+        
+        .report-form h5 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+        }
+        
+        .report-form h5::before {
+            content: '\F4E6';
+            font-family: 'bootstrap-icons';
+            font-size: 22px;
+        }
+        
+        /* Form Controls */
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 8px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: var(--btn-border-radius);
+            padding: 12px 20px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+            border-color: var(--primary-color);
+        }
+        
+        textarea.form-control {
+            min-height: 120px;
+        }
+        
+        /* Button Styling */
+        .btn {
+            padding: 12px 25px;
+            border-radius: var(--btn-border-radius);
+            font-weight: 600;
+            transition: all var(--transition-speed) ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            z-index: -1;
+        }
+        
+        .btn:hover::before {
+            transform: translateX(0);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+        }
+        
+        .btn-outline-secondary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            background: transparent;
+        }
+        
+        .btn-outline-secondary:hover {
+            color: var(--primary-color);
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        /* Previous Reports Styling */
+        .previous-reports {
+            background-color: #fff;
+            border-radius: var(--card-border-radius);
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .previous-reports:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .previous-reports::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent-color), var(--info-color));
+        }
+        
+        .previous-reports h5 {
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+        }
+        
+        .previous-reports h5::before {
+            content: '\F4D9';
+            font-family: 'bootstrap-icons';
+            font-size: 22px;
+        }
+        
+        .report-item {
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .report-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .report-item.open {
+            border-left-color: var(--warning-color);
+        }
+        
+        .report-item.in_progress {
+            border-left-color: var(--accent-color);
+        }
+        
+        .report-item.resolved {
+            border-left-color: var(--success-color);
+        }
+        
+        .report-item.closed {
+            border-left-color: var(--dark-color);
+        }
+        
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge::before {
+            font-family: 'bootstrap-icons';
+            font-size: 0.8rem;
+        }
+        
+        .status-open {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .status-open::before {
+            content: '\F62A';
+        }
+        
+        .status-in_progress {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .status-in_progress::before {
+            content: '\F28B';
+        }
+        
+        .status-resolved {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .status-resolved::before {
+            content: '\F26B';
+        }
+        
+        .status-closed {
+            background-color: var(--dark-color);
+            color: white;
+        }
+        
+        .status-closed::before {
+            content: '\F62B';
+        }
+        
+        /* Footer Styling */
+        .footer-section {
+            text-align: center;
+            margin-top: 30px;
+            color: var(--dark-color);
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        
+        /* Modal Styling */
+        .modal-content {
+            border-radius: var(--card-border-radius);
+            border: none;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 15px 20px;
+        }
+        
+        .modal-title {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-title::before {
+            content: '\F4D3';
+            font-family: 'bootstrap-icons';
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding: 15px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <!-- Header -->
+                <div class="header-section animate__animated animate__fadeInDown">
+                    <h2><%= companyHeader %></h2>
+                    <h4>Portal Laporan Gangguan</h4>
+                </div>
+                
+                <!-- Form Laporan Gangguan -->
+                <div class="report-form animate__animated animate__fadeInUp">
+                    <h5>Buat Laporan Gangguan Baru</h5>
+                    <form id="troubleReportForm">
+                        <div class="mb-4">
+                            <label for="name" class="form-label"><i class="bi bi-person me-2"></i>Nama Pelanggan</label>
+                            <input type="text" class="form-control" id="name" name="name" value="<%= customerName %>" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="phone" class="form-label"><i class="bi bi-phone me-2"></i>Nomor HP</label>
+                            <input type="text" class="form-control" id="phone" name="phone" value="<%= phone %>" readonly>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="location" class="form-label"><i class="bi bi-geo-alt me-2"></i>Lokasi</label>
+                            <input type="text" class="form-control" id="location" name="location" value="<%= location %>" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="category" class="form-label"><i class="bi bi-tag me-2"></i>Kategori Masalah</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="" selected disabled>Pilih kategori masalah</option>
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category %>"><%= category %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="description" class="form-label"><i class="bi bi-chat-text me-2"></i>Deskripsi Masalah</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" placeholder="Jelaskan masalah yang Anda alami secara detail..." required></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-3 d-md-flex justify-content-md-end mt-4">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i>Kirim Laporan</button>
+                            <a href="/customer/dashboard" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i>Kembali ke Dashboard</a>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Laporan Sebelumnya -->
+                <% if (previousReports && previousReports.length > 0) { %>
+                    <div class="previous-reports animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+                        <h5>Laporan Sebelumnya</h5>
+                        <% previousReports.forEach(report => { %>
+                            <div class="report-item <%= report.status %> animate__animated animate__fadeInLeft">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="status-badge status-<%= report.status %>"><%= report.statusText %></span>
+                                        <small class="text-muted ms-2"><i class="bi bi-calendar-event me-1"></i><%= report.formattedDate %></small>
+                                    </div>
+                                    <a href="/customer/trouble/detail/<%= report.id %>" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye me-1"></i>Lihat Detail</a>
+                                </div>
+                                <div class="mt-3">
+                                    <p class="mb-2"><i class="bi bi-tag me-2"></i><strong>Kategori:</strong> <%= report.category %></p>
+                                    <p class="mb-1"><i class="bi bi-chat-text me-2"></i><strong>Deskripsi:</strong> <%= report.description %></p>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } %>
+                
+                <!-- Footer -->
+                <div class="footer-section animate__animated animate__fadeInUp" style="animation-delay: 0.5s;">
+                    <p><%= footerInfo %></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong class="me-auto">Berhasil!</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <span id="successMessage"></span>
+            </div>
+        </div>
+        
+        <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-danger text-white">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong class="me-auto">Error!</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <span id="errorMessage"></span>
+            </div>
+        </div>
+        
+        <div id="warningToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-warning text-dark">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong class="me-auto">Peringatan!</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <span id="warningMessage"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Notifikasi -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationModalLabel">Notifikasi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="notificationMessage">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="modalOkButton"><i class="bi bi-check2"></i>OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const troubleReportForm = document.getElementById('troubleReportForm');
+            const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+            const notificationMessage = document.getElementById('notificationMessage');
+            const modalOkButton = document.getElementById('modalOkButton');
+            
+            // Toast notifications
+            const successToast = new bootstrap.Toast(document.getElementById('successToast'));
+            const errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
+            const warningToast = new bootstrap.Toast(document.getElementById('warningToast'));
+            
+            // Tambahkan loading state
+            const submitButton = troubleReportForm.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            
+            troubleReportForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                console.log('📝 Form submitted, collecting data...');
+                
+                // Kumpulkan data form
+                const formData = {
+                    name: document.getElementById('name').value,
+                    location: document.getElementById('location').value,
+                    category: document.getElementById('category').value,
+                    description: document.getElementById('description').value
+                };
+                
+                console.log('📋 Form data:', formData);
+                
+                // Validasi client-side
+                if (!formData.category || !formData.description) {
+                    document.getElementById('warningMessage').textContent = 'Kategori dan deskripsi masalah wajib diisi.';
+                    warningToast.show();
+                    return;
+                }
+                
+                // Set loading state
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Mengirim...';
+                
+                console.log('📤 Sending request to server...');
+                
+                // Kirim data ke server
+                console.log('📤 Sending POST request to /customer/trouble/report');
+                console.log('📋 Request headers:', {
+                    'Content-Type': 'application/json'
+                });
+                console.log('📋 Request body:', JSON.stringify(formData));
+                
+                fetch('/customer/trouble/report', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => {
+                    console.log('📥 Response received:', response.status, response.statusText);
+                    console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📋 Response data:', data);
+                    
+                    if (data.success) {
+                        // Tampilkan toast success
+                        document.getElementById('successMessage').textContent = `${data.message} - ID Tiket: ${data.reportId}`;
+                        successToast.show();
+                        
+                        // Reset form setelah berhasil
+                        troubleReportForm.reset();
+                        document.getElementById('name').value = '<%= customerName %>';
+                        document.getElementById('phone').value = '<%= phone %>';
+                        document.getElementById('location').value = '<%= location %>';
+                        
+                        // Tampilkan modal detail setelah 2 detik
+                        setTimeout(() => {
+                            notificationMessage.innerHTML = `
+                                <div class="alert alert-success d-flex align-items-center">
+                                    <i class="bi bi-check-circle-fill me-2 fs-4"></i>
+                                    <div>
+                                        <strong>✅ Berhasil!</strong><br>
+                                        ${data.message}<br>
+                                        <strong>ID Tiket:</strong> ${data.reportId}
+                                    </div>
+                                </div>
+                                <p class="mt-3"><i class="bi bi-info-circle me-2"></i>Laporan gangguan Anda telah diterima dan akan segera ditindaklanjuti oleh tim teknis kami.</p>
+                            `;
+                            
+                            // Tambahkan redirect ke halaman detail setelah klik OK
+                            modalOkButton.addEventListener('click', function() {
+                                window.location.href = `/customer/trouble/detail/${data.reportId}`;
+                            }, { once: true });
+                            
+                            notificationModal.show();
+                        }, 2000);
+                        
+                        console.log('✅ Success notification shown');
+                    } else {
+                        // Tampilkan toast error
+                        document.getElementById('errorMessage').textContent = data.message;
+                        errorToast.show();
+                        
+                        console.log('❌ Error notification shown:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Fetch error:', error);
+                    
+                    // Try fallback method if normal POST fails
+                    console.log('🔄 Trying fallback method...');
+                    submitWithFallback(formData);
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                    console.log('🔄 Button state reset');
+                });
+                
+                // Fallback method using GET with query parameters
+                async function submitWithFallback(formData) {
+                    try {
+                        console.log('🔄 Fallback method started...');
+                        
+                        // Build URL with query parameters
+                        const params = new URLSearchParams({
+                            name: formData.name,
+                            phone: '<%= phone %>',
+                            location: formData.location,
+                            category: formData.category,
+                            description: formData.description
+                        });
+                        
+                        const fallbackUrl = `/customer/trouble/test?${params.toString()}`;
+                        console.log('🔄 Fallback URL:', fallbackUrl);
+                        
+                        const fallbackResponse = await fetch(fallbackUrl);
+                        const fallbackResult = await fallbackResponse.json();
+                        
+                        console.log('🔄 Fallback response:', fallbackResult);
+                        
+                        if (fallbackResult.success) {
+                            // Tampilkan toast success
+                            document.getElementById('successMessage').textContent = `${fallbackResult.message} (via fallback) - ID Tiket: ${fallbackResult.reportId}`;
+                            successToast.show();
+                            
+                            // Reset form setelah berhasil
+                            troubleReportForm.reset();
+                            document.getElementById('name').value = '<%= customerName %>';
+                            document.getElementById('phone').value = '<%= phone %>';
+                            document.getElementById('location').value = '<%= location %>';
+                            
+                            // Tampilkan modal detail setelah 2 detik
+                            setTimeout(() => {
+                                notificationMessage.innerHTML = `
+                                    <div class="alert alert-success d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill me-2 fs-4"></i>
+                                        <div>
+                                            <strong>✅ Berhasil! (Fallback)</strong><br>
+                                            ${fallbackResult.message}<br>
+                                            <strong>ID Tiket:</strong> ${fallbackResult.reportId}
+                                        </div>
+                                    </div>
+                                    <p class="mt-3"><i class="bi bi-info-circle me-2"></i>Laporan gangguan Anda telah diterima dan akan segera ditindaklanjuti oleh tim teknis kami.</p>
+                                `;
+                                
+                                // Tambahkan redirect ke halaman detail setelah klik OK
+                                modalOkButton.addEventListener('click', function() {
+                                    window.location.href = `/customer/trouble/detail/${fallbackResult.reportId}`;
+                                }, { once: true });
+                                
+                                notificationModal.show();
+                            }, 2000);
+                            
+                            console.log('✅ Fallback success notification shown');
+                        } else {
+                            // Tampilkan toast error
+                            document.getElementById('errorMessage').textContent = fallbackResult.message || 'Gagal mengirim laporan gangguan';
+                            errorToast.show();
+                            
+                            console.log('❌ Fallback error notification shown:', fallbackResult.message);
+                        }
+                    } catch (fallbackError) {
+                        console.error('❌ Fallback method also failed:', fallbackError);
+                        
+                        let errorMessage = 'Terjadi kesalahan saat mengirim laporan. Silakan coba lagi.';
+                        
+                        if (fallbackError.message.includes('HTTP 401')) {
+                            errorMessage = 'Session Anda telah berakhir. Silakan login ulang.';
+                        } else if (fallbackError.message.includes('HTTP 403')) {
+                            errorMessage = 'Anda tidak memiliki akses untuk membuat laporan gangguan.';
+                        } else if (fallbackError.message.includes('HTTP 500')) {
+                            errorMessage = 'Terjadi kesalahan pada server. Silakan coba lagi nanti.';
+                        }
+                        
+                        // Tampilkan toast error
+                        document.getElementById('errorMessage').textContent = errorMessage;
+                        errorToast.show();
+                    }
+                }
+            });
+            
+            // Tambahkan event listener untuk menutup modal
+            document.getElementById('notificationModal').addEventListener('hidden.bs.modal', function () {
+                console.log('📋 Modal closed');
+            });
+        });
+    </script>
+</body>
+</html>

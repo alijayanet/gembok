@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Voucher Hotspot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background-color: #343a40;
+            padding-top: 20px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .sidebar a {
+            padding: 15px 25px;
+            text-decoration: none;
+            font-size: 16px;
+            color: #adb5bd;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidebar a:hover {
+            color: #fff;
+            background-color: #495057;
+        }
+        .sidebar a.active {
+            color: #fff;
+            background-color: #007bff;
+        }
+        .sidebar a i {
+            margin-right: 10px;
+        }
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .navbar {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-weight: 600;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #343a40;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: all 0.5s;
+        }
+        .voucher-preview {
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+        .voucher-header {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2255a6;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .voucher-username {
+            font-size: 1.3em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #222;
+        }
+        .voucher-password {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #d7263d;
+            margin-bottom: 6px;
+        }
+        .spin {
+            animation: spin 1s infinite linear;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-left: -250px;
+            }
+            .sidebar.show {
+                margin-left: 0;
+            }
+            .content {
+                margin-left: 0;
+            }
+            .hamburger {
+                display: block;
+            }
+            .overlay.show {
+                display: block;
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
+            <div class="sidebar-header mb-4 text-center">
+              <img src="/img/<%= (settings && settings.logo_filename) ? settings.logo_filename : 'logo.svg' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
+            </div>
+            <a href="/admin/dashboard"><i class="bi bi-house"></i> Dashboard</a>
+            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
+            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
+            <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
+            <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
+            <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
+            <a href="/admin/hotspot/voucher" class="active"><i class="bi bi-ticket-perforated"></i> Voucher Hotspot</a>
+            <a href="/admin/trouble"><i class="bi bi-exclamation-triangle"></i> Laporan Gangguan</a>
+            <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
+            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+        <main class="col-md-10 ms-sm-auto content">
+        <nav class="navbar navbar-expand-lg mb-4">
+            <div class="container-fluid">
+                <button class="hamburger" id="hamburgerBtn">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h4 class="mb-0">Manajemen Voucher Hotspot</h4>
+                <div class="ms-auto">
+                    <span class="badge bg-primary">Admin</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Notifikasi -->
+        <% if (locals.success) { %>
+            <div class="alert alert-success alert-dismissible fade show animate__animated animate__fadeIn" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> <%= success %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <% } %>
+        <% if (locals.error) { %>
+            <div class="alert alert-danger alert-dismissible fade show animate__animated animate__fadeIn" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> <%= error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <% } %>
+
+        <div class="row">
+            <!-- Kolom Kiri: Form Generate Voucher -->
+            <div class="col-lg-5">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-ticket-perforated-fill me-2"></i>Generate Voucher</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="generateVoucherForm" action="/admin/hotspot/generate-voucher" method="POST">
+                            <div class="mb-3">
+                                <label for="voucherCount" class="form-label"><i class="bi bi-123 me-1"></i>Jumlah Voucher</label>
+                                <input type="number" class="form-control" id="voucherCount" name="count" min="1" max="100" value="15" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="voucherPrefix" class="form-label"><i class="bi bi-type me-1"></i>Prefix Username</label>
+                                <input type="text" class="form-control" id="voucherPrefix" name="prefix" placeholder="contoh: wifi-" value="wifi-">
+                            </div>
+                            <div class="mb-3">
+                                <label for="voucherProfile" class="form-label"><i class="bi bi-speedometer2 me-1"></i>Profile</label>
+                                <select class="form-select" id="voucherProfile" name="profile" required>
+                                    <option value="">Pilih Profile</option>
+                                    <% if (profiles && profiles.length > 0) { %>
+                                        <% profiles.forEach(function(profile) { %>
+                                            <option value="<%= profile.name %>"><%= profile.name %></option>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <option value="">Tidak ada profile tersedia</option>
+                                    <% } %>
+                                </select>
+                                <small class="text-muted">Profile yang dipilih akan digunakan untuk semua voucher yang dibuat</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="voucherServer" class="form-label"><i class="bi bi-hdd-network me-1"></i>Server</label>
+                                <select class="form-select" id="voucherServer" name="server">
+                                    <option value="all">Semua Server</option>
+                                    <% if (servers && servers.length > 0) { %>
+                                        <% servers.forEach(function(server) { %>
+                                            <option value="<%= server.name %>"><%= server.name %></option>
+                                        <% }); %>
+                                    <% } %>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="voucherValidUntil" class="form-label"><i class="bi bi-calendar-event me-1"></i>Valid Sampai</label>
+                                <input type="date" class="form-control" id="voucherValidUntil" name="validUntil">
+                                <small class="text-muted">Kosongkan jika tidak ada batas waktu</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="voucherPrice" class="form-label"><i class="bi bi-cash me-1"></i>Harga (Rp)</label>
+                                <input type="number" class="form-control" id="voucherPrice" name="price" placeholder="contoh: 5000">
+                                <small class="text-muted">Kosongkan jika tidak ingin menampilkan harga</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="voucherCharType" class="form-label"><i class="bi bi-type me-1"></i>Jenis Karakter</label>
+                                <select class="form-select" id="voucherCharType" name="charType">
+                                    <option value="alphanumeric">Alfanumerik (Huruf + Angka)</option>
+                                    <option value="numeric">Hanya Angka</option>
+                                    <option value="alphabetic">Hanya Huruf</option>
+                                </select>
+                                <small class="text-muted">Pilih jenis karakter untuk username dan password voucher</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="voucherModel" class="form-label"><i class="bi bi-card-heading me-1"></i>Model Voucher</label>
+                                <select class="form-select" id="voucherModel" name="voucherModel">
+                                    <option value="standard">Standard (Biru)</option>
+                                    <option value="premium">Premium (Emas)</option>
+                                    <option value="success">Success (Hijau)</option>
+                                    <option value="warning">Warning (Oranye)</option>
+                                    <option value="danger">Danger (Merah)</option>
+                                    <option value="tropical">Tropical (Sunset)</option>
+                                    <option value="minimalist">Minimalist (Clean)</option>
+                                    <option value="nature">Nature (Green Leaf)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Generate Voucher</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Preview Voucher -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-eye me-2"></i>Preview Voucher</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="voucher-preview">
+                            <div class="voucher-header">Nama Hotspot</div>
+                            <div class="voucher-price" id="previewPrice">Rp 5.000</div>
+                            <div class="voucher-username">wifi-XXXXX</div>
+                            <div class="voucher-info" id="previewProfile">Profile: default</div>
+                            <div class="mt-2 small bg-light p-2 rounded">Login di halaman WiFi: <b>http://192.168.88.1</b></div>
+                            <div class="mt-2 small text-center">Hubungi Admin: 08xxxxxxxxxx</div>
+                        </div>
+                        <style>
+                            .voucher-preview {
+                                border: 2px solid #007bff;
+                                border-radius: 8px;
+                                padding: 10px;
+                                text-align: center;
+                                background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+                                position: relative;
+                                overflow: hidden;
+                                box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+                                max-width: 200px;
+                                margin: 0 auto;
+                                transition: all 0.3s ease;
+                            }
+                            
+                            /* Preview Model Styles */
+                            .voucher-preview.voucher-premium {
+                                border-color: #ffc107;
+                                box-shadow: 0 2px 8px rgba(255,193,7,0.2);
+                                background: linear-gradient(135deg, #ffffff 0%, #fffbf0 100%);
+                            }
+                            
+                            .voucher-preview.voucher-success {
+                                border-color: #28a745;
+                                box-shadow: 0 2px 8px rgba(40,167,69,0.2);
+                                background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+                            }
+                            
+                            .voucher-preview.voucher-warning {
+                                border-color: #fd7e14;
+                                box-shadow: 0 2px 8px rgba(253,126,20,0.2);
+                                background: linear-gradient(135deg, #ffffff 0%, #fff8f0 100%);
+                            }
+                            
+                            .voucher-preview.voucher-danger {
+                                border-color: #dc3545;
+                                box-shadow: 0 2px 8px rgba(220,53,69,0.2);
+                                background: linear-gradient(135deg, #ffffff 0%, #fff0f0 100%);
+                            }
+                            
+                            .voucher-preview.voucher-tropical {
+                                border-color: #ff6b35;
+                                box-shadow: 0 2px 8px rgba(255,107,53,0.3);
+                                background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 0%, #f7931e 100%);
+                                color: white;
+                            }
+                            
+                            .voucher-preview.voucher-minimalist {
+                                border-color: #6c757d;
+                                box-shadow: 0 2px 8px rgba(108,117,125,0.2);
+                                background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+                            }
+                            
+                            .voucher-preview.voucher-nature {
+                                border-color: #28a745;
+                                box-shadow: 0 2px 8px rgba(40,167,69,0.2);
+                                background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+                            }
+                            .voucher-preview::before {
+                                content: '';
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                height: 4px;
+                                background: linear-gradient(90deg, #007bff, #0056b3, #007bff);
+                            }
+                            .voucher-preview .voucher-header {
+                                font-weight: bold;
+                                font-size: 10px;
+                                color: #fff;
+                                background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+                                padding: 4px;
+                                border-radius: 4px;
+                                margin: -10px -10px 6px -10px;
+                                text-transform: uppercase;
+                                letter-spacing: 0.3px;
+                            }
+                            .voucher-preview .voucher-price {
+                                font-size: 11px;
+                                font-weight: bold;
+                                color: #28a745;
+                                margin: 4px 0;
+                                background: #f8f9fa;
+                                padding: 2px 4px;
+                                border-radius: 4px;
+                                border: 1px solid #e9ecef;
+                            }
+                            .voucher-preview .voucher-username {
+                                font-size: 12px;
+                                font-weight: bold;
+                                margin: 4px 0;
+                                word-break: break-all;
+                                color: #333;
+                                background: #fff;
+                                padding: 4px;
+                                border-radius: 4px;
+                                border: 1px dashed #007bff;
+                                font-family: 'Courier New', monospace;
+                            }
+                            .voucher-preview .voucher-info {
+                                font-size: 8px;
+                                color: #666;
+                                margin: 3px 0;
+                                background: #f8f9fa;
+                                padding: 2px;
+                                border-radius: 3px;
+                            }
+                        </style>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-1"></i> Preview ini hanya contoh. Voucher yang dihasilkan akan disesuaikan dengan pengaturan di atas.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Print Ulang Voucher -->
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-printer me-2"></i>Print Ulang Voucher</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="reprintVoucherList">
+                            <div class="text-center text-muted">
+                                <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
+                                <p class="mt-2">Belum ada history voucher untuk di-print ulang</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Hasil Generate & History -->
+            <div class="col-lg-7">
+                <!-- Hasil Generate Voucher -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-ticket-detailed me-2"></i>Voucher yang Dihasilkan</h5>
+                        <button class="btn btn-sm btn-light" id="printVouchersBtn" style="display: none;">
+                            <i class="bi bi-printer me-1"></i>Print Voucher
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="voucherResult">
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-ticket-perforated" style="font-size: 3rem;"></i>
+                                <p class="mt-3">Belum ada voucher yang dihasilkan. Gunakan form di samping untuk generate voucher baru.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Voucher -->
+                <div class="card">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>History Voucher</h5>
+                        <div class="input-group" style="max-width: 200px;">
+                            <input type="text" id="searchVoucherInput" class="form-control" placeholder="Cari voucher...">
+                            <button class="btn btn-light" type="button" id="clearVoucherSearchBtn">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered" id="voucherHistoryTable">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Username</th>
+                                        <th>Password</th>
+                                        <th>Profile</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="voucherHistoryTableBody">
+                                    <% if (locals.voucherHistory && voucherHistory.length > 0) { %>
+                                        <% voucherHistory.forEach(function(voucher) { %>
+                                        <tr>
+                                            <td><%= new Date(voucher.createdAt).toLocaleString('id-ID') %></td>
+                                            <td><%= voucher.username %></td>
+                                            <td><%= voucher.password %></td>
+                                            <td><%= voucher.profile %></td>
+                                            <td>
+                                                <% if (voucher.active) { %>
+                                                    <span class="badge bg-success">Aktif</span>
+                                                <% } else { %>
+                                                    <span class="badge bg-secondary">Non-aktif</span>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-info print-single-voucher" data-voucher='<%= JSON.stringify(voucher) %>'>
+                                                        <i class="bi bi-printer"></i>
+                                                    </button>
+                                                    <form action="/admin/hotspot/delete-voucher" method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus voucher <%= voucher.username %>?')">
+                                                        <input type="hidden" name="username" value="<%= voucher.username %>">
+                                                        <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i></button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="text-center">Belum ada history voucher.</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load history voucher untuk print ulang
+        loadReprintVoucherHistory();
+        
+        // Update preview voucher secara real-time
+        document.getElementById('voucherProfile').addEventListener('change', function() {
+            const profile = this.value || 'default';
+            document.getElementById('previewProfile').textContent = `Profile: ${profile}`;
+            console.log('Profile selected:', profile);
+        });
+        
+        // Update preview voucher berdasarkan model yang dipilih
+        document.getElementById('voucherModel').addEventListener('change', function() {
+            updateVoucherPreview();
+        });
+        
+        // Update preview voucher berdasarkan harga
+        document.getElementById('voucherPrice').addEventListener('input', function() {
+            updateVoucherPreview();
+        });
+        
+        // Fungsi untuk update preview voucher
+        function updateVoucherPreview() {
+            const model = document.getElementById('voucherModel').value;
+            const price = document.getElementById('voucherPrice').value;
+            const profile = document.getElementById('voucherProfile').value || 'default';
+            
+            const modelConfig = {
+                standard: {
+                    headerBg: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
+                    borderColor: '#007bff',
+                    priceColor: '#28a745',
+                    icon: '📶'
+                },
+                premium: {
+                    headerBg: 'linear-gradient(135deg, #ffc107 0%, #e0a800 100%)',
+                    borderColor: '#ffc107',
+                    priceColor: '#fd7e14',
+                    icon: '⭐'
+                },
+                success: {
+                    headerBg: 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)',
+                    borderColor: '#28a745',
+                    priceColor: '#20c997',
+                    icon: '✅'
+                },
+                warning: {
+                    headerBg: 'linear-gradient(135deg, #fd7e14 0%, #e55a00 100%)',
+                    borderColor: '#fd7e14',
+                    priceColor: '#ffc107',
+                    icon: '⚠️'
+                },
+                danger: {
+                    headerBg: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                    borderColor: '#dc3545',
+                    priceColor: '#e83e8c',
+                    icon: '🔥'
+                },
+                tropical: {
+                    headerBg: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)',
+                    borderColor: '#ff6b35',
+                    priceColor: '#ffffff',
+                    icon: '🌅',
+                    background: 'linear-gradient(135deg, #ff9a56 0%, #ff6b35 0%, #f7931e 100%)'
+                },
+                minimalist: {
+                    headerBg: 'linear-gradient(135deg, #6c757d 0%, #495057 100%)',
+                    borderColor: '#6c757d',
+                    priceColor: '#fd7e14',
+                    icon: '📱'
+                },
+                nature: {
+                    headerBg: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+                    borderColor: '#28a745',
+                    priceColor: '#198754',
+                    icon: '🌿'
+                }
+            };
+            
+            const config = modelConfig[model] || modelConfig.standard;
+            const formattedPrice = price ? new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR', 
+                minimumFractionDigits: 0 
+            }).format(price) : 'Rp 5.000';
+            
+            const previewElement = document.querySelector('.voucher-preview');
+            previewElement.style.borderColor = config.borderColor;
+            previewElement.className = `voucher-preview voucher-${model}`;
+            
+            // Set background untuk model khusus
+            if (config.background) {
+                previewElement.style.background = config.background;
+                previewElement.style.color = 'white';
+            } else {
+                previewElement.style.background = 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)';
+                previewElement.style.color = 'inherit';
+            }
+            
+            const headerElement = previewElement.querySelector('.voucher-header');
+            headerElement.style.background = config.headerBg;
+            headerElement.innerHTML = `${config.icon} Nama Hotspot`;
+            
+            const priceElement = previewElement.querySelector('.voucher-price');
+            priceElement.style.color = config.priceColor;
+            priceElement.textContent = formattedPrice;
+            
+            const profileElement = previewElement.querySelector('.voucher-info');
+            profileElement.textContent = `Profile: ${profile}`;
+        }
+        
+        // Debug: log available profiles
+        const profileSelect = document.getElementById('voucherProfile');
+        if (profileSelect) {
+            console.log('Profile options:', Array.from(profileSelect.options).map(opt => opt.value));
+        }
+        
+        // Initialize preview voucher
+        updateVoucherPreview();
+        
+        document.getElementById('voucherPrice').addEventListener('input', function() {
+            const price = this.value;
+            if (price) {
+                const formattedPrice = new Intl.NumberFormat('id-ID', { 
+                    style: 'currency', 
+                    currency: 'IDR', 
+                    minimumFractionDigits: 0 
+                }).format(price);
+                document.getElementById('previewPrice').textContent = formattedPrice;
+            } else {
+                document.getElementById('previewPrice').textContent = 'Rp 5.000';
+            }
+        });
+        
+        // Fix: Hapus baris <tr> yang jumlah <td>-nya tidak sama dengan jumlah <th>
+        $('#voucherHistoryTable tbody tr').each(function() {
+          if ($(this).find('td').length !== $('#voucherHistoryTable thead th').length) {
+            $(this).remove();
+          }
+        });
+        $('#voucherHistoryTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            autoWidth: false,
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ entri",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                infoEmpty: "Menampilkan 0 sampai 0 dari 0 entri",
+                infoFiltered: "(disaring dari _MAX_ total entri)",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "Selanjutnya",
+                    previous: "Sebelumnya"
+                }
+            }
+        });
+
+        // Generate voucher form submit handler
+        document.getElementById('generateVoucherForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.querySelector('#generateVoucherForm button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+            
+            // Tampilkan loading state di area hasil
+            const voucherResultDiv = document.getElementById('voucherResult');
+            voucherResultDiv.innerHTML = `
+                <div class="text-center py-5 animate__animated animate__pulse animate__infinite">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="lead mb-0">Sedang membuat voucher...</p>
+                    <p class="text-muted">Mohon tunggu sebentar</p>
+                </div>
+            `;
+            
+            // Konversi form data ke object
+            const formData = new FormData(this);
+            const data = {};
+            for (const [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            // Validasi data yang diperlukan
+            if (!data.count || data.count < 1) {
+                showToast('Jumlah voucher harus diisi dan minimal 1', 'warning');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Generate Voucher';
+                return;
+            }
+            
+            if (!data.profile) {
+                showToast('Profile harus dipilih', 'warning');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Generate Voucher';
+                return;
+            }
+            
+            // Debug: log data yang akan dikirim
+            console.log('Form data to send:', data);
+            console.log('Count:', data.count);
+            console.log('Profile:', data.profile);
+            console.log('Price:', data.price);
+            console.log('CharType:', data.charType);
+            
+            try {
+                const response = await fetch('/admin/hotspot/generate-voucher', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('Generate voucher response:', result);
+                
+                if (result.success && result.vouchers && result.vouchers.length > 0) {
+                    // Save voucher data for printing
+                    window.voucherData = {
+                        vouchers: result.vouchers,
+                        server: result.server,
+                        profile: result.profile,
+                        validUntil: result.validUntil,
+                        price: result.price,
+                        model: result.voucherModel || 'standard',
+                        namaHotspot: result.namaHotspot,
+                        adminKontak: result.adminKontak
+                    };
+                    
+                    // Simpan pengaturan untuk print single voucher
+                    localStorage.setItem('voucherSettings', JSON.stringify({
+                        namaHotspot: result.namaHotspot,
+                        adminKontak: result.adminKontak
+                    }));
+                    
+                    // Simpan data voucher untuk print ulang berdasarkan waktu generate
+                    const voucherHistory = JSON.parse(localStorage.getItem('voucherPrintHistory') || '[]');
+                    const newVoucherSet = {
+                        id: Date.now(),
+                        timestamp: new Date().toISOString(),
+                        vouchers: result.vouchers,
+                        profile: result.profile,
+                        price: result.price,
+                        namaHotspot: result.namaHotspot,
+                        adminKontak: result.adminKontak,
+                        count: result.vouchers.length
+                    };
+                    voucherHistory.unshift(newVoucherSet); // Tambah ke awal array
+                    
+                    // Simpan maksimal 10 set voucher terakhir
+                    if (voucherHistory.length > 10) {
+                        voucherHistory.splice(10);
+                    }
+                    
+                    localStorage.setItem('voucherPrintHistory', JSON.stringify(voucherHistory));
+
+                    // Show print button with animation
+                    const printBtn = document.getElementById('printVouchersBtn');
+                    printBtn.style.display = 'block';
+                    printBtn.classList.add('animate__animated', 'animate__bounceIn');
+
+                    let resultHTML = `
+                        <div class="card animate__animated animate__fadeIn">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        Voucher Berhasil Dibuat (${result.vouchers.length})
+                                    </h5>
+                                    <span class="badge bg-primary">${result.profile}</span>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Username</th>
+                                                <th>Password</th>
+                                                <th>Profile</th>
+                                                <th>Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${result.vouchers.map((v, index) => `
+                                                <tr class="animate__animated animate__fadeInUp" style="animation-delay: ${index * 0.1}s">
+                                                    <td><code>${v.username}</code></td>
+                                                    <td><code>${v.password}</code></td>
+                                                    <td><span class="badge bg-info">${v.profile}</span></td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary print-single-voucher" 
+                                                            data-voucher='${JSON.stringify(v)}' title="Cetak voucher ini">
+                                                            <i class="bi bi-printer"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="alert alert-success mt-3">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Voucher berhasil dibuat dan siap digunakan. Preview print akan terbuka otomatis.
+                                </div>
+                            </div>
+                        </div>`;
+                    voucherResultDiv.innerHTML = resultHTML;
+                    
+                    // Tambahkan section untuk print ulang voucher
+                    const reprintSection = `
+                        <div class="card mt-3 animate__animated animate__fadeIn">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0"><i class="bi bi-printer me-2"></i>Print Ulang Voucher</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="reprintVoucherList">
+                                    <div class="text-center text-muted">
+                                        <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
+                                        <p class="mt-2">Belum ada history voucher untuk di-print ulang</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    voucherResultDiv.innerHTML += reprintSection;
+                    
+                    // Load dan tampilkan history voucher untuk print ulang
+                    loadReprintVoucherHistory();
+                    
+                    // Tambahkan event listener untuk tombol print single voucher
+                    document.querySelectorAll('.print-single-voucher').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const voucherData = JSON.parse(this.getAttribute('data-voucher'));
+                            showToast('Membuka preview voucher untuk print...', 'info');
+                            setTimeout(() => {
+                                printSingleVoucher(voucherData);
+                            }, 500);
+                        });
+                    });
+                    
+                    // Tampilkan toast sukses dengan durasi lebih lama
+                    showToast(`Berhasil membuat ${result.vouchers.length} voucher dengan profile ${result.profile}. Membuka preview print...`, 'success');
+                    
+                    // Auto buka preview print setelah generate berhasil
+                    setTimeout(() => {
+                        printVouchers();
+                    }, 1000);
+                    
+                    // Refresh the page to update the history table after delay
+                    setTimeout(() => {
+                        location.reload();
+                    }, 15000);
+
+                } else {
+                    // Tampilkan pesan error dengan animasi
+                    voucherResultDiv.innerHTML = `
+                        <div class="alert alert-danger animate__animated animate__shakeX">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 2rem;"></i>
+                                <div>
+                                    <h5 class="alert-heading">Gagal Membuat Voucher</h5>
+                                    <p class="mb-0">${result.message || 'Tidak ada voucher yang berhasil dibuat. Periksa koneksi ke Mikrotik.'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    showToast('Gagal membuat voucher: ' + (result.message || 'Terjadi kesalahan'), 'danger');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                voucherResultDiv.innerHTML = `
+                    <div class="alert alert-danger animate__animated animate__shakeX">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 2rem;"></i>
+                            <div>
+                                <h5 class="alert-heading">Terjadi Kesalahan</h5>
+                                <p class="mb-0">Gagal menghubungi server. Periksa koneksi jaringan dan coba lagi.</p>
+                                <p class="mb-0 small text-muted mt-2">${error.message}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                showToast('Terjadi kesalahan saat menghubungi server.', 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Generate Voucher';
+            }
+        });
+
+        // Print vouchers button
+        document.getElementById('printVouchersBtn').addEventListener('click', function() {
+            if (window.voucherData) {
+                showToast('Membuka preview voucher untuk print...', 'info');
+                setTimeout(() => {
+                    printVouchers();
+                }, 500);
+            } else {
+                showToast('Tidak ada data voucher untuk dicetak', 'warning');
+            }
+        });
+
+        // Print single voucher - untuk voucher yang sudah ada di history
+        document.querySelectorAll('.print-single-voucher').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const voucherData = JSON.parse(this.getAttribute('data-voucher'));
+                showToast('Membuka preview voucher untuk print...', 'info');
+                setTimeout(() => {
+                    printSingleVoucher(voucherData);
+                }, 500);
+            });
+        });
+
+        // Generate voucher HTML berdasarkan model
+        function generateVoucherHTML(voucher, formattedPrice, namaHotspot, adminKontak, model) {
+            const modelConfig = {
+                standard: {
+                    headerBg: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
+                    borderColor: '#007bff',
+                    priceColor: '#28a745',
+                    icon: '📶'
+                },
+                premium: {
+                    headerBg: 'linear-gradient(135deg, #ffc107 0%, #e0a800 100%)',
+                    borderColor: '#ffc107',
+                    priceColor: '#fd7e14',
+                    icon: '⭐'
+                },
+                success: {
+                    headerBg: 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)',
+                    borderColor: '#28a745',
+                    priceColor: '#20c997',
+                    icon: '✅'
+                },
+                warning: {
+                    headerBg: 'linear-gradient(135deg, #fd7e14 0%, #e55a00 100%)',
+                    borderColor: '#fd7e14',
+                    priceColor: '#ffc107',
+                    icon: '⚠️'
+                },
+                danger: {
+                    headerBg: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                    borderColor: '#dc3545',
+                    priceColor: '#e83e8c',
+                    icon: '🔥'
+                },
+                tropical: {
+                    headerBg: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)',
+                    borderColor: '#ff6b35',
+                    priceColor: '#ffffff',
+                    icon: '🌅',
+                    background: 'linear-gradient(135deg, #ff9a56 0%, #ff6b35 0%, #f7931e 100%)'
+                },
+                minimalist: {
+                    headerBg: 'linear-gradient(135deg, #6c757d 0%, #495057 100%)',
+                    borderColor: '#6c757d',
+                    priceColor: '#fd7e14',
+                    icon: '📱'
+                },
+                nature: {
+                    headerBg: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+                    borderColor: '#28a745',
+                    priceColor: '#198754',
+                    icon: '🌿'
+                }
+            };
+            
+            const config = modelConfig[model] || modelConfig.standard;
+            
+            const backgroundStyle = config.background ? `style="background: ${config.background};"` : '';
+            
+            return `
+                <div class="voucher-card voucher-${model}" ${backgroundStyle}>
+                    <div class="voucher-header" style="background: ${config.headerBg};">
+                        ${config.icon} ${namaHotspot || 'VOUCHER HOTSPOT'}
+                    </div>
+                    ${formattedPrice ? `<div class="voucher-price" style="color: ${config.priceColor};">${formattedPrice}</div>` : ''}
+                    <div class="voucher-username">${voucher.username}</div>
+                    <div class="voucher-info">Profile: ${voucher.profile || 'default'}</div>
+                    <div class="voucher-footer">${adminKontak || 'Hubungi Admin'}</div>
+                </div>
+            `;
+        }
+
+        // Print vouchers function
+        function printVouchers() {
+            if (!window.voucherData || !window.voucherData.vouchers) {
+                showToast('Tidak ada data voucher untuk dicetak', 'warning');
+                return;
+            }
+            
+            const { vouchers, price, model, namaHotspot, adminKontak } = window.voucherData;
+            
+            // Buat konten print dengan preview
+            let printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Print Voucher</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        @page { size: A4; margin: 0.3cm; }
+                        @media print {
+                            body { margin: 0; padding: 0; }
+                            .voucher-container { page-break-inside: avoid; }
+                            .print-controls { display: none; }
+                        }
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            margin: 0; padding: 0.2cm;
+                            width: 21cm; min-height: 29.7cm;
+                            background: #f5f5f5;
+                        }
+                        .print-controls {
+                            position: fixed;
+                            top: 10px;
+                            right: 10px;
+                            z-index: 1000;
+                            background: white;
+                            padding: 10px;
+                            border-radius: 8px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        }
+                        .print-controls button {
+                            margin: 0 5px;
+                            padding: 8px 16px;
+                            border: none;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        }
+                        .btn-print {
+                            background: #007bff;
+                            color: white;
+                        }
+                        .btn-close {
+                            background: #6c757d;
+                            color: white;
+                        }
+                        .voucher-container {
+                            display: grid;
+                            grid-template-columns: repeat(3, 1fr);
+                            gap: 0.2cm;
+                            width: 100%;
+                            max-width: 21cm;
+                            margin: 0 auto;
+                            background: white;
+                            padding: 0.3cm;
+                            border-radius: 8px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        }
+                        .voucher-card {
+                            border: 2px solid #007bff;
+                            border-radius: 8px;
+                            padding: 8px;
+                            text-align: center;
+                            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+                            page-break-inside: avoid;
+                            min-height: 110px;
+                            max-height: 110px;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: space-between;
+                            position: relative;
+                            overflow: hidden;
+                            box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+                        }
+                        
+                        /* Model Voucher Styles */
+                        .voucher-premium {
+                            border-color: #ffc107;
+                            box-shadow: 0 2px 8px rgba(255,193,7,0.2);
+                            background: linear-gradient(135deg, #ffffff 0%, #fffbf0 100%);
+                        }
+                        
+                        .voucher-success {
+                            border-color: #28a745;
+                            box-shadow: 0 2px 8px rgba(40,167,69,0.2);
+                            background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+                        }
+                        
+                        .voucher-warning {
+                            border-color: #fd7e14;
+                            box-shadow: 0 2px 8px rgba(253,126,20,0.2);
+                            background: linear-gradient(135deg, #ffffff 0%, #fff8f0 100%);
+                        }
+                        
+                        .voucher-danger {
+                            border-color: #dc3545;
+                            box-shadow: 0 2px 8px rgba(220,53,69,0.2);
+                            background: linear-gradient(135deg, #ffffff 0%, #fff0f0 100%);
+                        }
+                        
+                        .voucher-tropical {
+                            border-color: #ff6b35;
+                            box-shadow: 0 2px 8px rgba(255,107,53,0.3);
+                            background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 0%, #f7931e 100%);
+                            color: white;
+                        }
+                        
+                        .voucher-tropical .voucher-username {
+                            background: rgba(255,255,255,0.9);
+                            color: #333;
+                        }
+                        
+                        .voucher-tropical .voucher-info {
+                            background: rgba(255,255,255,0.8);
+                            color: #333;
+                        }
+                        
+                        .voucher-minimalist {
+                            border-color: #6c757d;
+                            box-shadow: 0 2px 8px rgba(108,117,125,0.2);
+                            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+                        }
+                        
+                        .voucher-nature {
+                            border-color: #28a745;
+                            box-shadow: 0 2px 8px rgba(40,167,69,0.2);
+                            background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+                        }
+                        .voucher-card::before {
+                            content: '';
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            height: 4px;
+                            background: linear-gradient(90deg, #007bff, #0056b3, #007bff);
+                        }
+                        .voucher-header {
+                            font-weight: bold;
+                            font-size: 9px;
+                            color: #fff;
+                            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+                            padding: 4px;
+                            border-radius: 4px;
+                            margin: -8px -8px 6px -8px;
+                            text-transform: uppercase;
+                            letter-spacing: 0.3px;
+                        }
+                        .voucher-price {
+                            font-size: 10px;
+                            font-weight: bold;
+                            color: #28a745;
+                            margin: 4px 0;
+                            background: #f8f9fa;
+                            padding: 2px 4px;
+                            border-radius: 4px;
+                            border: 1px solid #e9ecef;
+                        }
+                        .voucher-username {
+                            font-size: 11px;
+                            font-weight: bold;
+                            margin: 4px 0;
+                            word-break: break-all;
+                            color: #333;
+                            background: #fff;
+                            padding: 4px;
+                            border-radius: 4px;
+                            border: 1px dashed #007bff;
+                            font-family: 'Courier New', monospace;
+                        }
+                        .voucher-info {
+                            font-size: 8px;
+                            color: #666;
+                            margin: 3px 0;
+                            background: #f8f9fa;
+                            padding: 2px;
+                            border-radius: 3px;
+                        }
+                        .voucher-footer {
+                            font-size: 7px;
+                            color: #666;
+                            margin-top: auto;
+                            padding-top: 3px;
+                            border-top: 1px solid #e9ecef;
+                        }
+                        .page-break {
+                            page-break-after: always;
+                            break-after: page;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-controls">
+                        <button class="btn-print" onclick="window.print()">🖨️ Print Voucher</button>
+                        <button class="btn-close" onclick="window.close()">❌ Tutup</button>
+                    </div>
+                    <div class="voucher-container">
+            `;
+            
+            vouchers.forEach((voucher, index) => {
+                const voucherPrice = voucher.price || price;
+                const formattedPrice = voucherPrice ? new Intl.NumberFormat('id-ID', { 
+                    style: 'currency', 
+                    currency: 'IDR', 
+                    minimumFractionDigits: 0 
+                }).format(voucherPrice) : '';
+                
+                // Generate voucher berdasarkan model
+                const voucherHTML = generateVoucherHTML(voucher, formattedPrice, namaHotspot, adminKontak, model);
+                printContent += voucherHTML;
+                
+                // Tambahkan page break setiap 24 voucher (8 baris x 3 kolom)
+                if ((index + 1) % 24 === 0 && index < vouchers.length - 1) {
+                    printContent += '</div><div class="page-break"></div><div class="voucher-container">';
+                }
+            });
+            
+            printContent += `
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Buka window preview
+            const printWindow = window.open('', '_blank', 'width=1200,height=800');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+        }
+
+        // Print single voucher
+        function printSingleVoucher(voucherData) {
+            const settings = JSON.parse(localStorage.getItem('voucherSettings') || '{}');
+            const namaHotspot = settings.namaHotspot || 'VOUCHER HOTSPOT';
+            const adminKontak = settings.adminKontak || 'Hubungi Admin';
+            
+            // Buat konten print untuk single voucher dengan preview
+            const printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Print Voucher</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        @page { size: A4; margin: 1cm; }
+                        @media print {
+                            body { margin: 0; padding: 0; }
+                            .print-controls { display: none; }
+                        }
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            margin: 0; padding: 1cm;
+                            text-align: center;
+                            background: #f5f5f5;
+                            min-height: 100vh;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                        .print-controls {
+                            position: fixed;
+                            top: 10px;
+                            right: 10px;
+                            z-index: 1000;
+                            background: white;
+                            padding: 10px;
+                            border-radius: 8px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        }
+                        .print-controls button {
+                            margin: 0 5px;
+                            padding: 8px 16px;
+                            border: none;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        }
+                        .btn-print {
+                            background: #007bff;
+                            color: white;
+                        }
+                        .btn-close {
+                            background: #6c757d;
+                            color: white;
+                        }
+                        .voucher-card {
+                            border: 2px solid #007bff;
+                            border-radius: 16px;
+                            padding: 25px;
+                            max-width: 350px;
+                            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+                            box-shadow: 0 8px 25px rgba(0,123,255,0.15);
+                            position: relative;
+                            overflow: hidden;
+                        }
+                        .voucher-card::before {
+                            content: '';
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            height: 6px;
+                            background: linear-gradient(90deg, #007bff, #0056b3, #007bff);
+                        }
+                        .voucher-header {
+                            font-weight: bold;
+                            font-size: 18px;
+                            color: #fff;
+                            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+                            padding: 10px;
+                            border-radius: 8px;
+                            margin: -25px -25px 20px -25px;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                        }
+                        .voucher-price {
+                            font-size: 16px;
+                            font-weight: bold;
+                            color: #28a745;
+                            margin: 12px 0;
+                            background: #f8f9fa;
+                            padding: 8px 12px;
+                            border-radius: 8px;
+                            border: 1px solid #e9ecef;
+                        }
+                        .voucher-username {
+                            font-size: 20px;
+                            font-weight: bold;
+                            margin: 15px 0;
+                            word-break: break-all;
+                            color: #333;
+                            background: #fff;
+                            padding: 12px;
+                            border-radius: 8px;
+                            border: 2px dashed #007bff;
+                            font-family: 'Courier New', monospace;
+                        }
+                        .voucher-info {
+                            font-size: 12px;
+                            color: #666;
+                            margin: 10px 0;
+                            background: #f8f9fa;
+                            padding: 6px;
+                            border-radius: 6px;
+                        }
+                        .voucher-footer {
+                            font-size: 11px;
+                            color: #666;
+                            margin-top: 15px;
+                            padding-top: 10px;
+                            border-top: 1px solid #e9ecef;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-controls">
+                        <button class="btn-print" onclick="window.print()">🖨️ Print Voucher</button>
+                        <button class="btn-close" onclick="window.close()">❌ Tutup</button>
+                    </div>
+                    <div class="voucher-card">
+                        <div class="voucher-header">${namaHotspot}</div>
+                        ${voucherData.price ? `<div class="voucher-price">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(voucherData.price)}</div>` : ''}
+                        <div class="voucher-username">${voucherData.username}</div>
+                        <div class="voucher-info">Profile: ${voucherData.profile || 'default'}</div>
+                        <div class="voucher-footer">${adminKontak}</div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Buka window preview
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+        }
+
+        // Load dan tampilkan history voucher untuk print ulang
+        function loadReprintVoucherHistory() {
+            const voucherHistory = JSON.parse(localStorage.getItem('voucherPrintHistory') || '[]');
+            const reprintList = document.getElementById('reprintVoucherList');
+            
+            if (!reprintList) return; // Jika element belum ada
+            
+            if (voucherHistory.length === 0) {
+                reprintList.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
+                        <p class="mt-2">Belum ada history voucher untuk di-print ulang</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="row">';
+            voucherHistory.forEach((voucherSet, index) => {
+                const date = new Date(voucherSet.timestamp).toLocaleString('id-ID');
+                const timeAgo = getTimeAgo(new Date(voucherSet.timestamp));
+                
+                html += `
+                    <div class="col-md-6 mb-2">
+                        <div class="card border-warning">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">${voucherSet.count} Voucher ${voucherSet.profile}</h6>
+                                        <small class="text-muted">${date}</small>
+                                        <br><small class="text-muted">${timeAgo}</small>
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary reprint-voucher" data-voucher-set='${JSON.stringify(voucherSet)}' title="Print ulang voucher ini">
+                                            <i class="bi bi-printer"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-voucher-set" data-id="${voucherSet.id}" title="Hapus dari history">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            reprintList.innerHTML = html;
+            
+            // Tambahkan event listener untuk tombol print ulang
+            document.querySelectorAll('.reprint-voucher').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const voucherSet = JSON.parse(this.getAttribute('data-voucher-set'));
+                    printVoucherSet(voucherSet);
+                });
+            });
+            
+            // Tambahkan event listener untuk tombol hapus
+            document.querySelectorAll('.delete-voucher-set').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    deleteVoucherSet(id);
+                });
+            });
+        }
+        
+        // Fungsi untuk menghitung waktu yang lalu
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Baru saja';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit yang lalu`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
+            return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
+        }
+        
+        // Fungsi untuk print voucher set
+        function printVoucherSet(voucherSet) {
+            window.voucherData = {
+                vouchers: voucherSet.vouchers,
+                profile: voucherSet.profile,
+                price: voucherSet.price,
+                namaHotspot: voucherSet.namaHotspot,
+                adminKontak: voucherSet.adminKontak
+            };
+            
+            showToast(`Membuka preview print untuk ${voucherSet.count} voucher ${voucherSet.profile}...`, 'info');
+            setTimeout(() => {
+                printVouchers();
+            }, 500);
+        }
+        
+        // Fungsi untuk hapus voucher set dari history
+        function deleteVoucherSet(id) {
+            if (confirm('Yakin hapus voucher set ini dari history?')) {
+                const voucherHistory = JSON.parse(localStorage.getItem('voucherPrintHistory') || '[]');
+                const filteredHistory = voucherHistory.filter(set => set.id != id);
+                localStorage.setItem('voucherPrintHistory', JSON.stringify(filteredHistory));
+                loadReprintVoucherHistory();
+                showToast('Voucher set berhasil dihapus dari history', 'success');
+            }
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toastContainer = document.createElement('div');
+            toastContainer.className = 'position-fixed top-0 end-0 p-3';
+            toastContainer.style.zIndex = '1080';
+            
+            const toast = document.createElement('div');
+            toast.className = `toast show bg-${type} text-white`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            // Tentukan durasi berdasarkan tipe
+            let duration = 8000; // Default 8 detik
+            if (type === 'success') duration = 10000; // 10 detik untuk sukses
+            if (type === 'danger') duration = 12000; // 12 detik untuk error
+            if (type === 'warning') duration = 8000; // 8 detik untuk warning
+            
+            toast.innerHTML = `
+                <div class="toast-header bg-${type} text-white">
+                    <strong class="me-auto">${type === 'success' ? 'Sukses' : type === 'danger' ? 'Error' : type === 'warning' ? 'Peringatan' : 'Info'}</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            document.body.appendChild(toastContainer);
+            
+            // Auto remove after duration
+            const autoHideTimer = setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toastContainer.remove(), 500);
+            }, duration);
+            
+            // Add click event to close button
+            toast.querySelector('.btn-close').addEventListener('click', () => {
+                clearTimeout(autoHideTimer);
+                toast.classList.remove('show');
+                setTimeout(() => toastContainer.remove(), 500);
+            });
+            
+            // Add click event to close on toast body click
+            toast.querySelector('.toast-body').addEventListener('click', () => {
+                clearTimeout(autoHideTimer);
+                toast.classList.remove('show');
+                setTimeout(() => toastContainer.remove(), 500);
+            });
+        }
+
+        // Auto-hide notifications
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const fadeEffect = setInterval(() => {
+                    if (!alert.style.opacity) {
+                        alert.style.opacity = 1;
+                    }
+                    if (alert.style.opacity > 0) {
+                        alert.style.opacity -= 0.1;
+                    } else {
+                        clearInterval(fadeEffect);
+                        alert.remove();
+                    }
+                }, 100);
+            }, 5000);
+        });
+
+        // Hamburger & sidebar logic
+        const hamburger = document.getElementById('hamburgerBtn');
+        const sidebar = document.getElementById('adminSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (hamburger && sidebar && overlay) {
+            hamburger.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+            });
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+            });
+        }
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Laporan Gangguan - <%= companyHeader %></title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/customer-portal.css">
+    <style>
+        .report-detail {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .status-badge {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .status-open {
+            background-color: #dc3545;
+            color: white;
+        }
+        .status-in_progress {
+            background-color: #ffc107;
+            color: black;
+        }
+        .status-resolved {
+            background-color: #28a745;
+            color: white;
+        }
+        .status-closed {
+            background-color: #6c757d;
+            color: white;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 20px;
+        }
+        .timeline:before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: #dee2e6;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #007bff;
+        }
+        .timeline-content {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .timeline-time {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        .comment-form {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <!-- Header -->
+                <div class="text-center mb-4 mt-4">
+                    <h2><%= companyHeader %></h2>
+                    <h4>Detail Laporan Gangguan</h4>
+                </div>
+                
+                <!-- Detail Laporan -->
+                <div class="report-detail">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="mb-3">Tiket #<%= report.id %></h5>
+                        <span class="status-badge status-<%= report.status %>">
+                            <%= report.status === 'open' ? 'Dibuka' : 
+                               report.status === 'in_progress' ? 'Sedang Ditangani' : 
+                               report.status === 'resolved' ? 'Terselesaikan' : 'Ditutup' %>
+                        </span>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Nama:</strong> <%= report.name %></p>
+                            <p><strong>Nomor HP:</strong> <%= report.phone %></p>
+                            <p><strong>Lokasi:</strong> <%= report.location %></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Kategori:</strong> <%= report.category %></p>
+                            <p><strong>Tanggal Laporan:</strong> <%= new Date(report.createdAt).toLocaleString('id-ID') %></p>
+                            <p><strong>Terakhir Diupdate:</strong> <%= new Date(report.updatedAt).toLocaleString('id-ID') %></p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>Deskripsi Masalah:</h6>
+                        <p class="p-3 bg-light rounded"><%= report.description %></p>
+                    </div>
+                    
+                    <!-- Timeline Aktivitas -->
+                    <h6>Riwayat Aktivitas:</h6>
+                    <div class="timeline">
+                        <!-- Item pertama selalu pembuatan tiket -->
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-time"><%= new Date(report.createdAt).toLocaleString('id-ID') %></div>
+                                <p><strong>Tiket Dibuat</strong></p>
+                                <p>Laporan gangguan berhasil dibuat dan menunggu tindak lanjut dari tim teknis.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Notes/aktivitas lainnya -->
+                        <% if (report.notes && report.notes.length > 0) { %>
+                            <% report.notes.forEach(note => { %>
+                                <div class="timeline-item">
+                                    <div class="timeline-content">
+                                        <div class="timeline-time"><%= new Date(note.timestamp).toLocaleString('id-ID') %></div>
+                                        <p><strong>Status: <%= note.status === 'open' ? 'Dibuka' : 
+                                                        note.status === 'in_progress' ? 'Sedang Ditangani' : 
+                                                        note.status === 'resolved' ? 'Terselesaikan' : 'Ditutup' %></strong></p>
+                                        <p><%= note.content %></p>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } %>
+                    </div>
+                    
+                    <!-- Form Komentar (hanya jika tiket belum ditutup) -->
+                    <% if (report.status !== 'closed') { %>
+                        <div class="comment-form">
+                            <h6>Tambahkan Komentar:</h6>
+                            <form id="commentForm">
+                                <div class="mb-3">
+                                    <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Tulis komentar atau informasi tambahan..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Kirim Komentar</button>
+                            </form>
+                        </div>
+                    <% } %>
+                    
+                    <!-- Tombol Aksi -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="/customer/trouble/list" class="btn btn-outline-secondary">Kembali ke Daftar Laporan</a>
+                        
+                        <% if (report.status === 'resolved') { %>
+                            <button id="closeReportBtn" class="btn btn-success">Tutup Laporan</button>
+                        <% } %>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="text-center mt-4 mb-4">
+                    <p><%= footerInfo %></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Notifikasi -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationModalLabel">Notifikasi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="notificationMessage">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="modalOkButton">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+            const notificationMessage = document.getElementById('notificationMessage');
+            const modalOkButton = document.getElementById('modalOkButton');
+            
+            // Form komentar
+            const commentForm = document.getElementById('commentForm');
+            if (commentForm) {
+                commentForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const comment = document.getElementById('comment').value;
+                    
+                    fetch('/customer/trouble/comment/<%= report.id %>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ comment })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            notificationMessage.innerHTML = `
+                                <div class="alert alert-success">
+                                    ${data.message}
+                                </div>
+                            `;
+                            
+                            // Reset form dan refresh halaman setelah berhasil
+                            commentForm.reset();
+                            modalOkButton.addEventListener('click', function() {
+                                window.location.reload();
+                            }, { once: true });
+                        } else {
+                            notificationMessage.innerHTML = `
+                                <div class="alert alert-danger">
+                                    ${data.message}
+                                </div>
+                            `;
+                        }
+                        
+                        notificationModal.show();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        notificationMessage.innerHTML = `
+                            <div class="alert alert-danger">
+                                Terjadi kesalahan saat mengirim komentar. Silakan coba lagi.
+                            </div>
+                        `;
+                        notificationModal.show();
+                    });
+                });
+            }
+            
+            // Tombol tutup laporan
+            const closeReportBtn = document.getElementById('closeReportBtn');
+            if (closeReportBtn) {
+                closeReportBtn.addEventListener('click', function() {
+                    fetch('/customer/trouble/close/<%= report.id %>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            notificationMessage.innerHTML = `
+                                <div class="alert alert-success">
+                                    ${data.message}
+                                </div>
+                                <p>Terima kasih telah mengkonfirmasi bahwa masalah Anda telah terselesaikan.</p>
+                            `;
+                            
+                            modalOkButton.addEventListener('click', function() {
+                                window.location.reload();
+                            }, { once: true });
+                        } else {
+                            notificationMessage.innerHTML = `
+                                <div class="alert alert-danger">
+                                    ${data.message}
+                                </div>
+                            `;
+                        }
+                        
+                        notificationModal.show();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        notificationMessage.innerHTML = `
+                            <div class="alert alert-danger">
+                                Terjadi kesalahan saat menutup laporan. Silakan coba lagi.
+                            </div>
+                        `;
+                        notificationModal.show();
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

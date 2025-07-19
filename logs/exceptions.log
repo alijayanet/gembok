@@ -75,3 +75,101 @@ Error: Connection Closed
 ReferenceError: Cannot access 'settings' before initialization
     at C:\Users\DELL\Documents\wa-admin1\routes\customerPortal.js:264:23
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-07-18 12:39:08 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (E:\gembok-main\node_modules\node-routeros\dist\connector\Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:609:8)
+    at listOnTimeout (node:internal/timers:594:17)
+    at process.processTimers (node:internal/timers:529:7)
+2025-07-18 12:39:08 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (E:\gembok-main\node_modules\node-routeros\dist\connector\Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:609:8)
+    at listOnTimeout (node:internal/timers:594:17)
+    at process.processTimers (node:internal/timers:529:7)
+2025-07-18 12:39:08 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (E:\gembok-main\node_modules\node-routeros\dist\connector\Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:609:8)
+    at listOnTimeout (node:internal/timers:594:17)
+    at process.processTimers (node:internal/timers:529:7)
+2025-07-18 12:39:09 error: uncaughtException: (no error message)
+RosException
+    at Connector.onError (E:\gembok-main\node_modules\node-routeros\dist\connector\Connector.js:176:15)
+    at Socket.emit (node:events:524:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at runNextTicks (node:internal/process/task_queues:69:3)
+    at process.processTimers (node:internal/timers:526:9)
+2025-07-18 12:39:09 error: uncaughtException: (no error message)
+RosException
+    at Connector.onError (E:\gembok-main\node_modules\node-routeros\dist\connector\Connector.js:176:15)
+    at Socket.emit (node:events:524:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at runNextTicks (node:internal/process/task_queues:69:3)
+    at process.processTimers (node:internal/timers:526:9)
+2025-07-18 12:39:09 error: uncaughtException: (no error message)
+RosException
+    at Connector.onError (E:\gembok-main\node_modules\node-routeros\dist\connector\Connector.js:176:15)
+    at Socket.emit (node:events:524:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at runNextTicks (node:internal/process/task_queues:69:3)
+    at process.processTimers (node:internal/timers:526:9)
+2025-07-18 15:40:11 error: uncaughtException: logger.error is not a function
+TypeError: logger.error is not a function
+    at testTroubleReport (E:\gembok-main\test-trouble-report.js:64:12)
+    at Object.<anonymous> (E:\gembok-main\test-trouble-report.js:70:1)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49
+2025-07-18 15:48:47 error: uncaughtException: logger.error is not a function
+TypeError: logger.error is not a function
+    at E:\gembok-main\routes\testTroubleReport.js:36:12
+    at Layer.handle [as handle_request] (E:\gembok-main\node_modules\express\lib\router\layer.js:95:5)
+    at next (E:\gembok-main\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (E:\gembok-main\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (E:\gembok-main\node_modules\express\lib\router\layer.js:95:5)
+    at E:\gembok-main\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (E:\gembok-main\node_modules\express\lib\router\index.js:346:12)
+    at next (E:\gembok-main\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (E:\gembok-main\node_modules\express\lib\router\index.js:175:3)
+    at router (E:\gembok-main\node_modules\express\lib\router\index.js:47:12)
+2025-07-18 15:56:04 error: uncaughtException: logger.error is not a function
+TypeError: logger.error is not a function
+    at E:\gembok-main\routes\testTroubleReport.js:92:12
+    at Layer.handle [as handle_request] (E:\gembok-main\node_modules\express\lib\router\layer.js:95:5)
+    at next (E:\gembok-main\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (E:\gembok-main\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (E:\gembok-main\node_modules\express\lib\router\layer.js:95:5)
+    at E:\gembok-main\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (E:\gembok-main\node_modules\express\lib\router\index.js:346:12)
+    at next (E:\gembok-main\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (E:\gembok-main\node_modules\express\lib\router\index.js:175:3)
+    at router (E:\gembok-main\node_modules\express\lib\router\index.js:47:12)
+2025-07-19 12:19:54 error: uncaughtException: fixWhatsAppSock(...).then is not a function
+TypeError: fixWhatsAppSock(...).then is not a function
+    at Object.<anonymous> (E:\gembok-main\fix-whatsapp-sock.js:59:4)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49
