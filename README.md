@@ -107,6 +107,13 @@ Aplikasi menggunakan file `settings.json` untuk konfigurasi. Edit file `settings
   "reconnect_interval": "5000",
   "log_level": "info",
   "logo_filename": "logo.png"
+  "trouble_report.enabled": "true",
+  "trouble_report.categories": "Internet Lambat,Tidak Bisa Browsing,WiFi Tidak Muncul,Koneksi Putus-Putus,Lainnya",
+  "trouble_report.auto_ticket": "true",
+  "rxpower_recap_enable": true,
+  "rxpower_recap_interval": 21600000,
+  "offline_notification_enable": true,
+  "offline_notification_interval": 43200000
 }
 ```
 
