@@ -19,6 +19,7 @@
   "rx_power_warning": "-40",
   "rx_power_critical": "-45",
   "rx_power_notification_enable": "true",
+  "rx_power_warning_interval": "3600000",
   "company_header": "ALIJAYA DIGITAL NETWORK",
   "footer_info": "Info Hubungi : 081947215703",
   "customerPortalOtp": "false",
