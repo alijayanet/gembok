@@ -1,7 +1,7 @@
 {
   "admins.0": "6281947215703",
-  "admin_username": "admin",
-  "admin_password": "admin",
+  "admin_username": "alijaya",
+  "admin_password": "060111",
   "genieacs_url": "http://192.168.8.89:7557",
   "genieacs_username": "admin",
   "genieacs_password": "admin",
@@ -24,8 +24,8 @@
   "customerPortalOtp": "false",
   "otp_length": "4",
   "otp_expiry_minutes": "5",
-  "server_host": "localhost",
-  "server_port": "4001",
+  "server_host": "192.168.8.89",
+  "server_port": "3001",
   "pppoe_notifications.enabled": "true",
   "pppoe_notifications.loginNotifications": "true",
   "pppoe_notifications.logoutNotifications": "true",
@@ -41,5 +41,6 @@
   "radius_host": "IP_SERVER_RADIUS",
   "radius_user": "user_mysql_radius",
   "radius_password": "password_mysql_radius",
-  "radius_database": "radius"
+  "radius_database": "radius",
+  "user_auth_mode": "mikrotik"
 }
