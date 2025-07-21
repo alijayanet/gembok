@@ -103,9 +103,27 @@ router.get('/data', (req, res) => {
 // POST: Simpan perubahan setting
 router.post('/save', (req, res) => {
     const newSettings = req.body;
-    fs.writeFile(settingsPath, JSON.stringify(newSettings, null, 2), 'utf8', err => {
+    // Baca settings lama
+    let oldSettings = {};
+    try {
+        oldSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    } catch (e) {}
+    // Merge: field baru overwrite field lama, field lama yang tidak ada di form tetap dipertahankan
+    const mergedSettings = { ...oldSettings, ...newSettings };
+    // Pastikan user_auth_mode selalu ada
+    if (!('user_auth_mode' in mergedSettings)) {
+        mergedSettings.user_auth_mode = 'mikrotik';
+    }
+    fs.writeFile(settingsPath, JSON.stringify(mergedSettings, null, 2), 'utf8', err => {
         if (err) return res.status(500).json({ error: 'Gagal menyimpan settings.json' });
-        res.json({ success: true });
+        // Cek field yang hilang (ada di oldSettings tapi tidak di mergedSettings)
+        const oldKeys = Object.keys(oldSettings);
+        const newKeys = Object.keys(mergedSettings);
+        const missing = oldKeys.filter(k => !newKeys.includes(k));
+        if (missing.length > 0) {
+            console.warn('Field yang hilang dari settings.json setelah simpan:', missing);
+        }
+        res.json({ success: true, missingFields: missing });
     });
 });
 

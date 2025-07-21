@@ -16282,3 +16282,504 @@
 2025-07-21 08:31:58 warn: Skipping invalid WhatsApp number: 62822180947xx
 2025-07-21 08:31:58 info: PPPoE notification sent to 1/1 valid recipients (3 total)
 2025-07-21 08:31:58 info: PPPoE monitoring: 166 active connections, 166 login, 0 logout
+2025-07-21 09:07:57 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 09:07:57 info: Attempting to start server on configured port: 4001
+2025-07-21 09:07:57 info: Memulai server pada port yang dikonfigurasi: 4001
+2025-07-21 09:07:57 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-21 09:07:57 info: ✅ Server berhasil berjalan pada port 4001
+2025-07-21 09:07:57 info: 🌐 Web Portal tersedia di: http://localhost:4001
+2025-07-21 09:07:57 info: Environment: development
+2025-07-21 09:07:57 info: WhatsApp socket set in pppoe-notifications module
+2025-07-21 09:07:57 info: WhatsApp socket set in pppoe-commands module
+2025-07-21 09:07:57 info: WhatsApp socket set in genieacs-commands module
+2025-07-21 09:07:57 info: WhatsApp connected successfully
+2025-07-21 09:07:57 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 09:07:57 info: RX Power monitoring initialized
+2025-07-21 09:07:57 info: PPPoE monitoring auto-started on initialization
+2025-07-21 09:07:57 info: PPPoE monitoring initialized
+2025-07-21 09:08:17 error: Error connecting to Mikrotik: 
+2025-07-21 09:08:40 info: Konfigurasi Mikrotik di settings.json berubah, reset koneksi Mikrotik...
+2025-07-21 09:08:57 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-21 09:08:57 info: PPPoE LOGIN detected: nalda@rawagunda2, jami@sut, rudibengkel@tanjungpura, wakeng, indah@tanjungpura, kasdi@rawagunda, icha, iman@, handoko, lussy, tarci, aang2, rom@lah, darim@lor, aqiel, darim, yudi, kendo@tanjungpura, tariman, ejun, nesa, ros_pppoe, brohim, nurudin, RT-KARONI, junanto@rawagunda, runaeni, atam, yessy, rasta, daskunah, talita, seka, fajar, karsih, hany@tarsiti, wendy@tanjungpura, karmanda, mardi, eka, Uchi, gunawan, toko@sayur, sandi@rajan, ooh, luwih@, toax, nuriyah, wiwin@seblak, aldo, eva, gadel, yogi, alam, suliwa, kincling, antony@ps, dhea_tile@rawagunda, wadi@rawagunda, kandar, memble@, suminih@rawagunda, sarwan, raeni, server@ilik, @cimun, abibah, rintem, winata, sanyo, daruni@rawagunda, santo, ajri, yohan@rawagunda, salsa, codet, erul, damar, elis@rawagunda, dasta, toyinah, yuni@rawagunda, aang, adiiman, kama@, nadiva, nina@kesin, koriya, dedi@aira, elvano1, tibil, lisan@banteng, alan@pentud, mella, kus, coyih, pandi@tanjungpura, warsana, nana, maktub, Tarci@lor, oland, tinih, memble2, test, andi, tester, erni, kasmuri, winata@laut, muktar@ompong, warung_elisa@laut, warungyuni@laut, rangdu, murba, h.juroh, mastobari@, dedy@sarkim, opang@tanjungpura, server@yayan, server@arep, karban, bunga, sumi, windah, leha, khofik@janggar, dadang@genjong, waidah@pegagan, wendy@genjong, eva@pegagan, setiyadi@genjong, novita, Endra@genjong1, sutara@pegagan, pabudi@genjong, nani, nalda@pegagan, sang, soleh@pegagan, denihamdani@pegagan, F663, mangasep@janggar, turidah, uung@pegagan, intan@ujungmulya, gemblung, wilda, murdani, sudini@pegagan, umikulsum@janggar, durniyah@pegagan, surminih@pegagan, lina@ujungmulya, ety@pegagan, anwar@janggar, sarna@pegagan, kurnati, yuni@ujungmulya, eryanto@pegagan, abas@pegagan, adinesep@ujungmulya, yusuf, walong@asep, astri@pegagan, SDNUG1
+2025-07-21 09:08:57 warn: No technician group configured for PPPoE notifications
+2025-07-21 09:08:57 info: PPPoE LOGIN:
+2025-07-21 09:08:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:08:58 info: PPPoE notification sent to 6281947215703
+2025-07-21 09:08:59 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-21 09:08:59 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-21 09:09:00 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-21 09:09:00 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-21 09:09:00 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-21 09:09:00 info: PPPoE monitoring: 166 active connections, 166 login, 0 logout
+2025-07-21 09:09:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:10:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:11:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:12:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:13:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:14:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:15:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:16:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:17:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:18:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:19:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:20:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:21:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:22:08 info: Message received
+2025-07-21 09:22:14 info: Message received
+2025-07-21 09:22:27 info: Message received
+2025-07-21 09:22:57 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:23:11 info: Message received
+2025-07-21 09:28:19 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 09:28:19 info: Attempting to start server on configured port: 3001
+2025-07-21 09:28:19 info: Memulai server pada port yang dikonfigurasi: 3001
+2025-07-21 09:28:19 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-21 09:28:19 info: ✅ Server berhasil berjalan pada port 3001
+2025-07-21 09:28:19 info: 🌐 Web Portal tersedia di: http://localhost:3001
+2025-07-21 09:28:19 info: Environment: development
+2025-07-21 09:28:19 info: WhatsApp socket set in pppoe-notifications module
+2025-07-21 09:28:19 info: WhatsApp socket set in pppoe-commands module
+2025-07-21 09:28:19 info: WhatsApp socket set in genieacs-commands module
+2025-07-21 09:28:19 info: WhatsApp connected successfully
+2025-07-21 09:28:19 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 09:28:19 info: RX Power monitoring initialized
+2025-07-21 09:28:19 info: PPPoE monitoring auto-started on initialization
+2025-07-21 09:28:19 info: PPPoE monitoring initialized
+2025-07-21 09:28:47 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-21 09:29:19 warn: No technician group configured for PPPoE notifications
+2025-07-21 09:29:19 info: PPPoE LOGIN:
+2025-07-21 09:29:19 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:29:19 info: PPPoE LOGIN detected: nalda@rawagunda2, jami@sut, rudibengkel@tanjungpura, wakeng, indah@tanjungpura, kasdi@rawagunda, iman@, handoko, lussy, tarci, aang2, rom@lah, darim@lor, aqiel, darim, yudi, kendo@tanjungpura, tariman, ejun, nesa, ros_pppoe, brohim, nurudin, RT-KARONI, junanto@rawagunda, runaeni, atam, yessy, rasta, daskunah, talita, seka, fajar, karsih, hany@tarsiti, wendy@tanjungpura, karmanda, mardi, eka, Uchi, gunawan, toko@sayur, sandi@rajan, ooh, luwih@, toax, nuriyah, wiwin@seblak, aldo, eva, gadel, yogi, alam, suliwa, kincling, antony@ps, dhea_tile@rawagunda, wadi@rawagunda, kandar, memble@, suminih@rawagunda, sarwan, raeni, server@ilik, @cimun, abibah, rintem, winata, sanyo, daruni@rawagunda, santo, ajri, yohan@rawagunda, salsa, codet, erul, damar, elis@rawagunda, dasta, toyinah, yuni@rawagunda, aang, adiiman, kama@, nadiva, nina@kesin, koriya, dedi@aira, elvano1, tibil, lisan@banteng, alan@pentud, mella, kus, coyih, pandi@tanjungpura, warsana, nana, maktub, Tarci@lor, oland, tinih, memble2, test, andi, tester, erni, kasmuri, winata@laut, muktar@ompong, warung_elisa@laut, warungyuni@laut, rangdu, murba, h.juroh, mastobari@, dedy@sarkim, opang@tanjungpura, server@yayan, server@arep, karban, bunga, sumi, windah, leha, khofik@janggar, dadang@genjong, waidah@pegagan, wendy@genjong, eva@pegagan, setiyadi@genjong, novita, Endra@genjong1, sutara@pegagan, pabudi@genjong, nani, nalda@pegagan, sang, soleh@pegagan, denihamdani@pegagan, F663, mangasep@janggar, turidah, uung@pegagan, intan@ujungmulya, gemblung, wilda, murdani, sudini@pegagan, umikulsum@janggar, durniyah@pegagan, surminih@pegagan, lina@ujungmulya, ety@pegagan, anwar@janggar, sarna@pegagan, kurnati, yuni@ujungmulya, eryanto@pegagan, abas@pegagan, adinesep@ujungmulya, yusuf, walong@asep, SDNUG1, astri@pegagan, icha
+2025-07-21 09:29:19 info: PPPoE notification sent to 6281947215703
+2025-07-21 09:29:21 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-21 09:29:21 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-21 09:29:21 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-21 09:29:21 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-21 09:29:21 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-21 09:29:21 info: PPPoE monitoring: 166 active connections, 166 login, 0 logout
+2025-07-21 09:30:19 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:30:32 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 09:30:32 info: Attempting to start server on configured port: 3001
+2025-07-21 09:30:32 info: Memulai server pada port yang dikonfigurasi: 3001
+2025-07-21 09:30:32 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-21 09:30:32 info: ✅ Server berhasil berjalan pada port 3001
+2025-07-21 09:30:32 info: 🌐 Web Portal tersedia di: http://localhost:3001
+2025-07-21 09:30:32 info: Environment: development
+2025-07-21 09:30:32 info: WhatsApp socket set in pppoe-notifications module
+2025-07-21 09:30:32 info: WhatsApp socket set in pppoe-commands module
+2025-07-21 09:30:32 info: WhatsApp socket set in genieacs-commands module
+2025-07-21 09:30:32 info: WhatsApp connected successfully
+2025-07-21 09:30:32 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 09:30:32 info: RX Power monitoring initialized
+2025-07-21 09:30:32 info: PPPoE monitoring auto-started on initialization
+2025-07-21 09:30:32 info: PPPoE monitoring initialized
+2025-07-21 09:30:41 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-21 09:31:32 warn: No technician group configured for PPPoE notifications
+2025-07-21 09:31:32 info: PPPoE LOGIN:
+2025-07-21 09:31:32 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:31:32 info: PPPoE LOGIN detected: nalda@rawagunda2, jami@sut, rudibengkel@tanjungpura, wakeng, indah@tanjungpura, kasdi@rawagunda, iman@, handoko, lussy, tarci, aang2, rom@lah, darim@lor, aqiel, darim, yudi, kendo@tanjungpura, tariman, ejun, nesa, ros_pppoe, brohim, nurudin, RT-KARONI, junanto@rawagunda, runaeni, atam, yessy, rasta, daskunah, talita, seka, fajar, karsih, hany@tarsiti, wendy@tanjungpura, karmanda, mardi, eka, Uchi, gunawan, toko@sayur, sandi@rajan, ooh, luwih@, toax, nuriyah, wiwin@seblak, aldo, eva, gadel, yogi, alam, suliwa, kincling, antony@ps, dhea_tile@rawagunda, wadi@rawagunda, kandar, memble@, suminih@rawagunda, sarwan, raeni, server@ilik, @cimun, abibah, rintem, winata, sanyo, daruni@rawagunda, santo, ajri, yohan@rawagunda, salsa, codet, erul, damar, elis@rawagunda, dasta, toyinah, yuni@rawagunda, aang, adiiman, kama@, nadiva, nina@kesin, koriya, dedi@aira, elvano1, tibil, lisan@banteng, alan@pentud, mella, kus, coyih, pandi@tanjungpura, warsana, nana, maktub, Tarci@lor, oland, tinih, memble2, test, andi, tester, erni, kasmuri, winata@laut, muktar@ompong, warung_elisa@laut, warungyuni@laut, rangdu, murba, h.juroh, mastobari@, dedy@sarkim, opang@tanjungpura, server@yayan, server@arep, karban, bunga, sumi, windah, leha, khofik@janggar, dadang@genjong, waidah@pegagan, wendy@genjong, eva@pegagan, setiyadi@genjong, novita, Endra@genjong1, sutara@pegagan, pabudi@genjong, nani, nalda@pegagan, sang, soleh@pegagan, denihamdani@pegagan, F663, mangasep@janggar, turidah, uung@pegagan, intan@ujungmulya, gemblung, wilda, murdani, sudini@pegagan, umikulsum@janggar, durniyah@pegagan, surminih@pegagan, lina@ujungmulya, ety@pegagan, anwar@janggar, sarna@pegagan, kurnati, yuni@ujungmulya, eryanto@pegagan, abas@pegagan, adinesep@ujungmulya, yusuf, walong@asep, SDNUG1, astri@pegagan, icha
+2025-07-21 09:31:33 info: PPPoE notification sent to 6281947215703
+2025-07-21 09:31:34 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-21 09:31:34 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-21 09:31:34 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-21 09:31:34 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-21 09:31:34 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-21 09:31:34 info: PPPoE monitoring: 166 active connections, 166 login, 0 logout
+2025-07-21 09:32:32 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:33:32 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:34:32 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:35:32 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:36:32 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 09:43:39 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 09:43:39 info: Attempting to start server on configured port: 3001
+2025-07-21 09:43:39 info: Memulai server pada port yang dikonfigurasi: 3001
+2025-07-21 09:43:39 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-21 09:43:39 info: ✅ Server berhasil berjalan pada port 3001
+2025-07-21 09:43:39 info: 🌐 Web Portal tersedia di: http://localhost:3001
+2025-07-21 09:43:39 info: Environment: development
+2025-07-21 09:43:39 info: WhatsApp socket set in pppoe-notifications module
+2025-07-21 09:43:39 info: WhatsApp socket set in pppoe-commands module
+2025-07-21 09:43:39 info: WhatsApp socket set in genieacs-commands module
+2025-07-21 09:43:39 info: WhatsApp connected successfully
+2025-07-21 09:43:39 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 09:43:39 info: RX Power monitoring initialized
+2025-07-21 09:43:39 info: PPPoE monitoring auto-started on initialization
+2025-07-21 09:43:39 info: PPPoE monitoring initialized
+2025-07-21 09:43:56 error: Error connecting to Mikrotik: 
+2025-07-21 09:43:56 error: No Mikrotik connection available
+2025-07-21 09:43:58 error: Error connecting to Mikrotik: 
+2025-07-21 09:44:00 error: Error connecting to Mikrotik: 
+2025-07-21 09:44:00 error: No Mikrotik connection available
+2025-07-21 09:44:03 error: Error connecting to Mikrotik: 
+2025-07-21 09:44:03 error: Error connecting to Mikrotik: 
+2025-07-21 09:44:03 error: No Mikrotik connection available
+2025-07-21 09:44:05 error: Error connecting to Mikrotik: 
+2025-07-21 09:44:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:44:41 error: No Mikrotik connection available
+2025-07-21 09:44:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:44:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:44:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:44:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:44:57 error: Error connecting to Mikrotik: 
+2025-07-21 09:44:57 error: No Mikrotik connection available
+2025-07-21 09:45:00 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:02 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:02 error: No Mikrotik connection available
+2025-07-21 09:45:04 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:04 error: No Mikrotik connection available
+2025-07-21 09:45:04 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:07 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:09 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:11 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:13 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:15 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:17 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:19 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:21 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:23 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:25 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:27 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:29 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:31 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:33 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:35 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:37 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:39 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:41 error: No Mikrotik connection available
+2025-07-21 09:45:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:45:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:45:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:45:42 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:44 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:46 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:48 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:50 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:52 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:54 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:56 error: Error connecting to Mikrotik: 
+2025-07-21 09:45:58 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:00 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:02 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:04 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:06 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:08 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:10 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:17 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:41 error: No Mikrotik connection available
+2025-07-21 09:46:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:46:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:46:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:46:46 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:48 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:50 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:52 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:52 error: No Mikrotik connection available
+2025-07-21 09:46:52 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:54 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:54 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:56 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:56 error: No Mikrotik connection available
+2025-07-21 09:46:56 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:58 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:58 error: Error connecting to Mikrotik: 
+2025-07-21 09:46:58 error: No Mikrotik connection available
+2025-07-21 09:47:00 error: Error connecting to Mikrotik: 
+2025-07-21 09:47:29 error: Error connecting to Mikrotik: 
+2025-07-21 09:47:29 error: No Mikrotik connection available
+2025-07-21 09:47:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:47:41 error: No Mikrotik connection available
+2025-07-21 09:47:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:47:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:47:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:47:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:48:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:48:41 error: No Mikrotik connection available
+2025-07-21 09:48:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:48:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:48:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:48:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:48:46 error: Error connecting to Mikrotik: 
+2025-07-21 09:49:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:49:41 error: No Mikrotik connection available
+2025-07-21 09:49:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:49:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:49:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:49:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:50:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:50:41 error: No Mikrotik connection available
+2025-07-21 09:50:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:50:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:50:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:50:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:51:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:51:41 error: No Mikrotik connection available
+2025-07-21 09:51:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:51:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:51:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:51:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:52:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:52:41 error: No Mikrotik connection available
+2025-07-21 09:52:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:52:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:52:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:52:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:53:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:53:41 error: No Mikrotik connection available
+2025-07-21 09:53:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:53:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:53:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:53:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:54:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:54:41 error: No Mikrotik connection available
+2025-07-21 09:54:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:54:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:54:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:54:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:55:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:55:41 error: No Mikrotik connection available
+2025-07-21 09:55:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:55:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:55:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:55:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:56:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:56:41 error: No Mikrotik connection available
+2025-07-21 09:56:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:56:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:56:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:56:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:57:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:57:41 error: No Mikrotik connection available
+2025-07-21 09:57:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:57:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:57:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:57:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:58:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:58:41 error: No Mikrotik connection available
+2025-07-21 09:58:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:58:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:58:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:58:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 09:59:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:59:41 error: No Mikrotik connection available
+2025-07-21 09:59:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 09:59:41 error: Error connecting to Mikrotik: 
+2025-07-21 09:59:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 09:59:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:00:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:00:41 error: No Mikrotik connection available
+2025-07-21 10:00:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:00:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:00:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:00:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:01:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:01:41 error: No Mikrotik connection available
+2025-07-21 10:01:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:01:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:01:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:01:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:02:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:02:41 error: No Mikrotik connection available
+2025-07-21 10:02:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:02:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:02:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:02:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:03:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:03:41 error: No Mikrotik connection available
+2025-07-21 10:03:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:03:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:03:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:03:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:04:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:04:41 error: No Mikrotik connection available
+2025-07-21 10:04:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:04:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:04:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:04:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:05:40 info: Message received
+2025-07-21 10:05:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:05:41 error: No Mikrotik connection available
+2025-07-21 10:05:41 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:05:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:05:41 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:05:41 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:06:23 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 10:06:23 info: Attempting to start server on configured port: 3001
+2025-07-21 10:06:23 info: Memulai server pada port yang dikonfigurasi: 3001
+2025-07-21 10:06:23 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-21 10:06:23 info: ✅ Server berhasil berjalan pada port 3001
+2025-07-21 10:06:23 info: 🌐 Web Portal tersedia di: http://localhost:3001
+2025-07-21 10:06:23 info: Environment: development
+2025-07-21 10:06:23 info: WhatsApp socket set in pppoe-notifications module
+2025-07-21 10:06:23 info: WhatsApp socket set in pppoe-commands module
+2025-07-21 10:06:23 info: WhatsApp socket set in genieacs-commands module
+2025-07-21 10:06:23 info: WhatsApp connected successfully
+2025-07-21 10:06:23 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 10:06:23 info: RX Power monitoring initialized
+2025-07-21 10:06:23 info: PPPoE monitoring auto-started on initialization
+2025-07-21 10:06:23 info: PPPoE monitoring initialized
+2025-07-21 10:06:39 error: Error connecting to Mikrotik: 
+2025-07-21 10:06:39 error: No Mikrotik connection available
+2025-07-21 10:06:41 error: Error connecting to Mikrotik: 
+2025-07-21 10:06:43 error: Error connecting to Mikrotik: 
+2025-07-21 10:06:43 error: No Mikrotik connection available
+2025-07-21 10:06:46 error: Error connecting to Mikrotik: 
+2025-07-21 10:06:46 error: No Mikrotik connection available
+2025-07-21 10:06:46 error: Error connecting to Mikrotik: 
+2025-07-21 10:06:48 error: Error connecting to Mikrotik: 
+2025-07-21 10:06:50 error: Error connecting to Mikrotik: 
+2025-07-21 10:06:52 error: Error connecting to Mikrotik: 
+2025-07-21 10:06:54 error: Error connecting to Mikrotik: 
+2025-07-21 10:06:56 error: Error connecting to Mikrotik: 
+2025-07-21 10:06:58 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:00 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:02 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:04 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:06 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:08 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:10 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:12 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:14 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:16 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:18 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:20 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:22 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:25 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:25 error: No Mikrotik connection available
+2025-07-21 10:07:25 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:07:25 error: Error connecting to Mikrotik: 
+2025-07-21 10:07:25 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:07:25 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:07:46 info: Konfigurasi Mikrotik di settings.json berubah, reset koneksi Mikrotik...
+2025-07-21 10:07:56 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-21 10:08:23 warn: No technician group configured for PPPoE notifications
+2025-07-21 10:08:23 info: PPPoE LOGIN:
+2025-07-21 10:08:23 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 10:08:23 info: PPPoE LOGIN detected: nalda@rawagunda2, jami@sut, rudibengkel@tanjungpura, wakeng, indah@tanjungpura, kasdi@rawagunda, iman@, handoko, lussy, tarci, aang2, rom@lah, darim@lor, aqiel, darim, yudi, kendo@tanjungpura, tariman, ejun, nesa, ros_pppoe, brohim, nurudin, RT-KARONI, junanto@rawagunda, runaeni, atam, yessy, rasta, daskunah, talita, seka, fajar, karsih, hany@tarsiti, wendy@tanjungpura, karmanda, mardi, eka, Uchi, gunawan, toko@sayur, sandi@rajan, ooh, luwih@, toax, nuriyah, wiwin@seblak, aldo, eva, gadel, yogi, alam, suliwa, kincling, antony@ps, dhea_tile@rawagunda, wadi@rawagunda, kandar, memble@, suminih@rawagunda, sarwan, raeni, server@ilik, @cimun, abibah, rintem, winata, sanyo, daruni@rawagunda, santo, ajri, yohan@rawagunda, salsa, codet, erul, damar, elis@rawagunda, dasta, toyinah, yuni@rawagunda, aang, adiiman, kama@, nadiva, nina@kesin, koriya, dedi@aira, elvano1, tibil, lisan@banteng, alan@pentud, mella, kus, coyih, pandi@tanjungpura, warsana, nana, maktub, tinih, test, andi, tester, erni, kasmuri, muktar@ompong, murba, h.juroh, dedy@sarkim, opang@tanjungpura, server@yayan, karban, sumi, windah, leha, khofik@janggar, dadang@genjong, waidah@pegagan, wendy@genjong, eva@pegagan, setiyadi@genjong, novita, Endra@genjong1, sutara@pegagan, pabudi@genjong, nani, nalda@pegagan, sang, soleh@pegagan, denihamdani@pegagan, F663, mangasep@janggar, turidah, uung@pegagan, intan@ujungmulya, gemblung, wilda, murdani, sudini@pegagan, umikulsum@janggar, durniyah@pegagan, surminih@pegagan, lina@ujungmulya, ety@pegagan, anwar@janggar, sarna@pegagan, kurnati, yuni@ujungmulya, eryanto@pegagan, abas@pegagan, adinesep@ujungmulya, yusuf, SDNUG1, icha, astri@pegagan, warung_elisa@laut, Tarci@lor, memble2, rangdu, server@arep, warungyuni@laut, oland, walong@asep, winata@laut, mastobari@, bunga
+2025-07-21 10:08:23 info: PPPoE notification sent to 6281947215703
+2025-07-21 10:08:25 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-21 10:08:25 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-21 10:08:25 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-21 10:08:25 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-21 10:08:25 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-21 10:08:25 info: PPPoE monitoring: 166 active connections, 166 login, 0 logout
+2025-07-21 10:09:20 info: Konfigurasi Mikrotik di settings.json berubah, reset koneksi Mikrotik...
+2025-07-21 10:09:25 error: Error connecting to Mikrotik: 
+2025-07-21 10:09:25 error: No Mikrotik connection available
+2025-07-21 10:09:25 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:09:25 error: Error connecting to Mikrotik: 
+2025-07-21 10:09:25 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:09:25 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:09:32 error: Error connecting to Mikrotik: 
+2025-07-21 10:09:32 error: No Mikrotik connection available
+2025-07-21 10:09:34 error: Error connecting to Mikrotik: 
+2025-07-21 10:09:36 error: Error connecting to Mikrotik: 
+2025-07-21 10:09:36 error: No Mikrotik connection available
+2025-07-21 10:09:38 error: Error connecting to Mikrotik: 
+2025-07-21 10:09:38 error: No Mikrotik connection available
+2025-07-21 10:09:38 error: Error connecting to Mikrotik: 
+2025-07-21 10:09:40 error: Error connecting to Mikrotik: 
+2025-07-21 10:09:42 error: Error connecting to Mikrotik: 
+2025-07-21 10:09:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:09:46 error: Error connecting to Mikrotik: 
+2025-07-21 10:09:48 error: Error connecting to Mikrotik: 
+2025-07-21 10:10:25 error: Error connecting to Mikrotik: 
+2025-07-21 10:10:25 error: No Mikrotik connection available
+2025-07-21 10:10:25 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:10:25 error: Error connecting to Mikrotik: 
+2025-07-21 10:10:25 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:10:25 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:10:29 error: Error connecting to Mikrotik: 
+2025-07-21 10:10:29 error: Error connecting to Mikrotik: 
+2025-07-21 10:10:29 error: No Mikrotik connection available
+2025-07-21 10:10:31 error: Error connecting to Mikrotik: 
+2025-07-21 10:10:33 error: Error connecting to Mikrotik: 
+2025-07-21 10:10:35 error: Error connecting to Mikrotik: 
+2025-07-21 10:10:37 error: Error connecting to Mikrotik: 
+2025-07-21 10:10:39 error: Error connecting to Mikrotik: 
+2025-07-21 10:17:42 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 10:17:42 info: Attempting to start server on configured port: 3001
+2025-07-21 10:17:42 info: Memulai server pada port yang dikonfigurasi: 3001
+2025-07-21 10:17:42 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-21 10:17:42 info: ✅ Server berhasil berjalan pada port 3001
+2025-07-21 10:17:42 info: 🌐 Web Portal tersedia di: http://localhost:3001
+2025-07-21 10:17:42 info: Environment: development
+2025-07-21 10:17:42 info: WhatsApp socket set in pppoe-notifications module
+2025-07-21 10:17:42 info: WhatsApp socket set in pppoe-commands module
+2025-07-21 10:17:42 info: WhatsApp socket set in genieacs-commands module
+2025-07-21 10:17:42 info: WhatsApp connected successfully
+2025-07-21 10:17:42 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 10:17:42 info: RX Power monitoring initialized
+2025-07-21 10:17:42 info: PPPoE monitoring auto-started on initialization
+2025-07-21 10:17:42 info: PPPoE monitoring initialized
+2025-07-21 10:17:47 error: Error connecting to Mikrotik: 
+2025-07-21 10:17:49 error: Error connecting to Mikrotik: 
+2025-07-21 10:18:23 error: Error connecting to Mikrotik: 
+2025-07-21 10:18:23 error: Error connecting to Mikrotik: 
+2025-07-21 10:18:23 error: No Mikrotik connection available
+2025-07-21 10:18:26 error: Error connecting to Mikrotik: 
+2025-07-21 10:18:28 error: Error connecting to Mikrotik: 
+2025-07-21 10:18:30 error: Error connecting to Mikrotik: 
+2025-07-21 10:18:32 error: Error connecting to Mikrotik: 
+2025-07-21 10:18:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:18:44 error: No Mikrotik connection available
+2025-07-21 10:18:44 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:18:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:18:44 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:18:44 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:19:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:19:44 error: No Mikrotik connection available
+2025-07-21 10:19:44 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:19:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:19:44 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:19:44 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:20:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:20:44 error: No Mikrotik connection available
+2025-07-21 10:20:44 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:20:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:20:44 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:20:44 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:21:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:21:44 error: No Mikrotik connection available
+2025-07-21 10:21:44 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:21:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:21:44 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:21:44 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:22:10 info: Message received
+2025-07-21 10:22:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:22:44 error: No Mikrotik connection available
+2025-07-21 10:22:44 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:22:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:22:44 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:22:44 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:23:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:23:44 error: No Mikrotik connection available
+2025-07-21 10:23:44 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:23:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:23:44 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:23:44 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:24:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:24:44 error: No Mikrotik connection available
+2025-07-21 10:24:44 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:24:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:24:44 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:24:44 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:25:29 info: Message received
+2025-07-21 10:25:42 info: Message received
+2025-07-21 10:25:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:25:44 error: No Mikrotik connection available
+2025-07-21 10:25:44 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:25:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:25:44 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:25:44 warn: Failed to get PPPoE connections: Unknown error
+2025-07-21 10:25:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:25:46 error: Error connecting to Mikrotik: 
+2025-07-21 10:25:46 error: No Mikrotik connection available
+2025-07-21 10:26:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:26:44 error: No Mikrotik connection available
+2025-07-21 10:26:44 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-21 10:26:44 error: Error connecting to Mikrotik: 
+2025-07-21 10:26:44 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-21 10:26:44 warn: Failed to get PPPoE connections: Unknown error

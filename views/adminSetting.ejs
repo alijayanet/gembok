@@ -137,6 +137,7 @@
                             <div id="settingsFields">
                                 <!-- Semua field dari settings.json akan di-render di sini oleh JS -->
                             </div>
+                            <div id="settingsSuccess" class="alert alert-success d-none" role="alert"></div>
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-save"></i> Simpan Perubahan
@@ -550,10 +551,14 @@ $(function() {
                 html += '<div class="mb-3">';
                 if (key === 'user_auth_mode') {
                     html += '<label class="form-label">Mode Autentikasi User</label>';
-                    html += '<select class="form-select" name="user_auth_mode">';
-                    html += '<option value="mikrotik"'+(val==="mikrotik"?" selected":"")+'>Mikrotik (RouterOS API)</option>';
-                    html += '<option value="radius"'+(val==="radius"?" selected":"")+'>RADIUS (Database RADIUS)</option>';
-                    html += '</select>';
+                    html += '<div class="form-check">';
+                    html += '<input class="form-check-input" type="radio" name="user_auth_mode" id="auth_mode_mikrotik" value="mikrotik"'+(val==="mikrotik"?" checked":"")+'> ';
+                    html += '<label class="form-check-label" for="auth_mode_mikrotik">Mikrotik (RouterOS API)</label>';
+                    html += '</div>';
+                    html += '<div class="form-check">';
+                    html += '<input class="form-check-input" type="radio" name="user_auth_mode" id="auth_mode_radius" value="radius"'+(val==="radius"?" checked":"")+'> ';
+                    html += '<label class="form-check-label" for="auth_mode_radius">RADIUS (Database RADIUS)</label>';
+                    html += '</div>';
                 } else if (typeof val === 'boolean' || val === true || val === false || val === 'true' || val === 'false') {
                     var checked = (val === true || val === 'true') ? 'checked' : '';
                     html += '<label class="form-label">'+key+'</label>';
@@ -577,21 +582,31 @@ $(function() {
     $('#settingsForm').on('submit', function(e) {
         e.preventDefault();
         var formData = {};
-        // Handle semua input
-        $('#settingsForm').find('input').each(function() {
+        // Handle semua input text dan checkbox
+        $('#settingsForm').find('input[type=text],input[type=checkbox],input[type=number],input[type=password]').each(function() {
             var name = $(this).attr('name');
+            if (!name) return;
             if ($(this).attr('type') === 'checkbox') {
                 formData[name] = $(this).is(':checked');
             } else {
                 formData[name] = $(this).val();
             }
         });
+        // Handle radio button (hanya yang checked)
+        $('#settingsForm').find('input[type=radio]:checked').each(function() {
+            var name = $(this).attr('name');
+            if (!name) return;
+            formData[name] = $(this).val();
+        });
         $.ajax({
             url: '/admin/setting/save',
             method: 'POST',
             data: formData,
             success: function(res) {
-                alert('Pengaturan berhasil disimpan!');
+                $('#settingsSuccess').removeClass('d-none').text('Pengaturan berhasil disimpan!');
+                setTimeout(function() {
+                    $('#settingsSuccess').addClass('d-none');
+                }, 3000);
             },
             error: function() {
                 alert('Gagal menyimpan pengaturan!');
