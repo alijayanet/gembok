@@ -320,7 +320,7 @@ async function connectToWhatsApp() {
         sock = makeWASocket({
             auth: state,
             logger,
-            browser: ['ALIJAYA DIGITAL NETWORK', 'Chrome', '1.0.0'],
+            browser: ['ALIJAYA Genieacs Bot Mikrotik', 'Chrome', '1.0.0'],
             connectTimeoutMs: 60000,
             qrTimeout: 40000,
             defaultQueryTimeoutMs: 30000, // Timeout untuk query
@@ -449,8 +449,11 @@ async function connectToWhatsApp() {
                     if (superAdminNumber && superAdminNumber !== adminNumber) {
                         setTimeout(async () => {
                             try {
+                                const donationText = `Rekening Donasi Pembangunan Masjid\n4206 0101 2214 534\nBRI a.n. DKM BAITUR ROHMAN\nDesa Ujunggebang Kecamatan Sukra Kabupaten Indramayu Jawa Barat\nKonfirmasi donasi:\n081947215703 (Ust. WARJAYA)\n085210939803 (Ust. FIKI)\n082130257144 (Ust. KARONI)\nTerima kasih atas partisipasi dan dukungan Anda 🙏`;
+                                const startupMessage = `👋 *Selamat datang, Super Admin!*\n\nAplikasi WhatsApp Bot berhasil dijalankan.\n\n${donationText}\n\n${getSetting('footer_info', '')}`;
+                                
                                 await sock.sendMessage(`${superAdminNumber}@s.whatsapp.net`, {
-                                    text: notificationMessage
+                                    text: startupMessage
                                 });
                                 const maskedNumber = superAdminNumber.substring(0, 4) + '****' + superAdminNumber.substring(superAdminNumber.length - 4);
                                 console.log(`Pesan notifikasi terkirim ke super admin ${maskedNumber}`);
