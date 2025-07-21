@@ -5,7 +5,10 @@ const fs = require('fs');
 const path = require('path');
 
 // Load settings
-const settings = require('../settings.json');
+const { getSetting } = require('../config/settingsManager');
+const settings = {};
+settings.admins = getSetting('admins', []);
+settings.technician_numbers = getSetting('technician_numbers', []);
 
 console.log('=== Test Admin Functionality ===\n');
 

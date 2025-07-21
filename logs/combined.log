@@ -15751,3 +15751,534 @@
 2025-07-19 15:35:13 info: Monitoring PPPoE connections: 162 active connections
 2025-07-19 15:36:13 info: Monitoring PPPoE connections: 162 active connections
 2025-07-19 15:37:13 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:02:58 info: PPPoE monitoring started with interval 60000ms
+2025-07-19 20:02:58 info: Attempting to start server on configured port: 4005
+2025-07-19 20:02:58 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-19 20:02:58 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-19 20:02:58 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-19 20:02:58 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-19 20:02:58 info: Environment: development
+2025-07-19 20:02:58 info: WhatsApp socket set in pppoe-notifications module
+2025-07-19 20:02:58 info: WhatsApp socket set in pppoe-commands module
+2025-07-19 20:02:58 info: WhatsApp socket set in genieacs-commands module
+2025-07-19 20:02:58 info: WhatsApp connected successfully
+2025-07-19 20:02:58 info: PPPoE monitoring started with interval 60000ms
+2025-07-19 20:02:58 info: RX Power monitoring initialized
+2025-07-19 20:02:58 info: PPPoE monitoring auto-started on initialization
+2025-07-19 20:02:58 info: PPPoE monitoring initialized
+2025-07-19 20:03:44 error: Error connecting to Mikrotik: 
+2025-07-19 20:03:44 error: No Mikrotik connection available
+2025-07-19 20:03:46 error: Error connecting to Mikrotik: 
+2025-07-19 20:03:49 error: Error connecting to Mikrotik: 
+2025-07-19 20:03:49 error: No Mikrotik connection available
+2025-07-19 20:03:51 error: Error connecting to Mikrotik: 
+2025-07-19 20:03:51 error: Error connecting to Mikrotik: 
+2025-07-19 20:03:51 error: No Mikrotik connection available
+2025-07-19 20:03:53 error: Error connecting to Mikrotik: 
+2025-07-19 20:03:55 error: Error connecting to Mikrotik: 
+2025-07-19 20:03:57 error: Error connecting to Mikrotik: 
+2025-07-19 20:03:59 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:00 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:00 error: No Mikrotik connection available
+2025-07-19 20:04:00 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-19 20:04:00 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:00 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-19 20:04:00 warn: Failed to get PPPoE connections: Unknown error
+2025-07-19 20:04:01 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:03 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:05 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:06 info: Message received
+2025-07-19 20:04:07 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:08 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:08 error: No Mikrotik connection available
+2025-07-19 20:04:09 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:10 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:10 error: No Mikrotik connection available
+2025-07-19 20:04:11 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:12 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:14 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:14 error: Error connecting to Mikrotik: 
+2025-07-19 20:04:14 error: No Mikrotik connection available
+2025-07-19 20:04:48 info: Message received
+2025-07-19 20:05:00 error: Error connecting to Mikrotik: 
+2025-07-19 20:05:00 error: No Mikrotik connection available
+2025-07-19 20:05:00 warn: Monitoring PPPoE connections failed: Koneksi ke Mikrotik gagal
+2025-07-19 20:05:00 error: Error connecting to Mikrotik: 
+2025-07-19 20:05:00 error: No Mikrotik connection available for PPPoE monitoring
+2025-07-19 20:05:00 warn: Failed to get PPPoE connections: Unknown error
+2025-07-19 20:05:11 info: Message received
+2025-07-19 20:05:13 error: Error connecting to Mikrotik: 
+2025-07-19 20:05:13 error: No Mikrotik connection available
+2025-07-19 20:05:58 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-19 20:05:58 info: PPPoE LOGIN detected: nina@kesin, memble@, nurudin, koriya, nalda@rawagunda2, seka, erul, yogi, runaeni, alan@pentud, karsih, antony@ps, @cimun, RT-KARONI, aqiel, atam, codet, darim@lor, ejun, eva, elvano1, iman@, jami@sut, kendo@tanjungpura, lussy, rom@lah, rudibengkel@tanjungpura, sarwan, talita, tarci, sumi, tariman, winata, yessy, wiwin@seblak, yudi, kama@, wendy@tanjungpura, aldo, nuriyah, abibah, SDNUG1, mardi, eka, hany@tarsiti, sandi@rajan, wakeng, adiiman, toyinah, salsa, toko@sayur, damar, karmanda, alam, indah@tanjungpura, yohan@rawagunda, nesa, rasta, kasdi@rawagunda, ros_pppoe, Uchi, ooh, kandar, gadel, raeni, wadi@rawagunda, handoko, yuni@rawagunda, elis@rawagunda, rintem, darim, suliwa, nadiva, dhea_tile@rawagunda, sanyo, junanto@rawagunda, aang2, brohim, kus, mella, dedi@aira, barli, windah, turidah, leha, khofik@janggar, nani, wendy@genjong, sang, eva@pegagan, yusuf, novita, waidah@pegagan, gemblung, intan@ujungmulya, F663, sutara@pegagan, uung@pegagan, sudini@pegagan, denihamdani@pegagan, pabudi@genjong, setiyadi@genjong, durniyah@pegagan, mangasep@janggar, Endra@genjong1, wilda, surminih@pegagan, murdani, anwar@janggar, yuni@ujungmulya, sarna@pegagan, adinesep@ujungmulya, abas@pegagan, kurnati, dadang@genjong, gunawan, lisan@banteng, fajar, nalda@pegagan, dasta, umikulsum@janggar, luwih@, lina@ujungmulya, erni, h.juroh, Tarci@lor, muktar@ompong, tinih, murba, bunga, andi, karban, warung_elisa@laut, maktub, server@yayan, rangdu, warungyuni@laut, server@arep, test, oland, walong@asep, opang@tanjungpura, dedy@sarkim, mastobari@, winata@laut, tester, toax, tibil, aang, ajri, kincling, soleh@pegagan, coyih, pandi@tanjungpura, nana, eryanto@pegagan, ety@pegagan, server@ilik, kasmuri, astri@pegagan, warsana, suminih@rawagunda, icha, daruni@rawagunda
+2025-07-19 20:05:58 warn: No technician group configured for PPPoE notifications
+2025-07-19 20:05:58 info: PPPoE LOGIN:
+2025-07-19 20:05:58 info: Monitoring PPPoE connections: 164 active connections
+2025-07-19 20:05:59 info: PPPoE notification sent to 6281947215703
+2025-07-19 20:06:00 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-19 20:06:00 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-19 20:06:00 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-19 20:06:00 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-19 20:06:00 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-19 20:06:00 info: PPPoE monitoring: 164 active connections, 164 login, 0 logout
+2025-07-19 20:06:07 info: Found 67 active hotspot users
+2025-07-19 20:06:11 info: Found 67 active hotspot users
+2025-07-19 20:06:58 info: PPPoE LOGOUT detected: suminih@rawagunda
+2025-07-19 20:06:58 warn: No technician group configured for PPPoE notifications
+2025-07-19 20:06:58 info: PPPoE LOGOUT:
+2025-07-19 20:06:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:06:59 info: PPPoE notification sent to 6281947215703
+2025-07-19 20:07:00 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-19 20:07:00 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-19 20:07:00 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-19 20:07:00 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-19 20:07:00 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-19 20:07:00 info: PPPoE monitoring: 163 active connections, 0 login, 1 logout
+2025-07-19 20:07:47 info: Message received
+2025-07-19 20:07:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:08:50 info: Message received
+2025-07-19 20:08:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:09:56 info: Found 65 active hotspot users
+2025-07-19 20:09:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:10:00 info: Found 65 active hotspot users
+2025-07-19 20:10:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:11:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:12:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:13:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:14:04 info: Message received
+2025-07-19 20:14:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:15:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:16:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:17:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:18:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:19:58 info: PPPoE LOGOUT detected: sumi
+2025-07-19 20:19:58 warn: No technician group configured for PPPoE notifications
+2025-07-19 20:19:58 info: PPPoE LOGOUT:
+2025-07-19 20:19:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:19:59 info: PPPoE notification sent to 6281947215703
+2025-07-19 20:20:00 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-19 20:20:00 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-19 20:20:00 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-19 20:20:00 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-19 20:20:00 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-19 20:20:00 info: PPPoE monitoring: 162 active connections, 0 login, 1 logout
+2025-07-19 20:20:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:21:50 info: Message received
+2025-07-19 20:21:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:22:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:23:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:24:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:25:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:26:58 info: PPPoE LOGIN detected: suminih@rawagunda
+2025-07-19 20:26:58 warn: No technician group configured for PPPoE notifications
+2025-07-19 20:26:58 info: PPPoE LOGIN:
+2025-07-19 20:26:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:26:59 info: PPPoE notification sent to 6281947215703
+2025-07-19 20:27:00 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-19 20:27:00 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-19 20:27:00 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-19 20:27:00 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-19 20:27:00 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-19 20:27:00 info: PPPoE monitoring: 163 active connections, 1 login, 0 logout
+2025-07-19 20:27:26 info: Message received
+2025-07-19 20:27:58 info: PPPoE LOGOUT detected: suminih@rawagunda
+2025-07-19 20:27:58 warn: No technician group configured for PPPoE notifications
+2025-07-19 20:27:58 info: PPPoE LOGOUT:
+2025-07-19 20:27:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:27:59 info: PPPoE notification sent to 6281947215703
+2025-07-19 20:28:00 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-19 20:28:00 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-19 20:28:00 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-19 20:28:00 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-19 20:28:00 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-19 20:28:00 info: PPPoE monitoring: 162 active connections, 0 login, 1 logout
+2025-07-19 20:28:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:29:50 info: Message received
+2025-07-19 20:29:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:30:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:31:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:32:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:33:58 info: PPPoE LOGIN detected: suminih@rawagunda
+2025-07-19 20:33:58 warn: No technician group configured for PPPoE notifications
+2025-07-19 20:33:58 info: PPPoE LOGIN:
+2025-07-19 20:33:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:33:59 info: PPPoE notification sent to 6281947215703
+2025-07-19 20:34:00 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-19 20:34:00 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-19 20:34:00 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-19 20:34:00 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-19 20:34:00 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-19 20:34:00 info: PPPoE monitoring: 163 active connections, 1 login, 0 logout
+2025-07-19 20:34:32 info: Message received
+2025-07-19 20:34:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:35:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:36:58 info: PPPoE LOGOUT detected: coyih, pandi@tanjungpura
+2025-07-19 20:36:58 warn: No technician group configured for PPPoE notifications
+2025-07-19 20:36:58 info: PPPoE LOGOUT:
+2025-07-19 20:36:58 info: Monitoring PPPoE connections: 161 active connections
+2025-07-19 20:36:59 info: PPPoE notification sent to 6281947215703
+2025-07-19 20:37:00 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-19 20:37:00 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-19 20:37:00 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-19 20:37:00 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-19 20:37:00 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-19 20:37:00 info: PPPoE monitoring: 161 active connections, 0 login, 2 logout
+2025-07-19 20:37:37 info: Message received
+2025-07-19 20:37:58 info: PPPoE LOGIN detected: coyih, pandi@tanjungpura
+2025-07-19 20:37:58 warn: No technician group configured for PPPoE notifications
+2025-07-19 20:37:58 info: PPPoE LOGIN:
+2025-07-19 20:37:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:37:59 info: PPPoE notification sent to 6281947215703
+2025-07-19 20:38:00 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-19 20:38:00 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-19 20:38:00 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-19 20:38:00 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-19 20:38:00 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-19 20:38:00 info: PPPoE monitoring: 163 active connections, 2 login, 0 logout
+2025-07-19 20:38:13 info: Message received
+2025-07-19 20:38:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:39:58 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 20:40:58 info: PPPoE LOGOUT detected: suminih@rawagunda
+2025-07-19 20:40:58 warn: No technician group configured for PPPoE notifications
+2025-07-19 20:40:58 info: PPPoE LOGOUT:
+2025-07-19 20:40:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:40:59 info: PPPoE notification sent to 6281947215703
+2025-07-19 20:41:00 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-19 20:41:00 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-19 20:41:00 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-19 20:41:00 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-19 20:41:00 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-19 20:41:00 info: PPPoE monitoring: 162 active connections, 0 login, 1 logout
+2025-07-19 20:41:20 info: Message received
+2025-07-19 20:41:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:42:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:43:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:44:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:45:26 info: Message received
+2025-07-19 20:45:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:46:56 info: Message received
+2025-07-19 20:46:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:47:02 info: Message received
+2025-07-19 20:47:20 info: Message received
+2025-07-19 20:47:58 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:48:07 info: Message received
+2025-07-19 20:58:37 info: PPPoE monitoring started with interval 60000ms
+2025-07-19 20:58:37 info: Attempting to start server on configured port: 4005
+2025-07-19 20:58:37 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-19 20:58:37 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-19 20:58:37 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-19 20:58:37 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-19 20:58:37 info: Environment: development
+2025-07-19 20:58:37 info: WhatsApp socket set in pppoe-notifications module
+2025-07-19 20:58:37 info: WhatsApp socket set in pppoe-commands module
+2025-07-19 20:58:37 info: WhatsApp socket set in genieacs-commands module
+2025-07-19 20:58:37 info: WhatsApp connected successfully
+2025-07-19 20:58:37 info: PPPoE monitoring started with interval 60000ms
+2025-07-19 20:58:37 info: RX Power monitoring initialized
+2025-07-19 20:58:37 info: PPPoE monitoring auto-started on initialization
+2025-07-19 20:58:37 info: PPPoE monitoring initialized
+2025-07-19 20:59:37 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-19 20:59:37 info: PPPoE LOGIN detected: nina@kesin, memble@, nurudin, koriya, nalda@rawagunda2, seka, erul, yogi, runaeni, alan@pentud, karsih, antony@ps, @cimun, RT-KARONI, aqiel, atam, codet, darim@lor, ejun, eva, elvano1, iman@, jami@sut, kendo@tanjungpura, lussy, rom@lah, rudibengkel@tanjungpura, sarwan, talita, tarci, tariman, winata, yessy, wiwin@seblak, yudi, kama@, wendy@tanjungpura, aldo, nuriyah, abibah, SDNUG1, mardi, eka, hany@tarsiti, sandi@rajan, wakeng, adiiman, toyinah, salsa, toko@sayur, damar, karmanda, alam, indah@tanjungpura, yohan@rawagunda, nesa, rasta, kasdi@rawagunda, ros_pppoe, Uchi, ooh, kandar, gadel, raeni, wadi@rawagunda, handoko, yuni@rawagunda, elis@rawagunda, rintem, darim, suliwa, nadiva, dhea_tile@rawagunda, sanyo, junanto@rawagunda, aang2, brohim, kus, mella, dedi@aira, barli, windah, turidah, leha, khofik@janggar, nani, wendy@genjong, sang, eva@pegagan, yusuf, novita, waidah@pegagan, gemblung, intan@ujungmulya, F663, sutara@pegagan, uung@pegagan, sudini@pegagan, denihamdani@pegagan, pabudi@genjong, setiyadi@genjong, durniyah@pegagan, mangasep@janggar, Endra@genjong1, wilda, surminih@pegagan, murdani, anwar@janggar, yuni@ujungmulya, sarna@pegagan, adinesep@ujungmulya, abas@pegagan, kurnati, dadang@genjong, gunawan, lisan@banteng, fajar, nalda@pegagan, dasta, umikulsum@janggar, luwih@, lina@ujungmulya, erni, h.juroh, Tarci@lor, muktar@ompong, tinih, murba, bunga, andi, karban, warung_elisa@laut, maktub, server@yayan, rangdu, warungyuni@laut, server@arep, test, oland, walong@asep, opang@tanjungpura, dedy@sarkim, mastobari@, winata@laut, tester, toax, tibil, aang, kincling, soleh@pegagan, nana, eryanto@pegagan, ety@pegagan, server@ilik, kasmuri, astri@pegagan, warsana, icha, daruni@rawagunda, coyih, pandi@tanjungpura, ajri
+2025-07-19 20:59:37 warn: No technician group configured for PPPoE notifications
+2025-07-19 20:59:37 info: PPPoE LOGIN:
+2025-07-19 20:59:37 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 20:59:37 info: PPPoE notification sent to 6281947215703
+2025-07-19 20:59:39 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-19 20:59:39 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-19 20:59:39 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-19 20:59:39 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-19 20:59:39 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-19 20:59:39 info: PPPoE monitoring: 162 active connections, 162 login, 0 logout
+2025-07-19 21:00:37 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 21:01:31 info: Message received
+2025-07-19 21:01:37 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 21:02:37 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 21:03:28 info: Message received
+2025-07-19 21:03:37 info: Monitoring PPPoE connections: 162 active connections
+2025-07-19 21:04:06 info: Message received
+2025-07-19 21:04:37 warn: No technician group configured for PPPoE notifications
+2025-07-19 21:04:37 info: PPPoE LOGIN:
+2025-07-19 21:04:37 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:04:37 info: PPPoE LOGIN detected: suminih@rawagunda
+2025-07-19 21:04:37 info: PPPoE notification sent to 6281947215703
+2025-07-19 21:04:39 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-19 21:04:39 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-19 21:04:39 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-19 21:04:39 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-19 21:04:39 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-19 21:04:39 info: PPPoE monitoring: 163 active connections, 1 login, 0 logout
+2025-07-19 21:05:12 info: Message received
+2025-07-19 21:05:37 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:06:18 info: Message received
+2025-07-19 21:06:37 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:07:37 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:08:37 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:08:44 info: Message received
+2025-07-19 21:09:34 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:09:43 info: Message received
+2025-07-19 21:09:47 info: Message received
+2025-07-19 21:10:34 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:11:34 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:12:34 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:13:34 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:14:34 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:15:34 info: Monitoring PPPoE connections: 163 active connections
+2025-07-19 21:16:34 info: Monitoring PPPoE connections: 163 active connections
+2025-07-20 14:03:42 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:03:42 info: Attempting to start server on configured port: 4005
+2025-07-20 14:03:42 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-20 14:03:42 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-20 14:03:42 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-20 14:03:42 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-20 14:03:42 info: Environment: development
+2025-07-20 14:03:42 info: WhatsApp socket set in pppoe-notifications module
+2025-07-20 14:03:42 info: WhatsApp socket set in pppoe-commands module
+2025-07-20 14:03:42 info: WhatsApp socket set in genieacs-commands module
+2025-07-20 14:03:42 info: WhatsApp connected successfully
+2025-07-20 14:03:42 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:03:42 info: RX Power monitoring initialized
+2025-07-20 14:03:42 info: PPPoE monitoring auto-started on initialization
+2025-07-20 14:03:42 info: PPPoE monitoring initialized
+2025-07-20 14:04:02 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-20 14:04:27 info: Message received
+2025-07-20 14:04:42 info: PPPoE LOGIN detected: nina@kesin, memble@, nurudin, koriya, nalda@rawagunda2, seka, erul, yogi, runaeni, alan@pentud, karsih, antony@ps, @cimun, RT-KARONI, aqiel, atam, codet, darim@lor, ejun, eva, elvano1, iman@, jami@sut, kendo@tanjungpura, lussy, rom@lah, rudibengkel@tanjungpura, sarwan, talita, tarci, tariman, yessy, wiwin@seblak, yudi, kama@, wendy@tanjungpura, aldo, nuriyah, abibah, SDNUG1, mardi, eka, hany@tarsiti, sandi@rajan, wakeng, adiiman, toyinah, salsa, toko@sayur, damar, karmanda, alam, indah@tanjungpura, yohan@rawagunda, nesa, rasta, kasdi@rawagunda, ros_pppoe, Uchi, ooh, kandar, raeni, wadi@rawagunda, handoko, yuni@rawagunda, elis@rawagunda, rintem, darim, nadiva, dhea_tile@rawagunda, sanyo, junanto@rawagunda, aang2, brohim, kus, mella, dedi@aira, gunawan, lisan@banteng, fajar, dasta, luwih@, erni, tinih, murba, andi, karban, maktub, server@yayan, opang@tanjungpura, dedy@sarkim, tester, toax, tibil, aang, server@ilik, icha, daruni@rawagunda, ajri, suliwa, sumi, rangdu, h.juroh, coyih, windah, turidah, nani, wendy@genjong, waidah@pegagan, umikulsum@janggar, sang, setiyadi@genjong, intan@ujungmulya, novita, ety@pegagan, eva@pegagan, sutara@pegagan, pabudi@genjong, khofik@janggar, dadang@genjong, nalda@pegagan, F663, gemblung, mangasep@janggar, murdani, surminih@pegagan, uung@pegagan, wilda, Endra@genjong1, denihamdani@pegagan, durniyah@pegagan, anwar@janggar, abas@pegagan, yuni@ujungmulya, kurnati, eryanto@pegagan, adinesep@ujungmulya, sudini@pegagan, yusuf, kasmuri, kincling, test, warungyuni@laut, Tarci@lor, muktar@ompong, server@arep, warung_elisa@laut, winata@laut, walong@asep, mastobari@, bunga, suminih@rawagunda, leha, pandi@tanjungpura, nana, daskunah, winata, memble2, santo, gadel, astri@pegagan, lina@ujungmulya, warsana, oland, sarna@pegagan, soleh@pegagan
+2025-07-20 14:04:42 warn: No technician group configured for PPPoE notifications
+2025-07-20 14:04:42 info: PPPoE LOGIN:
+2025-07-20 14:04:42 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:04:43 info: PPPoE notification sent to 6281947215703
+2025-07-20 14:04:44 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-20 14:04:44 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-20 14:04:44 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-20 14:04:44 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-20 14:04:44 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-20 14:04:44 info: PPPoE monitoring: 166 active connections, 166 login, 0 logout
+2025-07-20 14:05:42 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:06:42 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:07:42 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:08:42 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:09:42 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:10:19 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:10:19 info: Attempting to start server on configured port: 4005
+2025-07-20 14:10:19 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-20 14:10:19 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-20 14:10:19 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-20 14:10:19 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-20 14:10:19 info: Environment: development
+2025-07-20 14:10:19 info: WhatsApp socket set in pppoe-notifications module
+2025-07-20 14:10:19 info: WhatsApp socket set in pppoe-commands module
+2025-07-20 14:10:19 info: WhatsApp socket set in genieacs-commands module
+2025-07-20 14:10:19 info: WhatsApp connected successfully
+2025-07-20 14:10:19 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:10:19 info: RX Power monitoring initialized
+2025-07-20 14:10:19 info: PPPoE monitoring auto-started on initialization
+2025-07-20 14:10:19 info: PPPoE monitoring initialized
+2025-07-20 14:21:08 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:21:08 info: Attempting to start server on configured port: 4005
+2025-07-20 14:21:08 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-20 14:21:08 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-20 14:21:08 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-20 14:21:08 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-20 14:21:08 info: Environment: development
+2025-07-20 14:21:08 info: WhatsApp socket set in pppoe-notifications module
+2025-07-20 14:21:08 info: WhatsApp socket set in pppoe-commands module
+2025-07-20 14:21:08 info: WhatsApp socket set in genieacs-commands module
+2025-07-20 14:21:08 info: WhatsApp connected successfully
+2025-07-20 14:21:08 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:21:08 info: RX Power monitoring initialized
+2025-07-20 14:21:08 info: PPPoE monitoring auto-started on initialization
+2025-07-20 14:21:08 info: PPPoE monitoring initialized
+2025-07-20 14:21:32 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-20 14:22:08 warn: No technician group configured for PPPoE notifications
+2025-07-20 14:22:08 info: PPPoE LOGIN:
+2025-07-20 14:22:08 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:22:08 info: PPPoE LOGIN detected: nina@kesin, memble@, nurudin, koriya, nalda@rawagunda2, seka, erul, yogi, runaeni, alan@pentud, karsih, antony@ps, @cimun, RT-KARONI, aqiel, atam, codet, darim@lor, ejun, eva, elvano1, iman@, jami@sut, kendo@tanjungpura, lussy, rom@lah, rudibengkel@tanjungpura, sarwan, talita, tarci, tariman, yessy, wiwin@seblak, yudi, kama@, wendy@tanjungpura, aldo, nuriyah, abibah, SDNUG1, mardi, eka, hany@tarsiti, sandi@rajan, wakeng, adiiman, toyinah, salsa, toko@sayur, damar, karmanda, alam, indah@tanjungpura, yohan@rawagunda, nesa, rasta, kasdi@rawagunda, ros_pppoe, Uchi, ooh, kandar, raeni, wadi@rawagunda, handoko, yuni@rawagunda, elis@rawagunda, rintem, darim, nadiva, dhea_tile@rawagunda, sanyo, junanto@rawagunda, aang2, brohim, kus, mella, dedi@aira, gunawan, lisan@banteng, fajar, dasta, luwih@, erni, tinih, murba, andi, karban, maktub, server@yayan, opang@tanjungpura, dedy@sarkim, tester, toax, tibil, aang, server@ilik, icha, daruni@rawagunda, ajri, suliwa, sumi, rangdu, h.juroh, coyih, windah, turidah, nani, wendy@genjong, waidah@pegagan, umikulsum@janggar, sang, setiyadi@genjong, intan@ujungmulya, novita, ety@pegagan, eva@pegagan, sutara@pegagan, pabudi@genjong, khofik@janggar, dadang@genjong, nalda@pegagan, F663, gemblung, mangasep@janggar, murdani, surminih@pegagan, uung@pegagan, wilda, Endra@genjong1, denihamdani@pegagan, durniyah@pegagan, anwar@janggar, abas@pegagan, yuni@ujungmulya, kurnati, eryanto@pegagan, adinesep@ujungmulya, sudini@pegagan, yusuf, kasmuri, kincling, test, warungyuni@laut, Tarci@lor, muktar@ompong, server@arep, warung_elisa@laut, winata@laut, walong@asep, mastobari@, bunga, suminih@rawagunda, leha, pandi@tanjungpura, nana, daskunah, winata, memble2, santo, gadel, astri@pegagan, lina@ujungmulya, warsana, sarna@pegagan, soleh@pegagan, oland
+2025-07-20 14:22:09 info: PPPoE notification sent to 6281947215703
+2025-07-20 14:22:10 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-20 14:22:10 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-20 14:22:10 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-20 14:22:10 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-20 14:22:10 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-20 14:22:10 info: PPPoE monitoring: 166 active connections, 166 login, 0 logout
+2025-07-20 14:23:08 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:41:45 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:41:45 info: Attempting to start server on configured port: 4555
+2025-07-20 14:41:45 info: Memulai server pada port yang dikonfigurasi: 4555
+2025-07-20 14:41:45 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-20 14:41:45 info: ✅ Server berhasil berjalan pada port 4555
+2025-07-20 14:41:45 info: 🌐 Web Portal tersedia di: http://localhost:4555
+2025-07-20 14:41:45 info: Environment: development
+2025-07-20 14:41:45 info: WhatsApp socket set in pppoe-notifications module
+2025-07-20 14:41:45 info: WhatsApp socket set in pppoe-commands module
+2025-07-20 14:41:45 info: WhatsApp socket set in genieacs-commands module
+2025-07-20 14:41:45 info: WhatsApp connected successfully
+2025-07-20 14:41:45 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:41:45 info: RX Power monitoring initialized
+2025-07-20 14:41:45 info: PPPoE monitoring auto-started on initialization
+2025-07-20 14:41:45 info: PPPoE monitoring initialized
+2025-07-20 14:42:43 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:42:43 info: Attempting to start server on configured port: 4005
+2025-07-20 14:42:43 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-20 14:42:43 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-20 14:42:43 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-20 14:42:43 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-20 14:42:43 info: Environment: development
+2025-07-20 14:42:43 info: WhatsApp socket set in pppoe-notifications module
+2025-07-20 14:42:43 info: WhatsApp socket set in pppoe-commands module
+2025-07-20 14:42:43 info: WhatsApp socket set in genieacs-commands module
+2025-07-20 14:42:43 info: WhatsApp connected successfully
+2025-07-20 14:42:43 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:42:43 info: RX Power monitoring initialized
+2025-07-20 14:42:43 info: PPPoE monitoring auto-started on initialization
+2025-07-20 14:42:43 info: PPPoE monitoring initialized
+2025-07-20 14:42:54 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-20 14:47:12 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:47:12 info: Attempting to start server on configured port: 4005
+2025-07-20 14:47:12 info: Memulai server pada port yang dikonfigurasi: 4005
+2025-07-20 14:47:12 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-20 14:47:12 info: ✅ Server berhasil berjalan pada port 4005
+2025-07-20 14:47:12 info: 🌐 Web Portal tersedia di: http://localhost:4005
+2025-07-20 14:47:12 info: Environment: development
+2025-07-20 14:47:12 info: WhatsApp socket set in pppoe-notifications module
+2025-07-20 14:47:12 info: WhatsApp socket set in pppoe-commands module
+2025-07-20 14:47:12 info: WhatsApp socket set in genieacs-commands module
+2025-07-20 14:47:12 info: WhatsApp connected successfully
+2025-07-20 14:47:12 info: PPPoE monitoring started with interval 60000ms
+2025-07-20 14:47:12 info: RX Power monitoring initialized
+2025-07-20 14:47:12 info: PPPoE monitoring auto-started on initialization
+2025-07-20 14:47:12 info: PPPoE monitoring initialized
+2025-07-20 14:47:25 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-20 14:48:12 warn: No technician group configured for PPPoE notifications
+2025-07-20 14:48:12 info: PPPoE LOGIN:
+2025-07-20 14:48:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:48:12 info: PPPoE LOGIN detected: nina@kesin, memble@, nurudin, koriya, nalda@rawagunda2, seka, erul, yogi, runaeni, alan@pentud, karsih, antony@ps, @cimun, RT-KARONI, aqiel, atam, codet, darim@lor, ejun, eva, elvano1, iman@, jami@sut, kendo@tanjungpura, lussy, rom@lah, rudibengkel@tanjungpura, sarwan, talita, tarci, tariman, yessy, wiwin@seblak, yudi, kama@, wendy@tanjungpura, aldo, nuriyah, abibah, SDNUG1, mardi, eka, hany@tarsiti, sandi@rajan, wakeng, adiiman, toyinah, salsa, toko@sayur, damar, karmanda, alam, indah@tanjungpura, yohan@rawagunda, nesa, rasta, kasdi@rawagunda, ros_pppoe, Uchi, ooh, kandar, raeni, wadi@rawagunda, handoko, yuni@rawagunda, elis@rawagunda, rintem, darim, nadiva, dhea_tile@rawagunda, sanyo, junanto@rawagunda, aang2, brohim, kus, mella, dedi@aira, gunawan, lisan@banteng, fajar, dasta, luwih@, erni, tinih, murba, andi, karban, maktub, server@yayan, opang@tanjungpura, dedy@sarkim, tester, toax, tibil, aang, server@ilik, icha, daruni@rawagunda, ajri, suliwa, sumi, rangdu, h.juroh, coyih, windah, turidah, nani, wendy@genjong, waidah@pegagan, umikulsum@janggar, sang, setiyadi@genjong, intan@ujungmulya, novita, ety@pegagan, eva@pegagan, sutara@pegagan, pabudi@genjong, khofik@janggar, dadang@genjong, nalda@pegagan, F663, gemblung, mangasep@janggar, murdani, surminih@pegagan, uung@pegagan, wilda, Endra@genjong1, denihamdani@pegagan, durniyah@pegagan, anwar@janggar, abas@pegagan, yuni@ujungmulya, kurnati, eryanto@pegagan, adinesep@ujungmulya, sudini@pegagan, yusuf, kasmuri, kincling, test, warungyuni@laut, Tarci@lor, muktar@ompong, server@arep, warung_elisa@laut, winata@laut, walong@asep, mastobari@, bunga, suminih@rawagunda, leha, pandi@tanjungpura, nana, daskunah, winata, memble2, santo, gadel, astri@pegagan, lina@ujungmulya, warsana, sarna@pegagan, soleh@pegagan, oland
+2025-07-20 14:48:12 info: PPPoE notification sent to 6281947215703
+2025-07-20 14:48:13 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-20 14:48:13 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-20 14:48:14 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-20 14:48:14 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-20 14:48:14 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-20 14:48:14 info: PPPoE monitoring: 166 active connections, 166 login, 0 logout
+2025-07-20 14:49:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:50:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:50:34 info: Message received
+2025-07-20 14:51:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:52:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:53:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:54:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:55:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:56:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:57:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:58:09 info: Message received
+2025-07-20 14:58:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 14:59:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-20 15:00:12 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 08:14:47 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 08:14:47 info: Attempting to start server on configured port: 4001
+2025-07-21 08:14:47 info: Memulai server pada port yang dikonfigurasi: 4001
+2025-07-21 08:14:47 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-21 08:14:47 info: ✅ Server berhasil berjalan pada port 4001
+2025-07-21 08:14:47 info: 🌐 Web Portal tersedia di: http://localhost:4001
+2025-07-21 08:14:47 info: Environment: development
+2025-07-21 08:14:47 info: WhatsApp socket set in pppoe-notifications module
+2025-07-21 08:14:47 info: WhatsApp socket set in pppoe-commands module
+2025-07-21 08:14:47 info: WhatsApp socket set in genieacs-commands module
+2025-07-21 08:14:47 info: WhatsApp connected successfully
+2025-07-21 08:14:47 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 08:14:47 info: RX Power monitoring initialized
+2025-07-21 08:14:47 info: PPPoE monitoring auto-started on initialization
+2025-07-21 08:14:47 info: PPPoE monitoring initialized
+2025-07-21 08:15:12 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-21 08:15:17 info: Found 50 active hotspot users
+2025-07-21 08:15:22 info: Message received
+2025-07-21 08:15:23 info: Found 50 active hotspot users
+2025-07-21 08:15:25 info: Message received
+2025-07-21 08:15:47 warn: No technician group configured for PPPoE notifications
+2025-07-21 08:15:47 info: PPPoE LOGIN:
+2025-07-21 08:15:47 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 08:15:47 info: PPPoE LOGIN detected: nalda@rawagunda2, jami@sut, rudibengkel@tanjungpura, wakeng, indah@tanjungpura, kasdi@rawagunda, icha, iman@, handoko, lussy, tarci, aang2, rom@lah, darim@lor, aqiel, darim, yudi, kendo@tanjungpura, tariman, ejun, nesa, ros_pppoe, brohim, nurudin, RT-KARONI, junanto@rawagunda, runaeni, atam, yessy, rasta, daskunah, talita, seka, fajar, karsih, hany@tarsiti, wendy@tanjungpura, karmanda, mardi, eka, Uchi, gunawan, toko@sayur, sandi@rajan, ooh, luwih@, toax, nuriyah, wiwin@seblak, aldo, eva, gadel, yogi, alam, SDNUG1, suliwa, kincling, antony@ps, dhea_tile@rawagunda, wadi@rawagunda, kandar, memble@, suminih@rawagunda, sarwan, raeni, server@ilik, @cimun, abibah, rintem, winata, sanyo, daruni@rawagunda, santo, ajri, yohan@rawagunda, salsa, codet, erul, damar, elis@rawagunda, dasta, toyinah, yuni@rawagunda, aang, adiiman, kama@, nadiva, nina@kesin, koriya, dedi@aira, elvano1, tibil, lisan@banteng, alan@pentud, mella, kus, coyih, pandi@tanjungpura, warsana, nana, maktub, Tarci@lor, oland, tinih, memble2, test, andi, tester, erni, kasmuri, winata@laut, muktar@ompong, warung_elisa@laut, warungyuni@laut, rangdu, murba, h.juroh, mastobari@, dedy@sarkim, opang@tanjungpura, server@yayan, server@arep, karban, bunga, sumi, windah, leha, khofik@janggar, dadang@genjong, waidah@pegagan, wendy@genjong, eva@pegagan, setiyadi@genjong, novita, Endra@genjong1, sutara@pegagan, pabudi@genjong, nani, nalda@pegagan, sang, soleh@pegagan, denihamdani@pegagan, F663, mangasep@janggar, turidah, uung@pegagan, intan@ujungmulya, gemblung, wilda, murdani, sudini@pegagan, umikulsum@janggar, durniyah@pegagan, surminih@pegagan, lina@ujungmulya, ety@pegagan, anwar@janggar, sarna@pegagan, kurnati, yuni@ujungmulya, eryanto@pegagan, abas@pegagan, adinesep@ujungmulya, yusuf, walong@asep, astri@pegagan
+2025-07-21 08:15:48 info: PPPoE notification sent to 6281947215703
+2025-07-21 08:15:49 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-21 08:15:49 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-21 08:15:49 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-21 08:15:49 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-21 08:15:49 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-21 08:15:49 info: PPPoE monitoring: 166 active connections, 166 login, 0 logout
+2025-07-21 08:16:47 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 08:17:16 info: Found 50 active hotspot users
+2025-07-21 08:17:47 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 08:18:47 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 08:19:47 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 08:26:27 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 08:26:27 info: Attempting to start server on configured port: 4001
+2025-07-21 08:26:27 info: Memulai server pada port yang dikonfigurasi: 4001
+2025-07-21 08:26:27 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-21 08:26:27 info: ✅ Server berhasil berjalan pada port 4001
+2025-07-21 08:26:27 info: 🌐 Web Portal tersedia di: http://localhost:4001
+2025-07-21 08:26:27 info: Environment: development
+2025-07-21 08:26:27 info: WhatsApp socket set in pppoe-notifications module
+2025-07-21 08:26:27 info: WhatsApp socket set in pppoe-commands module
+2025-07-21 08:26:27 info: WhatsApp socket set in genieacs-commands module
+2025-07-21 08:26:27 info: WhatsApp connected successfully
+2025-07-21 08:26:27 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 08:26:27 info: RX Power monitoring initialized
+2025-07-21 08:26:27 info: PPPoE monitoring auto-started on initialization
+2025-07-21 08:26:27 info: PPPoE monitoring initialized
+2025-07-21 08:26:47 info: Konfigurasi Mikrotik di settings.json berubah, reset koneksi Mikrotik...
+2025-07-21 08:27:09 error: Error connecting to Mikrotik: 
+2025-07-21 08:27:09 error: No Mikrotik connection available
+2025-07-21 08:27:11 error: Error connecting to Mikrotik: 
+2025-07-21 08:27:13 error: Error connecting to Mikrotik: 
+2025-07-21 08:27:13 error: No Mikrotik connection available
+2025-07-21 08:27:15 error: Error connecting to Mikrotik: 
+2025-07-21 08:27:15 error: No Mikrotik connection available
+2025-07-21 08:27:15 error: Error connecting to Mikrotik: 
+2025-07-21 08:27:18 error: Error connecting to Mikrotik: 
+2025-07-21 08:27:20 error: Error connecting to Mikrotik: 
+2025-07-21 08:27:22 error: Error connecting to Mikrotik: 
+2025-07-21 08:27:24 error: Error connecting to Mikrotik: 
+2025-07-21 08:27:26 error: Error connecting to Mikrotik: 
+2025-07-21 08:27:27 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-21 08:27:27 warn: No technician group configured for PPPoE notifications
+2025-07-21 08:27:27 info: PPPoE LOGIN:
+2025-07-21 08:27:27 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 08:27:27 info: Konfigurasi Mikrotik di settings.json berubah, reset koneksi Mikrotik...
+2025-07-21 08:27:27 info: PPPoE LOGIN detected: nalda@rawagunda2, jami@sut, rudibengkel@tanjungpura, wakeng, indah@tanjungpura, kasdi@rawagunda, icha, iman@, handoko, lussy, tarci, aang2, rom@lah, darim@lor, aqiel, darim, yudi, kendo@tanjungpura, tariman, ejun, nesa, ros_pppoe, brohim, nurudin, RT-KARONI, junanto@rawagunda, runaeni, atam, yessy, rasta, daskunah, talita, seka, fajar, karsih, hany@tarsiti, wendy@tanjungpura, karmanda, mardi, eka, Uchi, gunawan, toko@sayur, sandi@rajan, ooh, luwih@, toax, nuriyah, wiwin@seblak, aldo, eva, gadel, yogi, alam, SDNUG1, suliwa, kincling, antony@ps, dhea_tile@rawagunda, wadi@rawagunda, kandar, memble@, suminih@rawagunda, sarwan, raeni, server@ilik, @cimun, abibah, rintem, winata, sanyo, daruni@rawagunda, santo, ajri, yohan@rawagunda, salsa, codet, erul, damar, elis@rawagunda, dasta, toyinah, yuni@rawagunda, aang, adiiman, kama@, nadiva, nina@kesin, koriya, dedi@aira, elvano1, tibil, lisan@banteng, alan@pentud, mella, kus, coyih, pandi@tanjungpura, warsana, nana, maktub, Tarci@lor, oland, tinih, memble2, test, andi, tester, erni, kasmuri, winata@laut, muktar@ompong, warung_elisa@laut, warungyuni@laut, rangdu, murba, h.juroh, mastobari@, dedy@sarkim, opang@tanjungpura, server@yayan, server@arep, karban, bunga, sumi, windah, leha, khofik@janggar, dadang@genjong, waidah@pegagan, wendy@genjong, eva@pegagan, setiyadi@genjong, novita, Endra@genjong1, sutara@pegagan, pabudi@genjong, nani, nalda@pegagan, sang, soleh@pegagan, denihamdani@pegagan, F663, mangasep@janggar, turidah, uung@pegagan, intan@ujungmulya, gemblung, wilda, murdani, sudini@pegagan, umikulsum@janggar, durniyah@pegagan, surminih@pegagan, lina@ujungmulya, ety@pegagan, anwar@janggar, sarna@pegagan, kurnati, yuni@ujungmulya, eryanto@pegagan, abas@pegagan, adinesep@ujungmulya, yusuf, walong@asep, astri@pegagan
+2025-07-21 08:27:27 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-21 08:27:27 info: PPPoE notification sent to 6281947215703
+2025-07-21 08:27:28 error: Error connecting to Mikrotik: 
+2025-07-21 08:27:29 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-21 08:27:29 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-21 08:27:29 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-21 08:27:29 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-21 08:27:29 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-21 08:27:29 info: PPPoE monitoring: 166 active connections, 166 login, 0 logout
+2025-07-21 08:28:27 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 08:29:27 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 08:30:27 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 08:30:56 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 08:30:56 info: Attempting to start server on configured port: 4001
+2025-07-21 08:30:56 info: Memulai server pada port yang dikonfigurasi: 4001
+2025-07-21 08:30:56 info: Port diambil dari settings.json - tidak ada fallback ke port alternatif
+2025-07-21 08:30:56 info: ✅ Server berhasil berjalan pada port 4001
+2025-07-21 08:30:56 info: 🌐 Web Portal tersedia di: http://localhost:4001
+2025-07-21 08:30:56 info: Environment: development
+2025-07-21 08:30:56 info: WhatsApp socket set in pppoe-notifications module
+2025-07-21 08:30:56 info: WhatsApp socket set in pppoe-commands module
+2025-07-21 08:30:56 info: WhatsApp socket set in genieacs-commands module
+2025-07-21 08:30:56 info: WhatsApp connected successfully
+2025-07-21 08:30:56 info: PPPoE monitoring started with interval 60000ms
+2025-07-21 08:30:56 info: RX Power monitoring initialized
+2025-07-21 08:30:56 info: PPPoE monitoring auto-started on initialization
+2025-07-21 08:30:56 info: PPPoE monitoring initialized
+2025-07-21 08:31:15 info: Connected to Mikrotik at 192.168.8.1:8700
+2025-07-21 08:31:56 warn: No technician group configured for PPPoE notifications
+2025-07-21 08:31:56 info: PPPoE LOGIN:
+2025-07-21 08:31:56 info: Monitoring PPPoE connections: 166 active connections
+2025-07-21 08:31:56 info: PPPoE LOGIN detected: nalda@rawagunda2, jami@sut, rudibengkel@tanjungpura, wakeng, indah@tanjungpura, kasdi@rawagunda, icha, iman@, handoko, lussy, tarci, aang2, rom@lah, darim@lor, aqiel, darim, yudi, kendo@tanjungpura, tariman, ejun, nesa, ros_pppoe, brohim, nurudin, RT-KARONI, junanto@rawagunda, runaeni, atam, yessy, rasta, daskunah, talita, seka, fajar, karsih, hany@tarsiti, wendy@tanjungpura, karmanda, mardi, eka, Uchi, gunawan, toko@sayur, sandi@rajan, ooh, luwih@, toax, nuriyah, wiwin@seblak, aldo, eva, gadel, yogi, alam, SDNUG1, suliwa, kincling, antony@ps, dhea_tile@rawagunda, wadi@rawagunda, kandar, memble@, suminih@rawagunda, sarwan, raeni, server@ilik, @cimun, abibah, rintem, winata, sanyo, daruni@rawagunda, santo, ajri, yohan@rawagunda, salsa, codet, erul, damar, elis@rawagunda, dasta, toyinah, yuni@rawagunda, aang, adiiman, kama@, nadiva, nina@kesin, koriya, dedi@aira, elvano1, tibil, lisan@banteng, alan@pentud, mella, kus, coyih, pandi@tanjungpura, warsana, nana, maktub, Tarci@lor, oland, tinih, memble2, test, andi, tester, erni, kasmuri, winata@laut, muktar@ompong, warung_elisa@laut, warungyuni@laut, rangdu, murba, h.juroh, mastobari@, dedy@sarkim, opang@tanjungpura, server@yayan, server@arep, karban, bunga, sumi, windah, leha, khofik@janggar, dadang@genjong, waidah@pegagan, wendy@genjong, eva@pegagan, setiyadi@genjong, novita, Endra@genjong1, sutara@pegagan, pabudi@genjong, nani, nalda@pegagan, sang, soleh@pegagan, denihamdani@pegagan, F663, mangasep@janggar, turidah, uung@pegagan, intan@ujungmulya, gemblung, wilda, murdani, sudini@pegagan, umikulsum@janggar, durniyah@pegagan, surminih@pegagan, lina@ujungmulya, ety@pegagan, anwar@janggar, sarna@pegagan, kurnati, yuni@ujungmulya, eryanto@pegagan, abas@pegagan, adinesep@ujungmulya, yusuf, walong@asep, astri@pegagan
+2025-07-21 08:31:57 info: PPPoE notification sent to 6281947215703
+2025-07-21 08:31:58 warn: WhatsApp validation failed for 62838076656xx: No result
+2025-07-21 08:31:58 warn: Skipping invalid WhatsApp number: 62838076656xx
+2025-07-21 08:31:58 warn: WhatsApp validation failed for 62822180947xx: No result
+2025-07-21 08:31:58 warn: Skipping invalid WhatsApp number: 62822180947xx
+2025-07-21 08:31:58 info: PPPoE notification sent to 1/1 valid recipients (3 total)
+2025-07-21 08:31:58 info: PPPoE monitoring: 166 active connections, 166 login, 0 logout

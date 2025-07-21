@@ -519,24 +519,34 @@ async function monitorOfflineDevices(thresholdHours = 24) {
 
 // Jadwalkan monitoring setiap 6 jam
 function scheduleMonitoring() {
-    // Jalankan sekali saat startup
+    // Ambil pengaturan dari settings.json
+    const rxPowerRecapEnabled = getSetting('rxpower_recap_enable', true) !== false;
+    const rxPowerRecapInterval = getSetting('rxpower_recap_interval', 6 * 60 * 60 * 1000);
+    const offlineNotifEnabled = getSetting('offline_notification_enable', true) !== false;
+    const offlineNotifInterval = getSetting('offline_notification_interval', 12 * 60 * 60 * 1000);
+
     setTimeout(async () => {
-        console.log('Menjalankan pemantauan RXPower awal...');
-        await monitorRXPower();
-        
-        console.log('Menjalankan pemantauan perangkat offline awal...');
-        await monitorOfflineDevices();
-        
-        // Jadwalkan secara berkala
-        setInterval(async () => {
-            console.log('Menjalankan pemantauan RXPower terjadwal...');
+        if (rxPowerRecapEnabled) {
+            console.log('Menjalankan pemantauan RXPower awal...');
             await monitorRXPower();
-        }, 6 * 60 * 60 * 1000); // Setiap 6 jam
-        
-        setInterval(async () => {
-            console.log('Menjalankan pemantauan perangkat offline terjadwal...');
+        }
+        if (offlineNotifEnabled) {
+            console.log('Menjalankan pemantauan perangkat offline awal...');
             await monitorOfflineDevices();
-        }, 12 * 60 * 60 * 1000); // Setiap 12 jam
+        }
+        // Jadwalkan secara berkala
+        if (rxPowerRecapEnabled) {
+            setInterval(async () => {
+                console.log('Menjalankan pemantauan RXPower terjadwal...');
+                await monitorRXPower();
+            }, rxPowerRecapInterval);
+        }
+        if (offlineNotifEnabled) {
+            setInterval(async () => {
+                console.log('Menjalankan pemantauan perangkat offline terjadwal...');
+                await monitorOfflineDevices();
+            }, offlineNotifInterval);
+        }
     }, 5 * 60 * 1000); // Mulai 5 menit setelah server berjalan
 }
 

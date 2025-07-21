@@ -2,6 +2,9 @@
 const { RouterOSAPI } = require('node-routeros');
 const { logger } = require('./logger');
 const { getSetting } = require('./settingsManager');
+const mysql = require('mysql2/promise');
+const fs = require('fs');
+const path = require('path');
 
 let sock = null;
 let mikrotikConnection = null;
@@ -57,9 +60,40 @@ async function getMikrotikConnection() {
     return mikrotikConnection;
 }
 
-// Fungsi untuk mendapatkan seluruh user PPPoE (secret) beserta status aktif/offline
+// Fungsi untuk koneksi ke database RADIUS (MySQL)
+async function getRadiusConnection() {
+    const host = getSetting('radius_host', 'localhost');
+    const user = getSetting('radius_user', 'radius');
+    const password = getSetting('radius_password', 'radius');
+    const database = getSetting('radius_database', 'radius');
+    return await mysql.createConnection({ host, user, password, database });
+}
+
+// Fungsi untuk mendapatkan seluruh user PPPoE dari RADIUS
+async function getPPPoEUsersRadius() {
+    const conn = await getRadiusConnection();
+    const [rows] = await conn.execute("SELECT username, value as password FROM radcheck WHERE attribute='Cleartext-Password'");
+    await conn.end();
+    return rows.map(row => ({ name: row.username, password: row.password }));
+}
+
+// Fungsi untuk menambah user PPPoE ke RADIUS
+async function addPPPoEUserRadius({ username, password }) {
+    const conn = await getRadiusConnection();
+    await conn.execute(
+        "INSERT INTO radcheck (username, attribute, op, value) VALUES (?, 'Cleartext-Password', ':=', ?)",
+        [username, password]
+    );
+    await conn.end();
+    return { success: true };
+}
+
+// Wrapper: Pilih mode autentikasi dari settings
 async function getPPPoEUsers() {
-    try {
+    const mode = getSetting('user_auth_mode', 'mikrotik');
+    if (mode === 'radius') {
+        return await getPPPoEUsersRadius();
+    } else {
         const conn = await getMikrotikConnection();
         if (!conn) {
             logger.error('No Mikrotik connection available');
@@ -78,9 +112,6 @@ async function getPPPoEUsers() {
             profile: secret.profile,
             active: activeNames.includes(secret.name)
         }));
-    } catch (error) {
-        logger.error(`Error getting PPPoE users: ${error.message}`);
-        return [];
     }
 }
 
@@ -368,9 +399,36 @@ async function getResourceInfo() {
     }
 }
 
-// Fungsi untuk mendapatkan daftar user hotspot aktif
+// Fungsi untuk mendapatkan daftar user hotspot aktif dari RADIUS
+async function getActiveHotspotUsersRadius() {
+    const conn = await getRadiusConnection();
+    // Ambil user yang sedang online dari radacct (acctstoptime IS NULL)
+    const [rows] = await conn.execute("SELECT DISTINCT username FROM radacct WHERE acctstoptime IS NULL");
+    await conn.end();
+    return {
+        success: true,
+        message: `Ditemukan ${rows.length} user hotspot aktif (RADIUS)` ,
+        data: rows.map(row => ({ name: row.username }))
+    };
+}
+
+// Fungsi untuk menambah user hotspot ke RADIUS
+async function addHotspotUserRadius(username, password, profile) {
+    const conn = await getRadiusConnection();
+    await conn.execute(
+        "INSERT INTO radcheck (username, attribute, op, value) VALUES (?, 'Cleartext-Password', ':=', ?)",
+        [username, password]
+    );
+    await conn.end();
+    return { success: true, message: 'User hotspot berhasil ditambahkan ke RADIUS' };
+}
+
+// Wrapper: Pilih mode autentikasi dari settings
 async function getActiveHotspotUsers() {
-    try {
+    const mode = getSetting('user_auth_mode', 'mikrotik');
+    if (mode === 'radius') {
+        return await getActiveHotspotUsersRadius();
+    } else {
         const conn = await getMikrotikConnection();
         if (!conn) {
             logger.error('No Mikrotik connection available');
@@ -385,30 +443,32 @@ async function getActiveHotspotUsers() {
             message: `Ditemukan ${hotspotUsers.length} user hotspot aktif`,
             data: hotspotUsers
         };
-    } catch (error) {
-        logger.error(`Error getting active hotspot users: ${error.message}`);
-        return { success: false, message: `Gagal ambil data hotspot: ${error.message}`, data: [] };
     }
 }
 
 // Fungsi untuk menambahkan user hotspot
 async function addHotspotUser(username, password, profile) {
-    try {
-        const conn = await getMikrotikConnection();
-        if (!conn) {
-            logger.error('No Mikrotik connection available');
-            return { success: false, message: 'Koneksi ke Mikrotik gagal' };
+    const mode = getSetting('user_auth_mode', 'mikrotik');
+    if (mode === 'radius') {
+        return await addHotspotUserRadius(username, password, profile);
+    } else {
+        try {
+            const conn = await getMikrotikConnection();
+            if (!conn) {
+                logger.error('No Mikrotik connection available');
+                return { success: false, message: 'Koneksi ke Mikrotik gagal' };
+            }
+            // Tambahkan user hotspot
+            await conn.write('/ip/hotspot/user/add', [
+                '=name=' + username,
+                '=password=' + password,
+                '=profile=' + profile
+            ]);
+            return { success: true, message: 'User hotspot berhasil ditambahkan' };
+        } catch (error) {
+            logger.error(`Error adding hotspot user: ${error.message}`);
+            return { success: false, message: `Gagal menambah user hotspot: ${error.message}` };
         }
-        // Tambahkan user hotspot
-        await conn.write('/ip/hotspot/user/add', [
-            '=name=' + username,
-            '=password=' + password,
-            '=profile=' + profile
-        ]);
-        return { success: true, message: 'User hotspot berhasil ditambahkan' };
-    } catch (error) {
-        logger.error(`Error adding hotspot user: ${error.message}`);
-        return { success: false, message: `Gagal menambah user hotspot: ${error.message}` };
     }
 }
 
@@ -1407,7 +1467,12 @@ async function getAllUsers() {
 // ...
 // Fungsi tambah user PPPoE (alias addPPPoESecret)
 async function addPPPoEUser({ username, password, profile }) {
-    return await addPPPoESecret(username, password, profile);
+    const mode = getSetting('user_auth_mode', 'mikrotik');
+    if (mode === 'radius') {
+        return await addPPPoEUserRadius({ username, password });
+    } else {
+        return await addPPPoESecret(username, password, profile);
+    }
 }
 
 // Update user hotspot (password dan profile)
@@ -1610,6 +1675,44 @@ async function generateHotspotVouchers(count, prefix, profile, server, validUnti
         };
     }
 }
+
+// --- Watcher settings.json untuk reset koneksi Mikrotik jika setting berubah ---
+const settingsPath = path.join(process.cwd(), 'settings.json');
+let lastMikrotikConfig = {};
+
+function getCurrentMikrotikConfig() {
+    return {
+        host: getSetting('mikrotik_host', '192.168.8.1'),
+        port: getSetting('mikrotik_port', '8728'),
+        user: getSetting('mikrotik_user', 'admin'),
+        password: getSetting('mikrotik_password', 'admin')
+    };
+}
+
+function mikrotikConfigChanged(newConfig, oldConfig) {
+    return (
+        newConfig.host !== oldConfig.host ||
+        newConfig.port !== oldConfig.port ||
+        newConfig.user !== oldConfig.user ||
+        newConfig.password !== oldConfig.password
+    );
+}
+
+// Inisialisasi config awal
+lastMikrotikConfig = getCurrentMikrotikConfig();
+
+fs.watchFile(settingsPath, { interval: 2000 }, (curr, prev) => {
+    try {
+        const newConfig = getCurrentMikrotikConfig();
+        if (mikrotikConfigChanged(newConfig, lastMikrotikConfig)) {
+            logger.info('Konfigurasi Mikrotik di settings.json berubah, reset koneksi Mikrotik...');
+            mikrotikConnection = null;
+            lastMikrotikConfig = newConfig;
+        }
+    } catch (e) {
+        logger.error('Gagal cek perubahan konfigurasi Mikrotik:', e.message);
+    }
+});
 
 module.exports = {
     setSock,

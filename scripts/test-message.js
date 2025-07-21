@@ -5,7 +5,11 @@ const fs = require('fs');
 const path = require('path');
 
 // Load settings
-const settings = require('../settings.json');
+const { getSetting } = require('../config/settingsManager');
+const settings = {};
+settings.admins = getSetting('admins', []);
+settings.whatsapp_timeout = getSetting('whatsapp_timeout', 10000);
+settings.notification_timeout = getSetting('notification_timeout', 10000);
 
 console.log('=== Test Pengiriman Pesan WhatsApp ===\n');
 

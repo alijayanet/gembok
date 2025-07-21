@@ -179,7 +179,7 @@
                                                 <button class="btn btn-sm btn-warning edit-user-btn" data-username="<%= user.name %>" data-password="<%= user.password %>" data-profile="<%= user.profile %>"><i class="bi bi-pencil"></i> Edit</button>
                                                 <button class="btn btn-sm btn-danger delete-user-btn" data-username="<%= user.name %>"><i class="bi bi-trash"></i> Hapus</button>
                                                 <% if (users && users.find(u => (u.user || u.name) === user.name)) { %>
-                                                <button class="btn btn-sm btn-info disconnect-session-btn" data-username="<%= user.name %>"><i class="bi bi-x-circle"></i> Putuskan Sesi</button>
+                                                <button class="btn btn-sm btn-info disconnect-session-btn" data-username="<%= user.name %>"><i class="bi bi-x-circle"></i> Putus</button>
                                                 <% } %>
                                             </td>
                                         </tr>

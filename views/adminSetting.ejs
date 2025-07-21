@@ -548,14 +548,21 @@ $(function() {
                 });
             } else {
                 html += '<div class="mb-3">';
-                html += '<label class="form-label">'+key+'</label>';
-                if (typeof val === 'boolean' || val === true || val === false || val === 'true' || val === 'false') {
+                if (key === 'user_auth_mode') {
+                    html += '<label class="form-label">Mode Autentikasi User</label>';
+                    html += '<select class="form-select" name="user_auth_mode">';
+                    html += '<option value="mikrotik"'+(val==="mikrotik"?" selected":"")+'>Mikrotik (RouterOS API)</option>';
+                    html += '<option value="radius"'+(val==="radius"?" selected":"")+'>RADIUS (Database RADIUS)</option>';
+                    html += '</select>';
+                } else if (typeof val === 'boolean' || val === true || val === false || val === 'true' || val === 'false') {
                     var checked = (val === true || val === 'true') ? 'checked' : '';
+                    html += '<label class="form-label">'+key+'</label>';
                     html += '<div class="form-check">';
                     html += '<input class="form-check-input" type="checkbox" name="'+key+'" id="setting_'+key+'" '+checked+'> ';
                     html += '<label class="form-check-label" for="setting_'+key+'">'+(checked ? 'Aktif' : 'Tidak Aktif')+'</label>';
                     html += '</div>';
                 } else {
+                    html += '<label class="form-label">'+key+'</label>';
                     html += '<input type="text" class="form-control" name="'+key+'" value="'+val+'">';
                 }
                 html += '</div>';
