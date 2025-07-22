@@ -133,6 +133,7 @@
             <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
             <a href="/admin/trouble"><i class="bi bi-exclamation-triangle"></i> Laporan Gangguan</a>
             <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
+            <a href="#" id="restartMikrotikBtn"><i class="bi bi-arrow-repeat"></i> Restart Mikrotik</a>
             <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
 
@@ -411,6 +412,27 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Konfirmasi Restart Mikrotik -->
+<div class="modal fade" id="restartMikrotikModal" tabindex="-1" aria-labelledby="restartMikrotikModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="restartMikrotikModalLabel"><i class="bi bi-arrow-repeat"></i> Konfirmasi Restart Mikrotik</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Apakah Anda yakin ingin <b>restart Mikrotik</b>?<br>Router akan reboot dan koneksi internet pelanggan akan terputus sementara.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-danger" id="confirmRestartMikrotik">Restart</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Notifikasi -->
+<div id="restartNotif" class="alert d-none position-fixed top-0 end-0 m-4" style="z-index:9999; min-width:300px;"></div>
 
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

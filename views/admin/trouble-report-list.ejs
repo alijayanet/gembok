@@ -1,0 +1,51 @@
+<!-- Modal Konfirmasi Restart Mikrotik -->
+<div class="modal fade" id="restartMikrotikModal" tabindex="-1" aria-labelledby="restartMikrotikModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="restartMikrotikModalLabel"><i class="bi bi-arrow-repeat"></i> Konfirmasi Restart Mikrotik</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Apakah Anda yakin ingin <b>restart Mikrotik</b>?<br>Router akan reboot dan koneksi internet pelanggan akan terputus sementara.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-danger" id="confirmRestartMikrotik">Restart</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Notifikasi -->
+<div id="restartNotif" class="alert d-none position-fixed top-0 end-0 m-4" style="z-index:9999; min-width:300px;"></div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+$(function() {
+  $(document).on('click', '#restartMikrotikBtn', function(e) {
+    e.preventDefault();
+    $('#restartMikrotikModal').modal('show');
+  });
+  $('#confirmRestartMikrotik').on('click', function() {
+    $('#restartMikrotikModal').modal('hide');
+    $.ajax({
+      url: '/admin/mikrotik/restart',
+      method: 'POST',
+      success: function(res) {
+        let notif = $('#restartNotif');
+        if(res.success) {
+          notif.removeClass('d-none alert-danger').addClass('alert-success').text(res.message || 'Mikrotik berhasil direstart!');
+        } else {
+          notif.removeClass('d-none alert-success').addClass('alert-danger').text(res.message || 'Gagal restart Mikrotik!');
+        }
+        setTimeout(function() { notif.addClass('d-none'); }, 4000);
+      },
+      error: function() {
+        let notif = $('#restartNotif');
+        notif.removeClass('d-none alert-success').addClass('alert-danger').text('Gagal menghubungi server!');
+        setTimeout(function() { notif.addClass('d-none'); }, 4000);
+      }
+    });
+  });
+});
+</script> 

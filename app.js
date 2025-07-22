@@ -250,8 +250,8 @@ global.appSettings = {
   
   // Monitoring
   pppoeMonitorInterval: getSetting('pppoe_monitor_interval', 60000),
-  rxPowerWarning: getSetting('rx_power_warning', -25),
-  rxPowerCritical: getSetting('rx_power_critical', -27),
+  rxPowerWarning: getSetting('rx_power_warning', -27),
+  rxPowerCritical: getSetting('rx_power_critical', -30),
   rxPowerNotificationEnable: getSetting('rx_power_notification_enable', true),
   rxPowerNotificationInterval: getSetting('rx_power_notification_interval', 300000),
   

@@ -280,4 +280,19 @@ router.get('/mikrotik/user-stats', adminAuth, async (req, res) => {
   }
 });
 
+// POST: Restart Mikrotik
+router.post('/mikrotik/restart', adminAuth, async (req, res) => {
+  try {
+    const { restartRouter } = require('../config/mikrotik');
+    const result = await restartRouter();
+    if (result.success) {
+      res.json({ success: true, message: result.message });
+    } else {
+      res.json({ success: false, message: result.message });
+    }
+  } catch (err) {
+    res.json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;
