@@ -1,4 +1,12 @@
-# Genieacs - Mikrotik - WhatsApp Gateway untuk ISP Management
+## Tampilan Dasboard Pelanggan
+<img width="1358" height="650" alt="Image" src="https://github.com/user-attachments/assets/2e14a92c-5f93-45df-9e03-6c20f718ffcc" />
+
+## Tampilan Dasboard ADMIN
+<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/0f2170e4-f7fa-40e7-9434-6b2073740163" />
+<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/16d2f40c-d9ac-46b5-93e2-4dfd51ad4b54" />
+<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/9c9469d5-2dd7-4713-81cc-d762f7fec2f0" />
+<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/d98b8c95-debe-4790-99d9-47f9363a066d" />
+<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/3951eeae-fa16-4c06-b3ed-cf1c0c2fc968" />
 
 Rekening Donasi Untuk Pembangunan Masjid
 # 4206 0101 2214 534 BRI an DKM BAITUR ROHMAN <br>
@@ -130,15 +138,6 @@ pm2 start app.js
 - **Admin Dashboard**: `http://ipserver:3001/admin/login`
 - **Login Admin**: Username dan password yang dikonfigurasi di `settings.json`
 
-## Tampilan Dasboard Pelanggan
-<img width="1358" height="650" alt="Image" src="https://github.com/user-attachments/assets/2e14a92c-5f93-45df-9e03-6c20f718ffcc" />
-
-## Tampilan Dasboard ADMIN
-<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/0f2170e4-f7fa-40e7-9434-6b2073740163" />
-<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/16d2f40c-d9ac-46b5-93e2-4dfd51ad4b54" />
-<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/9c9469d5-2dd7-4713-81cc-d762f7fec2f0" />
-<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/d98b8c95-debe-4790-99d9-47f9363a066d" />
-<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/3951eeae-fa16-4c06-b3ed-cf1c0c2fc968" />
 
 ## Kontribusi
 
