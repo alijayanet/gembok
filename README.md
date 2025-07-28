@@ -11,6 +11,7 @@
 Rekening Donasi Untuk Pembangunan Masjid
 # 4206 0101 2214 534 BRI an DKM BAITUR ROHMAN <br>
 Info 08194215703 ALIJAYA
+https://paypal.me/warnetalijayaID
 link group tele : https://t.me/alijayaNetAcs
 link chanell tele : https://t.me/alijayaNetwork
 
