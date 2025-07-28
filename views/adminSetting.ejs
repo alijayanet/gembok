@@ -379,7 +379,7 @@
                             <label class="form-label small fw-bold">Rate Limit (dan Threshold)</label>
                             <div class="row g-2 mb-3">
                                 <div class="col-7">
-                                    <input type="number" class="form-control form-control-sm" id="uploadRate" placeholder="Upload">
+                                    <input type="number" class="form-control form-control-sm" id="uploadRate" placeholder="cth: 100">
                                 </div>
                                 <div class="col-5">
                                     <select class="form-select form-select-sm" id="uploadUnit">
@@ -388,7 +388,7 @@
                                     </select>
                                 </div>
                                 <div class="col-7">
-                                    <input type="number" class="form-control form-control-sm" id="downloadRate" placeholder="Download">
+                                    <input type="number" class="form-control form-control-sm" id="downloadRate" placeholder="cth: 100">
                                 </div>
                                 <div class="col-5">
                                     <select class="form-select form-select-sm" id="downloadUnit">
@@ -402,7 +402,7 @@
                             <label class="form-label small fw-bold">Burst Limit</label>
                             <div class="row g-2 mb-3">
                                 <div class="col-7">
-                                    <input type="number" class="form-control form-control-sm" id="uploadBurstRate" placeholder="Upload Burst">
+                                    <input type="number" class="form-control form-control-sm" id="uploadBurstRate" placeholder="cth: 100">
                                 </div>
                                 <div class="col-5">
                                     <select class="form-select form-select-sm" id="uploadBurstUnit">
@@ -411,7 +411,7 @@
                                     </select>
                                 </div>
                                 <div class="col-7">
-                                    <input type="number" class="form-control form-control-sm" id="downloadBurstRate" placeholder="Download Burst">
+                                    <input type="number" class="form-control form-control-sm" id="downloadBurstRate" placeholder="cth: 100">
                                 </div>
                                 <div class="col-5">
                                     <select class="form-select form-select-sm" id="downloadBurstUnit">
@@ -440,6 +440,119 @@
                         </div>
 
                         <hr class="my-4">
+<!-- VPS & MikroTik WireGuard + GenieACS Generator -->
+<div class="mt-4">
+    <h5 class="mb-3"><i class="bi bi-server"></i> Generator Konfigurasi VPS & MikroTik</h5>
+    <p class="small text-muted mb-3">Generate skrip untuk menghubungkan VPS dan MikroTik dengan WireGuard dan GenieACS.</p>
+    
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-hdd-rack"></i> Konfigurasi VPS
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">IP Publik VPS</label>
+                        <input type="text" class="form-control form-control-sm" id="vpsPublicIp" placeholder="contoh: 123.123.123.123">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Interface Jaringan (biasanya eth0 atau ens3)</label>
+                        <input type="text" class="form-control form-control-sm" id="vpsInterface" value="eth0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Port WireGuard</label>
+                        <input type="number" class="form-control form-control-sm" id="wgPort" value="51820">
+                    </div>
+                    <button class="btn btn-primary btn-sm w-100" id="generateVpsScript">
+                        <i class="bi bi-file-earmark-code"></i> Generate Skrip VPS
+                    </button>
+                    <button class="btn btn-success btn-sm w-100 mt-2" id="downloadVpsScript" disabled>
+                        <i class="bi bi-download"></i> Unduh Skrip VPS
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-router"></i> Konfigurasi MikroTik
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">IP Lokal MikroTik (WireGuard)</label>
+                        <input type="text" class="form-control form-control-sm" id="mikrotikLocalIp" value="10.10.10.2">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">IP VPS (WireGuard)</label>
+                        <input type="text" class="form-control form-control-sm" id="vpsLocalIp" value="10.10.10.1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Subnet Jaringan</label>
+                        <input type="text" class="form-control form-control-sm" id="networkSubnet" value="10.10.10.0/24">
+                    </div>
+                    <button class="btn btn-success btn-sm w-100" id="generateMikrotikScript">
+                        <i class="bi bi-file-earmark-code"></i> Generate Skrip MikroTik
+                    </button>
+                    <button class="btn btn-success btn-sm w-100 mt-2" id="downloadMikrotikScript" disabled>
+                        <i class="bi bi-download"></i> Unduh Skrip MikroTik
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-terminal"></i> Skrip Hasil Generate</span>
+                    <button class="btn btn-sm btn-outline-secondary" id="copyAllScripts">
+                        <i class="bi bi-clipboard"></i> Salin Semua
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <pre class="mb-0 p-3 bg-light" id="generatedScript" style="min-height: 200px; max-height: 400px; overflow-y: auto;">
+Pilih opsi di atas untuk men-generate skrip...
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-4">
+
+<!-- DHCP Option 43 Generator for GenieACS -->
+<div class="mt-4">
+    <h5 class="mb-3"><i class="bi bi-ethernet"></i> Generator DHCP Option 43</h5>
+    <p class="small text-muted mb-3">Generate nilai hex untuk DHCP Option 43 (Vendor Specific Information) yang berisi URL GenieACS.</p>
+    <div class="row g-2 mb-3">
+        <div class="col-md-8">
+            <label class="form-label small fw-bold" for="genieacsUrl">URL GenieACS</label>
+            <div class="input-group">
+                <input type="text" class="form-control form-control-sm" id="genieacsUrl" placeholder="cth: https://genieacs.example.com:7547">
+                <button class="btn btn-outline-primary btn-sm" type="button" id="generateOption43">Generate</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label small fw-bold">Hasil Option 43</label>
+            <div class="input-group">
+                <input type="text" class="form-control form-control-sm bg-light" id="option43Result" readonly>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="copyOption43Btn" title="Salin ke clipboard">
+                    <i class="bi bi-clipboard"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-info small p-2 mb-0">
+        <i class="bi bi-info-circle"></i> Gunakan nilai ini di MikroTik: <code>/ip dhcp-server option add name=opt43 code=43 value=0x<span id="option43Value"></span></code>
+    </div>
+</div>
+
+<hr class="my-4">
+
 <!-- Optical Splitter Attenuation Calculator -->
 <div class="mt-4">
     <h5 class="mb-3"><i class="bi bi-lightning-charge"></i> Kalkulator Redaman Splitter Optik</h5>
@@ -791,193 +904,198 @@ $(function() {
 });
 </script>
 <script>
-$('#logoUploadForm').on('submit', function(e){
-  e.preventDefault();
-  
-  // Validasi file
-  const fileInput = $(this).find('input[type="file"]')[0];
-  if (!fileInput.files || fileInput.files.length === 0) {
-    alert('Pilih file logo terlebih dahulu!');
-    return;
-  }
-  
-  const file = fileInput.files[0];
-  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/bmp', 'image/webp', 'image/svg+xml'];
-  const maxSize = 5 * 1024 * 1024; // 5MB
-  
-  // Validasi tipe file (termasuk SVG berdasarkan ekstensi)
-  const isSvgFile = file.name.toLowerCase().endsWith('.svg');
-  if (!allowedTypes.includes(file.type) && !isSvgFile) {
-    alert('Tipe file tidak didukung. Gunakan PNG, JPG, JPEG, GIF, BMP, WEBP, atau SVG.');
-    return;
-  }
-  
-  // Validasi ukuran file
-  if (file.size > maxSize) {
-    alert('Ukuran file terlalu besar. Maksimal 5MB.');
-    return;
-  }
-  
-  // Tampilkan loading state
-  const submitBtn = $(this).find('button[type="submit"]');
-  const originalText = submitBtn.text();
-  submitBtn.prop('disabled', true).text('Uploading...');
-  
-  var formData = new FormData(this);
-  $.ajax({
-    url: '/admin/setting/upload-logo',
-    type: 'POST',
-    data: formData,
-    processData: false,
-    contentType: false,
-    success: function(res){
-      if(res.success){
-        // Update preview tanpa reload
-        $('#logoPreview').attr('src', '/img/' + res.filename + '?ts=' + Date.now());
-        alert('Logo berhasil diupload!');
-        
-        // Reset form
-        $('#logoUploadForm')[0].reset();
-      } else {
-        alert('Gagal upload logo: ' + (res.error || 'Unknown error'));
-      }
-    },
-    error: function(xhr, status, error){
-      let errorMessage = 'Gagal upload logo!';
-      
-      // Coba ambil pesan error dari response
-      if (xhr.responseJSON && xhr.responseJSON.error) {
-        errorMessage = xhr.responseJSON.error;
-      } else if (xhr.status === 413) {
-        errorMessage = 'Ukuran file terlalu besar. Maksimal 5MB.';
-      } else if (xhr.status === 400) {
-        errorMessage = 'File tidak valid atau tipe file tidak didukung.';
-      } else if (xhr.status === 500) {
-        errorMessage = 'Terjadi kesalahan server. Coba lagi nanti.';
-      }
-      
-      alert(errorMessage);
-      console.error('Upload error:', xhr.responseText);
-    },
-    complete: function() {
-      // Reset loading state
-      submitBtn.prop('disabled', false).text(originalText);
-    }
-  });
-});
-</script>
-<script>
-// Hamburger & sidebar logic
-const hamburger = document.getElementById('hamburgerBtn');
-const sidebar = document.getElementById('adminSidebar');
-const overlay = document.getElementById('sidebarOverlay');
-if (hamburger && sidebar && overlay) {
-  hamburger.addEventListener('click', function() {
-    sidebar.classList.toggle('show');
-    overlay.classList.toggle('show');
-  });
-  overlay.addEventListener('click', function() {
-    sidebar.classList.remove('show');
-    overlay.classList.remove('show');
-  });
+// Fungsi untuk download file
+function downloadScript(filename, content) {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
 }
-</script>
-<script>
-// Burst Limit Calculator
-document.addEventListener('DOMContentLoaded', function() {
-    // Elemen Rate Limit & Threshold
-    const uploadRateEl = document.getElementById('uploadRate');
-    const uploadUnitEl = document.getElementById('uploadUnit');
-    const downloadRateEl = document.getElementById('downloadRate');
-    const downloadUnitEl = document.getElementById('downloadUnit');
+
+// VPS & MikroTik Configuration Generator
+function generateVpsScript() {
+    const vpsIp = $('#vpsPublicIp').val().trim();
+    const vpsInterface = $('#vpsInterface').val().trim();
+    const wgPort = $('#wgPort').val().trim();
+    const vpsLocalIp = $('#vpsLocalIp').val().trim();
+    const networkSubnet = $('#networkSubnet').val().trim();
     
-    // Elemen Burst Limit
-    const uploadBurstRateEl = document.getElementById('uploadBurstRate');
-    const uploadBurstUnitEl = document.getElementById('uploadBurstUnit');
-    const downloadBurstRateEl = document.getElementById('downloadBurstRate');
-    const downloadBurstUnitEl = document.getElementById('downloadBurstUnit');
-
-    // Elemen Lainnya
-    const burstTimeEl = document.getElementById('burstTime');
-    const resultEl = document.getElementById('burstResult');
-    const copyBtn = document.getElementById('copyBurstBtn');
-
-    function calculateBurst() {
-        // Rate Limit (juga digunakan untuk Threshold)
-        const upRate = parseFloat(uploadRateEl.value) || 0;
-        const upUnit = uploadUnitEl.value;
-        const downRate = parseFloat(downloadRateEl.value) || 0;
-        const downUnit = downloadUnitEl.value;
-
-        // Burst Limit
-        const upBurstRate = parseFloat(uploadBurstRateEl.value) || 0;
-        const upBurstUnit = uploadBurstUnitEl.value;
-        const downBurstRate = parseFloat(downloadBurstRateEl.value) || 0;
-        const downBurstUnit = downloadBurstUnitEl.value;
-
-        const burstTime = parseInt(burstTimeEl.value) || 0;
-
-        if (upRate === 0 || downRate === 0 || upBurstRate === 0 || downBurstRate === 0) {
-            resultEl.value = '';
-            return;
-        }
-
-        // --- Perhitungan Burst Threshold (75% dari Rate Limit) ---
-        function calculateThreshold(rate, unit) {
-            let rateInKbps = (unit === 'M') ? rate * 1024 : rate;
-            let thresholdInKbps = Math.floor(rateInKbps * 0.75);
-
-            if (thresholdInKbps >= 1000) {
-                // Jika lebih dari 1000K, tampilkan dalam M dengan 2 desimal jika perlu
-                let thresholdInMbps = (thresholdInKbps / 1024).toFixed(2);
-                // Hapus .00 jika tidak ada desimal
-                return `${thresholdInMbps.replace(/\.00$/, '')}M`;
-            } else {
-                return `${thresholdInKbps}k`;
-            }
-        }
-
-        const upThreshold = calculateThreshold(upRate, upUnit);
-        const downThreshold = calculateThreshold(downRate, downUnit);
-
-        // Format: rate-limit/rate-limit burst-limit/burst-limit burst-threshold/burst-threshold burst-time/burst-time
-        const rateLimitStr = `${upRate}${upUnit}/${downRate}${downUnit}`;
-        const burstLimitStr = `${upBurstRate}${upBurstUnit}/${downBurstRate}${downBurstUnit}`;
-        const burstThresholdStr = `${upThreshold}/${downThreshold}`;
-        const burstTimeStr = `${burstTime}/${burstTime}`;
-
-        resultEl.value = `${rateLimitStr} ${burstLimitStr} ${burstThresholdStr} ${burstTimeStr}`;
+    if (!vpsIp || !vpsInterface || !wgPort || !vpsLocalIp || !networkSubnet) {
+        alert('Harap isi semua field yang diperlukan');
+        return;
     }
 
-    const allInputs = [
-        uploadRateEl, uploadUnitEl, downloadRateEl, downloadUnitEl,
-        uploadBurstRateEl, uploadBurstUnitEl, downloadBurstRateEl, downloadBurstUnitEl,
-        burstTimeEl
-    ];
+    const script = `#!/bin/bash
+# ===========================================
+# Script Konfigurasi VPS untuk WireGuard
+# ===========================================
 
-    allInputs.forEach(el => {
-        if(el) el.addEventListener('input', calculateBurst);
-    });
+# Update sistem
+echo "Mengupdate sistem..."
+sudo apt update && sudo apt upgrade -y
 
-    if(copyBtn) {
-        copyBtn.addEventListener('click', function() {
-            if (!resultEl.value) return;
+# Install paket yang diperlukan
+echo "Menginstall paket yang diperlukan..."
+sudo apt install -y wireguard net-tools iputils-ping
 
-            navigator.clipboard.writeText(resultEl.value).then(() => {
-                const originalIcon = copyBtn.innerHTML;
-                copyBtn.innerHTML = '<i class="bi bi-check-lg text-success"></i>';
-                setTimeout(() => {
-                    copyBtn.innerHTML = originalIcon;
-                }, 2000);
-            }).catch(err => {
-                console.error('Gagal menyalin:', err);
-                alert('Gagal menyalin teks.');
-            });
-        });
+# Generate key
+echo "Membuat kunci WireGuard..."
+umask 077
+wg genkey | sudo tee /etc/wireguard/private.key
+sudo cat /etc/wireguard/private.key | wg pubkey | sudo tee /etc/wireguard/public.key
+
+# Buat konfigurasi WireGuard
+echo "Membuat konfigurasi WireGuard..."
+sudo cat > /etc/wireguard/wg0.conf <<EOL
+[Interface]
+Address = ${vpsLocalIp}/24
+SaveConfig = true
+ListenPort = ${wgPort}
+PrivateKey = $(sudo cat /etc/wireguard/private.key)
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o ${vpsInterface} -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o ${vpsInterface} -j MASQUERADE
+EOL
+
+# Aktifkan IP forwarding
+echo "Mengaktifkan IP forwarding..."
+echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+
+# Konfigurasi firewall
+echo "Mengkonfigurasi firewall..."
+sudo ufw allow 22/tcp
+sudo ufw allow ${wgPort}/udp
+
+# Konfigurasi NAT untuk WireGuard
+sudo sed -i '/^\*filter$/i *nat\n:POSTROUTING ACCEPT [0:0]\n-A POSTROUTING -s ${networkSubnet} -o ${vpsInterface} -j MASQUERADE\nCOMMIT\n' /etc/ufw/before.rules
+
+# Aktifkan firewall
+sudo ufw enable
+
+# Start WireGuard
+echo "Menjalankan WireGuard..."
+sudo systemctl enable --now wg-quick@wg0
+
+echo "\n==========================================="
+echo "Konfigurasi VPS selesai!"
+echo "Gunakan public key berikut untuk konfigurasi MikroTik:"
+sudo cat /etc/wireguard/public.key
+echo "\nPastikan port ${wgPort}/udp sudah terbuka di firewall VPS"
+echo "==========================================="`;
+
+    $('#generatedScript').text(script);
+    return script;
+}
+
+function generateMikrotikScript() {
+    const vpsIp = $('#vpsPublicIp').val().trim();
+    const wgPort = $('#wgPort').val().trim();
+    const mikrotikLocalIp = $('#mikrotikLocalIp').val().trim();
+    const vpsLocalIp = $('#vpsLocalIp').val().trim();
+    const networkSubnet = $('#networkSubnet').val().trim();
+    
+    if (!vpsIp || !wgPort || !mikrotikLocalIp || !vpsLocalIp || !networkSubnet) {
+        alert('Harap isi semua field yang diperlukan');
+        return;
     }
 
-    // Initial calculation on load if values exist
-    calculateBurst();
+    const script = `# ===========================================
+# Script Konfigurasi MikroTik untuk WireGuard
+# ===========================================
+
+# Generate key pair
+:local privateKey ""
+:local publicKey ""
+/interface wireguard keypair \
+    private-key=private.key public-key=public.key
+:set privateKey [:parse [/file get private.key contents]]
+:set publicKey [:parse [/file get public.key contents]]
+/file remove public.key private.key
+
+# Buat interface WireGuard
+/interface wireguard add \
+    name=wg-vps \
+    private-key=$privateKey \
+    listen-port=${wgPort}
+
+# Tambahkan peer (VPS)
+/interface wireguard peers add \
+    interface=wg-vps \
+    public-key="<MASUKKAN_PUBLIC_KEY_VPS>" \
+    allowed-address=${vpsLocalIp}/32 \
+    endpoint-address=${vpsIp} \
+    endpoint-port=${wgPort}
+
+# Atur IP lokal
+/ip address add \
+    address=${mikrotikLocalIp}/24 \
+    interface=wg-vps
+
+# Tambahkan rute ke VPS
+/ip route add \
+    dst-address=${vpsLocalIp}/32 \
+    gateway=wg-vps
+
+# Tambahkan rute ke jaringan lokal VPS (jika ada)
+/ip route add \
+    dst-address=${networkSubnet} \
+    gateway=wg-vps
+
+# Konfigurasi NAT (jika diperlukan)
+/ip firewall nat add \
+    chain=srcnat \
+    out-interface=wg-vps \
+    action=masquerade
+
+# Konfigurasi DHCP Option 43 untuk GenieACS
+:local genieAcsUrl "http://${vpsLocalIp}:7547"
+:local urlHex [:pick [/tool fetch url="http://text-processing.com/encode/raw/" \
+    http-method=post \
+    http-data="text=$genieAcsUrl&encode=hex&charset=utf-8" \
+    as-value output=user] 1]
+:local urlLen [:len $urlHex]
+:local option43 "01$[:pick $urlHex 0 2]$[:pick $urlHex 2 $urlLen]"
+
+/ip dhcp-server option add name=opt43 code=43 value="0x$option43"
+/ip dhcp-server network set numbers=0 dhcp-option=opt43
+
+:put "==========================================="
+:put "Konfigurasi MikroTik selesai!"
+:put "Gunakan public key ini di VPS:"
+:put $publicKey
+:put "\n==========================================="`;
+
+    $('#generatedScript').text(script);
+    return script;
+}
+
+// Event Listeners
+let currentVpsScript = '';
+let currentMikrotikScript = '';
+    
+$('#generateVpsScript').on('click', function() {
+    currentVpsScript = generateVpsScript();
+    $('#downloadVpsScript').prop('disabled', false);
+});
+    
+$('#generateMikrotikScript').on('click', function() {
+    currentMikrotikScript = generateMikrotikScript();
+    $('#downloadMikrotikScript').prop('disabled', false);
+});
+    
+$('#downloadVpsScript').on('click', function() {
+    if (currentVpsScript) {
+        downloadScript('vps-wireguard-setup.sh', currentVpsScript);
+    }
+});
+    
+$('#downloadMikrotikScript').on('click', function() {
+    if (currentMikrotikScript) {
+        downloadScript('mikrotik-wireguard-setup.rsc', currentMikrotikScript);
+    }
 });
 </script>
 <script>
