@@ -430,12 +430,15 @@
                             <!-- Hasil -->
                             <div>
                                 <label for="burstResult" class="form-label small fw-bold">Hasil</label>
-                                <div class="input-group">
+                                <div class="input-group mb-3">
                                     <input type="text" class="form-control form-control-sm bg-light" id="burstResult" readonly placeholder="Hasil akan muncul di sini">
                                     <button class="btn btn-outline-secondary btn-sm" type="button" id="copyBurstBtn">
                                         <i class="bi bi-clipboard"></i>
                                     </button>
                                 </div>
+                                <button class="btn btn-primary btn-sm w-100" type="button" id="generateBurstLimit">
+                                    <i class="bi bi-lightning-charge"></i> Generate
+                                </button>
                             </div>
                         </div>
 
@@ -1229,5 +1232,87 @@ $(document).ready(function() {
     }
 });
 </script>
+<script>
+$(document).ready(function() {
+    // 1. Handle Burst Limit Calculator
+    $('#generateBurstLimit').on('click', function() {
+        // Ambil nilai input
+        const uploadRate = $('#uploadRate').val();
+        const uploadUnit = $('#uploadUnit').val();
+        const downloadRate = $('#downloadRate').val();
+        const downloadUnit = $('#downloadUnit').val();
+        const uploadBurstRate = $('#uploadBurstRate').val();
+        const uploadBurstUnit = $('#uploadBurstUnit').val();
+        const downloadBurstRate = $('#downloadBurstRate').val();
+        const downloadBurstUnit = $('#downloadBurstUnit').val();
+        const burstTime = $('#burstTime').val() || '8';
+
+        // Validasi input
+        if (!uploadRate || !downloadRate || !uploadBurstRate || !downloadBurstRate) {
+            showNotification('warning', 'Harap isi semua field yang diperlukan');
+            return;
+        }
+
+        // Format rate limit
+        const formatRate = (rate, unit) => {
+            if (unit === 'M') {
+                return `${rate}M`;
+            } else {
+                return rate === '0' ? '0' : `${rate}K`;
+            }
+        };
+
+        // Format burst limit
+        const formatBurst = (rate, unit, burstRate, burstUnit) => {
+            if (rate === '0') return '0/0';
+            
+            const rateValue = parseInt(rate);
+            const burstValue = parseInt(burstRate);
+            let rateKbps = unit === 'M' ? rateValue * 1000 : rateValue;
+            let burstKbps = burstUnit === 'M' ? burstValue * 1000 : burstValue;
+            
+            // Hitung burst threshold (50-75% dari burst rate)
+            const threshold = Math.max(
+                Math.min(Math.ceil(burstKbps * 0.75), burstKbps - 1),
+                Math.ceil(burstKbps * 0.5)
+            );
+            
+            return `${burstKbps}K/${threshold}K ${burstTime}`;
+        };
+
+        // Generate hasil
+        const uploadLimit = formatRate(uploadRate, uploadUnit);
+        const downloadLimit = formatRate(downloadRate, downloadUnit);
+        const uploadBurst = formatBurst(uploadRate, uploadUnit, uploadBurstRate, uploadBurstUnit);
+        const downloadBurst = formatBurst(downloadRate, downloadUnit, downloadBurstRate, downloadBurstUnit);
+
+        // Format hasil untuk MikroTik
+        const result = 
+`/ip hotspot user profile set [find name="NamaProfil"] \
+    rate-limit="${uploadLimit}/${downloadLimit}" \
+    burst-limit="${uploadBurst}/${downloadBurst}" \
+    burst-threshold=0/0 \
+    burst-time=0s/0s`;
+
+        // Tampilkan hasil
+        $('#burstResult').val(result);
+        
+        // Scroll ke hasil
+        $('html, body').animate({
+            scrollTop: $('#burstResult').offset().top - 100
+        }, 500);
+    });
+
+    // 2. Handle Copy to Clipboard
+    $('#copyBurstBtn').on('click', function() {
+        const copyText = document.getElementById("burstResult");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        document.execCommand("copy");
+        showNotification('success', 'Berhasil disalin ke clipboard!');
+    });
+});
+</script>
+
 </body>
 </html>

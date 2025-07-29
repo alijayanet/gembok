@@ -4,76 +4,29 @@ const path = require('path');
 const router = express.Router();
 const multer = require('multer');
 
-// Konfigurasi multer yang lebih aman
+// Konfigurasi penyimpanan file
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadDir = path.join(__dirname, '../public/img/');
-        // Pastikan direktori upload ada
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
+        cb(null, path.join(__dirname, '../public/img'));
     },
     filename: function (req, file, cb) {
-        // Debug: log file info
-        console.log('Filename function called:', {
-            originalname: file.originalname,
-            mimetype: file.mimetype
-        });
-        
-        // Validasi ekstensi file
-        const allowedExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.svg'];
+        // Selalu gunakan nama 'logo' dengan ekstensi file asli
         const ext = path.extname(file.originalname).toLowerCase();
-        
-        console.log('File extension:', ext);
-        
-        if (!allowedExtensions.includes(ext)) {
-            console.log('Invalid extension:', ext);
-            return cb(new Error(`Ekstensi file tidak didukung: ${ext}. Gunakan PNG, JPG, JPEG, GIF, BMP, WEBP, atau SVG.`));
-        }
-        
-        // Gunakan nama file yang konsisten
-        const filename = 'logo' + ext;
-        console.log('Generated filename:', filename);
-        cb(null, filename);
+        cb(null, 'logo' + ext);
     }
 });
 
 const upload = multer({ 
     storage: storage,
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit
+        fileSize: 2 * 1024 * 1024 // 2MB
     },
     fileFilter: function (req, file, cb) {
-        // Debug: log file info
-        console.log('File upload attempt:', {
-            originalname: file.originalname,
-            mimetype: file.mimetype,
-            size: file.size
-        });
-        
-        // Cek apakah file SVG berdasarkan ekstensi atau MIME type
-        const isSvgByExtension = file.originalname.toLowerCase().endsWith('.svg');
-        const isSvgByMime = file.mimetype === 'image/svg+xml';
-        
-        if (isSvgByExtension || isSvgByMime) {
-            console.log('SVG file detected, accepting...');
-            cb(null, true);
-            return;
-        }
-        
-        // Validasi tipe MIME untuk file non-SVG
-        const allowedMimes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/bmp', 'image/webp'];
-        if (allowedMimes.includes(file.mimetype)) {
-            console.log('Valid image file accepted:', file.mimetype);
+        // Hanya izinkan file gambar dan SVG
+        if (file.mimetype.startsWith('image/') || file.originalname.toLowerCase().endsWith('.svg')) {
             cb(null, true);
         } else {
-            console.log('Rejected file:', {
-                mimetype: file.mimetype,
-                originalname: file.originalname,
-                allowedMimes: allowedMimes
-            });
-            cb(new Error('Tipe file tidak didukung. Gunakan PNG, JPG, JPEG, GIF, BMP, WEBP, atau SVG.'), false);
+            cb(new Error('Hanya file gambar yang diizinkan'), false);
         }
     }
 });
@@ -127,7 +80,7 @@ router.post('/save', (req, res) => {
     });
 });
 
-// POST: Upload Logo dengan error handling yang lebih baik
+// POST: Upload Logo
 router.post('/upload-logo', upload.single('logo'), (req, res) => {
     try {
         if (!req.file) {
@@ -137,7 +90,7 @@ router.post('/upload-logo', upload.single('logo'), (req, res) => {
             });
         }
 
-        // File sudah disimpan dengan nama yang benar oleh multer
+        // Dapatkan nama file yang sudah disimpan (akan selalu 'logo' + ekstensi)
         const filename = req.file.filename;
         const filePath = req.file.path;
 
@@ -149,25 +102,44 @@ router.post('/upload-logo', upload.single('logo'), (req, res) => {
             });
         }
 
-        // Update settings.json
-        let settings;
+        // Baca settings.json
+        let settings = {};
+        
         try {
             settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
         } catch (err) {
+            console.error('Gagal membaca settings.json:', err);
             return res.status(500).json({ 
                 success: false, 
-                error: 'Gagal membaca settings.json' 
+                error: 'Gagal membaca pengaturan' 
             });
         }
 
+        // Hapus file logo lama jika ada
+        if (settings.logo_filename && settings.logo_filename !== filename) {
+            const oldLogoPath = path.join(__dirname, '../public/img', settings.logo_filename);
+            if (fs.existsSync(oldLogoPath)) {
+                try {
+                    fs.unlinkSync(oldLogoPath);
+                    console.log('Logo lama dihapus:', oldLogoPath);
+                } catch (err) {
+                    console.error('Gagal menghapus logo lama:', err);
+                    // Lanjutkan meskipun gagal hapus file lama
+                }
+            }
+        }
+
+        // Update settings.json
         settings.logo_filename = filename;
         
         try {
             fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+            console.log('Settings.json berhasil diupdate dengan logo baru:', filename);
         } catch (err) {
+            console.error('Gagal menyimpan settings.json:', err);
             return res.status(500).json({ 
                 success: false, 
-                error: 'Gagal menyimpan settings.json' 
+                error: 'Gagal menyimpan pengaturan' 
             });
         }
 
@@ -178,10 +150,10 @@ router.post('/upload-logo', upload.single('logo'), (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error uploading logo:', error);
+        console.error('Error saat upload logo:', error);
         res.status(500).json({ 
             success: false, 
-            error: error.message || 'Terjadi kesalahan saat upload logo' 
+            error: 'Terjadi kesalahan saat mengupload logo: ' + error.message 
         });
     }
 });
@@ -192,7 +164,7 @@ router.use((error, req, res, next) => {
         if (error.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({ 
                 success: false, 
-                error: 'Ukuran file terlalu besar. Maksimal 5MB.' 
+                error: 'Ukuran file terlalu besar. Maksimal 2MB.' 
             });
         }
         return res.status(400).json({ 

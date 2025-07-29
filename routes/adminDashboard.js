@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { adminAuth } = require('./adminAuth');
+const fs = require('fs');
+const path = require('path');
 
 const { getDevices } = require('../config/genieacs');
 const { getActivePPPoEConnections, getInactivePPPoEUsers } = require('../config/mikrotik');
@@ -9,7 +11,12 @@ const { getActivePPPoEConnections, getInactivePPPoEUsers } = require('../config/
 router.get('/dashboard', adminAuth, async (req, res) => {
   let genieacsTotal = 0, genieacsOnline = 0, genieacsOffline = 0;
   let mikrotikTotal = 0, mikrotikAktif = 0, mikrotikOffline = 0;
+  let settings = {};
+  
   try {
+    // Baca settings.json
+    settings = JSON.parse(fs.readFileSync(path.join(__dirname, '../settings.json'), 'utf8'));
+    
     // GenieACS
     const devices = await getDevices();
     genieacsTotal = devices.length;
@@ -24,8 +31,10 @@ router.get('/dashboard', adminAuth, async (req, res) => {
     mikrotikOffline = offlineResult.success ? offlineResult.totalInactive : 0;
     mikrotikTotal = (offlineResult.success ? offlineResult.totalSecrets : 0);
   } catch (e) {
+    console.error('Error in dashboard route:', e);
     // Jika error, biarkan value default 0
   }
+  
   res.render('adminDashboard', {
     title: 'Dashboard Admin',
     page: 'dashboard',
@@ -34,7 +43,8 @@ router.get('/dashboard', adminAuth, async (req, res) => {
     genieacsOffline,
     mikrotikTotal,
     mikrotikAktif,
-    mikrotikOffline
+    mikrotikOffline,
+    settings // Sertakan settings di sini
   });
 });
 

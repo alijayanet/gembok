@@ -313,13 +313,23 @@ router.post('/otp', (req, res) => {
 router.get('/dashboard', async (req, res) => {
   const phone = req.session && req.session.phone;
   if (!phone) return res.redirect('/customer/login');
+  const settings = JSON.parse(fs.readFileSync(path.join(__dirname, '../settings.json'), 'utf8'));
   const data = await getCustomerDeviceData(phone);
   if (!data) {
     const fallbackCustomer = addAdminNumber({ phone, ssid: '-', status: 'Tidak ditemukan', lastChange: '-' });
-    return res.render('dashboard', { customer: fallbackCustomer, connectedUsers: [], notif: 'Data perangkat tidak ditemukan.' });
+    return res.render('dashboard', { 
+      customer: fallbackCustomer, 
+      connectedUsers: [], 
+      notif: 'Data perangkat tidak ditemukan.',
+      settings 
+    });
   }
   const customerWithAdmin = addAdminNumber(data);
-  res.render('dashboard', { customer: customerWithAdmin, connectedUsers: data.connectedUsers });
+  res.render('dashboard', { 
+    customer: customerWithAdmin, 
+    connectedUsers: data.connectedUsers,
+    settings 
+  });
 });
 
 // POST: Ganti SSID
@@ -336,7 +346,12 @@ router.post('/change-ssid', async (req, res) => {
   }
   const data = await getCustomerDeviceData(phone);
   const customerWithAdmin = addAdminNumber(data || { phone, ssid: '-', status: '-', lastChange: '-' });
-  res.render('dashboard', { customer: customerWithAdmin, connectedUsers: data ? data.connectedUsers : [], notif: ok ? 'Nama WiFi (SSID) berhasil diubah.' : 'Gagal mengubah SSID.' });
+  res.render('dashboard', { 
+    customer: customerWithAdmin, 
+    connectedUsers: data ? data.connectedUsers : [], 
+    notif: ok ? 'Nama WiFi (SSID) berhasil diubah.' : 'Gagal mengubah SSID.',
+    settings: JSON.parse(fs.readFileSync(path.join(__dirname, '../settings.json'), 'utf8'))
+  });
 });
 
 // POST: Ganti Password
@@ -353,7 +368,12 @@ router.post('/change-password', async (req, res) => {
   }
   const data = await getCustomerDeviceData(phone);
   const customerWithAdmin = addAdminNumber(data || { phone, ssid: '-', status: '-', lastChange: '-' });
-  res.render('dashboard', { customer: customerWithAdmin, connectedUsers: data ? data.connectedUsers : [], notif: ok ? 'Password WiFi berhasil diubah.' : 'Gagal mengubah password.' });
+  res.render('dashboard', { 
+    customer: customerWithAdmin, 
+    connectedUsers: data ? data.connectedUsers : [], 
+    notif: ok ? 'Password WiFi berhasil diubah.' : 'Gagal mengubah password.',
+    settings: JSON.parse(fs.readFileSync(path.join(__dirname, '../settings.json'), 'utf8'))
+  });
 });
 
 // POST: Restart Device
