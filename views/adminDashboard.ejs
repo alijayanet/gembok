@@ -48,7 +48,7 @@
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
         <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
             <div class="sidebar-header mb-4 text-center">
-              <img src="/img/<%= (settings && settings.logo_filename) ? settings.logo_filename : 'logo.svg' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
+                <img id="logoImage" src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?v=<%= new Date().getTime() %>" alt="Logo" style="max-width:120px;max-height:60px;">
             </div>
             <a href="/admin/dashboard" class="active"><i class="bi bi-house"></i> Dashboard</a>
             <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
@@ -463,8 +463,28 @@ loadInterfaces();
 // Set interval untuk update data
 setInterval(fetchTraffic, 2000);
 fetchTraffic();
-            </script>
-        </main>
+</script>
+<script>
+// Fungsi untuk me-refresh logo dengan timestamp baru
+function refreshLogo() {
+    const logo = document.getElementById('logoImage');
+    if (logo) {
+        // Tambahkan parameter timestamp baru untuk memaksa reload gambar
+        const timestamp = new Date().getTime();
+        const src = logo.src.split('?')[0]; // Hapus parameter yang ada
+        logo.src = `${src}?v=${timestamp}`;
+    }
+}
+
+// Refresh logo setiap 5 detik
+setInterval(refreshLogo, 5000);
+
+// Refresh logo saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    refreshLogo();
+});
+</script>
+            </main>
     </div>
 </div>
 <!-- Modal Konfirmasi Restart Mikrotik -->

@@ -983,8 +983,7 @@ echo "\n==========================================="
 echo "Konfigurasi VPS selesai!"
 echo "Gunakan public key berikut untuk konfigurasi MikroTik:"
 sudo cat /etc/wireguard/public.key
-echo "\nPastikan port ${wgPort}/udp sudah terbuka di firewall VPS"
-echo "==========================================="`;
+echo "\n==========================================="`;
 
     $('#generatedScript').text(script);
     return script;
@@ -1125,6 +1124,109 @@ $(function() {
       }
     });
   });
+});
+</script>
+<script>
+$(document).ready(function() {
+    // 1. Handle Logo Upload
+    $('#logoUploadForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        var formData = new FormData(this);
+        
+        $.ajax({
+            url: '/admin/setting/upload-logo',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    // Tampilkan notifikasi sukses
+                    showNotification('success', 'Logo berhasil diupload! Halaman akan dimuat ulang...');
+                    
+                    // Tunggu 1.5 detik lalu refresh halaman
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showNotification('danger', response.error || 'Gagal mengupload logo');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error uploading logo:', error);
+                var errorMsg = 'Terjadi kesalahan saat mengupload logo';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                }
+                showNotification('danger', errorMsg);
+            }
+        });
+    });
+
+    // 2. Handle DHCP Option 43 Generator
+    $('#generateOption43').on('click', function() {
+        const url = $('#genieacsUrl').val().trim();
+        
+        if (!url) {
+            showNotification('warning', 'Masukkan URL GenieACS terlebih dahulu');
+            return;
+        }
+        
+        try {
+            // Format URL untuk DHCP Option 43
+            // Format: 01<panjang url dalam hex><url dalam hex>
+            const urlHex = stringToHex(url);
+            const urlLenHex = (urlHex.length / 2).toString(16).padStart(2, '0');
+            const option43 = '01' + urlLenHex + urlHex;
+            
+            // Tampilkan hasil
+            $('#option43Result').val(option43);
+            $('#option43Value').text(option43);
+            
+            // Sembunyikan notifikasi error jika ada
+            $('#option43Error').addClass('d-none');
+        } catch (e) {
+            console.error('Error generating Option 43:', e);
+            $('#option43Error').removeClass('d-none').text('Gagal menghasilkan Option 43: ' + e.message);
+        }
+    });
+
+    // Fungsi untuk menyalin teks ke clipboard
+    $('#copyOption43Btn').on('click', function() {
+        const copyText = document.getElementById("option43Result");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // Untuk mobile
+        document.execCommand("copy");
+        showNotification('success', 'Tersalin ke clipboard!');
+    });
+
+    // Fungsi bantu: Konversi string ke hex
+    function stringToHex(str) {
+        let hex = '';
+        for (let i = 0; i < str.length; i++) {
+            hex += str.charCodeAt(i).toString(16).padStart(2, '0');
+        }
+        return hex;
+    }
+
+    // Fungsi untuk menampilkan notifikasi
+    function showNotification(type, message) {
+        const notif = $('<div>')
+            .addClass('alert alert-' + type + ' alert-dismissible fade show position-fixed top-0 end-0 m-3')
+            .css('z-index', '9999')
+            .html(`
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `);
+        
+        $('body').append(notif);
+        
+        // Hapus notifikasi setelah 5 detik
+        setTimeout(() => {
+            notif.alert('close');
+        }, 5000);
+    }
 });
 </script>
 </body>
