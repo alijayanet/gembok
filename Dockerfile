@@ -10,8 +10,8 @@ RUN apk add --no-cache --virtual .gyp python3 make g++
 # Salin package.json dan package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --production
+# Install dependencies dengan logging verbose
+RUN npm install --production --verbose
 
 # Salin seluruh kode aplikasi
 COPY . .
