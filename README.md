@@ -400,7 +400,7 @@ Aplikasi Admin Portal untuk manajemen layanan internet dengan integrasi WhatsApp
 ### 1. Pull Image dari Docker Hub
 
 ```bash
-docker pull username/gembok:latest
+docker pull alijaya/gembok:1.0
 ```
 
 ### 2. Jalankan dengan Docker Compose
@@ -417,7 +417,7 @@ docker pull username/gembok:latest
    
    services:
      gembok:
-       image: username/gembok:latest
+       image: alijaya/gembok:1.1
        container_name: gembok-app
        restart: unless-stopped
        ports:
