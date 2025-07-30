@@ -1,19 +1,10 @@
-## Tampilan Dasboard Pelanggan
-<img width="1358" height="650" alt="Image" src="https://github.com/user-attachments/assets/2e14a92c-5f93-45df-9e03-6c20f718ffcc" />
-
-## Tampilan Dasboard ADMIN
-<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/0f2170e4-f7fa-40e7-9434-6b2073740163" />
-<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/16d2f40c-d9ac-46b5-93e2-4dfd51ad4b54" />
-<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/9c9469d5-2dd7-4713-81cc-d762f7fec2f0" />
-<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/d98b8c95-debe-4790-99d9-47f9363a066d" />
-<img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/3951eeae-fa16-4c06-b3ed-cf1c0c2fc968" />
+# Genieacs - Mikrotik - WhatsApp Gateway untuk ISP Management
 
 Rekening Donasi Untuk Pembangunan Masjid
 # 4206 0101 2214 534 BRI an DKM BAITUR ROHMAN <br>
-Info 08194215703 ALIJAYA <br>
-Link paypal : https://paypal.me/warnetalijayaID <br>
-link group tele : https://t.me/alijayaNetAcs <br>
-link chanell tele : https://t.me/alijayaNetwork <br>
+Info 08194215703 ALIJAYA
+link group tele : https://t.me/alijayaNetAcs
+link chanell tele : https://t.me/alijayaNetwork
 
 ## Deskripsi Aplikasi
 
@@ -71,6 +62,53 @@ npm install
 ### 3. Konfigurasi Settings
 
 Aplikasi menggunakan file `settings.json` untuk konfigurasi. Edit file `settings.json` dengan pengaturan yang sesuai:
+
+```json
+{
+  "admins.0": "6281947215703",
+  "admin_enabled": "true",
+  "admin_username": "admin",
+  "admin_password": "admin",
+  "genieacs_url": "http://192.168.8.89:7557",
+  "genieacs_username": "admin",
+  "genieacs_password": "admin",
+  "mikrotik_host": "192.168.8.1",
+  "mikrotik_port": "8728",
+  "mikrotik_user": "admin",
+  "mikrotik_password": "admin",
+  "main_interface": "ether1-ISP",
+  "pppoe_monitor_enable": "true",
+  "technician_numbers.0": "6283807665111",
+  "technician_numbers.1": "6282218094111",
+  "technician_group_id": "120363029715729111@g.us",
+  "whatsapp_session_path": "./whatsapp-session",
+  "whatsapp_keep_alive": "true",
+  "whatsapp_restart_on_error": "true",
+  "whatsapp_log_level": "silent",
+  "pppoe_monitor_interval": "60000",
+  "rx_power_warning": "-40",
+  "rx_power_critical": "-45",
+  "rx_power_notification_enable": "true",
+  "rx_power_notification_interval": "300000",
+  "company_header": "🏢 ALIJAYA DIGITAL NETWORK 🏢",
+  "footer_info": "Juragan Pulsa Wifi Hotspot",
+  "customerPortalOtp": "false",
+  "otp_length": "4",
+  "otp_expiry_minutes": "5",
+  "server_port": "3001",
+  "server_host": "localhost",
+  "pppoe_notifications.enabled": "true",
+  "pppoe_notifications.loginNotifications": "true",
+  "pppoe_notifications.logoutNotifications": "true",
+  "pppoe_notifications.includeOfflineList": "true",
+  "pppoe_notifications.maxOfflineListCount": "20",
+  "pppoe_notifications.monitorInterval": "60000",
+  "secret_key": "alijaya-digital-network",
+  "reconnect_interval": "5000",
+  "log_level": "info",
+  "logo_filename": "logo.png"
+}
+```
 
 ### Penjelasan Konfigurasi Penting:
 
@@ -139,6 +177,181 @@ pm2 start app.js
 - **Admin Dashboard**: `http://ipserver:3001/admin/login`
 - **Login Admin**: Username dan password yang dikonfigurasi di `settings.json`
 
+## Perintah WhatsApp Bot
+
+### Perintah untuk Pelanggan
+- `menu` - Menampilkan menu bantuan
+- `status` - Cek status perangkat
+- `refresh` - Refresh data perangkat
+- `gantiwifi [nama]` - Ganti nama WiFi
+- `gantipass [password]` - Ganti password WiFi
+- `info` - Informasi layanan
+- `speedtest` - Test kecepatan internet
+
+### Perintah untuk Admin
+
+#### GenieACS Commands
+- `devices` - Daftar perangkat
+- `cekall` - Cek semua perangkat
+- `cek [nomor]` - Cek status ONU
+- `cekstatus [nomor]` - Cek status pelanggan
+- `admincheck [nomor]` - Cek perangkat admin
+- `gantissid [nomor] [ssid]` - Ubah SSID
+- `gantipass [nomor] [pass]` - Ubah password
+- `reboot [nomor]` - Restart ONU
+- `factory reset [nomor]` - Reset factory
+- `refresh` - Refresh data perangkat
+- `tag [nomor] [tag]` - Tambah tag pelanggan
+- `untag [nomor] [tag]` - Hapus tag
+- `tags [nomor]` - Lihat tags
+- `addtag [device_id] [nomor]` - Tambah tag perangkat
+- `addppoe_tag [pppoe_id] [nomor]` - Tambah tag dengan id pppoe
+- `adminssid [nomor] [ssid]` - Admin ubah SSID
+- `adminrestart [nomor]` - Admin restart ONU
+- `adminfactory [nomor]` - Admin factory reset
+- `confirm admin factory reset [nomor]` - Konfirmasi factory reset
+
+#### Mikrotik Commands
+- `interfaces` - Daftar interface
+- `interface [nama]` - Detail interface
+- `enableif [nama]` - Aktifkan interface
+- `disableif [nama]` - Nonaktifkan interface
+- `ipaddress` - Alamat IP
+- `routes` - Tabel routing
+- `dhcp` - DHCP leases
+- `ping [ip] [count]` - Test ping
+- `logs [topics] [count]` - Log Mikrotik
+- `firewall [chain]` - Status firewall
+- `users` - Daftar semua user
+- `profiles [type]` - Daftar profile
+- `identity [nama]` - Info router
+- `clock` - Waktu router
+- `resource` - Info resource
+- `reboot` - Restart router
+- `confirm restart` - Konfirmasi restart
+
+
+#### Hotspot & PPPoE Management
+- `vcr [user] [profile] [nomor]` - Buat voucher
+- `hotspot` - User hotspot aktif
+- `pppoe` - User PPPoE aktif
+- `offline` - User PPPoE offline
+- `addhotspot [user] [pass] [profile]` - Tambah user
+- `addpppoe [user] [pass] [profile] [ip]` - Tambah PPPoE
+- `setprofile [user] [profile]` - Ubah profile
+- `delhotspot [username]` - Hapus user hotspot
+- `delpppoe [username]` - Hapus user PPPoE
+- `addpppoe_tag [user] [nomor]` - Tambah tag PPPoE
+- `member [username] [profile] [nomor]` - Tambah member
+- `list` - Daftar semua user
+- `remove [username]` - Hapus user (generic)
+- `addadmin [nomor]` - Tambah nomor admin
+- `removeadmin [nomor]` - Hapus nomor admin
+
+#### Sistem & Admin
+- `otp [nomor]` - Kirim OTP
+- `status` - Status sistem
+- `logs` - Log aplikasi
+- `restart` - Restart aplikasi
+- `debug resource` - Debug resource
+- `checkgroup` - Cek status group
+- `setadmin [nomor]` - Set nomor admin
+- `settechnician [nomor]` - Set nomor teknisi
+- `setheader [teks]` - Set header pesan
+- `setfooter [teks]` - Set footer pesan
+- `setgenieacs [url] [user] [pass]` - Set GenieACS
+- `setmikrotik [host] [port] [user] [pass]` - Set Mikrotik
+- `admin` - Menu admin
+- `help` - Bantuan perintah
+- `ya/iya/yes` - Konfirmasi ya
+- `tidak/no/batal` - Konfirmasi tidak
+- `addwan [interface]` - Tambah WAN
+
+#### WiFi & Layanan
+- `info wifi` - Info WiFi pelanggan
+- `info` - Info layanan
+- `gantiwifi [ssid]` - Ganti nama WiFi
+- `gantipass [password]` - Ganti password WiFi
+- `speedtest` - Test kecepatan
+- `diagnostic` - Diagnostik perangkat
+- `history` - Riwayat perangkat
+- `menu` - Menu utama
+- `factory reset` - Reset factory (pelanggan)
+- `confirm factory reset` - Konfirmasi factory reset
+
+## Troubleshooting
+
+### Masalah Group dan Nomor Teknisi
+
+Jika ada error seperti:
+```
+Error sending message: Error: item-not-found
+warn: Skipping invalid WhatsApp number: 6283807665111
+```
+
+**Solusi:**
+
+1. **Jalankan Script Perbaikan Otomatis:**
+   ```bash
+   node scripts/fix-technician-config.js
+   ```
+
+2. **Cek Status Group:**
+   - Kirim perintah WhatsApp: `checkgroup`
+   - Akan menampilkan status group dan nomor teknisi
+
+3. **Perbaiki Manual:**
+   - Buka Admin Settings
+   - Update nomor teknisi dengan format: `628xxxxxxxxxx`
+   - Pastikan group ID berformat: `120363029715729111@g.us`
+   - Tambahkan bot ke group teknisi
+
+### Format Nomor yang Benar
+- ✅ `628xxxxxxxxxx`
+- ❌ `08xxxxxxxxxx`
+- ❌ `+628xxxxxxxxxx`
+
+### Format Group ID yang Benar
+- ✅ `120363029715729111@g.us`
+- ❌ `120363029715729111`
+- ❌ `group-120363029715729111`
+
+## Struktur Aplikasi
+
+```
+wa-admin-portal/
+├── app.js                 # File utama aplikasi
+├── package.json           # Dependencies dan scripts
+├── settings.json          # Konfigurasi aplikasi
+├── env-example.txt        # Template environment variables (tidak digunakan)
+├── config/               # Modul konfigurasi
+│   ├── whatsapp.js       # WhatsApp bot handler
+│   ├── genieacs.js       # GenieACS API
+│   ├── mikrotik.js       # Mikrotik API
+│   ├── logger.js         # Logging system
+│   └── settingsManager.js # Settings management
+├── routes/               # Express routes
+│   ├── adminAuth.js      # Admin authentication
+│   ├── adminDashboard.js # Dashboard routes
+│   ├── adminGenieacs.js  # GenieACS management
+│   ├── adminMikrotik.js  # Mikrotik management
+│   ├── adminHotspot.js   # Hotspot management
+│   └── adminSetting.js   # Settings management
+├── views/                # EJS templates
+│   ├── adminDashboard.ejs
+│   ├── adminGenieacs.ejs
+│   ├── adminMikrotik.ejs
+│   ├── adminHotspot.ejs
+│   ├── adminSetting.ejs
+│   └── login.ejs
+├── public/               # Static files
+│   ├── css/
+│   ├── js/
+│   └── img/
+├── logs/                 # Log files
+├── scripts/              # Utility scripts
+└── whatsapp-session/     # WhatsApp session files
+```
 
 ## Kontribusi
 
@@ -163,3 +376,100 @@ ISC License
 ---
 
 **Jangan lupa untuk mengkonfigurasi file `settings.json` terlebih dahulu sebelum menjalankan aplikasi!**
+
+# Gembok - Admin Portal WhatsApp Gateway
+
+Aplikasi Admin Portal untuk manajemen layanan internet dengan integrasi WhatsApp Gateway, GenieACS, dan MikroTik.
+
+## Fitur Utama
+
+- Manajemen pelanggan dengan GenieACS
+- Monitoring PPPoE dan Hotspot MikroTik
+- Notifikasi WhatsApp otomatis
+- Portal pelanggan self-service
+- Manajemen gangguan (trouble ticket)
+
+## Persyaratan
+
+- Docker dan Docker Compose
+- Node.js 16+ (hanya untuk pengembangan)
+- Akun Docker Hub (untuk publish image)
+
+## Instalasi dengan Docker
+
+### 1. Pull Image dari Docker Hub
+
+```bash
+docker pull username/gembok:latest
+```
+
+### 2. Jalankan dengan Docker Compose
+
+1. Buat direktori untuk data:
+   ```bash
+   mkdir -p gembok/data
+   cd gembok
+   ```
+
+2. Buat file `docker-compose.yml`:
+   ```yaml
+   version: '3.8'
+   
+   services:
+     gembok:
+       image: username/gembok:latest
+       container_name: gembok-app
+       restart: unless-stopped
+       ports:
+         - "4000:4000"
+       volumes:
+         - ./data/img:/usr/src/app/public/img
+         - ./data/settings.json:/usr/src/app/settings.json
+       environment:
+         - NODE_ENV=production
+   ```
+
+3. Buat direktori dan file konfigurasi:
+   ```bash
+   mkdir -p data/img
+   touch data/settings.json
+   chmod -R 777 data  # Pastikan container bisa menulis
+   ```
+
+4. Jalankan aplikasi:
+   ```bash
+   docker-compose up -d
+   ```
+
+5. Buka browser ke `http://localhost:3001`
+
+## Build Image Sendiri
+
+1. Clone repositori:
+   ```bash
+   git clone https://github.com/alijayanet/gembok.git
+   cd gembok
+   ```
+
+2. Build image:
+   ```bash
+   docker build -t alijayanet/gembok:latest .
+   ```
+
+3. Push ke Docker Hub:
+   ```bash
+   docker login
+   docker push username/gembok:latest
+   ```
+
+## Variabel Lingkungan
+
+- `NODE_ENV`: Environment (production/development)
+- `PORT`: Port yang digunakan (default: 4000)
+- `WHATSAPP_SESSION_PATH`: Lokasi penyimpanan session WhatsApp
+- `GENIEACS_URL`: URL GenieACS
+- `MIKROTIK_HOST`, `MIKROTIK_USER`, `MIKROTIK_PASS`: Kredensial MikroTik
+
+## Lisensi
+
+MIT

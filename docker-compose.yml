@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: gembok-app
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      # Tambahkan environment variables lain yang diperlukan
+      # - DB_HOST=db
+      # - DB_USER=user
+      # - DB_PASS=password
+    volumes:
+      - ./public/img:/usr/src/app/public/img
+      - ./settings.json:/usr/src/app/settings.json
+    # Jika menggunakan database
+    # depends_on:
+    #   - db
+
+  # Uncomment jika menggunakan database
+  # db:
+  #   image: mongo:latest
+  #   container_name: gembok-db
+  #   restart: always
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: example
+
+# volumes:
+#   mongodb_data:
