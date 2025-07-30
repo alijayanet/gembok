@@ -421,7 +421,7 @@ docker pull username/gembok:latest
        container_name: gembok-app
        restart: unless-stopped
        ports:
-         - "4000:4000"
+         - "3001:3001"
        volumes:
          - ./data/img:/usr/src/app/public/img
          - ./data/settings.json:/usr/src/app/settings.json
