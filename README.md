@@ -1,16 +1,16 @@
 # Genieacs - Mikrotik - WhatsApp Gateway untuk ISP Management
-
-Rekening Donasi Untuk Pembangunan Masjid
-# 4206 0101 2214 534 BRI an DKM BAITUR ROHMAN <br>
-Info 08194215703 ALIJAYA
-link group tele : https://t.me/alijayaNetAcs
-link chanell tele : https://t.me/alijayaNetwork
 <img width="1358" height="650" alt="Image" src="https://github.com/user-attachments/assets/2e14a92c-5f93-45df-9e03-6c20f718ffcc" />
 <img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/0f2170e4-f7fa-40e7-9434-6b2073740163" />
 <img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/16d2f40c-d9ac-46b5-93e2-4dfd51ad4b54" />
 <img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/9c9469d5-2dd7-4713-81cc-d762f7fec2f0" />
 <img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/d98b8c95-debe-4790-99d9-47f9363a066d" />
 <img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/3951eeae-fa16-4c06-b3ed-cf1c0c2fc968" />
+
+Rekening Donasi Untuk Pembangunan Masjid
+# 4206 0101 2214 534 BRI an DKM BAITUR ROHMAN <br>
+Info https://wa.me/628194215703 ALIJAYA<br>
+link group tele : https://t.me/alijayaNetAcs <br>
+link chanell tele : https://t.me/alijayaNetwork<br>
 
 ## Deskripsi Aplikasi
 
