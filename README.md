@@ -62,7 +62,6 @@ npm install pm2 -g
 git clone https://github.com/alijayanet/gembok
 ```
 ```bash
-apt install git curl -y
 cd gembok
 ```
 ### 2. Install Dependencies
