@@ -56,6 +56,9 @@ Gembok (GenieAcs Mikrotik dan WA Gateway adalah sistem manajemen ISP terintegras
 ### 1. Clone Repository
 ```bash
 apt install git curl -y
+npm install pm2 -g
+```
+```bash
 git clone https://github.com/alijayanet/gembok
 ```
 ```bash
@@ -66,57 +69,17 @@ cd gembok
 ```bash
 npm install
 ```
-
-### 3. Konfigurasi Settings
-
-Aplikasi menggunakan file `settings.json` untuk konfigurasi. Edit file `settings.json` dengan pengaturan yang sesuai:
-
-```json
-{
-  "admins.0": "6281947215703",
-  "admin_enabled": "true",
-  "admin_username": "admin",
-  "admin_password": "admin",
-  "genieacs_url": "http://192.168.8.89:7557",
-  "genieacs_username": "admin",
-  "genieacs_password": "admin",
-  "mikrotik_host": "192.168.8.1",
-  "mikrotik_port": "8728",
-  "mikrotik_user": "admin",
-  "mikrotik_password": "admin",
-  "main_interface": "ether1-ISP",
-  "pppoe_monitor_enable": "true",
-  "technician_numbers.0": "6283807665111",
-  "technician_numbers.1": "6282218094111",
-  "technician_group_id": "120363029715729111@g.us",
-  "whatsapp_session_path": "./whatsapp-session",
-  "whatsapp_keep_alive": "true",
-  "whatsapp_restart_on_error": "true",
-  "whatsapp_log_level": "silent",
-  "pppoe_monitor_interval": "60000",
-  "rx_power_warning": "-40",
-  "rx_power_critical": "-45",
-  "rx_power_notification_enable": "true",
-  "rx_power_notification_interval": "300000",
-  "company_header": "🏢 ALIJAYA DIGITAL NETWORK 🏢",
-  "footer_info": "Juragan Pulsa Wifi Hotspot",
-  "customerPortalOtp": "false",
-  "otp_length": "4",
-  "otp_expiry_minutes": "5",
-  "server_port": "3001",
-  "server_host": "localhost",
-  "pppoe_notifications.enabled": "true",
-  "pppoe_notifications.loginNotifications": "true",
-  "pppoe_notifications.logoutNotifications": "true",
-  "pppoe_notifications.includeOfflineList": "true",
-  "pppoe_notifications.maxOfflineListCount": "20",
-  "pppoe_notifications.monitorInterval": "60000",
-  "secret_key": "alijaya-digital-network",
-  "reconnect_interval": "5000",
-  "log_level": "info",
-  "logo_filename": "logo.png"
-}
+### 3. jalankan aplikasi mode Depelover
+```bash
+npm start
 ```
+### 4. jalankan aplikasi mode Production
+```bash
+pm2 start app.js
+```
+
+### 5. Konfigurasi Settings
+localhost:3001/admin/login // ipserver:3001/admin/login
 
 ### Penjelasan Konfigurasi Penting:
 
