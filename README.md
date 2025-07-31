@@ -57,9 +57,11 @@ Gembok (GenieAcs Mikrotik dan WA Gateway adalah sistem manajemen ISP terintegras
 ```bash
 apt install git curl -y
 git clone https://github.com/alijayanet/gembok
+```
+```bash
+apt install git curl -y
 cd gembok
 ```
-
 ### 2. Install Dependencies
 ```bash
 npm install
