@@ -163,12 +163,14 @@ async function sendCriticalNotification(device, rxPowerValue, threshold) {
   
   // Ambil info device
   const serialNumber = device?.DeviceID?.SerialNumber || device?._id || 'Unknown';
-  const tags = device?.Tags || [];
-  const phoneNumber = tags.find(tag => /^08\d{8,13}$/.test(tag)) || 'Unknown';
-  
+  const tags = Array.isArray(device?._tags) && device._tags.length > 0 ? device._tags : (device?.Tags || []);
+  const phoneNumber = tags.find(tag => /^08\d{8,13}$/.test(tag)) || '-';
+  // Ambil PPPoE Username
+  const pppoeUsername = device.VirtualParameters?.pppoeUsername?._value || device.InternetGatewayDevice?.WANDevice?.[1]?.WANConnectionDevice?.[1]?.WANPPPConnection?.[1]?.Username?._value || device.InternetGatewayDevice?.WANDevice?.[0]?.WANConnectionDevice?.[0]?.WANPPPConnection?.[0]?.Username?._value || '-';
   // Buat pesan notifikasi
   const message = `🚨 *RX POWER CRITICAL ALERT*\n\n` +
     `Device: ${serialNumber}\n` +
+    `PPPoE: ${pppoeUsername}\n` +
     `Phone: ${phoneNumber}\n` +
     `RX Power: ${rxPowerValue} dBm\n` +
     `Threshold: ${threshold} dBm\n\n` +
@@ -198,17 +200,18 @@ async function sendWarningNotification(device, rxPowerValue, threshold) {
   
   // Ambil info device
   const serialNumber = device?.DeviceID?.SerialNumber || device?._id || 'Unknown';
-  const tags = device?.Tags || [];
-  const phoneNumber = tags.find(tag => /^08\d{8,13}$/.test(tag)) || 'Unknown';
-  
+  const tags = Array.isArray(device?._tags) && device._tags.length > 0 ? device._tags : (device?.Tags || []);
+  const phoneNumber = tags.find(tag => /^08\d{8,13}$/.test(tag)) || '-';
+  // Ambil PPPoE Username
+  const pppoeUsername = device.VirtualParameters?.pppoeUsername?._value || device.InternetGatewayDevice?.WANDevice?.[1]?.WANConnectionDevice?.[1]?.WANPPPConnection?.[1]?.Username?._value || device.InternetGatewayDevice?.WANDevice?.[0]?.WANConnectionDevice?.[0]?.WANPPPConnection?.[0]?.Username?._value || '-';
   // Buat pesan notifikasi
   const message = `⚠️ *RX POWER WARNING*\n\n` +
     `Device: ${serialNumber}\n` +
+    `PPPoE: ${pppoeUsername}\n` +
     `Phone: ${phoneNumber}\n` +
     `RX Power: ${rxPowerValue} dBm\n` +
     `Threshold: ${threshold} dBm\n\n` +
-    `📊 RX Power mendekati batas peringatan.\n` +
-    `Monitor dan siapkan tindakan jika diperlukan.`;
+    `RX Power mendekati batas kritis. Harap segera cek perangkat.`;
   
   // Format pesan dengan header dan footer
   await sendToTechnicians(message, 'normal');

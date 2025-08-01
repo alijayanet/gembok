@@ -2769,21 +2769,21 @@ async function handleCheckAllONU(remoteJid) {
             let count = 0;
             
             for (const device of devices) {
-                const rxPower = device.InternetGatewayDevice?.X_GponLinkInfo?.RxPower?._value;
-                if (rxPower && parseFloat(rxPower) <= parseFloat(getSetting('rx_power_critical', -27))) {
-                    const tags = device._tags || [];
-                    const customerInfo = tags.length > 0 ? tags[0] : 'No Tag';
-                    const serialNumber = device.InternetGatewayDevice?.DeviceInfo?.SerialNumber?._value || 'Unknown';
-                    
-                    message += `${++count}. *${customerInfo}* (${serialNumber}): ${rxPower} dBm\n`;
-                    
-                    // Batasi jumlah perangkat yang ditampilkan
-                    if (count >= 5) {
-                        message += `...dan ${criticalRxPowerCount - 5} perangkat lainnya.\n`;
-                        break;
-                    }
-                }
-            }
+    const rxPower = device.InternetGatewayDevice?.X_GponLinkInfo?.RxPower?._value;
+    if (rxPower && parseFloat(rxPower) <= parseFloat(getSetting('rx_power_critical', -27))) {
+        const tags = device._tags || [];
+        const customerInfo = tags.length > 0 ? tags[0] : 'No Tag';
+        const serialNumber = device.InternetGatewayDevice?.DeviceInfo?.SerialNumber?._value || 'Unknown';
+        // Ambil PPPoE Username
+        const pppoeUsername = device.VirtualParameters?.pppoeUsername?._value || device.InternetGatewayDevice?.WANDevice?.[1]?.WANConnectionDevice?.[1]?.WANPPPConnection?.[1]?.Username?._value || device.InternetGatewayDevice?.WANDevice?.[0]?.WANConnectionDevice?.[0]?.WANPPPConnection?.[0]?.Username?._value || '-';
+        message += `${++count}. *${customerInfo}* (S/N: ${serialNumber})\n   PPPoE: ${pppoeUsername}\n   RX Power: ${rxPower} dBm\n`;
+        // Batasi jumlah perangkat yang ditampilkan
+        if (count >= 5) {
+            message += `...dan ${criticalRxPowerCount - 5} perangkat lainnya.\n`;
+            break;
+        }
+    }
+}
             message += `\n`;
         }
 
@@ -2804,14 +2804,14 @@ async function handleCheckAllONU(remoteJid) {
             // Tampilkan 5 perangkat offline terbaru
             const recentOfflineDevices = offlineDevices.slice(0, 5);
             recentOfflineDevices.forEach((device, index) => {
-                const tags = device._tags || [];
-                const customerInfo = tags.length > 0 ? tags[0] : 'No Tag';
-                const serialNumber = device.InternetGatewayDevice?.DeviceInfo?.SerialNumber?._value || 'Unknown';
-                const lastInform = new Date(device._lastInform);
-                
-                message += `${index + 1}. *${customerInfo}* (${serialNumber})\n`;
-                message += `   Last Seen: ${lastInform.toLocaleString()}\n`;
-            });
+    const tags = device._tags || [];
+    const customerInfo = tags.length > 0 ? tags[0] : 'No Tag';
+    const serialNumber = device.InternetGatewayDevice?.DeviceInfo?.SerialNumber?._value || 'Unknown';
+    const lastInform = new Date(device._lastInform);
+    // Ambil PPPoE Username
+    const pppoeUsername = device.VirtualParameters?.pppoeUsername?._value || device.InternetGatewayDevice?.WANDevice?.[1]?.WANConnectionDevice?.[1]?.WANPPPConnection?.[1]?.Username?._value || device.InternetGatewayDevice?.WANDevice?.[0]?.WANConnectionDevice?.[0]?.WANPPPConnection?.[0]?.Username?._value || '-';
+    message += `${index + 1}. *${customerInfo}* (S/N: ${serialNumber})\n   PPPoE: ${pppoeUsername}\n   Last Seen: ${lastInform.toLocaleString()}\n`;
+});
             
             if (offlineCount > 5) {
                 message += `...dan ${offlineCount - 5} perangkat offline lainnya.\n`;

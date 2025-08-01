@@ -465,12 +465,18 @@ async function monitorOfflineDevices(thresholdHours = 24) {
                 
                 // Jika perangkat belum melakukan inform dalam waktu yang melebihi threshold
                 if (timeDiff > thresholdMs) {
-                    const deviceInfo = {
-                        id: device._id,
-                        serialNumber: getDeviceSerialNumber(device),
-                        lastInform: device._lastInform,
-                        offlineHours: Math.round(timeDiff / (60 * 60 * 1000) * 10) / 10 // Jam dengan 1 desimal
-                    };
+                    const pppoeUsername = device?.VirtualParameters?.pppoeUsername?._value ||
+    device?.InternetGatewayDevice?.WANDevice?.[1]?.WANConnectionDevice?.[1]?.WANPPPConnection?.[1]?.Username?._value ||
+    device?.InternetGatewayDevice?.WANDevice?.[0]?.WANConnectionDevice?.[0]?.WANPPPConnection?.[0]?.Username?._value ||
+    (Array.isArray(device?._tags) ? (device._tags.find(tag => tag.startsWith('pppoe:'))?.replace('pppoe:', '')) : undefined) ||
+    '-';
+const deviceInfo = {
+    id: device._id,
+    serialNumber: getDeviceSerialNumber(device),
+    pppoeUsername,
+    lastInform: device._lastInform,
+    offlineHours: Math.round(timeDiff / (60 * 60 * 1000) * 10) / 10 // Jam dengan 1 desimal
+};
                     
                     offlineDevices.push(deviceInfo);
                     console.log(`Perangkat offline: ${deviceInfo.id}, Offline selama: ${deviceInfo.offlineHours} jam`);
@@ -487,11 +493,12 @@ async function monitorOfflineDevices(thresholdHours = 24) {
             message += `${offlineDevices.length} perangkat offline lebih dari ${thresholdHours} jam:\n\n`;
             
             offlineDevices.forEach((device, index) => {
-                message += `${index + 1}. ID: ${device.id.split('-')[2] || device.id}\n`;
-                message += `   S/N: ${device.serialNumber}\n`;
-                message += `   Offline selama: ${device.offlineHours} jam\n`;
-                message += `   Last Inform: ${new Date(device.lastInform).toLocaleString()}\n\n`;
-            });
+    message += `${index + 1}. ID: ${device.id.split('-')[2] || device.id}\n`;
+    message += `   S/N: ${device.serialNumber}\n`;
+    message += `   PPPoE: ${device.pppoeUsername || '-'}\n`;
+    message += `   Offline selama: ${device.offlineHours} jam\n`;
+    message += `   Last Inform: ${new Date(device.lastInform).toLocaleString()}\n\n`;
+});
             
             message += `Mohon segera ditindaklanjuti.`;
             
