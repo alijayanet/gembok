@@ -10,10 +10,7 @@
     <link href="/css/responsive-admin.css" rel="stylesheet">
     <style>
         body { background: #f5f6fa; }
-        .sidebar { min-height: 100vh; background: #222e3c; color: #fff; padding-top: 32px; }
-        .sidebar a { color: #fff; text-decoration: none; display: block; padding: 12px 24px; border-radius: 4px; margin-bottom: 8px; }
-        .sidebar a.active, .sidebar a:hover { background: #3b4a5a; }
-        .sidebar .sidebar-header { font-size: 1.3rem; font-weight: 600; letter-spacing: 1px; padding: 0 24px 24px 24px; }
+
         .main-content { padding: 32px 24px; }
         .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
         .form-label { font-weight: 600; }
@@ -102,29 +99,38 @@
         .alert-info {
             border-left-color: #17a2b8;
         }
+        
+        /* Mobile responsive fixes */
+        @media (max-width: 767.98px) {
+            .main-content {
+                margin-top: 70px !important; /* Extra space for mobile navbar */
+                padding-top: 10px !important;
+                z-index: 1;
+            }
+            .card {
+                z-index: 1;
+            }
+            /* Pastikan cards tidak overlap dengan mobile navbar */
+            .row.mb-4:first-of-type {
+                margin-top: 10px;
+            }
+            /* Responsive notification positioning */
+            #restartNotif {
+                top: 80px !important; /* Below mobile navbar */
+                right: 10px !important;
+                left: 10px !important;
+                width: auto !important;
+            }
+        }
     </style>
 </head>
 <body>
 <div class="container-fluid">
     <div class="row">
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
-            <div class="sidebar-header mb-4 text-center">
-                <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
-            </div>
-            <a href="/admin/dashboard"><i class="bi bi-house"></i> Dashboard</a>
-            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
-            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
-            <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
-            <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
-            <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
-            <a href="/admin/trouble"><i class="bi bi-exclamation-triangle"></i> Laporan Gangguan</a>
-            <a href="/admin/setting" class="active"><i class="bi bi-gear"></i> Setting</a>
-            <a href="#" id="restartMikrotikBtn"><i class="bi bi-arrow-repeat"></i> Restart Mikrotik</a>
-            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-        </nav>
+        <!-- Include Responsive Admin Sidebar -->
+        <%- include('partials/admin-responsive-sidebar', { page: 'setting', settings: settings }) %>
+        
         <main class="col-md-10 main-content ms-sm-auto">
-            <button class="hamburger" id="hamburgerBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
             <h3 class="mb-4">Pengaturan Sistem</h3>
             
             <div class="row">
@@ -654,7 +660,7 @@ Pilih opsi di atas untuk men-generate skrip...
   </div>
 </div>
 <!-- Notifikasi -->
-<div id="restartNotif" class="alert d-none position-fixed top-0 end-0 m-4" style="z-index:9999; min-width:300px;"></div>
+<div id="restartNotif" class="alert d-none position-fixed top-0 end-0 m-4" style="z-index:1055; min-width:300px;"></div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Load QRCode.js from CDN -->
@@ -1100,6 +1106,103 @@ $('#downloadMikrotikScript').on('click', function() {
     }
 });
 </script>
+
+<!-- Backup & Restore Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">
+                    <i class="mdi mdi-database-backup me-2"></i>
+                    Backup & Restore Database
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="mdi mdi-download me-2"></i>
+                                    Backup Database
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">
+                                    Buat backup database billing untuk keamanan data.
+                                </p>
+                                <button type="button" class="btn btn-primary" id="createBackupBtn">
+                                    <i class="mdi mdi-download me-2"></i>
+                                    Buat Backup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="mdi mdi-upload me-2"></i>
+                                    Restore Database
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">
+                                    Restore database dari file backup yang tersedia.
+                                </p>
+                                <div class="mb-3">
+                                    <label for="backupFile" class="form-label">Pilih File Backup:</label>
+                                    <select class="form-select" id="backupFile">
+                                        <option value="">Pilih file backup...</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="btn btn-warning" id="restoreBackupBtn" disabled>
+                                    <i class="mdi mdi-upload me-2"></i>
+                                    Restore Database
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="mdi mdi-history me-2"></i>
+                                    Riwayat Backup
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="backupTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Nama File</th>
+                                                <th>Ukuran</th>
+                                                <th>Tanggal Dibuat</th>
+                                                <th>Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted">
+                                                    <i class="mdi mdi-loading mdi-spin me-2"></i>
+                                                    Memuat data backup...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 $(function() {
   $(document).on('click', '#restartMikrotikBtn', function(e) {
@@ -1126,9 +1229,229 @@ $(function() {
         setTimeout(function() { notif.addClass('d-none'); }, 4000);
       }
     });
-  });
+      });
+});
+
+// Backup & Restore Functions
+$(document).ready(function() {
+    // Load backup files on page load
+    loadBackupFiles();
+    
+    // Create backup
+    $('#createBackupBtn').on('click', function() {
+        const btn = $(this);
+        const originalText = btn.html();
+        
+        btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin me-2"></i>Membuat backup...');
+        
+        $.ajax({
+            url: '/admin/setting/backup',
+            method: 'POST',
+            success: function(response) {
+                if (response.success) {
+                    showNotification('success', response.message);
+                    loadBackupFiles(); // Reload backup list
+                } else {
+                    showNotification('danger', response.message || 'Gagal membuat backup');
+                }
+            },
+            error: function(xhr) {
+                const errorMsg = xhr.responseJSON?.message || 'Terjadi kesalahan saat membuat backup';
+                showNotification('danger', errorMsg);
+            },
+            complete: function() {
+                btn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+    
+    // Restore backup
+    $('#restoreBackupBtn').on('click', function() {
+        const selectedFile = $('#backupFile').val();
+        
+        if (!selectedFile) {
+            showNotification('warning', 'Pilih file backup terlebih dahulu');
+            return;
+        }
+        
+        if (!confirm('⚠️ PERHATIAN!\n\nRestore database akan mengganti semua data saat ini dengan data dari backup.\n\nData yang ada saat ini akan hilang!\n\nLanjutkan restore?')) {
+            return;
+        }
+        
+        const btn = $(this);
+        const originalText = btn.html();
+        
+        btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin me-2"></i>Restoring...');
+        
+        // Create form data for file upload
+        const formData = new FormData();
+        formData.append('backup_file', selectedFile);
+        
+        $.ajax({
+            url: '/admin/setting/restore',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    showNotification('success', response.message + '\nHalaman akan dimuat ulang...');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showNotification('danger', response.message || 'Gagal restore database');
+                }
+            },
+            error: function(xhr) {
+                const errorMsg = xhr.responseJSON?.message || 'Terjadi kesalahan saat restore';
+                showNotification('danger', errorMsg);
+            },
+            complete: function() {
+                btn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+    
+    // Enable/disable restore button based on file selection
+    $('#backupFile').on('change', function() {
+        $('#restoreBackupBtn').prop('disabled', !$(this).val());
+    });
+    
+    function loadBackupFiles() {
+        $.ajax({
+            url: '/admin/setting/backups',
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    updateBackupTable(response.backups);
+                    updateBackupSelect(response.backups);
+                } else {
+                    showNotification('danger', 'Gagal memuat daftar backup');
+                }
+            },
+            error: function() {
+                showNotification('danger', 'Terjadi kesalahan saat memuat daftar backup');
+            }
+        });
+    }
+    
+    function updateBackupTable(backups) {
+        const tbody = $('#backupTable tbody');
+        tbody.empty();
+        
+        if (backups.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="4" class="text-center text-muted">
+                        <i class="mdi mdi-database-off me-2"></i>
+                        Belum ada file backup
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        backups.forEach(backup => {
+            const size = formatFileSize(backup.size);
+            const date = new Date(backup.created).toLocaleString('id-ID');
+            
+            tbody.append(`
+                <tr>
+                    <td><i class="mdi mdi-database me-2"></i>${backup.filename}</td>
+                    <td>${size}</td>
+                    <td>${date}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning restore-file-btn" data-file="${backup.filename}">
+                            <i class="mdi mdi-upload"></i> Restore
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+    
+    function updateBackupSelect(backups) {
+        const select = $('#backupFile');
+        select.empty().append('<option value="">Pilih file backup...</option>');
+        
+        backups.forEach(backup => {
+            select.append(`<option value="${backup.filename}">${backup.filename}</option>`);
+        });
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Handle restore from table
+    $(document).on('click', '.restore-file-btn', function() {
+        const filename = $(this).data('file');
+        $('#backupFile').val(filename);
+        $('#restoreBackupBtn').click();
+    });
 });
 </script>
+
+<!-- Activity Logs Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title">
+                    <i class="mdi mdi-history me-2"></i>
+                    Activity Logs
+                </h4>
+                <div>
+                    <button type="button" class="btn btn-warning btn-sm" id="clearLogsBtn">
+                        <i class="mdi mdi-delete me-2"></i>
+                        Clear Old Logs
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="activityLogsTable">
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>User</th>
+                                <th>Tipe</th>
+                                <th>Aksi</th>
+                                <th>Deskripsi</th>
+                                <th>IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    <i class="mdi mdi-loading mdi-spin me-2"></i>
+                                    Memuat activity logs...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="loadMoreLogsBtn">
+                            <i class="mdi mdi-refresh me-2"></i>
+                            Load More
+                        </button>
+                    </div>
+                    <div class="text-muted">
+                        <small>Showing <span id="logsCount">0</span> logs</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 $(document).ready(function() {
     // 1. Handle Logo Upload
@@ -1217,7 +1540,7 @@ $(document).ready(function() {
     function showNotification(type, message) {
         const notif = $('<div>')
             .addClass('alert alert-' + type + ' alert-dismissible fade show position-fixed top-0 end-0 m-3')
-            .css('z-index', '9999')
+            .css('z-index', '1055')
             .html(`
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -1311,6 +1634,132 @@ $(document).ready(function() {
         document.execCommand("copy");
         showNotification('success', 'Berhasil disalin ke clipboard!');
     });
+});
+
+// Activity Logs Functions
+$(document).ready(function() {
+    let currentPage = 1;
+    let totalLogs = 0;
+    
+    // Load activity logs on page load
+    loadActivityLogs();
+    
+    // Load more logs
+    $('#loadMoreLogsBtn').on('click', function() {
+        currentPage++;
+        loadActivityLogs(currentPage);
+    });
+    
+    // Clear old logs
+    $('#clearLogsBtn').on('click', function() {
+        if (!confirm('⚠️ PERHATIAN!\n\nIni akan menghapus semua activity logs yang lebih dari 30 hari.\n\nLanjutkan?')) {
+            return;
+        }
+        
+        const btn = $(this);
+        const originalText = btn.html();
+        
+        btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin me-2"></i>Clearing...');
+        
+        $.ajax({
+            url: '/admin/setting/clear-logs',
+            method: 'POST',
+            data: { days: 30 },
+            success: function(response) {
+                if (response.success) {
+                    showNotification('success', response.message);
+                    currentPage = 1;
+                    loadActivityLogs(1);
+                } else {
+                    showNotification('danger', response.message || 'Gagal clear logs');
+                }
+            },
+            error: function(xhr) {
+                const errorMsg = xhr.responseJSON?.message || 'Terjadi kesalahan saat clear logs';
+                showNotification('danger', errorMsg);
+            },
+            complete: function() {
+                btn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+    
+    function loadActivityLogs(page = 1) {
+        $.ajax({
+            url: '/admin/setting/activity-logs',
+            method: 'GET',
+            data: { page: page, limit: 50 },
+            success: function(response) {
+                if (response.success) {
+                    if (page === 1) {
+                        updateActivityLogsTable(response.logs);
+                    } else {
+                        appendActivityLogsTable(response.logs);
+                    }
+                    totalLogs += response.logs.length;
+                    $('#logsCount').text(totalLogs);
+                } else {
+                    showNotification('danger', 'Gagal memuat activity logs');
+                }
+            },
+            error: function() {
+                showNotification('danger', 'Terjadi kesalahan saat memuat activity logs');
+            }
+        });
+    }
+    
+    function updateActivityLogsTable(logs) {
+        const tbody = $('#activityLogsTable tbody');
+        tbody.empty();
+        
+        if (logs.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="6" class="text-center text-muted">
+                        <i class="mdi mdi-history-off me-2"></i>
+                        Belum ada activity logs
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        logs.forEach(log => {
+            const date = new Date(log.created_at).toLocaleString('id-ID');
+            const userType = log.user_type === 'admin' ? 'Admin' : 'Customer';
+            
+            tbody.append(`
+                <tr>
+                    <td><small>${date}</small></td>
+                    <td><strong>${log.user_id || '-'}</strong></td>
+                    <td><span class="badge bg-${log.user_type === 'admin' ? 'primary' : 'info'}">${userType}</span></td>
+                    <td><code>${log.action}</code></td>
+                    <td>${log.description}</td>
+                    <td><small>${log.ip_address || '-'}</small></td>
+                </tr>
+            `);
+        });
+    }
+    
+    function appendActivityLogsTable(logs) {
+        const tbody = $('#activityLogsTable tbody');
+        
+        logs.forEach(log => {
+            const date = new Date(log.created_at).toLocaleString('id-ID');
+            const userType = log.user_type === 'admin' ? 'Admin' : 'Customer';
+            
+            tbody.append(`
+                <tr>
+                    <td><small>${date}</small></td>
+                    <td><strong>${log.user_id || '-'}</strong></td>
+                    <td><span class="badge bg-${log.user_type === 'admin' ? 'primary' : 'info'}">${userType}</span></td>
+                    <td><code>${log.action}</code></td>
+                    <td>${log.description}</td>
+                    <td><small>${log.ip_address || '-'}</small></td>
+                </tr>
+            `);
+        });
+    }
 });
 </script>
 

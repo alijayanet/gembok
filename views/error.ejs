@@ -1,0 +1,52 @@
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Error
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title text-danger"><%= message || 'Terjadi Kesalahan' %></h5>
+                    <p class="card-text">
+                        <%= error || 'Maaf, terjadi kesalahan yang tidak terduga.' %>
+                    </p>
+                    
+                    <div class="mt-4">
+                        <a href="javascript:history.back()" class="btn btn-secondary me-2">
+                            <i class="bi bi-arrow-left"></i> Kembali
+                        </a>
+                        <a href="/admin/dashboard" class="btn btn-primary">
+                            <i class="bi bi-house"></i> Dashboard Utama
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn i {
+    margin-right: 5px;
+}
+</style>
+
+<%- include('partials/footer') %> 

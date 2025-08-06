@@ -1,0 +1,346 @@
+<!-- Mobile Top Navbar (Only visible on mobile) -->
+<nav class="navbar navbar-expand-md navbar-dark d-md-none mobile-navbar">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <button class="btn btn-link text-white p-0 me-3" type="button" id="sidebarToggle">
+                <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+            </button>
+            <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="height: 35px; border-radius: 4px;">
+            <span class="navbar-brand ms-2 mb-0">Admin Panel</span>
+        </div>
+    </div>
+</nav>
+
+<!-- Overlay for mobile sidebar -->
+<div class="sidebar-overlay d-md-none" id="sidebarOverlay"></div>
+
+<!-- Admin Sidebar -->
+<nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
+    <!-- Close button for mobile -->
+    <div class="d-md-none text-end p-3">
+        <button class="btn btn-link text-white p-0" id="sidebarClose">
+            <i class="bi bi-x" style="font-size: 1.5rem;"></i>
+        </button>
+    </div>
+    
+    <!-- Logo Section -->
+    <div class="sidebar-header mb-4 text-center">
+        <img id="logoImage" src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?v=<%= new Date().getTime() %>" alt="Logo" style="max-width:120px;max-height:60px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    </div>
+    
+    <!-- Navigation Links -->
+    <a href="/admin/dashboard" class="<%= typeof page !== 'undefined' && page === 'dashboard' ? 'active' : '' %>">
+        <i class="bi bi-house"></i> Dashboard
+    </a>
+    <a href="/admin/genieacs" class="<%= typeof page !== 'undefined' && page === 'genieacs' ? 'active' : '' %>">
+        <i class="bi bi-hdd-network"></i> GenieACS
+    </a>
+    <a href="/admin/mikrotik" class="<%= typeof page !== 'undefined' && page === 'mikrotik' ? 'active' : '' %>">
+        <i class="bi bi-router"></i> PPPoE
+    </a>
+    <a href="/admin/mikrotik/profiles" class="<%= typeof page !== 'undefined' && page === 'mikrotik-profiles' ? 'active' : '' %>">
+        <i class="bi bi-person-badge"></i> Profile PPPoE
+    </a>
+    <a href="/admin/mikrotik/hotspot-profiles" class="<%= typeof page !== 'undefined' && page === 'hotspot-profiles' ? 'active' : '' %>">
+        <i class="bi bi-wifi"></i> Profile Hotspot
+    </a>
+    <a href="/admin/hotspot" class="<%= typeof page !== 'undefined' && page === 'hotspot' ? 'active' : '' %>">
+        <i class="bi bi-wifi"></i> Hotspot
+    </a>
+    <a href="/admin/hotspot/voucher" class="<%= typeof page !== 'undefined' && page === 'voucher' ? 'active' : '' %>">
+        <i class="bi bi-ticket-perforated"></i> Voucher Hotspot
+    </a>
+    <a href="/admin/trouble" class="<%= typeof page !== 'undefined' && page === 'trouble' ? 'active' : '' %>">
+        <i class="bi bi-exclamation-triangle"></i> Laporan Gangguan
+    </a>
+    <a href="/admin/setting" class="<%= typeof page !== 'undefined' && page === 'setting' ? 'active' : '' %>">
+        <i class="bi bi-gear"></i> Setting
+    </a>
+    <a href="#" id="restartMikrotikBtn">
+        <i class="bi bi-arrow-repeat"></i> Restart Mikrotik
+    </a>
+    <a href="/admin/logout">
+        <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+</nav>
+
+<style>
+/* Mobile Top Navbar */
+.mobile-navbar {
+    background: #222e3c;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+    padding: 0.5rem 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.mobile-navbar .navbar-brand {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.sidebar-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Sidebar */
+.sidebar {
+    min-height: 100vh;
+    background: #222e3c;
+    color: #fff;
+    padding-top: 32px;
+}
+
+.sidebar a {
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 12px 24px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.sidebar a.active, 
+.sidebar a:hover {
+    background: #3b4a5a;
+    transform: translateX(3px);
+}
+
+.sidebar a i {
+    margin-right: 8px;
+    width: 16px;
+}
+
+/* Sidebar Header */
+.sidebar .sidebar-header {
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 0 24px 24px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+}
+
+.sidebar-header img {
+    transition: transform 0.3s ease;
+}
+
+.sidebar-header img:hover {
+    transform: scale(1.05);
+}
+
+/* Main Content */
+.main-content {
+    padding: 32px 24px;
+}
+
+/* Hamburger Button (Desktop) */
+.hamburger {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    background: #222e3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 1.2rem;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* Mobile responsive */
+@media (max-width: 767.98px) {
+    .main-content {
+        margin-left: 0;
+        margin-top: 60px; /* Space for mobile navbar */
+        padding: 15px;
+    }
+    
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        width: 280px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        padding-top: 0;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .sidebar .sidebar-header {
+        margin-top: 20px;
+        padding-top: 20px;
+    }
+    
+    .hamburger {
+        display: none; /* Hidden because we use mobile navbar */
+    }
+    
+    /* Adjust content for better mobile view */
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .table-responsive {
+        border-radius: 10px;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 575.98px) {
+    .main-content {
+        padding: 10px;
+    }
+    
+    .sidebar {
+        width: 260px;
+    }
+    
+    .mobile-navbar .navbar-brand {
+        font-size: 1rem;
+    }
+}
+
+/* Desktop specific */
+@media (min-width: 768px) {
+    .main-content {
+        margin-left: 16.666667%; /* col-md-2 width */
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const sidebar = document.getElementById('adminSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const hamburger = document.getElementById('hamburgerBtn'); // Desktop hamburger if exists
+    
+    // Toggle sidebar on mobile hamburger click
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.add('show');
+            overlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        });
+    }
+    
+    // Desktop hamburger support (for existing functionality)
+    if (hamburger) {
+        hamburger.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        });
+    }
+    
+    // Close sidebar functions
+    function closeSidebar() {
+        sidebar.classList.remove('show');
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+    
+    // Close sidebar on close button click
+    if (sidebarClose) {
+        sidebarClose.addEventListener('click', closeSidebar);
+    }
+    
+    // Close sidebar on overlay click
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+    
+    // Close sidebar when clicking on nav links (mobile)
+    const navLinks = sidebar.querySelectorAll('a:not(#restartMikrotikBtn)');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth < 768) {
+                setTimeout(closeSidebar, 100);
+            }
+        });
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 768) {
+            closeSidebar();
+        }
+    });
+    
+    // Restart Mikrotik functionality (preserve existing functionality)
+    const restartBtn = document.getElementById('restartMikrotikBtn');
+    if (restartBtn) {
+        restartBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Apakah Anda yakin ingin restart Mikrotik?')) {
+                fetch('/admin/mikrotik/restart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Mikrotik berhasil direstart');
+                    } else {
+                        alert('Gagal restart Mikrotik: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat restart Mikrotik');
+                });
+            }
+        });
+    }
+    
+    // Auto refresh logo functionality (preserve existing functionality)
+    function refreshLogo() {
+        const logo = document.getElementById('logoImage');
+        if (logo) {
+            const timestamp = new Date().getTime();
+            const src = logo.src.split('?')[0];
+            logo.src = `${src}?v=${timestamp}`;
+        }
+    }
+    
+    // Refresh logo every 5 seconds (if needed)
+    if (document.getElementById('logoImage')) {
+        setInterval(refreshLogo, 5000);
+    }
+});
+</script>

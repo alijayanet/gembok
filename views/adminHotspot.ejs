@@ -70,26 +70,10 @@
 <body data-company-header="<%= company_header || 'Nama Hotspot' %>" data-admin-kontak="<%= adminKontak || 'Kontak Admin' %>">
 <div class="container-fluid">
     <div class="row">
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
-            <div class="sidebar-header mb-4 text-center">
-                <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
-            </div>
-            <a href="/admin/dashboard"><i class="bi bi-house"></i> Dashboard</a>
-            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
-            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
-            <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
-            <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
-            <a href="/admin/hotspot" class="active"><i class="bi bi-wifi"></i> Hotspot</a>
-            <a href="/admin/hotspot/voucher"><i class="bi bi-ticket-perforated"></i> Voucher Hotspot</a>
-            <a href="/admin/trouble"><i class="bi bi-exclamation-triangle"></i> Laporan Gangguan</a>
-            <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
-            <a href="#" id="restartMikrotikBtn"><i class="bi bi-arrow-repeat"></i> Restart Mikrotik</a>
-            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-        </nav>
-
+        <!-- Include Responsive Admin Sidebar -->
+        <%- include('partials/admin-responsive-sidebar', { page: 'hotspot', settings: settings }) %>
+        
         <main class="col-md-10 main-content ms-sm-auto">
-            <button class="hamburger d-block d-md-none mb-3" id="hamburgerBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
             <div class="container-fluid">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1 class="h3 mb-0">Manajemen User Hotspot</h1>
@@ -317,7 +301,7 @@
   </div>
 </div>
 <!-- Notifikasi -->
-<div id="restartNotif" class="alert d-none position-fixed top-0 end-0 m-4" style="z-index:9999; min-width:300px;"></div>
+<div id="restartNotif" class="alert d-none position-fixed top-0 end-0 m-4" style="z-index:1055; min-width:300px;"></div>
 <!-- Toast Notification -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -425,34 +409,26 @@
     .btn i {
         transition: transform 0.2s;
     }
-    @media (max-width: 991.98px) {
-        .sidebar {
-            position: fixed;
-            left: -260px;
-            top: 0;
-            width: 260px;
-            height: 100vh;
-            z-index: 1050;
-            transition: left 0.3s;
-        }
-        .sidebar.show {
-            left: 0;
-        }
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.3);
-            z-index: 1049;
-        }
-        .sidebar-overlay.show {
-            display: block;
-        }
+    /* Mobile responsive fixes */
+    @media (max-width: 767.98px) {
         .main-content {
-            padding-left: 0 !important;
+            margin-top: 70px !important; /* Extra space for mobile navbar */
+            padding-top: 10px !important;
+            z-index: 1;
         }
-        .row.mb-4 > [class^='col-'] {
-            margin-bottom: 1rem !important;
+        .card {
+            z-index: 1;
+        }
+        /* Pastikan cards tidak overlap dengan mobile navbar */
+        .row.mb-4:first-of-type {
+            margin-top: 10px;
+        }
+        /* Responsive notification positioning */
+        #restartNotif {
+            top: 80px !important; /* Below mobile navbar */
+            right: 10px !important;
+            left: 10px !important;
+            width: auto !important;
         }
     }
 </style>
@@ -627,18 +603,39 @@ function printVouchers() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Fungsi untuk memuat data user hotspot aktif
+    // Fungsi untuk memuat data user hotspot aktif dengan optimasi
     function loadActiveUsers() {
+        if (isLoading) {
+            console.log('Sedang loading, skip request...');
+            return;
+        }
+        
+        isLoading = true;
         console.log('Memulai fetch data active users...');
-        fetch('/admin/hotspot/active-users')
+        
+        // Tambahkan timeout untuk request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 detik timeout
+        
+        fetch('/admin/hotspot/active-users', {
+            signal: controller.signal
+        })
             .then(response => {
+                clearTimeout(timeoutId);
                 console.log('Response status:', response.status);
                 return response.json();
             })
             .then(data => {
+                isLoading = false;
                 console.log('Data yang diterima:', data);
                 const tableBody = document.getElementById('activeUsersTableBody');
                 const activeUserCountInfo = document.getElementById('activeUserCountInfo');
+                
+                // Check if elements exist before proceeding
+                if (!tableBody) {
+                    console.warn('activeUsersTableBody element not found');
+                    return;
+                }
                 let activeUsers = [];
                 if (data.success && data.activeUsersList && Array.isArray(data.activeUsersList)) {
                     activeUsers = data.activeUsersList;
@@ -646,50 +643,96 @@ document.addEventListener('DOMContentLoaded', function () {
                     activeUsers = data.data;
                 }
                 if (activeUsers.length > 0) {
-                    let html = '';
-                    const sortedUsers = [...activeUsers].sort((a, b) => {
+                    // Limit data yang ditampilkan untuk performa (max 50 users)
+                    const maxDisplayUsers = 50;
+                    const limitedUsers = activeUsers.slice(0, maxDisplayUsers);
+                    
+                    // Sorting dengan optimasi
+                    const sortedUsers = limitedUsers.sort((a, b) => {
                         const getSeconds = (uptimeStr) => {
                             if (!uptimeStr) return 0;
-                            const days = uptimeStr.match(/([0-9]+)d/) ? parseInt(uptimeStr.match(/([0-9]+)d/)[1]) * 86400 : 0;
-                            const hours = uptimeStr.match(/([0-9]+)h/) ? parseInt(uptimeStr.match(/([0-9]+)h/)[1]) * 3600 : 0;
-                            const minutes = uptimeStr.match(/([0-9]+)m/) ? parseInt(uptimeStr.match(/([0-9]+)m/)[1]) * 60 : 0;
-                            const seconds = uptimeStr.match(/([0-9]+)s/) ? parseInt(uptimeStr.match(/([0-9]+)s/)[1]) : 0;
-                            return days + hours + minutes + seconds;
+                            // Simplified parsing untuk performa
+                            const match = uptimeStr.match(/(\d+)([dhms])/g);
+                            if (!match) return 0;
+                            let total = 0;
+                            match.forEach(part => {
+                                const num = parseInt(part);
+                                const unit = part.slice(-1);
+                                switch(unit) {
+                                    case 'd': total += num * 86400; break;
+                                    case 'h': total += num * 3600; break;
+                                    case 'm': total += num * 60; break;
+                                    case 's': total += num; break;
+                                }
+                            });
+                            return total;
                         };
                         return getSeconds(b.uptime) - getSeconds(a.uptime);
                     });
-                    sortedUsers.forEach((user, index) => {
-                        const formattedUptime = formatUptime(user.uptime);
-                        let badgeClass = 'bg-success';
-                        if (user.uptime && user.uptime.includes('d')) {
-                            badgeClass = 'bg-primary';
-                        } else if (user.uptime && user.uptime.includes('h') && parseInt(user.uptime.match(/([0-9]+)h/)[1]) > 5) {
-                            badgeClass = 'bg-info';
+                    
+                    // Batch processing untuk UI yang tidak blocking
+                    function renderUsersBatch(users, startIndex = 0, batchSize = 10) {
+                        const endIndex = Math.min(startIndex + batchSize, users.length);
+                        let html = '';
+                        
+                        for (let i = startIndex; i < endIndex; i++) {
+                            const user = users[i];
+                            const formattedUptime = formatUptime(user.uptime);
+                            let badgeClass = 'bg-success';
+                            if (user.uptime && user.uptime.includes('d')) {
+                                badgeClass = 'bg-primary';
+                            } else if (user.uptime && user.uptime.includes('h')) {
+                                const hours = parseInt(user.uptime.match(/(\d+)h/)?.[1] || 0);
+                                if (hours > 5) badgeClass = 'bg-info';
+                            }
+                            
+                            html += `
+                                <tr class="align-middle">
+                                    <td class="fw-bold">${user.user || user.name}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-hdd-network-fill text-secondary me-2"></i>
+                                            <code class="bg-light px-2 py-1 rounded">${user.address || '-'}</code>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge ${badgeClass}">
+                                            <i class="bi bi-clock me-1"></i> ${formattedUptime}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-danger disconnect-user" data-username="${user.user || user.name}" title="Putus koneksi user">
+                                            <i class="bi bi-power"></i> Putus
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
                         }
-                        const animationDelay = index * 50;
-                        html += `
-                            <tr class="align-middle animate__animated animate__fadeIn" style="animation-delay: ${animationDelay}ms;">
-                                <td class="fw-bold">${user.user || user.name}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-hdd-network-fill text-secondary me-2"></i>
-                                        <code class="bg-light px-2 py-1 rounded">${user.address || '-'}</code>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge ${badgeClass}">
-                                        <i class="bi bi-clock me-1"></i> ${formattedUptime}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-danger disconnect-user" data-username="${user.user || user.name}" title="Putus koneksi user">
-                                        <i class="bi bi-power"></i> Putus
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    tableBody.innerHTML = html;
+                        
+                        if (startIndex === 0) {
+                            tableBody.innerHTML = html;
+                        } else {
+                            tableBody.innerHTML += html;
+                        }
+                        
+                        // Render batch berikutnya secara asinkron
+                        if (endIndex < users.length) {
+                            setTimeout(() => renderUsersBatch(users, endIndex, batchSize), 10);
+                        } else {
+                            // Selesai render, tambahkan event listeners
+                            document.querySelectorAll('.disconnect-user').forEach(btn => {
+                                btn.addEventListener('click', disconnectUser);
+                            });
+                        }
+                    }
+                    
+                    // Mulai rendering dengan batch
+                    renderUsersBatch(sortedUsers);
+                    
+                    // Tampilkan info jika data dipotong
+                    if (activeUsers.length > maxDisplayUsers) {
+                        console.log(`Menampilkan ${maxDisplayUsers} dari ${activeUsers.length} user aktif untuk performa`);
+                    }
                     // Destroy & re-init DataTables hanya jika tabel ada di DOM dan data valid
                     if (document.getElementById('activeUsersTable') && $.fn.DataTable.isDataTable('#activeUsersTable')) {
                         $('#activeUsersTable').DataTable().destroy();
@@ -701,7 +744,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             responsive: true,
                             dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex"f>>rtip',
                             language: {
-                                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json',
                                 paginate: {
                                     previous: '<i class="bi bi-chevron-left"></i>',
                                     next: '<i class="bi bi-chevron-right"></i>'
@@ -732,16 +774,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     // Update info di footer tabel
                     if (activeUserCountInfo) {
+                        const displayCount = Math.min(activeUsers.length, maxDisplayUsers);
                         activeUserCountInfo.innerHTML = `
                             <i class="bi bi-info-circle me-1"></i>
-                            Menampilkan ${activeUsers.length} user aktif | Terakhir diperbarui: 
+                            Menampilkan ${displayCount} dari ${activeUsers.length} user aktif | Terakhir diperbarui: 
                             <span class="fw-bold">${new Date().toLocaleTimeString('id-ID')}</span>
                         `;
                     }
-                    // Tambahkan event listener untuk tombol disconnect
-                    document.querySelectorAll('.disconnect-user').forEach(btn => {
-                        btn.addEventListener('click', disconnectUser);
-                    });
                 } else {
                     tableBody.innerHTML = `
                         <tr>
@@ -764,16 +803,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             })
             .catch(error => {
-                console.error('Error fetching active users:', error);
-                document.getElementById('activeUsersTableBody').innerHTML = `
+                isLoading = false;
+                clearTimeout(timeoutId);
+                
+                // Handle different error types
+                if (error.name === 'AbortError') {
+                    console.error('Request timeout: Active users fetch aborted');
+                } else {
+                    console.error('Error fetching active users:', error);
+                }
+                
+                const tableBody = document.getElementById('activeUsersTableBody');
+                if (tableBody) {
+                    const errorMessage = error.name === 'AbortError' ? 
+                        'Request timeout - terlalu banyak data untuk diproses' : 
+                        error.message;
+                    tableBody.innerHTML = `
                     <tr>
                         <td colspan="4" class="text-center py-5 animate__animated animate__fadeIn">
                             <i class="bi bi-exclamation-triangle-fill text-danger me-2" style="font-size: 2rem;"></i>
                             <p class="mb-0 mt-2 text-danger">Gagal memuat data</p>
-                            <p class="text-danger small">${error.message}</p>
+                            <p class="text-danger small">${errorMessage}</p>
                         </td>
                     </tr>
                 `;
+                }
                 const activeUserCountInfo = document.getElementById('activeUserCountInfo');
                 if (activeUserCountInfo) {
                     activeUserCountInfo.innerHTML = `
@@ -884,25 +938,44 @@ document.addEventListener('DOMContentLoaded', function () {
         confirmModal.show();
     }
     
-    // Load active users saat halaman dimuat
-    loadActiveUsers();
-    updateLastUpdatedTime();
+    // Load active users saat halaman dimuat dengan debounce
+    let isLoading = false;
+    let loadTimeout = null;
     
-    // Set interval untuk refresh data setiap 30 detik
+    function debouncedLoadActiveUsers() {
+        if (isLoading) return;
+        
+        clearTimeout(loadTimeout);
+        loadTimeout = setTimeout(() => {
+            if (!isLoading) {
+                loadActiveUsers();
+                updateLastUpdatedTime();
+            }
+        }, 1000);
+    }
+    
+    // Load initial data
+    debouncedLoadActiveUsers();
+    
+    // Set interval untuk refresh data setiap 60 detik (diperlambat untuk mengurangi beban)
     setInterval(() => {
-        loadActiveUsers();
-        updateLastUpdatedTime();
-    }, 30000);
+        debouncedLoadActiveUsers();
+    }, 60000);
     
     // Fungsi untuk memperbarui waktu terakhir diperbarui
     function updateLastUpdatedTime() {
         const now = new Date();
         const timeString = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        document.getElementById('lastUpdatedTimeValue').textContent = timeString;
+        const element = document.getElementById('lastUpdatedTimeValue');
+        if (element) {
+            element.textContent = timeString;
+        }
     }
     
-    // Event listener untuk tombol refresh
-    document.getElementById('refreshActiveUsers').addEventListener('click', function() {
+    // Event listener untuk tombol refresh (jika ada)
+    const refreshBtn = document.getElementById('refreshActiveUsers');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
         this.disabled = true;
         const icon = this.querySelector('i');
         icon.classList.add('rotate-refresh');
@@ -910,7 +983,9 @@ document.addEventListener('DOMContentLoaded', function () {
         this.innerHTML = '<i class="bi bi-arrow-clockwise rotate-refresh"></i> Memperbarui...';
         
         // Tambahkan efek loading pada tabel
-        document.getElementById('activeUsersTableBody').innerHTML = `
+        const tableBody = document.getElementById('activeUsersTableBody');
+        if (tableBody) {
+            tableBody.innerHTML = `
             <tr>
                 <td colspan="4" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
@@ -920,6 +995,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </td>
             </tr>
         `;
+        }
         
         loadActiveUsers();
         updateLastUpdatedTime();
@@ -928,12 +1004,14 @@ document.addEventListener('DOMContentLoaded', function () {
             this.disabled = false;
             this.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh';
         }, 1000);
-    });
+        });
+    }
     
     const generateVoucherForm = document.getElementById('generateVoucherForm');
     const voucherResultDiv = document.getElementById('voucherResult');
 
-    generateVoucherForm.addEventListener('submit', async function (e) {
+    if (generateVoucherForm) {
+        generateVoucherForm.addEventListener('submit', async function (e) {
         e.preventDefault();
         const btn = this.querySelector('button[type="submit"]');
         btn.disabled = true;
@@ -957,29 +1035,31 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             const result = await response.json();
 
-            if (result.success) {
-                window.vouchersToPrint = {
-                    vouchers: result.vouchers,
-                    price: data.price,
-                    model: data.voucherModel
-                };
+                            if (result.success) {
+                    window.vouchersToPrint = {
+                        vouchers: result.vouchers,
+                        price: data.price,
+                        model: data.voucherModel
+                    };
 
-                let resultHTML = `
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Voucher Berhasil Dibuat (${result.vouchers.length})</h5>
-                            <button class="btn btn-success mb-3" onclick="printVouchers()"><i class="bi bi-printer"></i> Print / Preview</button>
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <thead><tr><th>Username</th><th>Password</th><th>Profile</th></tr></thead>
-                                    <tbody>
-                                        ${result.vouchers.map(v => `<tr><td>${v.username}</td><td>${v.password}</td><td>${v.profile}</td></tr>`).join('')}
-                                    </tbody>
-                                </table>
+                    let resultHTML = `
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Voucher Berhasil Dibuat (${result.vouchers.length})</h5>
+                                <button class="btn btn-success mb-3" onclick="printVouchers()"><i class="bi bi-printer"></i> Print / Preview</button>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead><tr><th>Username</th><th>Password</th><th>Profile</th></tr></thead>
+                                        <tbody>
+                                            ${result.vouchers.map(v => `<tr><td>${v.username}</td><td>${v.password}</td><td>${v.profile}</td></tr>`).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
-                    </div>`;
-                voucherResultDiv.innerHTML = resultHTML;
+                        </div>`;
+                    if (voucherResultDiv) {
+                        voucherResultDiv.innerHTML = resultHTML;
+                    }
                 
                 // Update voucher count in statistics
                 const currentCount = parseInt($('#voucherCount').text()) || 0;
@@ -997,7 +1077,8 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.disabled = false;
             btn.innerHTML = 'Generate';
         }
-    });
+        });
+    }
 
     // Search functionality
     function filterUsers() {
@@ -1018,11 +1099,21 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('showingCount').textContent = visibleCount;
     }
 
-    document.getElementById('searchUserInput').addEventListener('input', filterUsers);
-    document.getElementById('clearSearchBtn').addEventListener('click', function() {
-        document.getElementById('searchUserInput').value = '';
-        filterUsers();
-    });
+    const searchInput = document.getElementById('searchUserInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', filterUsers);
+    }
+    
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', function() {
+            if (searchInput) {
+                searchInput.value = '';
+                filterUsers();
+            }
+        });
+    }
 
     // Auto-hide notifications
     const alerts = document.querySelectorAll('.alert');
@@ -1259,11 +1350,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initialize all statistics
     updateHotspotStats();
     
-    // Update active users every 30 seconds (simulate real-time updates)
-    setInterval(updateActiveUsers, 30000);
+    // Update active users every 2 minutes (dikurangi untuk mengurangi beban server)
+    setInterval(updateActiveUsers, 120000);
     
     // Refresh hotspot stats button
-    document.getElementById('btnRefreshHotspotStats').addEventListener('click', function() {
+    const refreshStatsBtn = document.getElementById('btnRefreshHotspotStats');
+    if (refreshStatsBtn) {
+        refreshStatsBtn.addEventListener('click', function() {
         const btn = this;
         btn.disabled = true;
         btn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Loading...';
@@ -1276,7 +1369,8 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.disabled = false;
             btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh Statistik';
         }, 2000);
-    });
+        });
+    }
 
     // Hamburger & sidebar logic
     const hamburger = document.getElementById('hamburgerBtn');

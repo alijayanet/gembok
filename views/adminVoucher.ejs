@@ -12,38 +12,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f5f5;
         }
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 250px;
-            background-color: #343a40;
-            padding-top: 20px;
-            transition: all 0.3s;
-            z-index: 1000;
-        }
-        .sidebar a {
-            padding: 15px 25px;
-            text-decoration: none;
-            font-size: 16px;
-            color: #adb5bd;
-            display: block;
-            transition: 0.3s;
-        }
-        .sidebar a:hover {
-            color: #fff;
-            background-color: #495057;
-        }
-        .sidebar a.active {
-            color: #fff;
-            background-color: #007bff;
-        }
-        .sidebar a i {
-            margin-right: 10px;
-        }
         .content {
-            margin-left: 250px;
             padding: 20px;
             transition: all 0.3s;
         }
@@ -152,22 +121,8 @@
 <body>
 <div class="container-fluid">
     <div class="row">
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
-            <div class="sidebar-header mb-4 text-center">
-              <img src="/img/<%= (settings && settings.logo_filename) ? settings.logo_filename : 'logo.svg' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
-            </div>
-            <a href="/admin/dashboard"><i class="bi bi-house"></i> Dashboard</a>
-            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
-            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
-            <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
-            <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
-            <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
-            <a href="/admin/hotspot/voucher" class="active"><i class="bi bi-ticket-perforated"></i> Voucher Hotspot</a>
-            <a href="/admin/trouble"><i class="bi bi-exclamation-triangle"></i> Laporan Gangguan</a>
-            <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
-            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-        </nav>
+        <!-- Include Responsive Admin Sidebar -->
+        <%- include('partials/admin-responsive-sidebar', { page: 'voucher', settings: settings }) %>
         <main class="col-md-10 ms-sm-auto content">
         <nav class="navbar navbar-expand-lg mb-4">
             <div class="container-fluid">

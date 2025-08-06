@@ -19,32 +19,6 @@
             font-weight: 600; 
             color: #495057;
         }
-        .sidebar {
-            min-height: 100vh;
-            background: #222e3c;
-            color: #fff;
-            padding-top: 32px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-        .sidebar a {
-            color: #fff;
-            text-decoration: none;
-            display: block;
-            padding: 12px 24px;
-            border-radius: 6px;
-            margin: 4px 12px;
-            transition: all 0.3s ease;
-        }
-        .sidebar a.active, .sidebar a:hover {
-            background: #3b4a5a;
-            transform: translateX(5px);
-        }
-        .sidebar .sidebar-header {
-            font-size: 1.3rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            padding: 0 24px 24px 24px;
-        }
         .main-content {
             padding: 32px 24px;
         }
@@ -215,25 +189,10 @@
 <body>
 <div class="container-fluid">
     <div class="row">
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-        <nav class="col-md-2 sidebar d-flex flex-column" id="adminSidebar">
-            <div class="sidebar-header mb-4 text-center">
-                <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?ts=<%= Date.now() %>" alt="Logo" style="max-width:120px;max-height:60px;">
-            </div>
-            <a href="/admin/dashboard"><i class="bi bi-house"></i> Dashboard</a>
-            <a href="/admin/genieacs"><i class="bi bi-hdd-network"></i> GenieACS</a>
-            <a href="/admin/mikrotik"><i class="bi bi-router"></i> PPPoE</a>
-            <a href="/admin/mikrotik/profiles"><i class="bi bi-person-badge"></i> Profile PPPoE</a>
-            <a href="/admin/mikrotik/hotspot-profiles"><i class="bi bi-wifi"></i> Profile Hotspot</a>
-            <a href="/admin/hotspot"><i class="bi bi-wifi"></i> Hotspot</a>
-            <a href="/admin/trouble" class="active"><i class="bi bi-exclamation-triangle"></i> Laporan Gangguan</a>
-            <a href="/admin/setting"><i class="bi bi-gear"></i> Setting</a>
-            <a href="#" id="restartMikrotikBtn"><i class="bi bi-arrow-repeat"></i> Restart Mikrotik</a>
-            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
-        </nav>
+        <!-- Include Responsive Admin Sidebar -->
+        <%- include('../partials/admin-responsive-sidebar', { page: 'trouble', settings: settings }) %>
         
         <main class="col-md-10 main-content ms-sm-auto">
-            <button class="hamburger d-block d-md-none mb-3" id="hamburgerBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4">
                 <div>
                     <h1 class="page-title">Manajemen Laporan Gangguan</h1>
@@ -477,20 +436,7 @@
         categoryFilter.addEventListener('change', filterTable);
         searchInput.addEventListener('input', filterTable);
 
-        // Hamburger & sidebar logic
-        const hamburger = document.getElementById('hamburgerBtn');
-        const sidebar = document.getElementById('adminSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        if (hamburger && sidebar && overlay) {
-            hamburger.addEventListener('click', function() {
-                sidebar.classList.toggle('show');
-                overlay.classList.toggle('show');
-            });
-            overlay.addEventListener('click', function() {
-                sidebar.classList.remove('show');
-                overlay.classList.remove('show');
-            });
-        }
+        
     });
 </script>
 
