@@ -192,177 +192,138 @@ router.get('/map/customer/:phone', async (req, res) => {
       });
     }
 
-    // Cek apakah GenieACS functions tersedia
-    if (!findDeviceByPhoneNumber || typeof findDeviceByPhoneNumber !== 'function') {
-      console.error('❌ GenieACS findDeviceByPhoneNumber function tidak tersedia');
-      return res.status(500).json({
-        success: false,
-        message: 'Service GenieACS tidak tersedia saat ini'
-      });
-    }
-
-    // Cari device berdasarkan nomor telepon (tag)
-    let device;
-    try {
-      device = await findDeviceByPhoneNumber(phone);
-    } catch (error) {
-      console.log(`❌ Device tidak ditemukan untuk nomor ${phone}:`, error.message);
+    // Import function yang sama seperti dashboard
+    const { getCustomerDeviceData } = require('./customerPortal');
+    
+    // Gunakan fungsi yang sama seperti dashboard untuk mendapatkan data lengkap
+    const customerData = await getCustomerDeviceData(phone);
+    
+    if (!customerData) {
+      console.log(`❌ Device tidak ditemukan untuk nomor ${phone}`);
       return res.status(404).json({
         success: false,
         message: 'Perangkat ONU tidak ditemukan untuk nomor telepon ini. Pastikan nomor telepon sudah terdaftar di sistem dan ONU sudah terhubung ke GenieACS.'
       });
     }
 
+    console.log(`✅ Device ditemukan untuk ${phone}:`, customerData.serialNumber);
+
+    // Data customer sudah lengkap dari getCustomerDeviceData, sekarang cari lokasi
+    const { findDeviceByTag } = require('../config/addWAN');
+    let device;
+    try {
+      device = await findDeviceByTag(phone);
+    } catch (error) {
+      console.error(`❌ Error finding device by tag: ${error.message}`);
+      return res.status(500).json({
+        success: false,
+        message: 'Error mencari perangkat di GenieACS'
+      });
+    }
+
     if (!device) {
       return res.status(404).json({
         success: false,
-        message: 'Perangkat ONU tidak ditemukan untuk nomor telepon ini'
+        message: 'Perangkat tidak ditemukan di GenieACS'
       });
     }
 
-    console.log(`✅ Device ditemukan untuk ${phone}: ${device._id}`);
+    const deviceId = device._id;
+    console.log(`🆔 Device ID: ${deviceId}`);
 
-    // Ambil detail lengkap device
-    let deviceDetail;
-    try {
-      deviceDetail = await getDevice(device._id);
-    } catch (error) {
-      console.error(`❌ Error mengambil detail device ${device._id}:`, error.message);
-      
-      // Fallback: Try to get location from JSON file
-      console.log(`🔄 Trying fallback: getting location from JSON file for device ${device._id}`);
-      
-      const fs = require('fs');
-      const path = require('path');
-      const locationsFile = path.join(__dirname, '../logs/onu-locations.json');
-      
-      let locationFromFile = null;
-      if (fs.existsSync(locationsFile)) {
-        try {
-          const locationsData = JSON.parse(fs.readFileSync(locationsFile, 'utf8'));
-          locationFromFile = locationsData[device._id];
-          
-          if (locationFromFile) {
-            console.log(`✅ Found location in JSON file for ${phone}:`, locationFromFile);
-            
-            // Create a simplified response using available data from findDeviceByPhoneNumber
-            const responseData = {
-              success: true,
-              device: {
-                id: device._id,
-                serialNumber: device._id.split('-').pop() || 'N/A',
-                pppoeUsername: 'N/A',
-                customerPhone: phone,
-                location: {
-                  lat: parseFloat(locationFromFile.lat),
-                  lng: parseFloat(locationFromFile.lng),
-                  address: locationFromFile.address || 'N/A'
-                },
-                status: {
-                  isOnline: device._lastInform ? (new Date() - new Date(device._lastInform)) < (24 * 60 * 60 * 1000) : false,
-                  lastInform: device._lastInform ? new Date(device._lastInform).toLocaleString('id-ID') : 'N/A',
-                  rxPower: null
-                },
-                info: {
-                  manufacturer: 'N/A',
-                  modelName: 'N/A',
-                  softwareVersion: 'N/A'
-                }
-              }
-            };
-            
-            console.log(`✅ Berhasil mengambil data ONU untuk pelanggan ${phone} dari JSON file`);
-            return res.json(responseData);
-          }
-        } catch (fileError) {
-          console.log(`❌ Error reading JSON file: ${fileError.message}`);
-        }
-      }
-      
-      return res.status(500).json({
-        success: false,
-        message: 'Error mengambil detail perangkat dari GenieACS'
-      });
-    }
-
-    // Ambil lokasi dari VirtualParameters atau tags
+    // Ambil lokasi dari beberapa sumber
     let location = null;
 
-    // Coba ambil dari VirtualParameters.location (format JSON)
-    if (deviceDetail.VirtualParameters?.location?._value) {
+    // 1. Coba ambil dari VirtualParameters.location (format JSON)
+    if (device.VirtualParameters?.location?._value) {
       try {
-        location = JSON.parse(deviceDetail.VirtualParameters.location._value);
+        location = JSON.parse(device.VirtualParameters.location._value);
         console.log(`📍 Lokasi ditemukan di VirtualParameters untuk ${phone}:`, location);
       } catch (e) {
-        console.log(`❌ Format lokasi VirtualParameters tidak valid untuk device ${device._id}`);
+        console.log(`❌ Format lokasi VirtualParameters tidak valid untuk device ${deviceId}`);
       }
     }
 
-    // Jika tidak ada di VirtualParameters, coba dari tags
-    if (!location && deviceDetail._tags && Array.isArray(deviceDetail._tags)) {
-      const locationTag = deviceDetail._tags.find(tag => tag.startsWith('location:'));
+    // 2. Jika tidak ada di VirtualParameters, coba dari tags
+    if (!location && device._tags && Array.isArray(device._tags)) {
+      const locationTag = device._tags.find(tag => tag.startsWith('location:'));
       if (locationTag) {
         try {
           const locationData = locationTag.replace('location:', '');
           location = JSON.parse(locationData);
           console.log(`📍 Lokasi ditemukan di tags untuk ${phone}:`, location);
         } catch (e) {
-          console.log(`❌ Format lokasi dari tag tidak valid untuk device ${device._id}`);
+          console.log(`❌ Format lokasi dari tag tidak valid untuk device ${deviceId}`);
+        }
+      }
+    }
+
+    // 3. Jika masih tidak ada, coba dari JSON file
+    if (!location) {
+      console.log(`🔄 Trying fallback: getting location from JSON file for device ${deviceId}`);
+      
+      const fs = require('fs');
+      const path = require('path');
+      const locationsFile = path.join(__dirname, '../logs/onu-locations.json');
+      
+      if (fs.existsSync(locationsFile)) {
+        try {
+          const locationsData = JSON.parse(fs.readFileSync(locationsFile, 'utf8'));
+          const locationFromFile = locationsData[deviceId];
+          
+          if (locationFromFile && locationFromFile.lat && locationFromFile.lng) {
+            location = {
+              lat: locationFromFile.lat,
+              lng: locationFromFile.lng,
+              address: locationFromFile.address || 'N/A'
+            };
+            console.log(`✅ Found location in JSON file for ${phone}:`, location);
+          }
+        } catch (fileError) {
+          console.log(`❌ Error reading JSON file: ${fileError.message}`);
         }
       }
     }
 
     // Jika tidak ada lokasi, berikan response khusus
     if (!location || !location.lat || !location.lng) {
-      console.log(`❌ Tidak ada lokasi yang tersimpan untuk device ${device._id}`);
+      console.log(`❌ Tidak ada lokasi yang tersimpan untuk device ${deviceId}`);
       return res.status(404).json({
         success: false,
         message: 'Data lokasi ONU belum tersedia. Silakan hubungi admin untuk menambahkan lokasi perangkat Anda.'
       });
     }
 
-    // Ambil informasi lengkap device
-    const serialNumber = deviceDetail.InternetGatewayDevice?.DeviceInfo?.SerialNumber?._value ||
-                        deviceDetail.Device?.DeviceInfo?.SerialNumber?._value || 'N/A';
-
-    const pppoeUsername = deviceDetail.InternetGatewayDevice?.WANDevice?.[1]?.WANConnectionDevice?.[1]?.WANPPPConnection?.[1]?.Username?._value ||
-                         deviceDetail.InternetGatewayDevice?.WANDevice?.[0]?.WANConnectionDevice?.[0]?.WANPPPConnection?.[0]?.Username?._value ||
-                         deviceDetail.VirtualParameters?.pppoeUsername?._value || 'N/A';
-
-    const lastInform = deviceDetail._lastInform ? new Date(deviceDetail._lastInform) : null;
-    const isOnline = lastInform && (new Date() - lastInform) < (24 * 60 * 60 * 1000);
-
-    const rxPower = deviceDetail.VirtualParameters?.RXPower?._value ||
-                    deviceDetail.VirtualParameters?.redaman?._value ||
-                    deviceDetail.InternetGatewayDevice?.WANDevice?.[1]?.WANPONInterfaceConfig?.RXPower?._value ||
-                    'N/A';
-
+    // Konversi status untuk kompatibilitas dengan map
+    const isOnline = customerData.status === 'Online';
+    
+    // Format response data menggunakan data lengkap dari dashboard
     const responseData = {
       success: true,
       device: {
-        id: deviceDetail._id,
-        serialNumber,
-        pppoeUsername,
+        id: deviceId,
+        serialNumber: customerData.serialNumber || 'N/A',
+        pppoeUsername: customerData.pppoeUsername || 'N/A',
         customerPhone: phone,
         location: {
           lat: parseFloat(location.lat),
           lng: parseFloat(location.lng),
-          address: location.address || 'N/A'
+          address: location.address || customerData.lokasi || 'N/A'
         },
         status: {
           isOnline,
-          lastInform: lastInform ? lastInform.toLocaleString('id-ID') : 'N/A',
-          rxPower: rxPower !== 'N/A' ? parseFloat(rxPower) : null
+          lastInform: customerData.lastInform || 'N/A',
+          rxPower: customerData.rxPower !== 'N/A' && customerData.rxPower !== '-' ? parseFloat(customerData.rxPower) : null
         },
         info: {
-          manufacturer: deviceDetail.InternetGatewayDevice?.DeviceInfo?.Manufacturer?._value || 'N/A',
-          modelName: deviceDetail.InternetGatewayDevice?.DeviceInfo?.ModelName?._value || 'N/A',
-          softwareVersion: deviceDetail.InternetGatewayDevice?.DeviceInfo?.SoftwareVersion?._value || 'N/A'
+          manufacturer: customerData.productClass || 'N/A',
+          modelName: customerData.model || 'N/A',
+          softwareVersion: customerData.softwareVersion || 'N/A'
         }
       }
     };
 
-    console.log(`✅ Berhasil mengambil data ONU untuk pelanggan ${phone}`);
+    console.log(`✅ Berhasil mengambil data lengkap ONU untuk pelanggan ${phone}`);
     res.json(responseData);
 
   } catch (error) {

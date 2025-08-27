@@ -533,6 +533,13 @@ router.post('/logout', (req, res) => {
   });
 });
 
+// GET: Logout pelanggan (untuk link navigasi)
+router.get('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/customer/login');
+  });
+});
+
 // Import dan gunakan route laporan gangguan
 const troubleReportRouter = require('./troubleReport');
 router.use('/trouble', troubleReportRouter);
@@ -623,4 +630,5 @@ router.get('/map/data', async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;
+module.exports.getCustomerDeviceData = getCustomerDeviceData; 
