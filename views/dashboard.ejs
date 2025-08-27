@@ -448,6 +448,32 @@
       color: #2c3e50;
       border-left: 4px solid #667eea;
     }
+    /* Navigation Menu */
+    .navbar-nav .nav-link {
+      color: var(--dark-color) !important;
+      font-weight: 500;
+      transition: all var(--transition-speed) ease;
+      border-radius: 8px;
+      margin: 0 2px;
+      position: relative;
+    }
+
+    .navbar-nav .nav-link:hover {
+      background-color: rgba(67, 97, 238, 0.1);
+      color: var(--primary-color) !important;
+      transform: translateY(-1px);
+    }
+
+    .navbar-nav .nav-link.active {
+      background-color: var(--primary-color);
+      color: white !important;
+    }
+
+    .navbar-nav .nav-link.active:hover {
+      background-color: var(--secondary-color);
+      color: white !important;
+    }
+
     .footer {
       text-align: center;
       color: #6c757d;
@@ -556,13 +582,30 @@
 <body>
   <nav class="navbar navbar-light shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
-      <span class="navbar-brand">
-        <img id="logoImage" src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?v=<%= new Date().getTime() %>" alt="Logo" style="height: 40px; max-width: 80px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);"> 
-        <span>Portal Pelanggan</span>
-      </span>
+      <div class="d-flex align-items-center">
+        <span class="navbar-brand me-3">
+          <img id="logoImage" src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?v=<%= new Date().getTime() %>" alt="Logo" style="height: 40px; max-width: 80px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
+          <span>Portal Pelanggan</span>
+        </span>
+
+        <!-- Navigation Menu -->
+        <nav class="navbar-nav flex-row">
+          <a href="/customer/dashboard" class="nav-link px-3 <%= currentPage === 'dashboard' ? 'active fw-bold' : '' %>">
+            <i class="bi bi-house-door me-1"></i>Dashboard
+          </a>
+          <a href="/customer/map" class="nav-link px-3 <%= currentPage === 'map' ? 'active fw-bold' : '' %>">
+            <i class="bi bi-geo-alt-fill me-1"></i>Lokasi ONU
+          </a>
+          <a href="/customer/trouble/simple" class="nav-link px-3">
+            <i class="bi bi-exclamation-triangle me-1"></i>Laporan Gangguan
+          </a>
+        </nav>
+      </div>
       <div class="d-flex align-items-center gap-2">
         <% if (customer.status === 'Online') { %>
           <span class="status-badge bg-success">Online</span>
+        <% } else if (customer.status === 'Idle') { %>
+          <span class="status-badge bg-warning">Idle</span>
         <% } else { %>
           <span class="status-badge bg-secondary"><%= customer.status %></span>
         <% } %>
@@ -612,6 +655,8 @@
                 <div class="stat-value">
                   <% if (customer.status === 'Online') { %>
                     <span class="badge bg-success stat-badge"><i class="bi bi-check-circle-fill"></i> Online</span>
+                  <% } else if (customer.status === 'Idle') { %>
+                    <span class="badge bg-warning stat-badge"><i class="bi bi-clock-fill"></i> Idle</span>
                   <% } else { %>
                     <span class="badge bg-secondary stat-badge"><i class="bi bi-x-circle-fill"></i> <%= customer.status %></span>
                   <% } %>

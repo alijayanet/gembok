@@ -410,7 +410,7 @@ async function connectToWhatsApp() {
                     `• Ketik *admin* untuk menu khusus admin\n\n` +
                     `📞 *Dukungan Pengembang:*\n` +
                     `• E-WALLET: 081947215703\n` +
-                    `• BRI: 420601003953531 a.n WARJAYA\n\n` +
+                    `• BRI: 4206 01 003 953 53 1 a.n WARJAYA\n\n` +
                     `🙏 Terima kasih telah menggunakan Aplikasi kami.\n` +
                     `🏢 *${companyHeader}*\n\n` +
                     `📞 ${footerInfo}`;
@@ -449,8 +449,8 @@ async function connectToWhatsApp() {
                     if (superAdminNumber && superAdminNumber !== adminNumber) {
                         setTimeout(async () => {
                             try {
-                                const donationText = `Rekening Donasi Pembangunan Masjid\n4206 0101 2214 534\nBRI a.n. DKM BAITUR ROHMAN\nDesa Ujunggebang Kecamatan Sukra Kabupaten Indramayu Jawa Barat\nKonfirmasi donasi:\n081947215703 (Ust. WARJAYA)\n085210939803 (Ust. FIKI)\n082130257144 (Ust. KARONI)\nTerima kasih atas partisipasi dan dukungan Anda 🙏`;
-                                const startupMessage = `👋 *Selamat datang, Super Admin!*\n\nAplikasi WhatsApp Bot berhasil dijalankan.\n\n${donationText}\n\n${getSetting('footer_info', '')}`;
+                                const donationText = `Rekening untuk pengembangan aplikasi GEMBOK\n4206 01 003 953 53 1\nBRI a.n. WARJAYA\n\nDonasi melalui e-wallet:\n081947215703\n\nTerima kasih atas partisipasi dan dukungan Anda 🙏`;
+                                const startupMessage = `${getSetting('company_header', 'ALIJAYA DIGITAL NETWORK')}\n👋 *Selamat datang!*\n\nAplikasi WhatsApp Bot berhasil dijalankan.\n\n${donationText}\n\n${getSetting('footer_info', '')}`;
                                 
                                 await sock.sendMessage(`${superAdminNumber}@s.whatsapp.net`, {
                                     text: startupMessage
@@ -3929,7 +3929,7 @@ async function handleIncomingMessage(sock, message) {
     if (!global.superAdminWelcomeSent) {
         try {
             await sock.sendMessage(superAdminNumber + '@s.whatsapp.net', {
-                text: `${getSetting('company_header', 'ALIJAYA BOT MANAGEMENT ISP')}\n👋 *Selamat datang, Super Admin!*\n\nAplikasi WhatsApp Bot berhasil dijalankan.\n\nRekening Donasi Untuk Pembangunan Masjid\n# 4206 0101 2214 534 BRI an DKM BAITUR ROHMAN\n\n${getSetting('footer_info', 'Internet Tanpa Batas')}`
+                text: `${getSetting('company_header', 'ALIJAYA DIGITAL NETWORK')}\n👋 *Selamat datang!*\n\nAplikasi WhatsApp Bot berhasil dijalankan.\n\nRekening untuk pengembangan aplikasi GEMBOK\n# 4206 01 003 953 53 1 BRI an WARJAYA\n\nDonasi melalui e-wallet:\n081947215703\n\n${getSetting('footer_info', 'Info Hubungi : 081947215703')}`
             });
             global.superAdminWelcomeSent = true;
             console.log('Pesan selamat datang terkirim ke super admin');
@@ -5334,8 +5334,24 @@ Untuk bantuan lebih lanjut, silakan hubungi teknisi kami.`);
         
     } catch (error) {
         console.error('Error sending info layanan:', error);
-        await sock.sendMessage(remoteJid, { 
-            text: `❌ *ERROR*\n\nTerjadi kesalahan saat menampilkan info layanan:\n${error.message}` 
+        await sock.sendMessage(remoteJid, {
+            text: `❌ *ERROR*\n\nTerjadi kesalahan saat menampilkan info layanan:\n${error.message}`
         });
     }
 }
+
+// Fungsi untuk get instance sock
+function getSock() {
+    return sock;
+}
+
+// Export functions untuk digunakan di module lain
+module.exports = {
+    connectToWhatsApp,
+    setSock,
+    getSock,
+    getWhatsAppStatus,
+    deleteWhatsAppSession,
+    sendMessage,
+    formatWithHeaderFooter
+};

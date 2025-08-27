@@ -388,7 +388,7 @@ async function connectToWhatsApp() {
                     `• Ketik *admin* untuk menu khusus admin\n\n` +
                     `💰 *Dukungan Pengembang:*\n` +
                     `• E-WALLET: 081947215703\n` +
-                    `• BRI: 420601003953531 a.n WARJAYA\n\n` +
+                    `• BRI: 4206 01 003 953 53 1 a.n WARJAYA\n\n` +
                     `👏 Terima kasih telah menggunakan Aplikasi kami.\n` +
                     `🏢 *ALIJAYA DIGITAL NETWORK*`;
                     
@@ -3846,7 +3846,7 @@ async function handleIncomingMessage(sock, message) {
     if (!global.superAdminWelcomeSent) {
         try {
             await sock.sendMessage(superAdminNumber + '@s.whatsapp.net', {
-                text: `${getSetting('company_header', 'ALIJAYA BOT MANAGEMENT ISP')}\n👋 *Selamat datang, Super Admin!*\n\nAplikasi WhatsApp Bot berhasil dijalankan.\n\nRekening Donasi Untuk Pembangunan Masjid\n# 4206 0101 2214 534 BRI an DKM BAITUR ROHMAN\n\n${getSetting('footer_info', 'Internet Tanpa Batas')}`
+                text: `${getSetting('company_header', 'ALIJAYA DIGITAL NETWORK')}\n👋 *Selamat datang!*\n\nAplikasi WhatsApp Bot berhasil dijalankan.\n\nRekening untuk pengembangan aplikasi GEMBOK\n# 4206 01 003 953 53 1 BRI an WARJAYA\n\nDonasi melalui e-wallet:\n081947215703\n\n${getSetting('footer_info', 'Info Hubungi : 081947215703')}`
             });
             global.superAdminWelcomeSent = true;
             console.log('Pesan selamat datang terkirim ke super admin');

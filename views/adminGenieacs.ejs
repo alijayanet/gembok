@@ -2,13 +2,14 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Device GenieACS</title>
+    <title><%= title || 'Device GenieACS' %> - <%= typeof isTechnicianView !== 'undefined' && isTechnicianView ? 'Portal Teknisi' : 'Admin Panel' %></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/responsive/2.5.0/css/dataTables.responsive.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         /* DataTables styling yang diperbaiki */
         .dataTables_wrapper .dataTables_length,
@@ -201,6 +202,365 @@
                 min-width: 60px;
             }
         }
+        
+        /* Comprehensive Mobile Responsive Design */
+        @media (max-width: 767.98px) {
+            /* Main content spacing for mobile */
+            .main-content {
+                margin-top: 70px !important;
+                padding: 10px !important;
+                margin-left: 0 !important;
+                z-index: 1;
+            }
+            
+            /* Stats cards responsive */
+            .row.mb-4 .col-md-4 {
+                margin-bottom: 1rem;
+            }
+            
+            .card .card-body {
+                padding: 1rem 0.75rem;
+            }
+            
+            .card .fs-3 {
+                font-size: 1.5rem !important;
+            }
+            
+            .card .fs-2 {
+                font-size: 1.3rem !important;
+            }
+            
+            .card .fw-bold {
+                font-size: 0.85rem;
+            }
+            
+            /* Card header responsive */
+            .card h4 {
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .card .mb-3 {
+                margin-bottom: 1rem !important;
+            }
+            
+            /* Table responsive improvements */
+            .table-responsive {
+                border: none;
+                margin: 0 -0.5rem;
+            }
+            
+            .table {
+                font-size: 0.75rem;
+                margin-bottom: 0;
+            }
+            
+            .table th,
+            .table td {
+                padding: 0.4rem 0.25rem;
+                white-space: nowrap;
+                min-width: 80px;
+                vertical-align: middle;
+            }
+            
+            .table th:first-child,
+            .table td:first-child {
+                min-width: 40px;
+                text-align: center;
+            }
+            
+            .table th:nth-child(2),
+            .table td:nth-child(2) {
+                min-width: 100px;
+                font-weight: 500;
+            }
+            
+            .table th:nth-child(3),
+            .table td:nth-child(3) {
+                min-width: 80px;
+            }
+            
+            .table th:nth-child(4),
+            .table td:nth-child(4) {
+                min-width: 60px;
+                text-align: center;
+            }
+            
+            .table th:nth-child(5),
+            .table td:nth-child(5) {
+                min-width: 90px;
+            }
+            
+            .table th:nth-child(6),
+            .table td:nth-child(6) {
+                min-width: 70px;
+                text-align: center;
+            }
+            
+            .table th:last-child,
+            .table td:last-child {
+                min-width: 140px;
+                width: 140px;
+                position: sticky;
+                right: 0;
+                background-color: white;
+                z-index: 2;
+                border-left: 1px solid #dee2e6;
+            }
+            
+            /* Action buttons mobile optimization */
+            .btn-group {
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+                width: 100%;
+            }
+            
+            .btn-group .btn {
+                border-radius: 3px !important;
+                font-size: 0.65rem;
+                padding: 0.2rem 0.3rem;
+                margin: 0;
+                width: 100%;
+                min-height: 28px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                line-height: 1.2;
+            }
+            
+            .btn-group .btn i {
+                margin-right: 2px;
+                font-size: 0.7rem;
+            }
+            
+            /* DataTables mobile responsive */
+            .dataTables_wrapper {
+                margin: 0 -0.5rem;
+            }
+            
+            .dataTables_wrapper .dataTables_length,
+            .dataTables_wrapper .dataTables_filter {
+                margin: 0.5rem 0;
+                display: block;
+                float: none !important;
+                text-align: left !important;
+            }
+            
+            .dataTables_wrapper .dataTables_filter input {
+                width: 100% !important;
+                max-width: 200px;
+                margin: 0.25rem 0 0 0;
+            }
+            
+            .dataTables_wrapper .dataTables_length select {
+                margin: 0.25rem 0.5rem 0 0.5rem;
+            }
+            
+            .dataTables_wrapper .dataTables_info {
+                clear: both;
+                float: none !important;
+                text-align: center;
+                font-size: 0.8rem;
+                margin: 0.5rem 0;
+            }
+            
+            .dataTables_wrapper .dataTables_paginate {
+                float: none !important;
+                text-align: center;
+                margin: 0.5rem 0;
+            }
+            
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                padding: 0.25rem 0.5rem;
+                margin: 0 1px;
+                font-size: 0.8rem;
+                min-width: 30px;
+            }
+            
+            /* Modal responsive */
+            .modal-dialog {
+                margin: 0.5rem;
+                max-width: calc(100% - 1rem);
+            }
+            
+            .modal-content {
+                border-radius: 0.5rem;
+            }
+            
+            .modal-header {
+                padding: 0.75rem;
+                border-bottom: 1px solid #dee2e6;
+            }
+            
+            .modal-body {
+                padding: 0.75rem;
+            }
+            
+            .modal-footer {
+                padding: 0.75rem;
+                border-top: 1px solid #dee2e6;
+            }
+            
+            .modal-title {
+                font-size: 1rem;
+            }
+            
+            /* Form controls in modal */
+            .form-label {
+                font-size: 0.9rem;
+                font-weight: 600;
+                margin-bottom: 0.25rem;
+            }
+            
+            .form-control {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.9rem;
+                border-radius: 0.375rem;
+                min-height: 38px;
+            }
+            
+            /* Modal buttons */
+            .modal .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+                border-radius: 0.375rem;
+                min-height: 38px;
+                touch-action: manipulation;
+            }
+            
+            .modal .btn.w-100 {
+                margin-bottom: 0.5rem;
+            }
+            
+            .modal .btn i {
+                margin-right: 0.25rem;
+            }
+            
+            /* Alert in modal */
+            .modal .alert {
+                padding: 0.5rem 0.75rem;
+                margin-bottom: 0.75rem;
+                font-size: 0.8rem;
+                border-radius: 0.375rem;
+            }
+            
+            .modal .alert i {
+                margin-right: 0.25rem;
+            }
+            
+            /* Toast notifications for mobile */
+            .toast {
+                max-width: calc(100vw - 2rem) !important;
+                min-width: 250px !important;
+                right: 1rem !important;
+                top: 80px !important;
+                font-size: 0.85rem;
+            }
+            
+            .toast .toast-body {
+                padding: 0.75rem;
+                line-height: 1.4;
+            }
+            
+            .toast .toast-body i {
+                font-size: 1rem;
+            }
+            
+            .toast .toast-body strong {
+                font-size: 0.9rem;
+            }
+            
+            .toast .toast-body small {
+                font-size: 0.8rem;
+                line-height: 1.3;
+                display: block;
+                margin-top: 0.25rem;
+            }
+            
+            /* Touch-friendly interactions */
+            .table tbody tr {
+                min-height: 44px;
+            }
+            
+            button, .btn {
+                min-height: 38px;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            /* Scrollbar styling for mobile */
+            .table-responsive::-webkit-scrollbar {
+                height: 4px;
+            }
+            
+            .table-responsive::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 2px;
+            }
+            
+            .table-responsive::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 2px;
+            }
+            
+            .table-responsive::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+        }
+        
+        /* Medium screens (tablets) */
+        @media (min-width: 768px) and (max-width: 991.98px) {
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .table {
+                font-size: 0.85rem;
+            }
+            
+            .btn-group .btn {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.5rem;
+            }
+        }
+        
+        /* Ensure proper z-index layering */
+        .table-responsive {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Full width table optimization */
+        #genieacsTable {
+            width: 100% !important;
+        }
+        
+        .dataTables_wrapper {
+            width: 100%;
+        }
+        
+        .dataTables_scroll {
+            width: 100%;
+        }
+        
+        .dataTables_scrollBody {
+            width: 100%;
+        }
+        
+        /* Main content full width */
+        .main-content {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        /* Card full width */
+        .card {
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -219,12 +579,16 @@
 }
 </style>
 
-<div class="container-fluid">
-    <div class="row">
-        <!-- Include Responsive Admin Sidebar -->
-        <%- include('partials/admin-responsive-sidebar', { page: 'genieacs', settings: settings }) %>
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Include Responsive Sidebar -->
+        <% if (typeof isTechnicianView !== 'undefined' && isTechnicianView) { %>
+            <%- include('partials/technician-responsive-sidebar', { page: 'monitoring', technician: technician }) %>
+        <% } else { %>
+            <%- include('partials/admin-responsive-sidebar', { page: 'genieacs', settings: settings }) %>
+        <% } %>
 
-        <main class="col-md-10 main-content ms-sm-auto">
+        <main class="col-12 col-md-9 col-lg-10 main-content ms-sm-auto px-3">
             <!-- GENIEACS CARDS: Statistik -->
             <div class="row mb-4">
               <div class="col-md-4 mb-3">
@@ -257,7 +621,7 @@
             </div>
             <div class="card mb-4">
                 <div class="card-body">
-                    <h4 class="mb-3"><i class="bi bi-hdd-network"></i> List Device GenieACS</h4>
+                    <h4 class="mb-3"><i class="bi bi-hdd-network"></i> <%= title || 'List Device GenieACS' %></h4>
                     <div class="table-responsive">
                         <table id="genieacsTable" class="table table-striped table-hover">
                             <thead>
@@ -284,6 +648,7 @@
                                         <div class="btn-group btn-group-sm" role="group">
                                             <button class="btn btn-warning edit-btn" data-id="<%= device.id %>" data-ssid="<%= device.ssid %>" data-password="<%= device.password %>" title="Edit SSID & Password"><i class="bi bi-pencil"></i> Edit SSID</button>
                                             <button class="btn btn-info edit-tag-btn" data-id="<%= device.id %>" data-tag="<%= device.tag || '' %>" title="Edit Tag"><i class="bi bi-tag"></i> Edit Tag</button>
+                                            <button class="btn btn-success map-btn" data-id="<%= device.id %>" data-serial="<%= device.serialNumber %>" data-tag="<%= device.tag || '' %>" title="Set Location"><i class="bi bi-geo-alt"></i> Map</button>
                                             <button class="btn btn-danger restart-onu-btn" data-id="<%= device.id %>" data-serial="<%= device.serial %>" title="Restart ONU"><i class="bi bi-arrow-clockwise"></i> Restart</button>
                                         </div>
                                     </td>
@@ -300,31 +665,35 @@
 <!-- Modal Edit SSID/Password -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form id="editForm" action="/admin/genieacs/edit" method="POST">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editModalLabel">Edit SSID & Password</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit SSID & Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="editAlert" style="display:none;"></div>
+        <input type="hidden" id="deviceId">
+        <div class="mb-3">
+          <label for="ssid" class="form-label">SSID</label>
+          <input type="text" class="form-control" id="ssid">
+          <button type="button" class="btn btn-success mt-2 w-100" id="saveSsidBtn" data-bs-dismiss="modal">Simpan SSID</button>
         </div>
-        <div class="modal-body">
-          <div id="editAlert" style="display:none;"></div>
-          <input type="hidden" name="id" id="deviceId">
-          <div class="mb-3">
-            <label for="ssid" class="form-label">SSID</label>
-            <input type="text" class="form-control" id="ssid" name="ssid">
-            <button type="button" class="btn btn-success mt-2 w-100" id="saveSsidBtn">Simpan SSID</button>
-          </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="text" class="form-control" id="password" name="password">
-            <button type="button" class="btn btn-primary mt-2 w-100" id="savePasswordBtn">Simpan Password</button>
-          </div>
-        </div>
-        <div class="modal-footer d-flex flex-column align-items-stretch gap-2">
-          <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Batal</button>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="text" class="form-control" id="password">
+          <button type="button" class="btn btn-primary mt-2 w-100" id="savePasswordBtn" data-bs-dismiss="modal">Simpan Password</button>
         </div>
       </div>
-    </form>
+      <div class="modal-footer d-flex flex-column align-items-stretch gap-2">
+        <div class="alert alert-info" role="alert">
+          <i class="bi bi-info-circle"></i> <strong>Tips:</strong> Setelah mengubah SSID/Password, restart perangkat untuk menerapkan perubahan dengan cepat.
+        </div>
+        <button type="button" class="btn btn-warning w-100" id="rebootAfterEditBtn">
+          <i class="bi bi-arrow-clockwise"></i> Restart Perangkat Setelah Edit
+        </button>
+        <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Tutup</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -335,6 +704,7 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 $(document).ready(function(){
@@ -344,6 +714,8 @@ $(document).ready(function(){
     var table = $('#genieacsTable').DataTable({
         "responsive": true,
         "scrollX": true,
+        "autoWidth": false,
+        "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
         "lengthMenu": [[20, 50, 100, -1], [20, 50, 100, "All"]],
         "pageLength": 20,
         "language": {
@@ -360,9 +732,13 @@ $(document).ready(function(){
             }
         },
         "columnDefs": [
-            { "targets": [0], "responsivePriority": 1 },
-            { "targets": [1], "responsivePriority": 2 },
-            { "targets": [-1], "responsivePriority": 3, "orderable": false }
+            { "targets": [0], "responsivePriority": 1, "width": "5%" },
+            { "targets": [1], "responsivePriority": 2, "width": "20%" },
+            { "targets": [2], "responsivePriority": 4, "width": "15%" },
+            { "targets": [3], "responsivePriority": 5, "width": "10%" },
+            { "targets": [4], "responsivePriority": 6, "width": "15%" },
+            { "targets": [5], "responsivePriority": 7, "width": "10%" },
+            { "targets": [-1], "responsivePriority": 3, "orderable": false, "width": "25%" }
         ]
     });
     
@@ -379,46 +755,147 @@ $(document).ready(function(){
         var modal = new bootstrap.Modal(document.getElementById('editModal'));
         modal.show();
     });
+    
+    // Event delegation tombol Map
+    $(document).on('click', '.map-btn', function(){
+        const id = $(this).data('id');
+        const serial = $(this).data('serial');
+        const tag = $(this).data('tag');
+        
+        $('#mapDeviceId').val(id);
+        $('#mapDeviceSerial').val(serial);
+        $('#mapDeviceTag').val(tag);
+        $('#mapDisplayDeviceId').text(id || '-');
+        $('#mapDisplayDeviceTag').text(tag || '-');
+        
+        // Reset form
+        $('#mapLatitude').val('');
+        $('#mapLongitude').val('');
+        $('#mapAddress').val('');
+        $('#saveLocationBtn').prop('disabled', true);
+        
+        // Show modal
+        var mapModal = new bootstrap.Modal(document.getElementById('mapLocationModal'));
+        mapModal.show();
+        
+        // Initialize map after modal is shown
+        setTimeout(function() {
+            initLocationMap();
+        }, 300);
+    });
 
     // Fungsi alert dalam modal
     function showEditAlert(type, message) {
         $('#editAlert').removeClass().addClass('alert alert-' + type).html(message).show();
     }
 
-    // Tombol simpan SSID
-    $('#saveSsidBtn').on('click', function(e){
-        e.preventDefault();
+    // Tombol simpan SSID - Versi Final
+    $(document).on('click', '#saveSsidBtn', function(e){
         const id = $('#deviceId').val();
         const ssid = $('#ssid').val();
+        
+        // Validasi
+        if (!ssid || ssid.length < 3 || ssid.length > 32) {
+            e.preventDefault();
+            showEditAlert('danger', 'SSID harus berisi 3-32 karakter!');
+            return;
+        }
+
+        // Tampilkan notifikasi proses setelah modal tertutup
+        setTimeout(function() {
+            showToast('info', 'Memproses SSID...', `WiFi 2.4GHz: ${ssid} sedang diupdate. Mohon tunggu...`);
+        }, 300);
+        
+        // Kirim request
         $.ajax({
             url: '/admin/genieacs/edit',
             method: 'POST',
             data: { id, ssid },
             success: function(res) {
-                showEditAlert('success', 'SSID berhasil diupdate!');
-                setTimeout(function(){ location.reload(); }, 1000);
+                if (res.success) {
+                    showToast('success', 'SSID Berhasil Diubah!', `WiFi 2.4GHz: ${res.newSSID} berhasil diupdate.`);
+                    updateTableRow(id, 'ssid', ssid);
+                } else {
+                    showToast('error', 'Gagal Update SSID', res.message || 'Gagal update SSID!');
+                }
             },
             error: function(err) {
-                showEditAlert('danger', 'Gagal update SSID!');
+                const errorMsg = err.responseJSON?.message || 'Gagal update SSID!';
+                showToast('error', 'Error', errorMsg);
             }
         });
     });
 
-    // Tombol simpan Password
-    $('#savePasswordBtn').on('click', function(e){
-        e.preventDefault();
+    // Tombol simpan Password - Versi Final
+    $(document).on('click', '#savePasswordBtn', function(e){
         const id = $('#deviceId').val();
         const password = $('#password').val();
+        
+        // Validasi
+        if (!password || password.length < 8 || password.length > 63) {
+            e.preventDefault();
+            showEditAlert('danger', 'Password harus berisi 8-63 karakter!');
+            return;
+        }
+
+        // Tampilkan notifikasi proses setelah modal tertutup
+        setTimeout(function() {
+            showToast('info', 'Memproses Password...', 'Password WiFi sedang diupdate. Mohon tunggu...');
+        }, 300);
+        
+        // Kirim request
         $.ajax({
             url: '/admin/genieacs/edit',
             method: 'POST',
             data: { id, password },
             success: function(res) {
-                showEditAlert('success', 'Password berhasil diupdate!');
-                setTimeout(function(){ location.reload(); }, 1000);
+                if (res.success) {
+                    showToast('success', 'Password Berhasil Diubah!', 'Password WiFi berhasil diupdate.');
+                } else {
+                    showToast('error', 'Gagal Update Password', res.message || 'Gagal update password!');
+                }
             },
             error: function(err) {
-                showEditAlert('danger', 'Gagal update Password!');
+                const errorMsg = err.responseJSON?.message || 'Gagal update password!';
+                showToast('error', 'Error', errorMsg);
+            }
+        });
+    });
+
+    // Tombol restart perangkat setelah edit
+    $('#rebootAfterEditBtn').on('click', function(e){
+        e.preventDefault();
+        const id = $('#deviceId').val();
+        
+        if (!id) {
+            showEditAlert('danger', 'Device ID tidak ditemukan!');
+            return;
+        }
+
+        const $btn = $(this);
+        const originalText = $btn.html();
+        $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Merestart...');
+        
+        $.ajax({
+            url: '/admin/genieacs/restart-onu',
+            method: 'POST',
+            data: { id },
+            success: function(res) {
+                if (res.success) {
+                    showEditAlert('success', 'Perintah restart berhasil dikirim!');
+                    showToast('success', 'Restart Berhasil', 'Perangkat akan restart dalam beberapa menit untuk menerapkan perubahan.');
+                    setTimeout(function(){ $('#editModal').modal('hide'); }, 2000);
+                } else {
+                    showEditAlert('danger', res.message || 'Gagal restart perangkat!');
+                }
+            },
+            error: function(err) {
+                const errorMsg = err.responseJSON?.message || 'Gagal restart perangkat!';
+                showEditAlert('danger', errorMsg);
+                showToast('error', 'Error Restart', errorMsg);
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html(originalText);
             }
         });
     });
@@ -437,6 +914,8 @@ $(document).ready(function(){
         }
     });
     
+
+    
     // Fungsi notifikasi
     function showAlert(message, type) {
         var alert = $(`<div class="alert alert-${type} alert-dismissible fade show" role="alert">
@@ -446,8 +925,324 @@ $(document).ready(function(){
         $('#alert-container').append(alert);
         setTimeout(function(){ alert.alert('close'); }, 3000);
     }
+
+    // Fungsi toast notification yang modern dan reliable
+    function showToast(type, title, message, duration = 5000) {
+        try {
+            const toastId = 'toast-' + Date.now();
+            const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'info' ? 'bi-info-circle' : 'bi-hourglass-split';
+            const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : type === 'info' ? 'bg-primary' : 'bg-warning';
+            
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi ${iconClass} me-2"></i>
+                            <strong>${title}</strong><br>
+                            <small>${message}</small>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            // Append ke body langsung jika alert-container tidak ada
+            const container = $('#alert-container');
+            if (container.length > 0) {
+                container.append(toastHtml);
+            } else {
+                $('body').append(toastHtml);
+            }
+            
+            const toastElement = document.getElementById(toastId);
+            if (toastElement) {
+                const toast = new bootstrap.Toast(toastElement, { delay: duration });
+                toast.show();
+                
+                // Auto remove after hide
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+            
+            return toastId;
+        } catch (error) {
+            console.error('Error in showToast:', error);
+            // Fallback ke alert jika toast gagal
+            alert(`${title}: ${message}`);
+        }
+    }
+
+
+
+    // Fungsi update row di tabel tanpa reload
+    function updateTableRow(deviceId, field, newValue) {
+        try {
+            // Find the row with the device ID
+            table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                const data = this.data();
+                if (data && data.length > 0) {
+                    // Check if this row contains the device ID (biasanya di kolom aksi)
+                    const actionCell = data[data.length - 1]; // Last column is action
+                    if (actionCell && actionCell.includes(deviceId)) {
+                        if (field === 'ssid') {
+                            // Update SSID column (index 2)
+                            data[2] = newValue;
+                            // Also update the SSID data attribute in action buttons
+                            const updatedActionCell = actionCell.replace(/data-ssid="[^"]*"/, `data-ssid="${newValue}"`);
+                            data[data.length - 1] = updatedActionCell;
+                        }
+                        this.data(data).draw(false);
+                        return false; // Break the loop
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error updating table row:', error);
+        }
+    }
+    
+    // Global variables for map
+    let locationMap = null;
+    let locationMarker = null;
+    
+    // Initialize location map
+    function initLocationMap() {
+        try {
+            // Destroy existing map if any
+            if (locationMap) {
+                locationMap.remove();
+                locationMap = null;
+                locationMarker = null;
+            }
+            
+            // Default center (Jakarta)
+            const defaultLat = -6.2088;
+            const defaultLng = 106.8456;
+            
+            // Initialize map
+            locationMap = L.map('locationMap').setView([defaultLat, defaultLng], 13);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(locationMap);
+            
+            // Add click event to map
+            locationMap.on('click', function(e) {
+                setMapLocation(e.latlng.lat, e.latlng.lng);
+            });
+            
+            // Check if device already has location
+            checkExistingLocation();
+            
+        } catch (error) {
+            console.error('Error initializing map:', error);
+            showMapAlert('danger', 'Error initializing map: ' + error.message);
+        }
+    }
+    
+    // Set location on map
+    function setMapLocation(lat, lng) {
+        try {
+            // Remove existing marker
+            if (locationMarker) {
+                locationMap.removeLayer(locationMarker);
+            }
+            
+            // Add new marker
+            locationMarker = L.marker([lat, lng]).addTo(locationMap);
+            
+            // Update coordinates
+            $('#mapLatitude').val(lat.toFixed(6));
+            $('#mapLongitude').val(lng.toFixed(6));
+            
+            // Enable save button
+            $('#saveLocationBtn').prop('disabled', false);
+            
+            // Get address via reverse geocoding
+            getAddressFromCoordinates(lat, lng);
+            
+        } catch (error) {
+            console.error('Error setting map location:', error);
+            showMapAlert('danger', 'Error saat mengatur lokasi: ' + error.message);
+        }
+    }
+    
+    // Get address from coordinates
+    function getAddressFromCoordinates(lat, lng) {
+        $('#mapAddress').val('Memuat alamat...');
+        
+        $.ajax({
+            url: '/admin/genieacs/reverse-geocode',
+            method: 'POST',
+            data: { lat, lng },
+            success: function(res) {
+                if (res.success && res.data) {
+                    const address = res.data.display_name || 'Alamat tidak ditemukan';
+                    $('#mapAddress').val(address);
+                } else {
+                    $('#mapAddress').val('Gagal mendapatkan alamat');
+                }
+            },
+            error: function() {
+                $('#mapAddress').val('Gagal mendapatkan alamat');
+            }
+        });
+    }
+    
+    // Check existing location for device
+    function checkExistingLocation() {
+        const deviceId = $('#mapDeviceId').val();
+        if (!deviceId) return;
+        
+        $.ajax({
+            url: '/admin/genieacs/get-location',
+            method: 'GET',
+            data: { deviceId },
+            success: function(res) {
+                if (res.success && res.location) {
+                    const lat = parseFloat(res.location.lat);
+                    const lng = parseFloat(res.location.lng);
+                    
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        // Set map view to existing location
+                        locationMap.setView([lat, lng], 16);
+                        setMapLocation(lat, lng);
+                        
+                        if (res.location.address) {
+                            $('#mapAddress').val(res.location.address);
+                        }
+                    }
+                }
+            },
+            error: function() {
+                console.log('No existing location found or error occurred');
+            }
+        });
+    }
+    
+    // Save location handler
+    $(document).on('click', '#saveLocationBtn', function() {
+        const deviceId = $('#mapDeviceId').val();
+        const serial = $('#mapDeviceSerial').val();
+        const tag = $('#mapDeviceTag').val();
+        const lat = $('#mapLatitude').val();
+        const lng = $('#mapLongitude').val();
+        const address = $('#mapAddress').val();
+        
+        if (!deviceId || !lat || !lng) {
+            showMapAlert('danger', 'Silakan pilih lokasi di peta terlebih dahulu!');
+            return;
+        }
+        
+        const $btn = $(this);
+        const originalText = $btn.html();
+        $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Menyimpan...');
+        
+        $.ajax({
+            url: '/admin/genieacs/save-location',
+            method: 'POST',
+            data: {
+                deviceId,
+                serial,
+                tag,
+                lat: parseFloat(lat),
+                lng: parseFloat(lng),
+                address
+            },
+            success: function(res) {
+                if (res.success) {
+                    showMapAlert('success', 'Lokasi berhasil disimpan!');
+                    showToast('success', 'Lokasi Tersimpan', 'Lokasi ONU telah berhasil disimpan ke peta.');
+                    setTimeout(function() {
+                        $('#mapLocationModal').modal('hide');
+                    }, 1500);
+                } else {
+                    showMapAlert('danger', res.message || 'Gagal menyimpan lokasi!');
+                }
+            },
+            error: function(err) {
+                const errorMsg = err.responseJSON?.message || 'Gagal menyimpan lokasi!';
+                showMapAlert('danger', errorMsg);
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+    
+    // Map alert function
+    function showMapAlert(type, message) {
+        $('#mapLocationAlert').removeClass().addClass('alert alert-' + type).html(message).show();
+        setTimeout(function() {
+            $('#mapLocationAlert').fadeOut();
+        }, 5000);
+    }
 });
 </script>
+
+<!-- Modal Set Location -->
+<div class="modal fade" id="mapLocationModal" tabindex="-1" aria-labelledby="mapLocationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mapLocationModalLabel">
+          <i class="bi bi-geo-alt"></i> Set Lokasi ONU
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="mapLocationAlert" style="display:none;"></div>
+        <input type="hidden" id="mapDeviceId">
+        <input type="hidden" id="mapDeviceSerial">
+        <input type="hidden" id="mapDeviceTag">
+        
+        <!-- Device Info -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label"><strong>Device ID:</strong></label>
+            <div id="mapDisplayDeviceId" class="form-control-plaintext">-</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label"><strong>Customer Tag:</strong></label>
+            <div id="mapDisplayDeviceTag" class="form-control-plaintext">-</div>
+          </div>
+        </div>
+        
+        <!-- Map Container -->
+        <div class="mb-3">
+          <label class="form-label"><strong>Klik di peta untuk set lokasi:</strong></label>
+          <div id="locationMap" style="height: 300px; border: 1px solid #ddd; border-radius: 8px;"></div>
+        </div>
+        
+        <!-- Coordinates Display -->
+        <div class="row">
+          <div class="col-md-6">
+            <label for="mapLatitude" class="form-label">Latitude</label>
+            <input type="text" class="form-control" id="mapLatitude" readonly>
+          </div>
+          <div class="col-md-6">
+            <label for="mapLongitude" class="form-label">Longitude</label>
+            <input type="text" class="form-control" id="mapLongitude" readonly>
+          </div>
+        </div>
+        
+        <!-- Address Display -->
+        <div class="mt-3">
+          <label for="mapAddress" class="form-label">Alamat</label>
+          <textarea class="form-control" id="mapAddress" rows="2" readonly placeholder="Klik di peta untuk mendapatkan alamat..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-success" id="saveLocationBtn" disabled>
+          <i class="bi bi-geo-alt"></i> Simpan Lokasi
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Modal Edit Tag -->
 <div class="modal fade" id="editTagModal" tabindex="-1" aria-labelledby="editTagModalLabel" aria-hidden="true">

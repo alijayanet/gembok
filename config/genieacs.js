@@ -7,8 +7,8 @@ const { getSetting } = require('./settingsManager');
 // Helper untuk membuat axios instance dinamis
 function getAxiosInstance() {
     const GENIEACS_URL = getSetting('genieacs_url', 'http://localhost:7557');
-    const GENIEACS_USERNAME = getSetting('genieacs_username', 'acs');
-    const GENIEACS_PASSWORD = getSetting('genieacs_password', '');
+    const GENIEACS_USERNAME = getSetting('genieacs_username', 'alijayanet');
+    const GENIEACS_PASSWORD = getSetting('genieacs_password', '087828060111');
     return axios.create({
         baseURL: GENIEACS_URL,
         auth: {
@@ -196,8 +196,8 @@ const genieacsApi = {
         try {
             console.log(`Getting device info for device ID: ${deviceId}`);
             const GENIEACS_URL = getSetting('genieacs_url', 'http://localhost:7557');
-            const GENIEACS_USERNAME = getSetting('genieacs_username', 'acs');
-            const GENIEACS_PASSWORD = getSetting('genieacs_password', '');
+            const GENIEACS_USERNAME = getSetting('genieacs_username', 'alijayanet');
+            const GENIEACS_PASSWORD = getSetting('genieacs_password', '087828060111');
             // Mendapatkan device detail
             const deviceResponse = await axios.get(`${GENIEACS_URL}/devices/${encodeURIComponent(deviceId)}`, {
                 auth: {
@@ -562,6 +562,7 @@ scheduleMonitoring();
 
 module.exports = {
     getDevices: genieacsApi.getDevices,
+    getDevice: genieacsApi.getDevice,
     getDeviceInfo: genieacsApi.getDeviceInfo,
     findDeviceByPhoneNumber: genieacsApi.findDeviceByPhoneNumber,
     getDeviceByPhoneNumber: genieacsApi.getDeviceByPhoneNumber,

@@ -65,16 +65,37 @@ async function getCustomerDeviceData(phone) {
   if (!device) return null;
   // Ambil SSID
   const ssid = device?.InternetGatewayDevice?.LANDevice?.['1']?.WLANConfiguration?.['1']?.SSID?._value || '-';
-  // Status online/offline
-  const lastInform =
-    device?._lastInform
-      ? new Date(device._lastInform).toLocaleString('id-ID')
-      : device?.Events?.Inform
-        ? new Date(device.Events.Inform).toLocaleString('id-ID')
-        : device?.InternetGatewayDevice?.DeviceInfo?.['1']?.LastInform?._value
-          ? new Date(device.InternetGatewayDevice.DeviceInfo['1'].LastInform._value).toLocaleString('id-ID')
-          : '-';
-  const status = lastInform !== '-' ? 'Online' : 'Unknown';
+  // Status online/offline with proper time-based determination
+  const lastInformRaw = device?._lastInform 
+    ? new Date(device._lastInform)
+    : device?.Events?.Inform
+      ? new Date(device.Events.Inform)
+      : device?.InternetGatewayDevice?.DeviceInfo?.['1']?.LastInform?._value
+        ? new Date(device.InternetGatewayDevice.DeviceInfo['1'].LastInform._value)
+        : null;
+  
+  const lastInform = lastInformRaw 
+    ? lastInformRaw.toLocaleString('id-ID')
+    : '-';
+  
+  // Calculate time difference to determine actual status
+  const now = new Date();
+  const timeDiff = lastInformRaw ? (now - lastInformRaw) / (1000 * 60 * 60) : Infinity; // dalam jam
+  
+  let status = 'Offline';
+  if (timeDiff < 1) {
+    status = 'Online';
+  } else if (timeDiff < 24) {
+    status = 'Idle';
+  } else {
+    status = 'Offline';
+  }
+  
+  // Debug logging untuk status determination
+  console.log(`📱 Status check for ${phone}:`);
+  console.log(`   Last Inform: ${lastInform}`);
+  console.log(`   Time Diff: ${timeDiff !== Infinity ? timeDiff.toFixed(2) + ' hours' : 'No last inform'}`);
+  console.log(`   Status: ${status}`);
   // User terhubung (WiFi)
   let connectedUsers = [];
   try {
@@ -311,24 +332,26 @@ router.post('/otp', (req, res) => {
 
 // GET: Dashboard pelanggan
 router.get('/dashboard', async (req, res) => {
-  const phone = req.session && req.session.phone;
+  const phone = req.session && (req.session.customerPhone || req.session.phone);
   if (!phone) return res.redirect('/customer/login');
   const settings = JSON.parse(fs.readFileSync(path.join(__dirname, '../settings.json'), 'utf8'));
   const data = await getCustomerDeviceData(phone);
   if (!data) {
     const fallbackCustomer = addAdminNumber({ phone, ssid: '-', status: 'Tidak ditemukan', lastChange: '-' });
-    return res.render('dashboard', { 
-      customer: fallbackCustomer, 
-      connectedUsers: [], 
+    return res.render('dashboard', {
+      customer: fallbackCustomer,
+      connectedUsers: [],
       notif: 'Data perangkat tidak ditemukan.',
-      settings 
+      settings,
+      currentPage: 'dashboard'
     });
   }
   const customerWithAdmin = addAdminNumber(data);
-  res.render('dashboard', { 
-    customer: customerWithAdmin, 
+  res.render('dashboard', {
+    customer: customerWithAdmin,
     connectedUsers: data.connectedUsers,
-    settings 
+    settings,
+    currentPage: 'dashboard'
   });
 });
 
@@ -517,6 +540,87 @@ router.use('/trouble', troubleReportRouter);
 // Route form trouble report simpel (tanpa session)
 router.get('/trouble/simple', (req, res) => {
   res.render('customer-trouble-simple');
+});
+
+// GET: Halaman Map untuk pelanggan
+router.get('/map', async (req, res) => {
+  try {
+    // Cek apakah pelanggan sudah login
+    if (!req.session.phone) {
+      return res.redirect('/customer/login?redirect=/customer/map');
+    }
+
+    const customerPhone = req.session.phone;
+
+    // Cek apakah nomor valid
+    if (!await isValidCustomer(customerPhone)) {
+      req.session.destroy();
+      return res.redirect('/customer/login?error=invalid');
+    }
+
+    // Ambil data device pelanggan
+    const customerData = await getCustomerDeviceData(customerPhone);
+    if (!customerData) {
+      return res.render('error', {
+        message: 'Data perangkat tidak ditemukan',
+        error: { status: 404 }
+      });
+    }
+
+    // Render halaman map
+    res.render('customer-map', {
+      customerPhone,
+      customerData,
+      companyHeader: getSetting('company_header', 'ISP Monitor'),
+      footerInfo: getSetting('footer_info', ''),
+      currentPage: 'map'
+    });
+
+  } catch (error) {
+    console.error('Error loading map page:', error);
+    res.render('error', {
+      message: 'Terjadi kesalahan saat memuat halaman map',
+      error: { status: 500 }
+    });
+  }
+});
+
+// GET: API untuk data map pelanggan (JSON response untuk AJAX)
+router.get('/map/data', async (req, res) => {
+  try {
+    // Cek apakah pelanggan sudah login
+    if (!req.session.phone) {
+      return res.status(401).json({
+        success: false,
+        message: 'Pelanggan belum login'
+      });
+    }
+
+    const customerPhone = req.session.phone;
+
+    // Cek apakah nomor valid
+    if (!await isValidCustomer(customerPhone)) {
+      return res.status(401).json({
+        success: false,
+        message: 'Nomor pelanggan tidak valid'
+      });
+    }
+
+    // Panggil API map customer
+    const axios = require('axios');
+    const apiUrl = `${req.protocol}://${req.get('host')}/api/map/customer/${customerPhone}`;
+
+    const response = await axios.get(apiUrl);
+
+    res.json(response.data);
+
+  } catch (error) {
+    console.error('Error getting map data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error mengambil data map: ' + error.message
+    });
+  }
 });
 
 module.exports = router; 

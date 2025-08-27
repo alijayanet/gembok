@@ -8,6 +8,9 @@ const fs = require('fs');
 const session = require('express-session');
 const { getSetting } = require('./config/settingsManager');
 
+// Import adminAuth untuk digunakan di berbagai endpoint
+const { adminAuth } = require('./routes/adminAuth');
+
 // Inisialisasi aplikasi Express
 const app = express();
 
@@ -35,6 +38,252 @@ app.use('/admin', adminDashboardRouter);
 const adminGenieacsRouter = require('./routes/adminGenieacs');
 app.use('/admin', adminGenieacsRouter);
 
+// Test endpoint untuk memverifikasi mounting
+app.get('/admin/test-mount', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Route mounting is working!',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// GET: Map Settings - Mendapatkan settings untuk Google Maps
+app.get('/admin/genieacs/map-settings', (req, res) => {
+  try {
+    const { getSetting } = require('./config/settingsManager');
+
+    const mapSettings = {
+      googleMapsApiKey: getSetting('google_maps_api_key', ''),
+      defaultCenter: {
+        lat: -6.2088,
+        lng: 106.8456
+      },
+      defaultZoom: 15,
+      jakartaCenter: {
+        lat: -6.2088,
+        lng: 106.8456
+      }
+    };
+
+    res.json({
+      success: true,
+      settings: mapSettings
+    });
+
+  } catch (error) {
+    console.error('Error getting map settings:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mendapatkan settings peta'
+    });
+  }
+});
+
+// POST: Reverse Geocoding Proxy - untuk mengatasi CORS issue dengan Nominatim
+app.post('/admin/genieacs/reverse-geocode', async (req, res) => {
+  try {
+    const { lat, lng } = req.body;
+
+    if (!lat || !lng) {
+      return res.status(400).json({
+        success: false,
+        message: 'Latitude and longitude are required'
+      });
+    }
+
+    // Menggunakan Nominatim API untuk reverse geocoding
+    const axios = require('axios');
+    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`;
+
+    const response = await axios.get(nominatimUrl, {
+      headers: {
+        'User-Agent': 'Alijaya-Digital-Network/1.0'
+      }
+    });
+
+    res.json({
+      success: true,
+      data: response.data
+    });
+
+  } catch (error) {
+    console.error('Error reverse geocoding:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error reverse geocoding',
+      error: error.message
+    });
+  }
+});
+
+// POST: Save Location ONU - untuk menyimpan lokasi ONU ke file JSON
+app.post('/admin/genieacs/save-location', adminAuth, async (req, res) => {
+  try {
+    console.log('📍 Save location request received:', req.body);
+    
+    const { deviceId, serial, tag, lat, lng, address } = req.body;
+    
+    if (!deviceId || !lat || !lng) {
+      console.log('❌ Validation failed: missing required fields');
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Device ID, latitude, dan longitude wajib diisi' 
+      });
+    }
+
+    const fs = require('fs');
+    const path = require('path');
+    const locationsFile = path.join(__dirname, 'logs/onu-locations.json');
+    
+    console.log('📁 Locations file path:', locationsFile);
+    
+    // Pastikan direktori logs ada
+    const logsDir = path.dirname(locationsFile);
+    if (!fs.existsSync(logsDir)) {
+      console.log('📁 Creating logs directory:', logsDir);
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+    
+    // Baca data lokasi yang sudah ada
+    let locationsData = {};
+    try {
+      if (fs.existsSync(locationsFile)) {
+        const fileContent = fs.readFileSync(locationsFile, 'utf8');
+        console.log('📖 Reading existing locations file, size:', fileContent.length);
+        locationsData = JSON.parse(fileContent);
+        console.log('📊 Existing locations count:', Object.keys(locationsData).length);
+      } else {
+        console.log('📝 Creating new locations file');
+      }
+    } catch (e) {
+      console.error('❌ Error reading locations file:', e.message);
+      console.log('📝 Creating new locations data');
+      locationsData = {};
+    }
+    
+    // Validasi koordinat
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    
+    if (isNaN(latitude) || isNaN(longitude)) {
+      console.log('❌ Invalid coordinates:', { lat, lng, latitude, longitude });
+      return res.status(400).json({
+        success: false,
+        message: 'Koordinat tidak valid'
+      });
+    }
+    
+    if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+      console.log('❌ Coordinates out of range:', { latitude, longitude });
+      return res.status(400).json({
+        success: false,
+        message: 'Koordinat di luar jangkauan yang valid'
+      });
+    }
+    
+    // Simpan/update lokasi device
+    const locationData = {
+      deviceId,
+      serial: serial || '',
+      tag: tag || '',
+      lat: latitude,
+      lng: longitude,
+      address: address || '',
+      lastUpdated: new Date().toISOString(),
+      updatedBy: 'admin'
+    };
+    
+    locationsData[deviceId] = locationData;
+    
+    console.log('💾 Saving location data for device:', deviceId);
+    console.log('📍 Location data:', locationData);
+    
+    // Tulis kembali ke file dengan error handling yang lebih baik
+    try {
+      const jsonData = JSON.stringify(locationsData, null, 2);
+      fs.writeFileSync(locationsFile, jsonData, 'utf8');
+      console.log('✅ Location data written to file successfully');
+      
+      // Verify file was written
+      if (fs.existsSync(locationsFile)) {
+        const fileSize = fs.statSync(locationsFile).size;
+        console.log('📊 File written successfully, size:', fileSize, 'bytes');
+      } else {
+        throw new Error('File was not created');
+      }
+      
+    } catch (writeError) {
+      console.error('❌ Error writing to file:', writeError.message);
+      throw new Error('Gagal menulis file lokasi: ' + writeError.message);
+    }
+    
+    console.log(`✅ Location saved successfully for device ${deviceId}: ${latitude}, ${longitude}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Lokasi berhasil disimpan',
+      location: locationData
+    });
+    
+  } catch (err) {
+    console.error('❌ Error saving location:', err.message);
+    console.error('❌ Stack trace:', err.stack);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Gagal menyimpan lokasi: ' + err.message 
+    });
+  }
+});
+
+// GET: Get Location ONU - untuk mengambil lokasi ONU dari file JSON
+app.get('/admin/genieacs/get-location', adminAuth, async (req, res) => {
+  try {
+    const { deviceId } = req.query;
+    
+    if (!deviceId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Device ID wajib diisi' 
+      });
+    }
+
+    const fs = require('fs');
+    const path = require('path');
+    const locationsFile = path.join(__dirname, 'logs/onu-locations.json');
+    
+    // Cek apakah file lokasi ada
+    if (!fs.existsSync(locationsFile)) {
+      return res.json({ 
+        success: false, 
+        message: 'No location data found' 
+      });
+    }
+    
+    // Baca data lokasi
+    const locationsData = JSON.parse(fs.readFileSync(locationsFile, 'utf8'));
+    
+    // Cari lokasi device
+    if (locationsData[deviceId]) {
+      res.json({ 
+        success: true, 
+        location: locationsData[deviceId]
+      });
+    } else {
+      res.json({ 
+        success: false, 
+        message: 'Location not found for this device' 
+      });
+    }
+    
+  } catch (err) {
+    console.error('Error getting location:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Gagal mengambil lokasi: ' + err.message 
+    });
+  }
+});
+
 // Import dan gunakan route adminMikrotik
 const adminMikrotikRouter = require('./routes/adminMikrotik');
 app.use('/admin', adminMikrotikRouter);
@@ -45,7 +294,6 @@ app.use('/admin/hotspot', adminHotspotRouter);
 
 // Import dan gunakan route adminSetting
 const adminSettingRouter = require('./routes/adminSetting');
-const { adminAuth } = require('./routes/adminAuth');
 app.use('/admin/setting', adminAuth, adminSettingRouter);
 
 // Import dan gunakan route adminTroubleReport

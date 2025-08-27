@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Map Monitoring - Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        body {
+            background: #f5f6fa;
+            overflow-x: hidden;
+        }
+
+        /* Map Container */
+        .map-container {
+            height: calc(100vh - 76px);
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin: 1rem 0;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            /* Removed absolute positioning to prevent covering summary cards */
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Control Panel Toggle States */
+        .control-panel.collapsed {
+            transform: translateX(-100%);
+            opacity: 0.8;
+        }
+
+        .control-panel.collapsed .card-body {
+            display: none;
+        }
+
+        .control-panel.collapsed .card-header {
+            border-radius: 15px;
+        }
+
+        .control-panel.collapsed #toggleControlPanel i {
+            transform: rotate(180deg);
+        }
+
+        /* Toggle button animation */
+        #toggleControlPanel {
+            transition: all 0.3s ease;
+        }
+
+        #toggleControlPanel:hover {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .control-panel .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .control-panel .card-body {
+            padding: 1rem;
+        }
+
+        /* Statistics Cards */
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            transition: transform 0.2s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stats-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .stats-card.warning {
+            background: linear-gradient(135deg, #ffb347 0%, #ffcc02 100%);
+            color: #333;
+        }
+
+        .stats-card.danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        /* Filter Controls */
+        .filter-control {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-control.active {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        /* Device List */
+        .device-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .device-item {
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .device-item:hover {
+            background: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .device-item.active {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .device-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .status-online {
+            background-color: #4caf50;
+            box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+        }
+
+        .status-offline {
+            background-color: #f44336;
+            box-shadow: 0 0 6px rgba(244, 67, 54, 0.5);
+        }
+
+        /* Custom Leaflet */
+        .custom-marker {
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .marker-online {
+            background-color: #28a745 !important;
+            width: 24px !important;
+            height: 24px !important;
+            border-radius: 50% !important;
+            border: 3px solid white !important;
+            box-shadow: 0 3px 12px rgba(40, 167, 69, 0.4) !important;
+            position: relative !important;
+        }
+
+        .marker-online::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .marker-offline {
+            background-color: #dc3545 !important;
+            width: 24px !important;
+            height: 24px !important;
+            border-radius: 50% !important;
+            border: 3px solid white !important;
+            box-shadow: 0 3px 12px rgba(220, 53, 69, 0.4) !important;
+            position: relative !important;
+        }
+
+        .marker-offline::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 2px;
+            background: white;
+            border-radius: 1px;
+        }
+
+        .marker-no-location {
+            background: linear-gradient(135deg, #6c757d, #495057) !important;
+            width: 20px !important;
+            height: 20px !important;
+            border-radius: 6px !important;
+            border: 2px solid white !important;
+            box-shadow: 0 3px 12px rgba(108, 117, 125, 0.4) !important;
+            position: relative !important;
+        }
+
+        .marker-no-location::after {
+            content: '?';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        /* Legend */
+        .map-legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 12px;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Responsive breakpoints for control panel */
+        @media (max-width: 768px) {
+            .control-panel {
+                margin: 0 0 1rem 0;
+                max-height: 400px; /* Increased for mobile */
+            }
+
+            .map-container {
+                height: 70vh; /* Better mobile height */
+                min-height: 400px;
+            }
+
+            .map-legend {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+                font-size: 12px;
+                padding: 0.75rem;
+            }
+            
+            /* Mobile-specific stats card adjustments */
+            .stats-card {
+                padding: 1rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .stats-card .fs-4 {
+                font-size: 1.5rem !important;
+            }
+            
+            .stats-card .fs-2 {
+                font-size: 1.5rem !important;
+            }
+            
+            /* Mobile header adjustments */
+            .main-content {
+                padding: 15px;
+                margin-top: 60px; /* Space for mobile navbar */
+            }
+            
+            /* Mobile button adjustments */
+            .btn-filter {
+                font-size: 11px;
+                padding: 0.375rem 0.5rem;
+                margin: 0.125rem;
+            }
+            
+            /* Touch-friendly device list */
+            .device-item {
+                padding: 0.75rem;
+                margin-bottom: 0.5rem;
+                font-size: 14px;
+            }
+            
+            /* Search input mobile optimization */
+            .search-input {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+        }
+        
+        /* Extra small devices (phones) */
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .stats-card {
+                padding: 0.75rem;
+            }
+            
+            .map-container {
+                height: 60vh;
+                min-height: 350px;
+            }
+            
+            .control-panel {
+                max-height: 350px;
+            }
+            
+            /* Compact header for very small screens */
+            .h3 {
+                font-size: 1.5rem;
+            }
+            
+            /* Smaller buttons on very small screens */
+            .btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 14px;
+            }
+        }
+
+        /* Search Input */
+        .search-input {
+            border-radius: 20px;
+            border: 1px solid #dee2e6;
+            padding: 0.5rem 1rem;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        /* Button Styles */
+        .btn-filter {
+            border-radius: 20px;
+            font-size: 12px;
+            padding: 0.375rem 0.75rem;
+            margin: 0.125rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dee2e6;
+            background: white;
+        }
+
+        .btn-filter:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-filter.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-filter.active:hover {
+            background: #5a67d8;
+            border-color: #5a67d8;
+        }
+
+        /* Quick Stats */
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .stats-card.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .stats-card.danger {
+            background: linear-gradient(135deg, #dc3545 0%, #e85d75 100%);
+        }
+
+        .stats-card.warning {
+            background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+            color: #212529;
+        }
+
+        /* Enhanced Device List */
+        .device-list {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .device-item {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .device-item:hover {
+            background: #e9ecef;
+            border-left: 3px solid #667eea;
+        }
+
+        .device-item.active {
+            background: #e7f3ff;
+            border-left: 3px solid #667eea;
+        }
+
+        /* Loading States */
+        .loading-overlay {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+        }
+
+        /* Search Input Enhancement */
+        .input-group .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .input-group .btn {
+            border-left: none;
+        }
+
+        .input-group .btn:focus {
+            border-color: #667eea;
+        }
+
+        /* Control Panel Enhancements */
+        .control-panel {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .control-panel .card-header {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+
+
+        /* Additional responsive improvements */
+        @media (max-width: 991.98px) {
+            /* Tablet adjustments */
+            .control-panel {
+                margin-bottom: 1.5rem;
+            }
+            
+            .map-container {
+                height: 65vh;
+                min-height: 450px;
+            }
+            
+            /* Better tablet header */
+            .main-content {
+                padding: 20px 15px;
+            }
+        }
+        
+        @media (max-width: 767.98px) {
+            /* Mobile adjustments */
+            .device-item {
+                padding: 0.75rem;
+                border-radius: 8px;
+            }
+
+            .btn-filter {
+                font-size: 12px;
+                padding: 0.375rem 0.75rem;
+                border-radius: 6px;
+            }
+            
+            /* Improve touch targets */
+            .btn {
+                min-height: 44px; /* Minimum touch target size */
+            }
+            
+            /* Better spacing for mobile */
+            .mb-3 {
+                margin-bottom: 1rem !important;
+            }
+            
+            .mb-4 {
+                margin-bottom: 1.5rem !important;
+            }
+            
+            /* Mobile header optimizations */
+            .h3 {
+                font-size: 1.5rem !important;
+            }
+            
+            /* Responsive control panel header */
+            .control-panel .card-header {
+                padding: 1rem;
+                font-size: 13px;
+            }
+            
+            .control-panel .card-header .btn-sm {
+                padding: 0.25rem 0.5rem;
+                font-size: 12px;
+            }
+        }
+        
+        /* Extra mobile optimizations */
+        @media (max-width: 480px) {
+            /* Very small screens */
+            .stats-card {
+                padding: 0.75rem !important;
+            }
+            
+            .stats-card .fs-4 {
+                font-size: 1.25rem !important;
+            }
+            
+            .map-legend {
+                padding: 0.5rem;
+                font-size: 11px;
+            }
+            
+            .device-item {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Include Responsive Admin Sidebar -->
+        <%- include('partials/admin-responsive-sidebar', { page: 'map', settings: settings }) %>
+
+        <main class="col-12 col-md-9 col-lg-10 ms-sm-auto main-content">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1 d-flex align-items-center">
+                        <i class="bi bi-geo-alt-fill text-primary me-3 fs-2"></i>
+                        <div>
+                            <div class="fw-bold">Map Monitoring</div>
+                            <small class="text-muted">Monitoring lokasi semua perangkat ONU di Jakarta</small>
+                        </div>
+                    </h1>
+                </div>
+                <div class="d-flex gap-2">
+                    <button id="refreshBtn" class="btn btn-primary d-flex align-items-center">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Refresh Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-6 col-sm-6 col-md-3 mb-3">
+                    <div class="stats-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold">Total ONU</div>
+                                <div class="fs-4" id="totalDevices"><%= genieacsTotal || 0 %></div>
+                            </div>
+                            <i class="bi bi-hdd-network fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-6 col-md-3 mb-3">
+                    <div class="stats-card success">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold">Online</div>
+                                <div class="fs-4" id="onlineDevices"><%= genieacsOnline || 0 %></div>
+                            </div>
+                            <i class="bi bi-wifi fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-6 col-md-3 mb-3">
+                    <div class="stats-card danger">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold">Offline</div>
+                                <div class="fs-4" id="offlineDevices"><%= genieacsOffline || 0 %></div>
+                            </div>
+                            <i class="bi bi-wifi-off fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-6 col-md-3 mb-3">
+                    <div class="stats-card warning">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold">Dengan Lokasi</div>
+                                <div class="fs-4" id="locatedDevices"><%= totalWithLocation || 0 %></div>
+                                <small class="opacity-75"><%= coveragePercentage || 0 %>% coverage</small>
+                            </div>
+                            <i class="bi bi-geo-alt-fill fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map and Controls Row -->
+            <div class="row">
+                        <!-- Control Panel -->
+                <div class="col-12 col-lg-4 mb-4">
+                    <div class="control-panel card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-sliders me-2"></i>
+                                <span class="fw-bold">Monitoring Control</span>
+                                <br>
+                                <small class="text-white-50">Kontrol peta & filter device</small>
+                            </div>
+                            <div class="d-flex gap-1">
+                                <button id="refreshDataBtn" class="btn btn-sm btn-outline-light d-flex align-items-center" title="Refresh Data">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>
+                                    <span class="d-none d-lg-inline">Refresh</span>
+                                </button>
+                                <button id="toggleControlPanel" class="btn btn-sm btn-outline-light" title="Toggle Panel">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Quick Stats -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold mb-2">Ringkasan Cepat</label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <div class="text-center p-2 bg-light rounded">
+                                            <div class="fs-5 fw-bold text-primary" id="quickTotal">-</div>
+                                            <small class="text-muted">Total</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center p-2 bg-success text-white rounded">
+                                            <div class="fs-5 fw-bold" id="quickOnline">-</div>
+                                            <small>Online</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Search -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">🔍 Cari Perangkat</label>
+                                <div class="input-group">
+                                    <input type="text" id="searchInput" class="form-control search-input"
+                                           placeholder="Serial Number, PPPoE, atau Telepon...">
+                                    <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Filters -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">🎯 Filter Status</label>
+                                <div class="row g-1">
+                                    <div class="col-6">
+                                        <button class="btn btn-filter w-100 active" data-filter="all">
+                                            <i class="bi bi-grid-fill me-1"></i>Semua
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-filter w-100" data-filter="online">
+                                            <i class="bi bi-wifi me-1"></i>Online
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-filter w-100" data-filter="offline">
+                                            <i class="bi bi-wifi-off me-1"></i>Offline
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-filter w-100" data-filter="with-location">
+                                            <i class="bi bi-geo-alt-fill me-1"></i>Dengan Lokasi
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Device List -->
+                            <div class="mb-0">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label fw-bold mb-0">
+                                        📋 Daftar Perangkat
+                                    </label>
+                                    <small class="text-muted" id="deviceCountSmall">(0)</small>
+                                </div>
+                                <div class="device-list border rounded p-2" id="deviceList">
+                                    <div class="text-center text-muted py-4" id="loadingIndicator">
+                                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <div class="d-inline">Memuat data perangkat...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Container -->
+                <div class="col-12 col-lg-8">
+                    <div class="map-container">
+                        <div id="map"></div>
+
+                        <!-- Loading Overlay -->
+                        <div class="loading-overlay" id="loadingOverlay">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <div class="mt-2">Memuat peta monitoring...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="map-legend">
+                        <h6 class="mb-3 fw-bold d-flex align-items-center">
+                            <i class="bi bi-info-circle me-2"></i>Legenda
+                        </h6>
+                        <div class="legend-item d-flex align-items-center mb-2">
+                            <span class="device-status status-online me-2"></span>
+                            <div>
+                                <div class="fw-bold small">Online</div>
+                                <small class="text-muted">Device aktif</small>
+                            </div>
+                        </div>
+                        <div class="legend-item d-flex align-items-center mb-2">
+                            <span class="device-status status-offline me-2"></span>
+                            <div>
+                                <div class="fw-bold small">Offline</div>
+                                <small class="text-muted">Device tidak aktif</small>
+                            </div>
+                        </div>
+                        <div class="legend-item d-flex align-items-center">
+                            <span class="device-status me-2" style="width: 12px; height: 12px; background: linear-gradient(135deg, #6c757d, #495057); border-radius: 4px;"></span>
+                            <div>
+                                <div class="fw-bold small">Tanpa Lokasi</div>
+                                <small class="text-muted">Belum diset lokasi</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Global variables
+    let map;
+    let markers = [];
+    let allDevices = [];
+    let currentFilter = 'all';
+    let currentSearch = '';
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeMap();
+        loadMapData();
+
+        // Setup event listeners
+        setupEventListeners();
+    });
+
+    function initializeMap() {
+        // Default center (Indonesia center for better coverage of potential ONU locations)
+        const defaultCenter = [-6.2088, 106.8456];
+        const defaultZoom = 10; // Wider zoom to better show the area
+
+        // Initialize map
+        map = L.map('map', {
+            center: defaultCenter,
+            zoom: defaultZoom,
+            zoomControl: true,
+            scrollWheelZoom: true
+        });
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Add scale control
+        L.control.scale().addTo(map);
+
+        console.log('🗺️ Map initialized');
+    }
+
+    function setupEventListeners() {
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            loadMapData();
+        });
+
+        // Refresh data button in control panel
+        document.getElementById('refreshDataBtn').addEventListener('click', function() {
+            loadMapData();
+        });
+
+        // Toggle control panel
+        document.getElementById('toggleControlPanel').addEventListener('click', function() {
+            const controlPanel = document.querySelector('.control-panel');
+            const toggleBtn = this;
+
+            controlPanel.classList.toggle('collapsed');
+
+            // Update button icon and tooltip
+            if (controlPanel.classList.contains('collapsed')) {
+                toggleBtn.setAttribute('title', 'Show Panel');
+            } else {
+                toggleBtn.setAttribute('title', 'Hide Panel');
+            }
+        });
+
+
+
+        // Search input
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            currentSearch = e.target.value.trim();
+            filterDevices();
+        });
+
+        // Clear search button
+        document.getElementById('clearSearchBtn').addEventListener('click', function() {
+            document.getElementById('searchInput').value = '';
+            currentSearch = '';
+            filterDevices();
+        });
+
+        // Filter buttons
+        document.querySelectorAll('.btn-filter').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+
+                currentFilter = this.dataset.filter;
+                filterDevices();
+            });
+        });
+    }
+
+    async function loadMapData() {
+        try {
+            console.log('📍 Loading map data...');
+            showLoading(true);
+
+            const response = await fetch('/admin/map/data');
+            const data = await response.json();
+
+            if (data.success) {
+                allDevices = data.devices;
+                displayDevicesOnMap(data.devices);
+                updateDeviceList(data.devices);
+                updateStatistics(data.summary);
+
+                console.log(`📍 Loaded ${data.devices.length} devices`);
+
+                // Focus map on registered ONU locations if this is the first load
+                const devicesWithLocation = data.devices.filter(device => 
+                    device.hasLocation && device.location && 
+                    (device.location.lat !== -2.5489 || device.location.lng !== 118.0149)
+                );
+                
+                if (devicesWithLocation.length > 0) {
+                    console.log(`🎯 Found ${devicesWithLocation.length} ONUs with registered locations`);
+                } else {
+                    console.log('🗺️ No registered ONU locations found, using default view');
+                }
+
+                // Show success message if this is the first load
+                if (data.devices.length > 0) {
+                    // Hide loading indicator completely after successful load
+                    setTimeout(() => {
+                        const loadingIndicator = document.getElementById('loadingIndicator');
+                        if (loadingIndicator) {
+                            loadingIndicator.style.display = 'none';
+                        }
+                    }, 500);
+                }
+            } else {
+                throw new Error(data.message || 'Failed to load map data');
+            }
+        } catch (error) {
+            console.error('❌ Error loading map data:', error);
+
+            // Show error state in device list
+            const deviceList = document.getElementById('deviceList');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            if (loadingIndicator) {
+                loadingIndicator.innerHTML = `
+                    <div class="text-center text-danger py-3">
+                        <i class="bi bi-exclamation-triangle fs-2 mb-2"></i>
+                        <div>Gagal memuat data</div>
+                        <small class="text-muted">${error.message}</small>
+                        <br>
+                        <button onclick="loadMapData()" class="btn btn-sm btn-outline-danger mt-2">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Coba Lagi
+                        </button>
+                    </div>
+                `;
+            }
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Gagal memuat data peta: ' + error.message,
+                confirmButtonText: 'OK'
+            });
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function displayDevicesOnMap(devices) {
+        // Clear existing markers
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+
+        if (devices.length === 0) {
+            console.log('📍 No devices to display');
+            return;
+        }
+
+        // Group devices by location for clustering
+        const devicesByLocation = {};
+        const devicesWithoutLocation = [];
+
+        devices.forEach(device => {
+            if (device.hasLocation && device.location) {
+                const key = `${device.location.lat},${device.location.lng}`;
+                if (!devicesByLocation[key]) {
+                    devicesByLocation[key] = [];
+                }
+                devicesByLocation[key].push(device);
+            } else {
+                devicesWithoutLocation.push(device);
+            }
+        });
+
+        // Add markers for devices with location
+        Object.keys(devicesByLocation).forEach(locationKey => {
+            const devicesAtLocation = devicesByLocation[locationKey];
+            const firstDevice = devicesAtLocation[0];
+
+            const markerIcon = createCustomIcon(devicesAtLocation);
+            const marker = L.marker([firstDevice.location.lat, firstDevice.location.lng], {
+                icon: markerIcon
+            });
+
+            // Create popup content
+            const popupContent = createPopupContent(devicesAtLocation);
+            marker.bindPopup(popupContent, {
+                maxWidth: 400,
+                className: 'custom-popup'
+            });
+
+            // Add click event
+            marker.on('click', function() {
+                highlightDeviceInList(firstDevice.id);
+            });
+
+            marker.addTo(map);
+            markers.push(marker);
+        });
+
+        // Add markers for devices without location (as small squares)
+        devicesWithoutLocation.forEach(device => {
+            const markerIcon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div class="marker-no-location"></div>`,
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            });
+
+            const marker = L.marker([-2.5489, 118.0149], { // Default location
+                icon: markerIcon
+            });
+
+            const popupContent = createPopupContent([device]);
+            marker.bindPopup(popupContent, {
+                maxWidth: 300,
+                className: 'custom-popup'
+            });
+
+            marker.addTo(map);
+            markers.push(marker);
+        });
+
+        // Fit map to show all markers with registered locations
+        if (markers.length > 0) {
+            // Separate markers for devices with actual locations vs default locations
+            const realLocationMarkers = [];
+            
+            Object.keys(devicesByLocation).forEach(locationKey => {
+                const devicesAtLocation = devicesByLocation[locationKey];
+                const firstDevice = devicesAtLocation[0];
+                
+                // Only include markers that are not at the default location
+                if (firstDevice.location.lat !== -2.5489 || firstDevice.location.lng !== 118.0149) {
+                    realLocationMarkers.push(markers.find(marker => 
+                        marker.getLatLng().lat === firstDevice.location.lat && 
+                        marker.getLatLng().lng === firstDevice.location.lng
+                    ));
+                }
+            });
+            
+            // If we have devices with real locations, focus on them
+            if (realLocationMarkers.length > 0) {
+                const group = new L.featureGroup(realLocationMarkers.filter(m => m));
+                map.fitBounds(group.getBounds().pad(0.15));
+                console.log(`📍 Map focused on ${realLocationMarkers.length} registered ONU locations`);
+            } else if (Object.keys(devicesByLocation).length > 0) {
+                // If no real locations but have devices, use the first available location
+                const firstLocationKey = Object.keys(devicesByLocation)[0];
+                const coords = firstLocationKey.split(',');
+                map.setView([parseFloat(coords[0]), parseFloat(coords[1])], 15);
+                console.log('📍 Map focused on first available ONU location');
+            } else {
+                // Fallback to showing all markers including default locations
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+                console.log('📍 Map showing all markers including default locations');
+            }
+        } else {
+            // No devices with location, keep default center but zoom out to show wider area
+            map.setView([-6.2088, 106.8456], 10);
+            console.log('📍 No ONU locations found, using default Jakarta center with wider view');
+        }
+
+        console.log(`📍 Displayed ${markers.length} markers on map`);
+        
+        // Log device location summary
+        const withLocation = Object.keys(devicesByLocation).length;
+        const withoutLocation = devicesWithoutLocation.length;
+        console.log(`📍 Location summary: ${withLocation} locations with devices, ${withoutLocation} devices without location`);
+    }
+
+    function createCustomIcon(devices) {
+        // Check if any device is online
+        const hasOnlineDevice = devices.some(d => d.status.isOnline);
+
+        const iconClass = hasOnlineDevice ? 'marker-online' : 'marker-offline';
+        const deviceCount = devices.length;
+
+        return L.divIcon({
+            className: 'custom-marker',
+            html: `
+                <div class="${iconClass}">
+                    ${deviceCount > 1 ? `<span style="position: absolute; top: -8px; right: -8px; background: #ff5722; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center;">${deviceCount}</span>` : ''}
+                </div>
+            `,
+            iconSize: deviceCount > 1 ? [28, 28] : [24, 24],
+            iconAnchor: deviceCount > 1 ? [14, 14] : [12, 12]
+        });
+    }
+
+    function createPopupContent(devices) {
+        let content = '';
+
+        devices.forEach((device, index) => {
+            if (index > 0) content += '<hr style="margin: 8px 0;">';
+
+            content += `
+                <div style="padding: 8px; font-family: 'Segoe UI', sans-serif; font-size: 13px;">
+                    <h6 style="margin: 0 0 6px 0; color: #667eea; font-weight: 600; font-size: 14px;">
+                        <i class="bi bi-router me-1"></i>${device.serialNumber}
+                        ${devices.length > 1 ? ` (${index + 1})` : ''}
+                    </h6>
+
+                    <div style="margin-bottom: 4px;">
+                        <span class="device-status ${device.status.isOnline ? 'status-online' : 'status-offline'}"></span>
+                        <span style="color: ${device.status.statusText === 'Online' ? '#4caf50' : device.status.statusText === 'Idle' ? '#ff9800' : '#f44336'}; font-weight: 500;">
+                            ${device.status.statusText || (device.status.isOnline ? 'Online' : 'Offline')}
+                        </span>
+                    </div>
+
+                    <div style="margin-bottom: 4px;">
+                        <strong>PPPoE:</strong> ${device.pppoeUsername}
+                    </div>
+
+                    <div style="margin-bottom: 4px;">
+                        <strong>Pelanggan:</strong> ${device.customerPhone}
+                    </div>
+                    
+                    ${device.wifi?.ssid ? `
+                        <div style="margin-bottom: 4px;">
+                            <strong>WiFi:</strong> ${device.wifi.ssid}
+                        </div>
+                    ` : ''}
+
+                    ${device.status.rxPower ? `
+                        <div style="margin-bottom: 4px;">
+                            <strong>Rx Power:</strong>
+                            <span style="color: ${device.status.rxPower < -25 ? '#f44336' : device.status.rxPower < -20 ? '#ff9800' : '#4caf50'}">
+                                ${device.status.rxPower} dBm
+                            </span>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+
+        return content;
+    }
+
+    function updateDeviceList(devices) {
+        const deviceList = document.getElementById('deviceList');
+        const deviceCountSmall = document.getElementById('deviceCountSmall');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        // Update count
+        deviceCountSmall.textContent = `(${devices.length})`;
+
+        // Remove loading indicator
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'none';
+        }
+
+        // Clear existing content except loading indicator
+        const existingContent = deviceList.querySelector('.device-list-content');
+        if (existingContent) {
+            existingContent.remove();
+        }
+
+        if (devices.length === 0) {
+            const noDataHtml = `
+                <div class="device-list-content">
+                    <div class="text-center text-muted py-3">
+                        <i class="bi bi-search fs-2 mb-2"></i>
+                        <div>Tidak ada perangkat ditemukan</div>
+                        <small class="text-muted">Coba ubah filter atau kata kunci pencarian</small>
+                    </div>
+                </div>
+            `;
+            deviceList.insertAdjacentHTML('beforeend', noDataHtml);
+            return;
+        }
+
+        let html = '<div class="device-list-content">';
+        devices.forEach(device => {
+            const statusIcon = device.status.isOnline ? 'status-online' : 'status-offline';
+            const statusText = device.status.isOnline ? 'Online' : 'Offline';
+            const locationIcon = device.hasLocation
+                ? '<i class="bi bi-geo-alt-fill text-success small ms-1" title="Dengan Lokasi"></i>'
+                : '<i class="bi bi-geo-alt text-muted small ms-1" title="Tanpa Lokasi"></i>';
+
+            html += `
+                <div class="device-item" data-device-id="${device.id}" onclick="focusOnDevice('${device.id}')">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="fw-bold text-truncate">${device.serialNumber}</div>
+                            <div class="text-muted small text-truncate">${device.pppoeUsername}</div>
+                            <div class="text-muted small text-truncate">${device.customerPhone}</div>
+                        </div>
+                        <div class="text-end d-flex flex-column align-items-end">
+                            <div class="d-flex align-items-center">
+                                <span class="device-status ${statusIcon}"></span>
+                                <small class="text-muted ms-1">${statusText}</small>
+                            </div>
+                            ${locationIcon}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        deviceList.insertAdjacentHTML('beforeend', html);
+    }
+
+    function updateStatistics(summary) {
+        // Update main statistics
+        document.getElementById('totalDevices').textContent = summary.total;
+        document.getElementById('onlineDevices').textContent = summary.online;
+        document.getElementById('offlineDevices').textContent = summary.offline;
+        document.getElementById('locatedDevices').textContent = summary.withLocation;
+
+        // Update quick stats in control panel
+        document.getElementById('quickTotal').textContent = summary.total;
+        document.getElementById('quickOnline').textContent = summary.online;
+
+        console.log(`📊 Statistics updated: ${summary.total} total, ${summary.online} online, ${summary.offline} offline, ${summary.withLocation} with location`);
+    }
+
+    function filterDevices() {
+        console.log(`🔍 Filtering devices - Filter: ${currentFilter}, Search: "${currentSearch}"`);
+
+        const filteredDevices = allDevices.filter(device => {
+            // Status filter
+            if (currentFilter === 'online' && !device.status.isOnline) return false;
+            if (currentFilter === 'offline' && device.status.isOnline) return false;
+            if (currentFilter === 'with-location' && !device.hasLocation) return false;
+
+            // Search filter
+            if (currentSearch) {
+                const searchLower = currentSearch.toLowerCase();
+                const searchableText = `${device.serialNumber} ${device.pppoeUsername} ${device.customerPhone}`.toLowerCase();
+                if (!searchableText.includes(searchLower)) return false;
+            }
+
+            return true;
+        });
+
+        console.log(`📋 Filtered ${filteredDevices.length} from ${allDevices.length} devices`);
+
+        displayDevicesOnMap(filteredDevices);
+        updateDeviceList(filteredDevices);
+
+        // Update filtered count in summary
+        const filteredSummary = {
+            total: allDevices.length,
+            online: allDevices.filter(d => d.status.isOnline).length,
+            offline: allDevices.filter(d => !d.status.isOnline).length,
+            withLocation: allDevices.filter(d => d.hasLocation).length,
+            filtered: filteredDevices.length
+        };
+
+        // Update device count small
+        const deviceCountSmall = document.getElementById('deviceCountSmall');
+        if (deviceCountSmall) {
+            deviceCountSmall.textContent = `(${filteredSummary.filtered})`;
+        }
+    }
+
+    function focusOnDevice(deviceId) {
+        const device = allDevices.find(d => d.id === deviceId);
+        if (device && device.hasLocation) {
+            map.setView([device.location.lat, device.location.lng], 15);
+            highlightDeviceInList(deviceId);
+        }
+    }
+
+    function highlightDeviceInList(deviceId) {
+        // Remove active class from all items
+        document.querySelectorAll('.device-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Add active class to selected item
+        const selectedItem = document.querySelector(`[data-device-id="${deviceId}"]`);
+        if (selectedItem) {
+            selectedItem.classList.add('active');
+            selectedItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function showLoading(show) {
+        const overlay = document.getElementById('loadingOverlay');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        if (show) {
+            overlay.classList.remove('d-none');
+            // Show loading in device list
+            loadingIndicator.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="d-inline">Memuat data perangkat...</div>
+                </div>
+            `;
+        } else {
+            overlay.classList.add('d-none');
+        }
+    }
+
+    // Global functions for popup buttons
+    window.viewDeviceDetails = function(deviceId) {
+        // Open device details in new window/tab
+        window.open(`/admin/genieacs/device/${deviceId}`, '_blank');
+    };
+
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (map) {
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+        }
+    });
+
+    // Auto refresh every 5 minutes
+    setInterval(() => {
+        loadMapData();
+    }, 5 * 60 * 1000);
+</script>
+</body>
+</html>

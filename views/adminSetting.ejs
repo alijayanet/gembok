@@ -197,6 +197,76 @@
                             </div>
                         </div>
 
+                        <!-- WhatsApp Groups Management -->
+                        <div class="mt-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-people-fill"></i> WhatsApp Groups Management
+                            </h6>
+
+                            <div class="mb-3">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button class="btn btn-success btn-sm" id="btnLoadGroups">
+                                        <i class="bi bi-arrow-clockwise"></i> Load Groups
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm" id="btnRefreshGroups">
+                                        <i class="bi bi-refresh"></i> Refresh
+                                    </button>
+                                    <button class="btn btn-outline-info btn-sm" id="btnTestConnection">
+                                        <i class="bi bi-wifi"></i> Test Connection
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- WhatsApp Groups Status -->
+                            <div id="waGroupsStatus" class="mb-3">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> <strong>Cara menggunakan:</strong>
+                                    <br>• Klik "Load Groups" untuk melihat daftar grup WhatsApp
+                                    <br>• Pastikan WhatsApp sudah terkoneksi (lihat status di atas)
+                                    <br>• Pastikan bot sudah ditambahkan ke grup yang diinginkan
+                                    <br><br><strong>Jika tidak ada grup yang ditemukan:</strong>
+                                    <br>• Klik "Test Connection" untuk memeriksa status koneksi
+                                    <br>• Buka console browser (F12) untuk melihat informasi debug
+                                    <br>• Pastikan bot sudah menjadi admin di grup
+                                    <br>• Restart aplikasi jika diperlukan
+                                </div>
+                            </div>
+
+                            <!-- WhatsApp Groups List -->
+                            <div id="waGroupsList" class="mb-3" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0"><i class="bi bi-people-fill"></i> Daftar Grup WhatsApp</h6>
+                                        <span class="badge bg-primary" id="groupsCount">0</span>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div id="groupsContainer">
+                                            <!-- Groups will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Group Detail Modal -->
+                            <div class="modal fade" id="groupDetailModal" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title"><i class="bi bi-people-fill"></i> Detail Grup WhatsApp</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body" id="groupDetailContent">
+                                            <!-- Group detail will be loaded here -->
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                            <button type="button" class="btn btn-primary" id="btnCopyGroupId">Copy Group ID</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Perintah Admin WhatsApp -->
                         <div class="mt-4">
                             <h6 class="text-primary mb-3">
@@ -847,6 +917,412 @@ $(function() {
     // Auto refresh status tiap 10 detik
     setInterval(loadWAStatus, 10000);
 });
+
+// ===== WHATSAPP GROUPS MANAGEMENT FUNCTIONS =====
+
+// WhatsApp Groups Management
+let currentGroups = [];
+
+// Load WhatsApp Groups
+$('#btnLoadGroups, #btnRefreshGroups').on('click', function() {
+    loadWhatsAppGroups();
+});
+
+// Test WhatsApp Connection
+$('#btnTestConnection').on('click', function() {
+    testWhatsAppConnection();
+});
+
+async function testWhatsAppConnection() {
+    try {
+        const btn = $('#btnTestConnection');
+        const originalText = btn.html();
+
+        btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Testing...');
+
+        console.log('🔍 Testing WhatsApp connection...');
+
+        const response = await fetch('/admin/setting/whatsapp-test', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        console.log('📊 Connection Test Response:', data);
+
+        if (data.success) {
+            let statusMessage = `<div class="alert alert-success"><i class="bi bi-check-circle"></i> <strong>Koneksi WhatsApp OK!</strong>`;
+
+            if (data.connection) {
+                statusMessage += `<br>• Status: ${data.connection.status}`;
+                if (data.connection.phoneNumber) {
+                    statusMessage += `<br>• Nomor: ${data.connection.phoneNumber}`;
+                }
+                if (data.connection.connectedSince) {
+                    const connectedDate = new Date(data.connection.connectedSince);
+                    statusMessage += `<br>• Terhubung sejak: ${connectedDate.toLocaleString()}`;
+                }
+            }
+
+            if (data.groups) {
+                statusMessage += `<br>• Grup ditemukan: ${data.groups.total}`;
+            }
+
+            statusMessage += `</div>`;
+
+            $('#waGroupsStatus').html(statusMessage);
+        } else {
+            $('#waGroupsStatus').html(`<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> <strong>Koneksi WhatsApp Bermasalah:</strong><br>${data.message}</div>`);
+        }
+
+    } catch (error) {
+        console.error('❌ Error testing WhatsApp connection:', error);
+        $('#waGroupsStatus').html(`<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> <strong>Error testing connection:</strong><br>${error.message}</div>`);
+    } finally {
+        $('#btnTestConnection').prop('disabled', false).html('<i class="bi bi-wifi"></i> Test Connection');
+    }
+}
+
+async function loadWhatsAppGroups() {
+    try {
+        $('#btnLoadGroups, #btnRefreshGroups').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Loading...');
+
+        console.log('🔄 Loading WhatsApp groups...');
+
+        const response = await fetch('/admin/setting/whatsapp-groups', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        // Check if response is OK
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        // Check content type
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            // If not JSON, read as text to see what we got
+            const textResponse = await response.text();
+            console.error('Received non-JSON response:', textResponse.substring(0, 500));
+            throw new Error('Server returned non-JSON response. Check server logs.');
+        }
+
+        const data = await response.json();
+        console.log('📊 API Response:', data);
+
+        if (data.success) {
+            currentGroups = data.groups;
+            displayGroups(data.groups);
+
+            let statusMessage = `<div class="alert alert-success"><i class="bi bi-check-circle"></i> Berhasil memuat ${data.total} grup WhatsApp`;
+
+            if (data.totalChats !== undefined) {
+                statusMessage += ` dari ${data.totalChats} total chats`;
+            }
+
+            if (data.debug) {
+                statusMessage += `<br><small class="text-muted">Debug: ${data.debug.chatsFound} chats ditemukan, ${data.debug.groupsFiltered} grup difilter</small>`;
+            }
+
+            statusMessage += `</div>`;
+
+            $('#waGroupsStatus').html(statusMessage);
+            $('#waGroupsList').show();
+        } else {
+            let errorMessage = `<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> ${data.message || 'Gagal memuat grup WhatsApp'}`;
+
+            if (data.debug) {
+                errorMessage += `<br><small class="text-muted">Debug: ${JSON.stringify(data.debug)}</small>`;
+            }
+
+            errorMessage += `</div>`;
+
+            $('#waGroupsStatus').html(errorMessage);
+            $('#waGroupsList').hide();
+        }
+    } catch (error) {
+        console.error('❌ Error loading WhatsApp groups:', error);
+
+        let errorMessage = error.message;
+        if (error.message.includes('Unexpected token')) {
+            errorMessage = 'Server mengembalikan response yang tidak valid. Pastikan WhatsApp sudah terkoneksi.';
+        } else if (error.message.includes('HTTP 404')) {
+            errorMessage = 'Endpoint tidak ditemukan. Pastikan aplikasi berjalan dengan benar.';
+        } else if (error.message.includes('HTTP 500')) {
+            errorMessage = 'Server error. Cek logs aplikasi untuk detail error.';
+        } else if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Tidak dapat terhubung ke server. Pastikan aplikasi berjalan.';
+        }
+
+        $('#waGroupsStatus').html(`<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> Error: ${errorMessage}</div>`);
+        $('#waGroupsList').hide();
+    } finally {
+        $('#btnLoadGroups').prop('disabled', false).html('<i class="bi bi-arrow-clockwise"></i> Load Groups');
+        $('#btnRefreshGroups').prop('disabled', false).html('<i class="bi bi-refresh"></i> Refresh');
+    }
+}
+
+function displayGroups(groups) {
+    const container = $('#groupsContainer');
+    const countBadge = $('#groupsCount');
+
+    console.log('📱 Displaying', groups.length, 'groups');
+
+    countBadge.text(groups.length);
+
+    if (groups.length === 0) {
+        let emptyMessage = `
+            <div class="p-4 text-center text-muted">
+                <i class="bi bi-info-circle"></i>
+                <h6>Tidak ada grup WhatsApp ditemukan</h6>
+                <p class="mb-2">Kemungkinan penyebab:</p>
+                <small>
+                    • Bot belum ditambahkan ke grup manapun<br>
+                    • Bot bukan admin di grup<br>
+                    • Ada masalah dengan koneksi WhatsApp<br>
+                    • Grup belum di-sync oleh WhatsApp
+                </small>
+                <br><br>
+                <div class="alert alert-warning">
+                    <i class="bi bi-lightbulb"></i> <strong>Solusi:</strong><br>
+                    1. Pastikan bot sudah ditambahkan ke grup<br>
+                    2. Jadikan bot sebagai admin di grup<br>
+                    3. Restart aplikasi dan scan ulang QR<br>
+                    4. Tunggu beberapa menit untuk sync grup
+                </div>
+            </div>
+        `;
+        container.html(emptyMessage);
+        return;
+    }
+
+    let html = '<div class="list-group list-group-flush">';
+
+    groups.forEach((group, index) => {
+        const adminIcon = group.isAdmin ? '<i class="bi bi-star-fill text-warning ms-1" title="Admin"></i>' : '';
+        const badgeClass = group.isAdmin ? 'bg-success' : 'bg-secondary';
+        const groupId = group.id || '';
+
+        console.log(`   Grup ${index + 1}: ${group.name} (${groupId})`);
+
+        html += `
+            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center">
+                        <strong>${group.name}</strong>${adminIcon}
+                    </div>
+                    <small class="text-muted">
+                        <i class="bi bi-people"></i> ${group.participants} anggota |
+                        <i class="bi bi-calendar"></i> ${group.created}
+                    </small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary view-group-btn"
+                            data-group-id="${groupId}"
+                            title="Detail Grup">
+                        <i class="bi bi-eye"></i> Detail
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary copy-group-btn"
+                            data-group-id="${groupId}"
+                            title="Copy Group ID">
+                        <i class="bi bi-clipboard"></i> Copy ID
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+    container.html(html);
+
+    // Add event listeners after HTML is inserted
+    attachGroupButtonListeners();
+}
+
+function attachGroupButtonListeners() {
+    console.log('🔧 Attaching group button listeners...');
+
+    // View Group Detail buttons
+    $('.view-group-btn').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const groupId = $(this).data('group-id');
+        console.log('👁️ View button clicked for group:', groupId);
+        if (groupId) {
+            viewGroupDetail(groupId);
+        }
+    });
+
+    // Copy Group ID buttons
+    $('.copy-group-btn').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const groupId = $(this).data('group-id');
+        console.log('📋 Copy button clicked for group:', groupId);
+        if (groupId) {
+            copyGroupId(groupId);
+        }
+    });
+
+    console.log('✅ Group button listeners attached');
+}
+
+// View Group Detail
+async function viewGroupDetail(groupId) {
+    try {
+        const response = await fetch(`/admin/setting/whatsapp-groups/${groupId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            const group = data.group;
+            const participantsHtml = group.participants.map(p => `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${p.id.split('@')[0]}
+                    ${p.isAdmin ? '<span class="badge bg-success">Admin</span>' : ''}
+                    ${p.isSuperAdmin ? '<span class="badge bg-warning">Super Admin</span>' : ''}
+                </li>
+            `).join('');
+
+            const html = `
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6><i class="bi bi-info-circle"></i> Informasi Grup</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Nama Grup:</strong></td>
+                                <td>${group.name}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Group ID:</strong></td>
+                                <td><code>${group.id}</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Owner:</strong></td>
+                                <td>${group.owner}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Anggota:</strong></td>
+                                <td>${group.totalParticipants}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dibuat:</strong></td>
+                                <td>${group.created}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status Admin:</strong></td>
+                                <td>${group.isAdmin ? '<span class="badge bg-success">Ya</span>' : '<span class="badge bg-secondary">Tidak</span>'}</td>
+                            </tr>
+                            ${group.description ? `
+                            <tr>
+                                <td><strong>Deskripsi:</strong></td>
+                                <td>${group.description}</td>
+                            </tr>
+                            ` : ''}
+                        </table>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="bi bi-people"></i> Anggota (${group.totalParticipants})</h6>
+                        <div class="border rounded p-2" style="max-height: 300px; overflow-y: auto;">
+                            <ul class="list-group list-group-flush">
+                                ${participantsHtml}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $('#groupDetailContent').html(html);
+            $('#btnCopyGroupId').attr('onclick', `copyGroupId('${group.id}')`);
+            new bootstrap.Modal(document.getElementById('groupDetailModal')).show();
+        } else {
+            showNotification('danger', data.message);
+        }
+    } catch (error) {
+        console.error('Error loading group detail:', error);
+        showNotification('danger', 'Error: ' + error.message);
+    }
+}
+
+// Copy Group ID
+function copyGroupId(groupId) {
+    console.log('📋 Copying Group ID:', groupId);
+
+    if (!groupId || groupId.trim() === '') {
+        console.error('❌ Group ID is empty');
+        showNotification('danger', 'Group ID tidak valid!');
+        return;
+    }
+
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(groupId).then(() => {
+            console.log('✅ Copied to clipboard using modern API');
+            showNotification('success', `Group ID berhasil disalin: ${groupId.substring(0, 20)}...`);
+        }).catch(err => {
+            console.error('❌ Failed to copy with modern API:', err);
+            fallbackCopyTextToClipboard(groupId);
+        });
+    } else {
+        console.log('⚠️ Modern clipboard API not available, using fallback');
+        fallbackCopyTextToClipboard(groupId);
+    }
+}
+
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+
+    // Avoid scrolling to bottom
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            console.log('✅ Copied to clipboard using fallback method');
+            showNotification('success', `Group ID berhasil disalin: ${text.substring(0, 20)}...`);
+        } else {
+            console.error('❌ Fallback copy failed');
+            showNotification('danger', 'Gagal menyalin Group ID!');
+        }
+    } catch (err) {
+        console.error('❌ Fallback copy error:', err);
+        showNotification('danger', 'Gagal menyalin Group ID!');
+    }
+
+    document.body.removeChild(textArea);
+}
+
+// Fungsi untuk menampilkan notifikasi
+function showNotification(type, message) {
+    const notif = $('<div>')
+        .addClass('alert alert-' + type + ' alert-dismissible fade show position-fixed top-0 end-0 m-3')
+        .css('z-index', '1055')
+        .html(`
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `);
+
+    $('body').append(notif);
+
+    // Hapus notifikasi setelah 5 detik
+    setTimeout(() => {
+        notif.alert('close');
+    }, 5000);
+}
 </script>
 <script>
 // Optical Splitter Attenuation Calculator Logic

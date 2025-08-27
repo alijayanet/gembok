@@ -373,4 +373,237 @@ router.get('/test-svg', (req, res) => {
     }
 });
 
+// GET: Load WhatsApp Groups
+router.get('/whatsapp-groups', async (req, res) => {
+    try {
+        const whatsapp = require('../config/whatsapp');
+
+        // Cek apakah WhatsApp sudah terhubung
+        if (!global.whatsappStatus || !global.whatsappStatus.connected) {
+            return res.status(400).json({
+                success: false,
+                message: 'WhatsApp belum terhubung. Silakan scan QR code terlebih dahulu.'
+            });
+        }
+
+        // Load chats untuk mendapatkan group
+        const sock = whatsapp.getSock();
+        if (!sock) {
+            return res.status(500).json({
+                success: false,
+                message: 'WhatsApp socket tidak tersedia'
+            });
+        }
+
+        // Get chats dari beberapa sumber yang berbeda
+        let chats = [];
+
+        // Coba beberapa metode untuk mendapatkan chats
+        try {
+            // Metode 1: Dari store
+            if (sock.store?.chats) {
+                chats = sock.store.chats;
+                console.log('📱 Menggunakan chats dari store:', chats.length);
+            }
+            // Metode 2: Dari cache jika ada
+            else if (sock.chats) {
+                chats = Object.values(sock.chats);
+                console.log('📱 Menggunakan chats dari sock.chats:', chats.length);
+            }
+            // Metode 3: Fetch langsung dari WhatsApp
+            else {
+                console.log('📱 Fetching chats langsung dari WhatsApp...');
+                const fetchedChats = await sock.groupFetchAllParticipating();
+                chats = Object.values(fetchedChats);
+                console.log('📱 Menggunakan chats yang di-fetch:', chats.length);
+            }
+        } catch (fetchError) {
+            console.error('❌ Error fetching chats:', fetchError);
+            // Jika semua gagal, coba metode alternatif
+            try {
+                const fetchedChats = await sock.groupFetchAllParticipating();
+                chats = Object.values(fetchedChats);
+                console.log('📱 Menggunakan fallback method:', chats.length);
+            } catch (fallbackError) {
+                console.error('❌ Fallback method juga gagal:', fallbackError);
+            }
+        }
+
+        console.log('📊 Total chats found:', chats.length);
+        console.log('📋 Sample chat IDs:', chats.slice(0, 5).map(c => c.id));
+
+        // Filter hanya groups dan format data
+        const groups = chats
+            .filter(chat => {
+                const isGroup = chat.id?.endsWith('@g.us');
+                console.log(`🔍 Chat ${chat.id}: ${chat.name || chat.notify} - Is Group: ${isGroup}`);
+                return isGroup;
+            })
+            .map(chat => ({
+                id: chat.id,
+                name: chat.name || chat.notify || chat.subject || 'Group Tanpa Nama',
+                participants: chat.participants?.length || chat.participantIds?.length || 0,
+                created: chat.created ? new Date(chat.created * 1000).toLocaleDateString('id-ID') : 'Tidak diketahui',
+                isAdmin: false, // Default false, akan dicek nanti jika diperlukan
+                description: chat.desc || chat.description || '',
+                owner: chat.owner ? chat.owner.split('@')[0] : 'Tidak diketahui'
+            }));
+
+        console.log('🎯 Groups found:', groups.length);
+        console.log('📝 Groups:', groups.map(g => `${g.name} (${g.id})`));
+
+        res.json({
+            success: true,
+            groups: groups,
+            total: groups.length,
+            totalChats: chats.length,
+            debug: {
+                chatsFound: chats.length,
+                groupsFiltered: groups.length,
+                sampleChatIds: chats.slice(0, 3).map(c => ({ id: c.id, name: c.name || c.notify, isGroup: c.id?.endsWith('@g.us') }))
+            },
+            message: `Berhasil memuat ${groups.length} grup WhatsApp dari ${chats.length} total chats`
+        });
+
+    } catch (error) {
+        console.error('Error loading WhatsApp groups:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal memuat grup WhatsApp: ' + error.message
+        });
+    }
+});
+
+// GET: Get WhatsApp Group Detail
+router.get('/whatsapp-groups/:groupId', async (req, res) => {
+    try {
+        const { groupId } = req.params;
+        const whatsapp = require('../config/whatsapp');
+
+        // Cek apakah WhatsApp sudah terhubung
+        if (!global.whatsappStatus || !global.whatsappStatus.connected) {
+            return res.status(400).json({
+                success: false,
+                message: 'WhatsApp belum terhubung. Silakan scan QR code terlebih dahulu.'
+            });
+        }
+
+        // Load chats untuk mendapatkan group
+        const sock = whatsapp.getSock();
+        if (!sock) {
+            return res.status(500).json({
+                success: false,
+                message: 'WhatsApp socket tidak tersedia'
+            });
+        }
+
+        // Get group metadata
+        const groupMetadata = await sock.groupMetadata(groupId);
+
+        if (!groupMetadata) {
+            return res.status(404).json({
+                success: false,
+                message: 'Grup tidak ditemukan'
+            });
+        }
+
+        // Format participants
+        const participants = groupMetadata.participants.map(p => ({
+            id: p.id,
+            isAdmin: p.admin === 'admin',
+            isSuperAdmin: p.admin === 'superadmin'
+        }));
+
+        // Check if bot is admin
+        const botId = sock.user.id;
+        const botParticipant = participants.find(p => p.id === botId);
+        const isAdmin = botParticipant ? botParticipant.isAdmin || botParticipant.isSuperAdmin : false;
+
+        const groupDetail = {
+            id: groupMetadata.id,
+            name: groupMetadata.subject || 'Group Tanpa Nama',
+            owner: groupMetadata.owner ? groupMetadata.owner.split('@')[0] : 'Tidak diketahui',
+            totalParticipants: groupMetadata.participants.length,
+            created: groupMetadata.creation ? new Date(groupMetadata.creation * 1000).toLocaleDateString('id-ID') : 'Tidak diketahui',
+            isAdmin: isAdmin,
+            description: groupMetadata.desc || '',
+            participants: participants
+        };
+
+        res.json({
+            success: true,
+            group: groupDetail
+        });
+
+    } catch (error) {
+        console.error('Error loading WhatsApp group detail:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal memuat detail grup WhatsApp: ' + error.message
+        });
+    }
+});
+
+// GET: Test WhatsApp Connection
+router.get('/whatsapp-test', async (req, res) => {
+    try {
+        const whatsapp = require('../config/whatsapp');
+
+        // Cek status koneksi WhatsApp
+        const connectionStatus = global.whatsappStatus || {
+            connected: false,
+            status: 'disconnected'
+        };
+
+        let testResult = {
+            success: connectionStatus.connected,
+            connection: connectionStatus,
+            message: connectionStatus.connected ? 'WhatsApp terhubung dengan baik' : 'WhatsApp belum terhubung'
+        };
+
+        if (connectionStatus.connected) {
+            // Coba dapatkan informasi tambahan
+            const sock = whatsapp.getSock();
+            if (sock) {
+                try {
+                    // Coba fetch groups untuk test
+                    const fetchedChats = await sock.groupFetchAllParticipating();
+                    const groups = Object.values(fetchedChats).filter(chat => chat.id?.endsWith('@g.us'));
+
+                    testResult.groups = {
+                        total: groups.length,
+                        sample: groups.slice(0, 3).map(g => ({
+                            id: g.id,
+                            name: g.subject || g.name || 'Unknown'
+                        }))
+                    };
+
+                    testResult.message += `. ${groups.length} grup ditemukan.`;
+
+                } catch (groupError) {
+                    console.error('Error fetching groups in test:', groupError);
+                    testResult.groups = {
+                        total: 0,
+                        error: 'Gagal mengambil data grup: ' + groupError.message
+                    };
+                }
+            } else {
+                testResult.message = 'WhatsApp socket tidak tersedia';
+                testResult.success = false;
+            }
+        } else {
+            testResult.message = 'WhatsApp belum terhubung. Silakan scan QR code terlebih dahulu.';
+        }
+
+        res.json(testResult);
+
+    } catch (error) {
+        console.error('Error testing WhatsApp connection:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error testing connection: ' + error.message
+        });
+    }
+});
+
 module.exports = router;

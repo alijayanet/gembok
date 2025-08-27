@@ -1,0 +1,971 @@
+<!-- Halaman Monitoring ONU dengan Peta -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>ONU Monitoring & Mapping</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+
+    <!-- Leaflet CSS untuk peta -->
+    <link rel="stylesheet" href="/leaflet/leaflet.css" />
+
+    <style>
+        body { background: #f5f6fa; }
+
+        .main-content {
+            padding: 32px 24px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .form-label {
+            font-weight: 600;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            height: 100%;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        /* Peta styling */
+        #map {
+            height: 600px;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Custom marker icons */
+        .onu-marker-green {
+            background-color: #28a745;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .onu-marker-yellow {
+            background-color: #ffc107;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .onu-marker-red {
+            background-color: #dc3545;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Legend styling */
+        .legend {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        /* Stats cards */
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stats-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+        }
+
+        .stats-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+        }
+
+        .stats-card.info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Sidebar untuk filter dan kontrol */
+        .control-sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            height: fit-content;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 767.98px) {
+            .main-content {
+                margin-top: 70px !important;
+                padding-top: 10px !important;
+            }
+
+            #map {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Include Responsive Admin Sidebar -->
+        <%- include('partials/admin-responsive-sidebar', { page: 'onu-monitoring', settings: settings }) %>
+
+        <main class="col-md-10 main-content ms-sm-auto">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="mb-0"><i class="bi bi-geo-alt-fill text-primary"></i> ONU Monitoring & Mapping</h3>
+                <button class="btn btn-primary" id="btnRefreshMap">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh Data
+                </button>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row" id="statsContainer">
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="stats-card">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0" id="statTotal">0</h4>
+                                <small>Total ONU</small>
+                            </div>
+                            <i class="bi bi-diagram-3-fill fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="stats-card success">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0" id="statOnline">0</h4>
+                                <small>Online</small>
+                            </div>
+                            <i class="bi bi-wifi fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="stats-card warning">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0" id="statIdle">0</h4>
+                                <small>Idle</small>
+                            </div>
+                            <i class="bi bi-clock-history fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="stats-card" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0" id="statOffline">0</h4>
+                                <small>Offline</small>
+                            </div>
+                            <i class="bi bi-wifi-off fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="stats-card info">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0" id="statMapped">0</h4>
+                                <small>Mapped</small>
+                            </div>
+                            <i class="bi bi-person-check-fill fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="stats-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333;">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0" id="statUnmapped">0</h4>
+                                <small>Unmapped</small>
+                            </div>
+                            <i class="bi bi-person-x-fill fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="legend">
+                <h6 class="mb-3"><i class="bi bi-info-circle"></i> Legenda Status ONU</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="legend-item">
+                            <div class="legend-color onu-marker-green"></div>
+                            <span><strong>Online</strong> - ONU aktif dan terkoneksi (< 1 jam)</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="legend-item">
+                            <div class="legend-color onu-marker-yellow"></div>
+                            <span><strong>Idle</strong> - ONU idle (1-24 jam terakhir)</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="legend-item">
+                            <div class="legend-color onu-marker-red"></div>
+                            <span><strong>Offline</strong> - ONU offline (> 24 jam)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="row">
+                <!-- Peta -->
+                <div class="col-lg-9 mb-4">
+                    <div class="form-section">
+                        <h5 class="mb-3">
+                            <i class="bi bi-geo-alt"></i> Peta Lokasi ONU
+                        </h5>
+                        <div id="map"></div>
+                    </div>
+                </div>
+
+                <!-- Control Panel -->
+                <div class="col-lg-3 mb-4">
+                    <div class="control-sidebar">
+                        <h6 class="mb-3">
+                            <i class="bi bi-sliders"></i> Kontrol & Filter
+                        </h6>
+
+                        <!-- Status Filter -->
+                        <div class="mb-3">
+                            <label class="form-label small">Filter Status</label>
+                            <select class="form-select form-select-sm" id="statusFilter">
+                                <option value="all">Semua Status</option>
+                                <option value="online">Online</option>
+                                <option value="idle">Idle</option>
+                                <option value="offline">Offline</option>
+                            </select>
+                        </div>
+
+                        <!-- Mapping Filter -->
+                        <div class="mb-3">
+                            <label class="form-label small">Filter Mapping</label>
+                            <select class="form-select form-select-sm" id="mappingFilter">
+                                <option value="all">Semua</option>
+                                <option value="mapped">Sudah Assign</option>
+                                <option value="unmapped">Belum Assign</option>
+                            </select>
+                        </div>
+
+                        <!-- Search -->
+                        <div class="mb-3">
+                            <label class="form-label small">Cari ONU</label>
+                            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Serial Number, Customer...">
+                        </div>
+
+                        <!-- Auto Refresh -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+                                <label class="form-check-label small" for="autoRefresh">
+                                    Auto refresh setiap 30 detik
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success btn-sm" id="btnLoadData">
+                                <i class="bi bi-arrow-clockwise"></i> Load Data
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" id="btnFitBounds">
+                                <i class="bi bi-bounding-box"></i> Fit to View
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ONU List Panel -->
+                    <div class="control-sidebar mt-3">
+                        <h6 class="mb-3">
+                            <i class="bi bi-list"></i> Daftar ONU
+                            <span class="badge bg-primary float-end" id="onuCount">0</span>
+                        </h6>
+                        <div id="onuListContainer" style="max-height: 300px; overflow-y: auto;">
+                            <!-- ONU list will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- ONU Detail Modal -->
+<div class="modal fade" id="onuDetailModal" tabindex="-1" aria-labelledby="onuDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="onuDetailModalLabel"><i class="bi bi-info-circle"></i> Detail ONU</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="onuDetailContent">
+                    <!-- ONU detail content will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Messages -->
+<div id="statusMessage" class="alert d-none position-fixed top-0 end-0 m-4" style="z-index:1055; min-width:300px;"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Leaflet JS untuk peta -->
+<script src="/leaflet/leaflet.js"></script>
+
+<script>
+// ===== GLOBAL VARIABLES =====
+let map;
+let markers = [];
+let currentONUData = [];
+let autoRefreshInterval;
+
+// ===== INITIALIZE MAP =====
+$(document).ready(function() {
+    initializeMap();
+    loadONUData();
+
+    // Setup auto refresh
+    setupAutoRefresh();
+
+    // Setup event listeners
+    setupEventListeners();
+});
+
+function initializeMap() {
+    // Initialize map centered on Jakarta
+    map = L.map('map').setView([-6.2088, 106.8456], 13);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    console.log('🗺️ Map initialized');
+}
+
+function setupAutoRefresh() {
+    if ($('#autoRefresh').is(':checked')) {
+        autoRefreshInterval = setInterval(() => {
+            loadONUData(false); // Silent refresh
+        }, 30000); // 30 seconds
+    }
+}
+
+function setupEventListeners() {
+    // Status filter
+    $('#statusFilter').on('change', function() {
+        filterMarkers();
+        updateONUList();
+    });
+
+    // Mapping filter
+    $('#mappingFilter').on('change', function() {
+        filterMarkers();
+        updateONUList();
+    });
+
+    // Search input
+    $('#searchInput').on('input', function() {
+        filterMarkers();
+        updateONUList();
+    });
+
+    // Auto refresh toggle
+    $('#autoRefresh').on('change', function() {
+        if ($(this).is(':checked')) {
+            setupAutoRefresh();
+        } else {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+        }
+    });
+
+    // Load data button
+    $('#btnLoadData, #btnRefreshMap').on('click', function() {
+        loadONUData();
+    });
+
+    // Fit bounds button
+    $('#btnFitBounds').on('click', function() {
+        fitMapBounds();
+    });
+}
+
+// ===== DATA LOADING =====
+async function loadONUData(showNotification = true) {
+    try {
+        if (showNotification) {
+            showStatusMessage('info', 'Memuat data ONU...');
+        }
+
+        console.log('🔄 Loading ONU map data...');
+
+        const response = await fetch('/admin/genieacs/onu-map-data', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        console.log('📊 ONU Map API Response:', data);
+
+        if (data.success) {
+            currentONUData = data.onuData;
+            updateStats(data.stats);
+            displayMarkers(data.onuData);
+            updateONUList();
+
+            if (showNotification) {
+                showStatusMessage('success', data.message);
+            }
+        } else {
+            showStatusMessage('danger', data.message);
+        }
+
+    } catch (error) {
+        console.error('❌ Error loading ONU data:', error);
+        showStatusMessage('danger', 'Error: ' + error.message);
+    }
+}
+
+// ===== MARKER MANAGEMENT =====
+function displayMarkers(onuData) {
+    // Clear existing markers
+    clearMarkers();
+
+    // Add new markers
+    onuData.forEach(onu => {
+        addMarker(onu);
+    });
+
+    // Fit map bounds to show all markers
+    fitMapBounds();
+}
+
+function addMarker(onu) {
+    // Create custom icon based on status
+    const iconHtml = `<div class="onu-marker-${onu.statusColor}"></div>`;
+    const customIcon = L.divIcon({
+        html: iconHtml,
+        className: 'custom-onu-marker',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+
+    // Create popup content
+    const popupContent = createPopupContent(onu);
+
+    // Create marker
+    const marker = L.marker([onu.latitude, onu.longitude], { icon: customIcon })
+        .addTo(map)
+        .bindPopup(popupContent, {
+            maxWidth: 400,
+            className: 'onu-popup'
+        });
+
+    // Store marker reference
+    marker.onuData = onu;
+    markers.push(marker);
+}
+
+function createPopupContent(onu) {
+    return `
+        <div class="onu-popup p-2">
+            <h6 class="mb-2"><i class="bi bi-router"></i> ${onu.serialNumber}</h6>
+            <table class="table table-sm table-bordered mb-2" style="font-size: 11px;">
+                <tr>
+                    <td><strong>ID:</strong></td>
+                    <td><code style="font-size: 10px;">${onu.id}</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Model:</strong></td>
+                    <td>${onu.model}</td>
+                </tr>
+                <tr>
+                    <td><strong>Status:</strong></td>
+                    <td><span class="badge bg-${onu.statusColor === 'green' ? 'success' : onu.statusColor === 'yellow' ? 'warning' : 'danger'}">${onu.connectionStatus}</span></td>
+                </tr>
+                <tr>
+                    <td><strong>RX Power:</strong></td>
+                    <td>${onu.rxPower} dBm</td>
+                </tr>
+                <tr>
+                    <td><strong>PPPoE:</strong></td>
+                    <td>${onu.pppoeUsername}</td>
+                </tr>
+                <tr>
+                    <td><strong>Pelanggan:</strong></td>
+                    <td>${onu.customerName}</td>
+                </tr>
+                <tr>
+                    <td><strong>Lokasi:</strong></td>
+                    <td>${onu.customerLocation}</td>
+                </tr>
+                <tr>
+                    <td><strong>Last Inform:</strong></td>
+                    <td>${onu.lastInform}</td>
+                </tr>
+                <tr>
+                    <td><strong>IP Address:</strong></td>
+                    <td>${onu.ipAddress}</td>
+                </tr>
+                <tr>
+                    <td><strong>Firmware:</strong></td>
+                    <td>${onu.firmwareVersion}</td>
+                </tr>
+            </table>
+            <div class="text-center">
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-primary btn-sm" onclick="viewONUDetail('${onu.id}')" title="Lihat Detail">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-warning btn-sm" onclick="editSSIDPassword('${onu.id}')" title="Edit SSID & Password">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" onclick="editCustomerTag('${onu.id}')" title="Edit Tag Pelanggan">
+                        <i class="bi bi-tag"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="restartONU('${onu.id}')" title="Restart ONU">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function clearMarkers() {
+    markers.forEach(marker => {
+        map.removeLayer(marker);
+    });
+    markers = [];
+}
+
+function filterMarkers() {
+    const statusFilter = $('#statusFilter').val();
+    const mappingFilter = $('#mappingFilter').val();
+    const searchTerm = $('#searchInput').val().toLowerCase();
+
+    markers.forEach(marker => {
+        const onu = marker.onuData;
+        let visible = true;
+
+        // Status filter
+        if (statusFilter !== 'all') {
+            const statusMap = {
+                'online': 'Online',
+                'idle': 'Idle',
+                'offline': 'Offline'
+            };
+            if (onu.connectionStatus !== statusMap[statusFilter]) {
+                visible = false;
+            }
+        }
+
+        // Mapping filter
+        if (mappingFilter !== 'all') {
+            if (mappingFilter === 'mapped' && onu.customerName === '-') {
+                visible = false;
+            } else if (mappingFilter === 'unmapped' && onu.customerName !== '-') {
+                visible = false;
+            }
+        }
+
+        // Search filter
+        if (searchTerm) {
+            const searchableText = `${onu.serialNumber} ${onu.model} ${onu.customerName} ${onu.pppoeUsername} ${onu.customerLocation}`.toLowerCase();
+            if (!searchableText.includes(searchTerm)) {
+                visible = false;
+            }
+        }
+
+        // Show/hide marker
+        if (visible) {
+            if (!map.hasLayer(marker)) {
+                marker.addTo(map);
+            }
+        } else {
+            if (map.hasLayer(marker)) {
+                map.removeLayer(marker);
+            }
+        }
+    });
+}
+
+// ===== UI UPDATES =====
+function updateStats(stats) {
+    $('#statTotal').text(stats.total);
+    $('#statOnline').text(stats.online);
+    $('#statIdle').text(stats.idle);
+    $('#statOffline').text(stats.offline);
+    $('#statMapped').text(stats.mapped);
+    $('#statUnmapped').text(stats.unmapped);
+}
+
+function updateONUList() {
+    const container = $('#onuListContainer');
+    const countBadge = $('#onuCount');
+    const statusFilter = $('#statusFilter').val();
+    const mappingFilter = $('#mappingFilter').val();
+    const searchTerm = $('#searchInput').val().toLowerCase();
+
+    let filteredONU = currentONUData.filter(onu => {
+        let visible = true;
+
+        // Status filter
+        if (statusFilter !== 'all') {
+            const statusMap = {
+                'online': 'Online',
+                'idle': 'Idle',
+                'offline': 'Offline'
+            };
+            if (onu.connectionStatus !== statusMap[statusFilter]) {
+                visible = false;
+            }
+        }
+
+        // Mapping filter
+        if (mappingFilter !== 'all') {
+            if (mappingFilter === 'mapped' && onu.customerName === '-') {
+                visible = false;
+            } else if (mappingFilter === 'unmapped' && onu.customerName !== '-') {
+                visible = false;
+            }
+        }
+
+        // Search filter
+        if (searchTerm) {
+            const searchableText = `${onu.serialNumber} ${onu.model} ${onu.customerName} ${onu.pppoeUsername} ${onu.customerLocation}`.toLowerCase();
+            if (!searchableText.includes(searchTerm)) {
+                visible = false;
+            }
+        }
+
+        return visible;
+    });
+
+    countBadge.text(filteredONU.length);
+
+    if (filteredONU.length === 0) {
+        container.html('<div class="text-center text-muted p-3"><i class="bi bi-info-circle"></i><br>Tidak ada ONU yang sesuai filter</div>');
+        return;
+    }
+
+    let html = '<div class="list-group list-group-flush">';
+    filteredONU.forEach(onu => {
+        const statusBadge = `<span class="badge bg-${onu.statusColor === 'green' ? 'success' : onu.statusColor === 'yellow' ? 'warning' : 'danger'}">${onu.connectionStatus}</span>`;
+        const mappedIcon = onu.customerName !== '-' ? '<i class="bi bi-person-check text-success ms-1"></i>' : '<i class="bi bi-person-x text-muted ms-1"></i>';
+
+        html += `
+            <div class="list-group-item list-group-item-action p-2" onclick="focusOnMarker('${onu.id}')">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center">
+                            <strong style="font-size: 12px;">${onu.serialNumber}</strong>${mappedIcon}
+                        </div>
+                        <small class="text-muted" style="font-size: 11px;">
+                            ${onu.model} | ${statusBadge}
+                        </small>
+                        ${onu.customerName !== '-' ? `<br><small class="text-success" style="font-size: 11px;"><i class="bi bi-person"></i> ${onu.customerName}</small>` : ''}
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); viewONUDetail('${onu.id}')" style="font-size: 11px; padding: 2px 6px;">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    container.html(html);
+}
+
+function fitMapBounds() {
+    if (markers.length === 0) return;
+
+    const group = new L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.1));
+}
+
+// ===== UTILITY FUNCTIONS =====
+function focusOnMarker(onuId) {
+    const marker = markers.find(m => m.onuData.id === onuId);
+    if (marker) {
+        map.setView(marker.getLatLng(), 16);
+        marker.openPopup();
+    }
+}
+
+function viewONUDetail(onuId) {
+    const onu = currentONUData.find(o => o.id === onuId);
+    if (!onu) return;
+
+    let html = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6><i class="bi bi-cpu"></i> Informasi Perangkat</h6>
+                <table class="table table-sm table-bordered">
+                    <tr>
+                        <td><strong>ONUID:</strong></td>
+                        <td><code>${onu.id}</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Serial Number:</strong></td>
+                        <td>${onu.serialNumber}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Model:</strong></td>
+                        <td>${onu.model}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Firmware:</strong></td>
+                        <td>${onu.firmwareVersion}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hardware:</strong></td>
+                        <td>${onu.hardwareVersion}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>IP Address:</strong></td>
+                        <td>${onu.ipAddress}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="bi bi-graph-up"></i> Status & Koneksi</h6>
+                <table class="table table-sm table-bordered">
+                    <tr>
+                        <td><strong>Status:</strong></td>
+                        <td><span class="badge bg-${onu.statusColor === 'green' ? 'success' : onu.statusColor === 'yellow' ? 'warning' : 'danger'}">${onu.connectionStatus}</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Last Inform:</strong></td>
+                        <td>${onu.lastInform}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RX Power:</strong></td>
+                        <td>${onu.rxPower} dBm</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PPPoE Username:</strong></td>
+                        <td>${onu.pppoeUsername}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pelanggan:</strong></td>
+                        <td>${onu.customerName}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lokasi:</strong></td>
+                        <td>${onu.customerLocation}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Koordinat:</strong></td>
+                        <td>${onu.latitude}, ${onu.longitude}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    `;
+
+    $('#onuDetailContent').html(html);
+
+    // Update modal title
+    $('#onuDetailModalLabel').html(`<i class="bi bi-info-circle"></i> Detail ONU - ${onu.serialNumber}`);
+
+    new bootstrap.Modal(document.getElementById('onuDetailModal')).show();
+}
+
+function showStatusMessage(type, message) {
+    const alert = $('#statusMessage');
+    alert.removeClass('d-none alert-success alert-danger alert-info alert-warning')
+         .addClass(`alert-${type}`)
+         .html(`<i class="bi bi-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'}"></i> ${message}`);
+
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+        alert.addClass('d-none');
+    }, 5000);
+}
+
+// ===== ONU CONTROL FUNCTIONS =====
+
+// Edit SSID & Password dari popup
+function editSSIDPassword(deviceId) {
+    // Cari data ONU berdasarkan ID
+    const onu = currentONUData.find(o => o.id === deviceId);
+    if (!onu) {
+        showNotification('danger', 'Data ONU tidak ditemukan');
+        return;
+    }
+
+    // Tampilkan prompt untuk edit SSID
+    const newSSID = prompt('Masukkan SSID baru:', onu.pppoeUsername || '');
+    if (newSSID === null) return; // User cancelled
+
+    // Tampilkan prompt untuk edit Password
+    const newPassword = prompt('Masukkan Password baru:');
+    if (newPassword === null) return; // User cancelled
+
+    // Kirim request ke server
+    $.ajax({
+        url: '/admin/genieacs/edit',
+        method: 'POST',
+        data: {
+            id: deviceId,
+            ssid: newSSID,
+            password: newPassword
+        },
+        success: function(response) {
+            if (response.success) {
+                showNotification('success', 'SSID & Password berhasil diupdate');
+                // Refresh data setelah 2 detik
+                setTimeout(() => {
+                    loadONUData(false);
+                }, 2000);
+            } else {
+                showNotification('danger', response.message || 'Gagal update SSID & Password');
+            }
+        },
+        error: function(xhr) {
+            const errorMsg = xhr.responseJSON && xhr.responseJSON.message ?
+                xhr.responseJSON.message : 'Gagal update SSID & Password';
+            showNotification('danger', errorMsg);
+        }
+    });
+}
+
+// Edit Customer Tag dari popup
+function editCustomerTag(deviceId) {
+    const onu = currentONUData.find(o => o.id === deviceId);
+    if (!onu) {
+        showNotification('danger', 'Data ONU tidak ditemukan');
+        return;
+    }
+
+    const newTag = prompt('Masukkan tag pelanggan baru:', onu.customerName !== '-' ? onu.customerName : '');
+    if (newTag === null) return; // User cancelled
+
+    $.ajax({
+        url: '/admin/genieacs/edit-tag',
+        method: 'POST',
+        data: {
+            id: deviceId,
+            tag: newTag
+        },
+        success: function(response) {
+            if (response.success) {
+                showNotification('success', 'Tag pelanggan berhasil diupdate');
+                // Refresh data setelah 2 detik
+                setTimeout(() => {
+                    loadONUData(false);
+                }, 2000);
+            } else {
+                showNotification('danger', response.message || 'Gagal update tag pelanggan');
+            }
+        },
+        error: function(xhr) {
+            const errorMsg = xhr.responseJSON && xhr.responseJSON.message ?
+                xhr.responseJSON.message : 'Gagal update tag pelanggan';
+            showNotification('danger', errorMsg);
+        }
+    });
+}
+
+// Restart ONU dari popup
+function restartONU(deviceId) {
+    const onu = currentONUData.find(o => o.id === deviceId);
+    if (!onu) {
+        showNotification('danger', 'Data ONU tidak ditemukan');
+        return;
+    }
+
+    if (!confirm(`Apakah Anda yakin ingin restart ONU ${onu.serialNumber}?`)) {
+        return;
+    }
+
+    $.ajax({
+        url: '/admin/genieacs/restart-onu',
+        method: 'POST',
+        data: {
+            id: deviceId
+        },
+        success: function(response) {
+            if (response.success) {
+                showNotification('success', response.message || 'Perintah restart berhasil dikirim');
+                // Refresh data setelah 3 detik
+                setTimeout(() => {
+                    loadONUData(false);
+                }, 3000);
+            } else {
+                showNotification('danger', response.message || 'Gagal restart ONU');
+            }
+        },
+        error: function(xhr) {
+            const errorMsg = xhr.responseJSON && xhr.responseJSON.message ?
+                xhr.responseJSON.message : 'Gagal restart ONU';
+            showNotification('danger', errorMsg);
+        }
+    });
+}
+</script>
+
+</body>
+</html>
