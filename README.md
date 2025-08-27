@@ -8,8 +8,8 @@
 <img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/d98b8c95-debe-4790-99d9-47f9363a066d" />
 <img width="1366" height="728" alt="Image" src="https://github.com/user-attachments/assets/3951eeae-fa16-4c06-b3ed-cf1c0c2fc968" />
 
-Rekening Donasi Untuk Pembangunan Masjid
-# 4206 0101 2214 534 BRI an DKM BAITUR ROHMAN <br>
+Rekening Utuk pengembangan Aplikasi
+# 4206 01003 953 531 BRI an WARJAYA <br>
 Info https://wa.me/628194215703 ALIJAYA<br>
 link group tele : https://t.me/alijayaNetAcs <br>
 link chanell tele : https://t.me/alijayaNetwork<br>
