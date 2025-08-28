@@ -737,6 +737,10 @@ Pilih opsi di atas untuk men-generate skrip...
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 $(function() {
+    // Performance tracking
+    const loadStartTime = Date.now();
+    console.log('🚀 Admin Settings page loading started');
+    
     // Field yang tidak perlu ditampilkan di form
     const hiddenFields = [
         'pppoe_notifications.monitorInterval',
@@ -749,83 +753,268 @@ $(function() {
         'server_port',
         'whatsapp_session_path',
         'admin_enabled',
-        'logo_filename'
+        'logo_filename',
+        '_cached',
+        '_dummy',
+        '_error',
+        '_loadTime'
     ];
-    // Ambil data settings.json
-    $.get('/admin/setting/data', function(data) {
-        var html = '';
-        function renderField(key, val) {
-            if (hiddenFields.includes(key)) return; // Sembunyikan field tertentu
-            if (typeof val === 'object' && val !== null) {
-                Object.keys(val).forEach(function(subkey) {
-                    renderField(key + '.' + subkey, val[subkey]);
-                });
-            } else {
-                html += '<div class="mb-3">';
-                if (key === 'user_auth_mode') {
-                    html += '<label class="form-label">Mode Autentikasi User</label>';
-                    html += '<div class="form-check">';
-                    html += '<input class="form-check-input" type="radio" name="user_auth_mode" id="auth_mode_mikrotik" value="mikrotik"'+(val==="mikrotik"?" checked":"")+'> ';
-                    html += '<label class="form-check-label" for="auth_mode_mikrotik">Mikrotik (RouterOS API)</label>';
-                    html += '</div>';
-                    html += '<div class="form-check">';
-                    html += '<input class="form-check-input" type="radio" name="user_auth_mode" id="auth_mode_radius" value="radius"'+(val==="radius"?" checked":"")+'> ';
-                    html += '<label class="form-check-label" for="auth_mode_radius">RADIUS (Database RADIUS)</label>';
-                    html += '</div>';
-                } else if (typeof val === 'boolean' || val === true || val === false || val === 'true' || val === 'false') {
-                    var checked = (val === true || val === 'true') ? 'checked' : '';
-                    html += '<label class="form-label">'+key+'</label>';
-                    html += '<div class="form-check">';
-                    html += '<input class="form-check-input" type="checkbox" name="'+key+'" id="setting_'+key+'" '+checked+'> ';
-                    html += '<label class="form-check-label" for="setting_'+key+'">'+(checked ? 'Aktif' : 'Tidak Aktif')+'</label>';
-                    html += '</div>';
-                } else {
-                    html += '<label class="form-label">'+key+'</label>';
-                    html += '<input type="text" class="form-control" name="'+key+'" value="'+val+'">';
-                }
+    
+    // Cache untuk menyimpan data settings yang sudah dimuat
+    let settingsCache = null;
+    let cacheTime = null;
+    const CACHE_DURATION = 30000; // 30 detik
+    
+    // Dummy data untuk tampilan awal jika server lambat
+    const dummySettings = {
+        admin_username: 'admin',
+        admin_password: '****',
+        genieacs_url: 'http://localhost:7557',
+        genieacs_username: 'admin',
+        genieacs_password: '****',
+        mikrotik_host: '192.168.1.1',
+        mikrotik_port: '8728',
+        mikrotik_user: 'admin',
+        mikrotik_password: '****',
+        main_interface: 'ether1',
+        company_header: 'ISP Monitor',
+        footer_info: 'Powered by Gembok',
+        customerPortalOtp: 'false',
+        otp_length: '6',
+        pppoe_monitor_enable: 'true',
+        rx_power_warning: '-27',
+        rx_power_critical: '-30',
+        whatsapp_keep_alive: 'true'
+    };
+    
+    // Function untuk render field dengan optimasi
+    function renderField(key, val) {
+        if (hiddenFields.includes(key)) return ''; // Skip hidden fields
+        
+        let html = '';
+        
+        if (typeof val === 'object' && val !== null) {
+            Object.keys(val).forEach(function(subkey) {
+                html += renderField(key + '.' + subkey, val[subkey]);
+            });
+        } else {
+            html += '<div class="mb-3">';
+            
+            if (key === 'user_auth_mode') {
+                html += '<label class="form-label">Mode Autentikasi User</label>';
+                html += '<div class="form-check">';
+                html += '<input class="form-check-input" type="radio" name="user_auth_mode" id="auth_mode_mikrotik" value="mikrotik"'+(val==="mikrotik"?" checked":"")+'> ';
+                html += '<label class="form-check-label" for="auth_mode_mikrotik">Mikrotik (RouterOS API)</label>';
                 html += '</div>';
+                html += '<div class="form-check">';
+                html += '<input class="form-check-input" type="radio" name="user_auth_mode" id="auth_mode_radius" value="radius"'+(val==="radius"?" checked":"")+'> ';
+                html += '<label class="form-check-label" for="auth_mode_radius">RADIUS (Database RADIUS)</label>';
+                html += '</div>';
+            } else if (typeof val === 'boolean' || val === true || val === false || val === 'true' || val === 'false') {
+                var checked = (val === true || val === 'true') ? 'checked' : '';
+                html += '<label class="form-label">'+key+'</label>';
+                html += '<div class="form-check">';
+                html += '<input class="form-check-input" type="checkbox" name="'+key+'" id="setting_'+key+'" '+checked+'> ';
+                html += '<label class="form-check-label" for="setting_'+key+'">'+(checked ? 'Aktif' : 'Tidak Aktif')+'</label>';
+                html += '</div>';
+            } else {
+                html += '<label class="form-label">'+key+'</label>';
+                // Mask password fields
+                const inputType = (key.includes('password') || key.includes('pass')) ? 'password' : 'text';
+                html += '<input type="'+inputType+'" class="form-control" name="'+key+'" value="'+val+'">';
             }
+            
+            html += '</div>';
         }
+        
+        return html;
+    }
+    
+    // Function untuk load settings dengan optimasi
+    function loadSettings(useDummy = false) {
+        const loadingStart = Date.now();
+        
+        if (useDummy) {
+            console.log('📋 Using dummy data for fast initial display');
+            renderSettings(dummySettings, true);
+            return;
+        }
+        
+        // Cek cache terlebih dahulu
+        const now = Date.now();
+        if (settingsCache && cacheTime && (now - cacheTime) < CACHE_DURATION) {
+            console.log('⚡ Using cached settings data');
+            renderSettings(settingsCache, false);
+            return;
+        }
+        
+        // Show loading indicator
+        $('#settingsFields').html('<div class="text-center p-4"><i class="bi bi-hourglass-split"></i> Memuat pengaturan...</div>');
+        
+        // Fetch dari server dengan timeout
+        const fetchTimeout = setTimeout(() => {
+            console.warn('⏰ Settings loading timeout, using dummy data');
+            renderSettings(dummySettings, true);
+        }, 5000); // 5 detik timeout
+        
+        $.get('/admin/setting/data')
+            .done(function(data) {
+                clearTimeout(fetchTimeout);
+                const loadTime = Date.now() - loadingStart;
+                
+                console.log(`✅ Settings loaded in ${loadTime}ms`, {
+                    cached: data._cached,
+                    dummy: data._dummy,
+                    fieldsCount: Object.keys(data).length
+                });
+                
+                // Update cache
+                settingsCache = data;
+                cacheTime = now;
+                
+                renderSettings(data, data._dummy || false);
+                
+                // Show performance info jika ada
+                if (data._cached || data._dummy) {
+                    const infoType = data._dummy ? 'dummy' : 'cached';
+                    const infoMsg = data._dummy ? 
+                        'Menggunakan data dummy (settings.json tidak tersedia)' : 
+                        `Data dari cache (${data._loadTime}ms yang lalu)`;
+                    
+                    $('#settingsFields').prepend(`
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <i class="bi bi-info-circle"></i> ${infoMsg}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `);
+                }
+            })
+            .fail(function(xhr) {
+                clearTimeout(fetchTimeout);
+                console.error('❌ Failed to load settings:', xhr.responseText);
+                
+                // Fallback to dummy data on error
+                console.log('🔄 Falling back to dummy data');
+                renderSettings(dummySettings, true);
+                
+                $('#settingsFields').prepend(`
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> Gagal memuat settings dari server. Menggunakan data dummy.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `);
+            });
+    }
+    
+    // Function untuk render settings ke HTML
+    function renderSettings(data, isDummy = false) {
+        let html = '';
+        
         Object.keys(data).forEach(function(key) {
-            renderField(key, data[key]);
+            html += renderField(key, data[key]);
         });
+        
         $('#settingsFields').html(html);
-    });
-    // Submit form settings
+        
+        if (isDummy) {
+            // Tandai field dummy dengan styling khusus
+            $('#settingsFields input').addClass('bg-light');
+        }
+        
+        console.log(`🎨 Rendered ${Object.keys(data).length} settings fields`);
+    }
+    
+    // Pre-load dengan dummy data untuk responsiveness
+    loadSettings(true);
+    
+    // Setelah 100ms, load data sesungguhnya
+    setTimeout(() => {
+        loadSettings(false);
+    }, 100);
+    
+    // Submit form settings dengan optimasi
     $('#settingsForm').on('submit', function(e) {
         e.preventDefault();
+        
+        const submitStart = Date.now();
+        const submitBtn = $(this).find('button[type=submit]');
+        const originalText = submitBtn.html();
+        
+        // Disable button dan show loading
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Menyimpan...');
+        
         var formData = {};
-        // Handle semua input text dan checkbox
-        $('#settingsForm').find('input[type=text],input[type=checkbox],input[type=number],input[type=password]').each(function() {
+        
+        // Handle semua input dengan optimasi
+        $('#settingsForm').find('input[type=text],input[type=password],input[type=checkbox],input[type=number]').each(function() {
             var name = $(this).attr('name');
             if (!name) return;
+            
             if ($(this).attr('type') === 'checkbox') {
                 formData[name] = $(this).is(':checked');
             } else {
                 formData[name] = $(this).val();
             }
         });
+        
         // Handle radio button (hanya yang checked)
         $('#settingsForm').find('input[type=radio]:checked').each(function() {
             var name = $(this).attr('name');
             if (!name) return;
             formData[name] = $(this).val();
         });
+        
         $.ajax({
             url: '/admin/setting/save',
             method: 'POST',
             data: formData,
+            timeout: 10000, // 10 detik timeout
             success: function(res) {
-                $('#settingsSuccess').removeClass('d-none').text('Pengaturan berhasil disimpan!');
+                const saveTime = Date.now() - submitStart;
+                
+                // Invalidate cache setelah save berhasil
+                settingsCache = null;
+                cacheTime = null;
+                
+                let successMsg = 'Pengaturan berhasil disimpan!';
+                if (res.saveTime) {
+                    successMsg += ` (${res.saveTime}ms)`;
+                }
+                if (res.fieldsCount) {
+                    successMsg += ` - ${res.fieldsCount} field tersimpan`;
+                }
+                
+                $('#settingsSuccess').removeClass('d-none').html(`
+                    <i class="bi bi-check-circle"></i> ${successMsg}
+                `);
+                
+                console.log(`✅ Settings saved successfully in ${saveTime}ms`);
+                
+                // Auto-hide success message
                 setTimeout(function() {
                     $('#settingsSuccess').addClass('d-none');
-                }, 3000);
+                }, 5000);
             },
-            error: function() {
-                alert('Gagal menyimpan pengaturan!');
+            error: function(xhr) {
+                console.error('❌ Error saving settings:', xhr.responseText);
+                
+                let errorMsg = 'Gagal menyimpan pengaturan!';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                }
+                
+                alert(errorMsg);
+            },
+            complete: function() {
+                // Restore button state
+                submitBtn.prop('disabled', false).html(originalText);
             }
         });
     });
+    
+    // Track total loading time
+    const totalLoadTime = Date.now() - loadStartTime;
+    console.log(`🏁 Admin Settings page fully loaded in ${totalLoadTime}ms`);
     // WhatsApp QR & Status
     function loadWAStatus() {
         $.ajax({
@@ -1935,6 +2124,11 @@ $(document).ready(function() {
         e.preventDefault();
         
         var formData = new FormData(this);
+        var submitButton = $(this).find('button[type="submit"]');
+        var originalButtonText = submitButton.html();
+        
+        // Disable button dan tampilkan loading
+        submitButton.prop('disabled', true).html('<i class="bi bi-upload"></i> Uploading...');
         
         $.ajax({
             url: '/admin/setting/upload-logo',
@@ -1945,12 +2139,14 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     // Tampilkan notifikasi sukses
-                    showNotification('success', 'Logo berhasil diupload! Halaman akan dimuat ulang...');
+                    showNotification('success', 'Logo berhasil diupload!');
                     
-                    // Tunggu 1.5 detik lalu refresh halaman
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
+                    // Update logo preview secara real-time
+                    updateLogoPreview(response.filename);
+                    
+                    // Reset form
+                    $('#logoUploadForm')[0].reset();
+                    
                 } else {
                     showNotification('danger', response.error || 'Gagal mengupload logo');
                 }
@@ -1962,9 +2158,46 @@ $(document).ready(function() {
                     errorMsg = xhr.responseJSON.error;
                 }
                 showNotification('danger', errorMsg);
+            },
+            complete: function() {
+                // Restore button state
+                submitButton.prop('disabled', false).html(originalButtonText);
             }
         });
     });
+    
+    // Function to update logo preview
+    function updateLogoPreview(filename) {
+        const timestamp = new Date().getTime();
+        const newSrc = `/img/${filename}?v=${timestamp}`;
+        
+        // Update logo preview di halaman setting
+        $('#logoPreview').attr('src', newSrc);
+        
+        // Update logo di sidebar (responsive dan normal)
+        const sidebarLogos = $('.sidebar-header img, #logoImage, .sidebar img[alt="Logo"]');
+        if (sidebarLogos.length > 0) {
+            sidebarLogos.attr('src', newSrc);
+        }
+        
+        // Update logo di navbar mobile (admin-responsive-sidebar)
+        const navbarLogo = $('.navbar img[alt="Logo"], .navbar-brand img');
+        if (navbarLogo.length > 0) {
+            navbarLogo.attr('src', newSrc);
+        }
+        
+        // Update logo di semua partials lainnya
+        const allLogos = $('img[alt="Logo"], img[src*="logo"]');
+        allLogos.each(function() {
+            const currentSrc = $(this).attr('src');
+            if (currentSrc && (currentSrc.includes('/img/logo') || currentSrc.includes('logo.'))) {
+                $(this).attr('src', newSrc);
+            }
+        });
+        
+        console.log('Logo preview updated:', newSrc);
+        console.log('Updated logo elements:', sidebarLogos.length + navbarLogo.length + allLogos.length);
+    }
 
     // 2. Handle DHCP Option 43 Generator
     $('#generateOption43').on('click', function() {

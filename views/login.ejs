@@ -215,6 +215,26 @@
         logoImg.onload = updateOrnament;
       }
     });
+    
+    // Fungsi untuk me-refresh logo dengan timestamp baru
+    function refreshLogo() {
+        const logo = document.getElementById('logo-img');
+        if (logo) {
+            // Tambahkan parameter timestamp baru untuk memaksa reload gambar
+            const timestamp = new Date().getTime();
+            const src = logo.src.split('?')[0]; // Hapus parameter yang ada
+            logo.src = `${src}?v=${timestamp}`;
+        }
+    }
+
+    // Refresh logo setiap 10 detik untuk login page (lebih jarang karena tidak sering berubah)
+    setInterval(refreshLogo, 10000);
+
+    // Refresh logo saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        // Delay sedikit untuk memastikan elemen sudah ter-render
+        setTimeout(refreshLogo, 1000);
+    });
   </script>
 </body>
 </html> 

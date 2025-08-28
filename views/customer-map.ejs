@@ -283,7 +283,7 @@
   <nav class="navbar navbar-expand-lg navbar-light">
     <div class="container-fluid">
       <a class="navbar-brand" href="/customer/dashboard">
-        <img src="/img/logo.png" alt="Logo" width="40" height="40" class="me-2">
+        <img id="mapLogo" src="/img/<%= (settings && settings.logo_filename) ? settings.logo_filename : 'logo.png' %>?v=<%= Date.now() %>" alt="Logo" width="40" height="40" class="me-2">
         <%= companyHeader %>
       </a>
 
@@ -678,6 +678,26 @@
         text: 'Terjadi kesalahan saat memuat peta',
         confirmButtonText: 'OK'
       });
+    });
+    
+    // Fungsi untuk me-refresh logo dengan timestamp baru
+    function refreshLogo() {
+        const logo = document.getElementById('mapLogo');
+        if (logo) {
+            // Tambahkan parameter timestamp baru untuk memaksa reload gambar
+            const timestamp = new Date().getTime();
+            const src = logo.src.split('?')[0]; // Hapus parameter yang ada
+            logo.src = `${src}?v=${timestamp}`;
+        }
+    }
+
+    // Refresh logo setiap 10 detik untuk customer map page
+    setInterval(refreshLogo, 10000);
+
+    // Refresh logo saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        // Delay sedikit untuk memastikan elemen sudah ter-render
+        setTimeout(refreshLogo, 1000);
     });
   </script>
 </body>

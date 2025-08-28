@@ -7,6 +7,7 @@ const { monitorPPPoEConnections } = require('./config/mikrotik');
 const fs = require('fs');
 const session = require('express-session');
 const { getSetting } = require('./config/settingsManager');
+const EventEmitter = require('events');
 
 // Import adminAuth untuk digunakan di berbagai endpoint
 const { adminAuth } = require('./routes/adminAuth');
@@ -14,10 +15,79 @@ const { adminAuth } = require('./routes/adminAuth');
 // Inisialisasi aplikasi Express
 const app = express();
 
+// 🔊 Setup global event system untuk settings broadcast
+global.appEvents = new EventEmitter();
+global.appEvents.setMaxListeners(20); // Increase limit untuk multiple listeners
+
+// Event listener untuk settings update
+global.appEvents.on('settings:updated', (newSettings) => {
+    logger.info(`📡 Settings update event received: ${Object.keys(newSettings).length} fields`);
+    
+    // Future: Notify other components yang perlu reload settings
+    // Contoh: WhatsApp module, GenieACS module, dll
+});
+
+// Pre-load settings untuk mempercepat admin login pertama kali
+(function preloadSettings() {
+    try {
+        const settingsPath = path.join(__dirname, 'settings.json');
+        
+        if (!fs.existsSync(settingsPath)) {
+            logger.info('📝 Creating initial settings.json for faster first-time login');
+            
+            const initialSettings = {
+                admin_username: 'admin',
+                admin_password: 'admin',
+                genieacs_url: 'http://localhost:7557',
+                genieacs_username: 'admin',
+                genieacs_password: 'password',
+                mikrotik_host: '192.168.1.1',
+                mikrotik_port: '8728',
+                mikrotik_user: 'admin',
+                mikrotik_password: 'password',
+                main_interface: 'ether1',
+                company_header: 'ISP Monitor',
+                footer_info: 'Powered by Gembok',
+                server_port: '3001',
+                server_host: 'localhost',
+                customerPortalOtp: 'false',
+                otp_length: '6',
+                pppoe_monitor_enable: 'true',
+                rx_power_warning: '-27',
+                rx_power_critical: '-30',
+                whatsapp_keep_alive: 'true',
+                user_auth_mode: 'mikrotik'
+            };
+            
+            try {
+                fs.writeFileSync(settingsPath, JSON.stringify(initialSettings, null, 2), 'utf8');
+                logger.info('✅ Initial settings.json created successfully');
+            } catch (writeError) {
+                logger.error('❌ Failed to create initial settings.json:', writeError.message);
+            }
+        } else {
+            // Validate existing settings
+            try {
+                const settingsData = fs.readFileSync(settingsPath, 'utf8');
+                const settings = JSON.parse(settingsData);
+                
+                // Pre-cache di memory untuk akses cepat
+                global.preloadedSettings = settings;
+                
+                logger.info(`✅ Settings pre-loaded: ${Object.keys(settings).length} fields`);
+            } catch (parseError) {
+                logger.warn('⚠️ Settings.json exists but invalid format:', parseError.message);
+            }
+        }
+    } catch (error) {
+        logger.error('❌ Error during settings pre-load:', error.message);
+    }
+})();
+
 // Import route adminAuth
 const { router: adminAuthRouter } = require('./routes/adminAuth');
 
-// Middleware dasar
+// Middleware dasar dengan optimasi
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(session({
@@ -26,6 +96,15 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false }
 }));
+
+// Middleware untuk optimasi admin settings access
+app.use('/admin/setting', (req, res, next) => {
+    // Pre-populate settings data jika tersedia di global cache
+    if (global.preloadedSettings && req.method === 'GET' && req.path === '/') {
+        req.cachedSettings = global.preloadedSettings;
+    }
+    next();
+});
 
 // Gunakan route adminAuth untuk /admin
 app.use('/admin', adminAuthRouter);
