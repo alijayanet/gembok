@@ -5,6 +5,7 @@ const axios = require('axios');
 const { findDeviceByTag } = require('../config/addWAN');
 const { sendMessage } = require('../config/sendMessage');
 const { getSettingsWithCache, getSetting } = require('../config/settingsManager');
+const { setParameterValues } = require('../config/genieacs');
 const router = express.Router();
 
 // Validasi nomor pelanggan ke GenieACS
@@ -160,55 +161,34 @@ async function getCustomerDeviceData(phone) {
   };
 }
 
-// Helper: Update SSID (real ke GenieACS)
+// Helper: Update SSID (real ke GenieACS) - Ultra Fast Optimized version
 async function updateSSID(phone, newSSID) {
   try {
+    const startTime = Date.now();
     const device = await findDeviceByTag(phone);
     if (!device) return false;
+    
     const deviceId = device._id;
-    const encodedDeviceId = encodeURIComponent(deviceId);
-    const settings = getSettingsWithCache();
-    const genieacsUrl = settings.genieacs_url || 'http://localhost:7557';
-    const username = settings.genieacs_username || '';
-    const password = settings.genieacs_password || '';
-    // Update SSID 2.4GHz
-    await axios.post(
-      `${genieacsUrl}/devices/${encodedDeviceId}/tasks?connection_request`,
-      {
-        name: "setParameterValues",
-        parameterValues: [
-          ["InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID", newSSID, "xsd:string"]
-        ]
-      },
-      { auth: { username, password } }
-    );
-    // Update SSID 5GHz (index 5-8, ambil yang berhasil saja)
-    const newSSID5G = `${newSSID}-5G`;
-    const ssid5gIndexes = [5, 6, 7, 8];
-    for (const idx of ssid5gIndexes) {
-      try {
-        await axios.post(
-          `${genieacsUrl}/devices/${encodedDeviceId}/tasks?connection_request`,
-          {
-            name: "setParameterValues",
-            parameterValues: [
-              [`InternetGatewayDevice.LANDevice.1.WLANConfiguration.${idx}.SSID`, newSSID5G, "xsd:string"]
-            ]
-          },
-          { auth: { username, password } }
-        );
-        break;
-      } catch (e) {}
-    }
-    // Hanya refresh, tidak perlu reboot
-    await axios.post(
-      `${genieacsUrl}/devices/${encodedDeviceId}/tasks?connection_request`,
-      { name: "refreshObject", objectName: "InternetGatewayDevice.LANDevice.1.WLANConfiguration" },
-      { auth: { username, password } }
-    );
-    return true;
-  } catch (e) {
-    return false;
+    
+    console.log(`🚀 Fast SSID update for device ${deviceId} to ${newSSID}`);
+    
+    // Use optimized setParameterValues with fast mode
+    const result = await setParameterValues(deviceId, {
+      'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID': newSSID
+    });
+    
+    const totalTime = Date.now() - startTime;
+    console.log(`✅ SSID update completed in ${totalTime}ms (${result.mode} mode, ${result.onuType} ONU)`);
+    
+    return {
+      success: true,
+      processingTime: totalTime,
+      onuType: result.onuType,
+      mode: result.mode
+    };
+  } catch (error) {
+    console.error('Error updating SSID:', error.message);
+    return { success: false, error: error.message };
   }
 }
 // Helper: Add admin number and company info to customer data
@@ -227,43 +207,36 @@ function addAdminNumber(customerData) {
   return customerData;
 }
 
-// Helper: Update Password (real ke GenieACS)
+// Helper: Update Password (real ke GenieACS) - Ultra Fast Optimized version
 async function updatePassword(phone, newPassword) {
   try {
-    if (newPassword.length < 8) return false;
+    if (newPassword.length < 8) return { success: false, error: 'Password minimal 8 karakter' };
+    
+    const startTime = Date.now();
     const device = await findDeviceByTag(phone);
-    if (!device) return false;
+    if (!device) return { success: false, error: 'Device tidak ditemukan' };
+    
     const deviceId = device._id;
-    const encodedDeviceId = encodeURIComponent(deviceId);
-    const settings = getSettingsWithCache();
-    const genieacsUrl = settings.genieacs_url || 'http://localhost:7557';
-    const username = settings.genieacs_username || '';
-    const password = settings.genieacs_password || '';
-    const tasksUrl = `${genieacsUrl}/devices/${encodedDeviceId}/tasks`;
-    // Update password 2.4GHz
-    await axios.post(`${tasksUrl}?connection_request`, {
-      name: "setParameterValues",
-      parameterValues: [
-        ["InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.KeyPassphrase", newPassword, "xsd:string"],
-        ["InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.PreSharedKey.1.KeyPassphrase", newPassword, "xsd:string"]
-      ]
-    }, { auth: { username, password } });
-    // Update password 5GHz
-    await axios.post(`${tasksUrl}?connection_request`, {
-      name: "setParameterValues",
-      parameterValues: [
-        ["InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.KeyPassphrase", newPassword, "xsd:string"],
-        ["InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.PreSharedKey.1.KeyPassphrase", newPassword, "xsd:string"]
-      ]
-    }, { auth: { username, password } });
-    // Refresh
-    await axios.post(`${tasksUrl}?connection_request`, {
-      name: "refreshObject",
-      objectName: "InternetGatewayDevice.LANDevice.1.WLANConfiguration"
-    }, { auth: { username, password } });
-    return true;
-  } catch (e) {
-    return false;
+    
+    console.log(`🚀 Fast password update for device ${deviceId}`);
+    
+    // Use optimized setParameterValues with fast mode
+    const result = await setParameterValues(deviceId, {
+      'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.KeyPassphrase': newPassword
+    });
+    
+    const totalTime = Date.now() - startTime;
+    console.log(`✅ Password update completed in ${totalTime}ms (${result.mode} mode, ${result.onuType} ONU)`);
+    
+    return {
+      success: true,
+      processingTime: totalTime,
+      onuType: result.onuType,
+      mode: result.mode
+    };
+  } catch (error) {
+    console.error('Error updating password:', error.message);
+    return { success: false, error: error.message };
   }
 }
 
@@ -355,47 +328,86 @@ router.get('/dashboard', async (req, res) => {
   });
 });
 
-// POST: Ganti SSID
+// POST: Ganti SSID - Optimized Fast Mode
 router.post('/change-ssid', async (req, res) => {
   const phone = req.session && req.session.phone;
   if (!phone) return res.redirect('/customer/login');
   const { ssid } = req.body;
-  const ok = await updateSSID(phone, ssid);
-  if (ok) {
+  
+  const result = await updateSSID(phone, ssid);
+  
+  let notificationMessage = 'Gagal mengubah SSID.';
+  
+  if (result.success) {
+    const timeInfo = result.processingTime ? ` (${result.processingTime}ms, ${result.mode} mode)` : '';
+    notificationMessage = `Nama WiFi berhasil diubah${timeInfo}.`;
+    
     // Kirim notifikasi WhatsApp ke pelanggan
     const waJid = phone.replace(/^0/, '62') + '@s.whatsapp.net';
-    const msg = `✅ *PERUBAHAN NAMA WIFI*\n\nNama WiFi Anda telah diubah menjadi:\n• WiFi 2.4GHz: ${ssid}\n• WiFi 5GHz: ${ssid}-5G\n\nSilakan hubungkan ulang perangkat Anda ke WiFi baru.`;
-    try { await sendMessage(waJid, msg); } catch (e) {}
+    const msg = `✅ *PERUBAHAN NAMA WIFI*\n\n` +
+      `Nama WiFi Anda telah diubah menjadi:\n` +
+      `• WiFi 2.4GHz: ${ssid}\n` +
+      `• WiFi 5GHz: ${ssid}-5G\n\n` +
+      `⚡ Diproses dalam ${result.processingTime}ms menggunakan ${result.mode} mode\n\n` +
+      `Silakan hubungkan ulang perangkat Anda ke WiFi baru.`;
+    
+    try { 
+      await sendMessage(waJid, msg); 
+    } catch (e) {
+      console.warn('Gagal kirim notifikasi WhatsApp:', e.message);
+    }
   }
+  
   const data = await getCustomerDeviceData(phone);
   const customerWithAdmin = addAdminNumber(data || { phone, ssid: '-', status: '-', lastChange: '-' });
+  
   res.render('dashboard', { 
     customer: customerWithAdmin, 
     connectedUsers: data ? data.connectedUsers : [], 
-    notif: ok ? 'Nama WiFi (SSID) berhasil diubah.' : 'Gagal mengubah SSID.',
-    settings: JSON.parse(fs.readFileSync(path.join(__dirname, '../settings.json'), 'utf8'))
+    notif: notificationMessage,
+    settings: JSON.parse(fs.readFileSync(path.join(__dirname, '../settings.json'), 'utf8')),
+    currentPage: 'dashboard'
   });
 });
 
-// POST: Ganti Password
+// POST: Ganti Password - Optimized Fast Mode
 router.post('/change-password', async (req, res) => {
   const phone = req.session && req.session.phone;
   if (!phone) return res.redirect('/customer/login');
   const { password } = req.body;
-  const ok = await updatePassword(phone, password);
-  if (ok) {
+  
+  const result = await updatePassword(phone, password);
+  
+  let notificationMessage = result.error || 'Gagal mengubah password.';
+  
+  if (result.success) {
+    const timeInfo = result.processingTime ? ` (${result.processingTime}ms, ${result.mode} mode)` : '';
+    notificationMessage = `Password WiFi berhasil diubah${timeInfo}.`;
+    
     // Kirim notifikasi WhatsApp ke pelanggan
     const waJid = phone.replace(/^0/, '62') + '@s.whatsapp.net';
-    const msg = `✅ *PERUBAHAN PASSWORD WIFI*\n\nPassword WiFi Anda telah diubah menjadi:\n• Password Baru: ${password}\n\nSilakan hubungkan ulang perangkat Anda dengan password baru.`;
-    try { await sendMessage(waJid, msg); } catch (e) {}
+    const msg = `✅ *PERUBAHAN PASSWORD WIFI*\n\n` +
+      `Password WiFi Anda telah diubah menjadi:\n` +
+      `• Password Baru: ${password}\n\n` +
+      `⚡ Diproses dalam ${result.processingTime}ms menggunakan ${result.mode} mode\n\n` +
+      `Silakan hubungkan ulang perangkat Anda dengan password baru.`;
+    
+    try { 
+      await sendMessage(waJid, msg); 
+    } catch (e) {
+      console.warn('Gagal kirim notifikasi WhatsApp:', e.message);
+    }
   }
+  
   const data = await getCustomerDeviceData(phone);
   const customerWithAdmin = addAdminNumber(data || { phone, ssid: '-', status: '-', lastChange: '-' });
+  
   res.render('dashboard', { 
     customer: customerWithAdmin, 
     connectedUsers: data ? data.connectedUsers : [], 
-    notif: ok ? 'Password WiFi berhasil diubah.' : 'Gagal mengubah password.',
-    settings: JSON.parse(fs.readFileSync(path.join(__dirname, '../settings.json'), 'utf8'))
+    notif: notificationMessage,
+    settings: JSON.parse(fs.readFileSync(path.join(__dirname, '../settings.json'), 'utf8')),
+    currentPage: 'dashboard'
   });
 });
 

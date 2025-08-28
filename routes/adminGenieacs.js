@@ -85,35 +85,110 @@ router.get('/genieacs', adminAuth, async (req, res) => {
   }
 });
 
-// Endpoint edit SSID/Password
+// Endpoint edit SSID/Password - Optimized Fast Mode (Admin)
 router.post('/genieacs/edit', adminAuth, async (req, res) => {
   try {
     const { id, ssid, password } = req.body;
-    // Implementasi update SSID/Password ke GenieACS
-    let updateResult = null;
+    
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'Device ID wajib diisi' });
+    }
+    
+    console.log(`🚀 Admin fast edit for device: ${id}`);
+    const startTime = Date.now();
+    
+    let updateResults = [];
+    let totalProcessingTime = 0;
+    
+    // Update SSID dengan fast mode optimization
     if (ssid) {
       try {
-        await setParameterValues(id, { 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID': ssid });
-        updateResult = { success: true, field: 'ssid' };
+        console.log(`📡 Admin updating SSID to: ${ssid}`);
+        const result = await setParameterValues(id, { 
+          'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID': ssid 
+        });
+        
+        updateResults.push({
+          field: 'ssid',
+          success: true,
+          onuType: result.onuType,
+          mode: result.mode,
+          processingTime: result.processingTime,
+          parameters: result.parametersSet
+        });
+        
+        console.log(`✅ Admin SSID updated in ${result.processingTime}ms (${result.mode} mode, ${result.onuType} ONU)`);
+        
       } catch (e) {
-        return res.status(500).json({ success: false, message: 'Gagal update SSID' });
+        console.error(`❌ Admin SSID update failed:`, e.message);
+        return res.status(500).json({ 
+          success: false, 
+          message: `Gagal update SSID: ${e.message}`,
+          error: e.message
+        });
       }
     }
+    
+    // Update Password dengan fast mode optimization
     if (password) {
       try {
-        await setParameterValues(id, { 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.KeyPassphrase': password });
-        updateResult = { success: true, field: 'password' };
+        console.log(`🔐 Admin updating password`);
+        const result = await setParameterValues(id, { 
+          'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.KeyPassphrase': password 
+        });
+        
+        updateResults.push({
+          field: 'password',
+          success: true,
+          onuType: result.onuType,
+          mode: result.mode,
+          processingTime: result.processingTime,
+          parameters: result.parametersSet
+        });
+        
+        console.log(`✅ Admin password updated in ${result.processingTime}ms (${result.mode} mode, ${result.onuType} ONU)`);
+        
       } catch (e) {
-        return res.status(500).json({ success: false, message: 'Gagal update Password' });
+        console.error(`❌ Admin password update failed:`, e.message);
+        return res.status(500).json({ 
+          success: false, 
+          message: `Gagal update password: ${e.message}`,
+          error: e.message
+        });
       }
     }
-    if (updateResult) {
-      res.json({ success: true, field: updateResult.field });
+    
+    totalProcessingTime = Date.now() - startTime;
+    
+    if (updateResults.length > 0) {
+      // Aggregate performance info
+      const modes = [...new Set(updateResults.map(r => r.mode))];
+      const onuTypes = [...new Set(updateResults.map(r => r.onuType))];
+      const totalParams = updateResults.reduce((sum, r) => sum + r.parameters, 0);
+      
+      console.log(`🎯 Admin edit completed: ${updateResults.length} fields, ${totalProcessingTime}ms total`);
+      
+      res.json({ 
+        success: true, 
+        fields: updateResults.map(r => r.field),
+        totalTime: totalProcessingTime,
+        onuType: onuTypes[0],
+        mode: modes[0],
+        totalParameters: totalParams,
+        details: updateResults,
+        message: `Update berhasil dalam ${totalProcessingTime}ms (${modes[0]} mode)`
+      });
     } else {
-      res.status(400).json({ success: false, message: 'Tidak ada perubahan' });
+      res.status(400).json({ success: false, message: 'Tidak ada perubahan yang diminta' });
     }
+    
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Gagal update SSID/Password' });
+    console.error('❌ Admin edit error:', err.message);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Gagal update SSID/Password: ' + err.message,
+      error: err.message
+    });
   }
 });
 
@@ -855,6 +930,126 @@ router.post('/reverse-geocode', async (req, res) => {
       success: false,
       message: 'Error reverse geocoding',
       error: error.message
+    });
+  }
+});
+
+// Endpoint batch edit SSID/Password untuk multiple devices - Admin Fast Mode
+router.post('/genieacs/batch-edit', adminAuth, async (req, res) => {
+  try {
+    const { devices, ssid, password } = req.body;
+    
+    if (!devices || !Array.isArray(devices) || devices.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Daftar device wajib diisi dan tidak boleh kosong' 
+      });
+    }
+    
+    if (!ssid && !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'SSID atau password harus diisi' 
+      });
+    }
+    
+    console.log(`🚀 Admin batch edit for ${devices.length} devices`);
+    const startTime = Date.now();
+    
+    // Process devices in parallel for better performance
+    const batchPromises = devices.map(async (deviceId, index) => {
+      try {
+        console.log(`📱 Processing device ${index + 1}/${devices.length}: ${deviceId}`);
+        
+        const deviceResults = [];
+        
+        // Update SSID if provided
+        if (ssid) {
+          const ssidResult = await setParameterValues(deviceId, { 
+            'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID': ssid 
+          });
+          deviceResults.push({
+            field: 'ssid',
+            onuType: ssidResult.onuType,
+            mode: ssidResult.mode,
+            processingTime: ssidResult.processingTime
+          });
+        }
+        
+        // Update password if provided
+        if (password) {
+          const passwordResult = await setParameterValues(deviceId, { 
+            'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.KeyPassphrase': password 
+          });
+          deviceResults.push({
+            field: 'password',
+            onuType: passwordResult.onuType,
+            mode: passwordResult.mode,
+            processingTime: passwordResult.processingTime
+          });
+        }
+        
+        return {
+          deviceId,
+          success: true,
+          results: deviceResults
+        };
+        
+      } catch (error) {
+        console.error(`❌ Error processing device ${deviceId}:`, error.message);
+        return {
+          deviceId,
+          success: false,
+          error: error.message
+        };
+      }
+    });
+    
+    // Wait for all devices to be processed
+    const results = await Promise.all(batchPromises);
+    
+    // Separate successful and failed updates
+    const successful = results.filter(r => r.success);
+    const failed = results.filter(r => !r.success);
+    
+    const totalProcessingTime = Date.now() - startTime;
+    
+    // Calculate performance statistics
+    const onuTypes = {};
+    const modes = {};
+    let totalParams = 0;
+    
+    successful.forEach(result => {
+      result.results.forEach(r => {
+        onuTypes[r.onuType] = (onuTypes[r.onuType] || 0) + 1;
+        modes[r.mode] = (modes[r.mode] || 0) + 1;
+        totalParams++;
+      });
+    });
+    
+    console.log(`🎯 Batch edit completed: ${successful.length}/${devices.length} successful, ${totalProcessingTime}ms total`);
+    
+    res.json({
+      success: true,
+      totalDevices: devices.length,
+      successful: successful.length,
+      failed: failed.length,
+      totalTime: totalProcessingTime,
+      avgTimePerDevice: Math.round(totalProcessingTime / devices.length),
+      onuTypeStats: onuTypes,
+      modeStats: modes,
+      totalParameters: totalParams,
+      successfulDevices: successful,
+      failedDevices: failed,
+      message: `Batch update berhasil: ${successful.length}/${devices.length} device dalam ${totalProcessingTime}ms`
+    });
+    
+  } catch (err) {
+    console.error('❌ Batch edit error:', err.message);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Gagal melakukan batch update: ' + err.message,
+      error: err.message
     });
   }
 });
