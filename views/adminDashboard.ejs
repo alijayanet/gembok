@@ -117,37 +117,49 @@
                       </div>
                     </div>
                     
-                    <!-- Real-time bandwidth info -->
+                    <!-- Real-time bandwidth info dengan color scheme yang sesuai chart -->
                     <div class="row mb-2">
                       <div class="col-md-3">
-                        <div class="card bg-primary text-white">
-                          <div class="card-body text-center py-1">
-                            <small class="d-block" style="font-size: 0.75rem;">Download</small>
-                            <strong id="currentRx" style="font-size: 1.1rem;">0 Mbps</strong>
+                        <div class="card text-white" style="background: linear-gradient(135deg, #36a2eb 0%, #1e88e5 100%); border: none; box-shadow: 0 4px 8px rgba(54, 162, 235, 0.3);">
+                          <div class="card-body text-center py-2">
+                            <div class="d-flex align-items-center justify-content-center mb-1">
+                              <i class="bi bi-download" style="font-size: 1.1rem; margin-right: 6px;"></i>
+                              <small class="fw-bold" style="font-size: 0.8rem; letter-spacing: 0.5px;">DOWNLOAD (RX)</small>
+                            </div>
+                            <div id="currentRx" style="font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">0 Mbps</div>
                           </div>
                         </div>
                       </div>
                       <div class="col-md-3">
-                        <div class="card bg-success text-white">
-                          <div class="card-body text-center py-1">
-                            <small class="d-block" style="font-size: 0.75rem;">Upload</small>
-                            <strong id="currentTx" style="font-size: 1.1rem;">0 Mbps</strong>
+                        <div class="card text-white" style="background: linear-gradient(135deg, #ff6384 0%, #e91e63 100%); border: none; box-shadow: 0 4px 8px rgba(255, 99, 132, 0.3);">
+                          <div class="card-body text-center py-2">
+                            <div class="d-flex align-items-center justify-content-center mb-1">
+                              <i class="bi bi-upload" style="font-size: 1.1rem; margin-right: 6px;"></i>
+                              <small class="fw-bold" style="font-size: 0.8rem; letter-spacing: 0.5px;">UPLOAD (TX)</small>
+                            </div>
+                            <div id="currentTx" style="font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">0 Mbps</div>
                           </div>
                         </div>
                       </div>
                       <div class="col-md-3">
-                        <div class="card bg-info text-white">
-                          <div class="card-body text-center py-1">
-                            <small class="d-block" style="font-size: 0.75rem;">Total</small>
-                            <strong id="currentTotal" style="font-size: 1.1rem;">0 Mbps</strong>
+                        <div class="card text-white" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); border: none; box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);">
+                          <div class="card-body text-center py-2">
+                            <div class="d-flex align-items-center justify-content-center mb-1">
+                              <i class="bi bi-speedometer2" style="font-size: 1.1rem; margin-right: 6px;"></i>
+                              <small class="fw-bold" style="font-size: 0.8rem; letter-spacing: 0.5px;">TOTAL TRAFFIC</small>
+                            </div>
+                            <div id="currentTotal" style="font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">0 Mbps</div>
                           </div>
                         </div>
                       </div>
                       <div class="col-md-3">
-                        <div class="card bg-warning text-white">
-                          <div class="card-body text-center py-1">
-                            <small class="d-block" style="font-size: 0.75rem;">Status</small>
-                            <strong id="currentStatus" style="font-size: 1.1rem;">Idle</strong>
+                        <div class="card text-white" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%); border: none; box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);">
+                          <div class="card-body text-center py-2">
+                            <div class="d-flex align-items-center justify-content-center mb-1">
+                              <i class="bi bi-activity" style="font-size: 1.1rem; margin-right: 6px;"></i>
+                              <small class="fw-bold" style="font-size: 0.8rem; letter-spacing: 0.5px;">NETWORK STATUS</small>
+                            </div>
+                            <div id="currentStatus" style="font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">Idle</div>
                           </div>
                         </div>
                       </div>
@@ -162,30 +174,80 @@
             </div>
             <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
             <script>
-            // Grafik bandwidth real-time
+            // Grafik bandwidth real-time dengan dukungan Gbps
 const ctx = document.getElementById('internetChart').getContext('2d');
 const maxPoints = 30; // tampilkan 30 data terakhir
 let currentInterface = localStorage.getItem('selectedInterface') || 'ether1-ISP'; // Ambil dari localStorage atau default sesuai settings.json
+let currentUnit = 'Mbps'; // Unit aktif: bps, Kbps, Mbps, Gbps
+
+// Fungsi untuk konversi unit bandwidth
+function formatBandwidth(bytesPerSecond) {
+  const bps = bytesPerSecond;
+  const kbps = bps / 1000;
+  const mbps = bps / 1000000;
+  const gbps = bps / 1000000000;
+  
+  if (gbps >= 1) {
+    return { value: gbps.toFixed(3), unit: 'Gbps' };
+  } else if (mbps >= 1) {
+    return { value: mbps.toFixed(2), unit: 'Mbps' };
+  } else if (kbps >= 1) {
+    return { value: kbps.toFixed(1), unit: 'Kbps' };
+  } else {
+    return { value: bps.toFixed(0), unit: 'bps' };
+  }
+}
+
+// Fungsi untuk mendapatkan nilai dalam unit yang konsisten untuk chart
+function getValueInUnit(bytesPerSecond, targetUnit) {
+  switch (targetUnit) {
+    case 'Gbps': return bytesPerSecond / 1000000000;
+    case 'Mbps': return bytesPerSecond / 1000000;
+    case 'Kbps': return bytesPerSecond / 1000;
+    default: return bytesPerSecond;
+  }
+}
+
+// Fungsi untuk menentukan unit optimal berdasarkan nilai maksimum
+function determineOptimalUnit(maxValue) {
+  if (maxValue >= 1000000000) return 'Gbps';
+  if (maxValue >= 1000000) return 'Mbps';
+  if (maxValue >= 1000) return 'Kbps';
+  return 'bps';
+}
+
 let chart = new Chart(ctx, {
   type: 'line',
   data: {
     labels: [],
     datasets: [
       {
-        label: 'RX (Mbps)',
+        label: 'RX (Download)',
         data: [],
         fill: true,
-        backgroundColor: 'rgba(13,202,240,0.2)',
-        borderColor: 'rgba(13,202,240,1)',
-        tension: 0.4
+        backgroundColor: 'rgba(54, 162, 235, 0.15)', // Blue dengan transparansi lebih rendah
+        borderColor: 'rgba(54, 162, 235, 1)', // Blue solid
+        borderWidth: 3,
+        tension: 0.4,
+        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 6
       },
       {
-        label: 'TX (Mbps)',
+        label: 'TX (Upload)',
         data: [],
         fill: true,
-        backgroundColor: 'rgba(40,167,69,0.2)',
-        borderColor: 'rgba(40,167,69,1)',
-        tension: 0.4
+        backgroundColor: 'rgba(255, 99, 132, 0.15)', // Red dengan transparansi lebih rendah
+        borderColor: 'rgba(255, 99, 132, 1)', // Red solid
+        borderWidth: 3,
+        tension: 0.4,
+        pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 6
       }
     ]
   },
@@ -197,19 +259,36 @@ let chart = new Chart(ctx, {
         display: true,
         position: 'top',
         labels: {
-          padding: 10,
-          usePointStyle: true
+          padding: 15,
+          usePointStyle: true,
+          pointStyle: 'line',
+          font: {
+            size: 12,
+            weight: 'bold'
+          }
         }
       },
       tooltip: {
         mode: 'index',
         intersect: false,
-        backgroundColor: 'rgba(0,0,0,0.8)',
+        backgroundColor: 'rgba(0,0,0,0.9)',
         titleColor: 'white',
         bodyColor: 'white',
+        borderColor: 'rgba(255,255,255,0.3)',
+        borderWidth: 1,
+        cornerRadius: 8,
+        titleFont: {
+          size: 13,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 12
+        },
         callbacks: {
           label: function(context) {
-            return context.dataset.label + ': ' + context.parsed.y + ' Mbps';
+            const value = context.parsed.y;
+            const formatted = formatBandwidth(value * (currentUnit === 'Gbps' ? 1000000000 : currentUnit === 'Mbps' ? 1000000 : currentUnit === 'Kbps' ? 1000 : 1));
+            return context.dataset.label + ': ' + formatted.value + ' ' + formatted.unit;
           }
         }
       }
@@ -219,38 +298,54 @@ let chart = new Chart(ctx, {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Bandwidth (Mbps)',
+          text: 'Bandwidth (' + currentUnit + ')',
           font: {
-            size: 12
-          }
+            size: 13,
+            weight: 'bold'
+          },
+          color: 'rgba(0,0,0,0.8)'
         },
         ticks: {
           callback: function(value) {
-            return value + ' Mbps';
+            if (currentUnit === 'Gbps') {
+              return value.toFixed(3) + ' Gbps';
+            } else if (currentUnit === 'Mbps') {
+              return value.toFixed(1) + ' Mbps';
+            } else if (currentUnit === 'Kbps') {
+              return value.toFixed(0) + ' Kbps';
+            } else {
+              return value.toFixed(0) + ' bps';
+            }
           },
           font: {
             size: 10
-          }
+          },
+          maxTicksLimit: 8
         },
         grid: {
-          color: 'rgba(0,0,0,0.1)'
+          color: 'rgba(0,0,0,0.1)',
+          drawBorder: false
         }
       },
       x: {
         title: {
           display: true,
-          text: 'Time',
+          text: 'Time (Real-time)',
           font: {
-            size: 12
-          }
+            size: 13,
+            weight: 'bold'
+          },
+          color: 'rgba(0,0,0,0.8)'
         },
         ticks: {
           font: {
             size: 10
-          }
+          },
+          maxTicksLimit: 8
         },
         grid: {
-          color: 'rgba(0,0,0,0.1)'
+          color: 'rgba(0,0,0,0.1)',
+          drawBorder: false
         }
       }
     },
@@ -261,12 +356,17 @@ let chart = new Chart(ctx, {
     },
     elements: {
       point: {
-        radius: 2,
-        hoverRadius: 4
+        radius: 3,
+        hoverRadius: 6,
+        borderWidth: 2
       },
       line: {
-        borderWidth: 2
+        borderWidth: 3
       }
+    },
+    animation: {
+      duration: 750,
+      easing: 'easeInOutQuart'
     }
   }
 });
@@ -275,31 +375,60 @@ function addTrafficData(rx, tx, interface) {
   const now = new Date();
   const label = now.toLocaleTimeString('id-ID', { hour12: false });
   
-  // Konversi ke Mbps
-  const rxMbps = (rx/1000000).toFixed(2);
-  const txMbps = (tx/1000000).toFixed(2);
-  const totalMbps = (parseFloat(rxMbps) + parseFloat(txMbps)).toFixed(2);
+  // Tentukan unit optimal berdasarkan nilai maksimum saat ini
+  const maxCurrentValue = Math.max(rx, tx);
+  const optimalUnit = determineOptimalUnit(maxCurrentValue);
   
-  // Update real-time info
-  document.getElementById('currentRx').textContent = rxMbps + ' Mbps';
-  document.getElementById('currentTx').textContent = txMbps + ' Mbps';
-  document.getElementById('currentTotal').textContent = totalMbps + ' Mbps';
+  // Update unit chart jika berubah
+  if (optimalUnit !== currentUnit) {
+    currentUnit = optimalUnit;
+    chart.options.scales.y.title.text = 'Bandwidth (' + currentUnit + ')';
+    
+    // Convert existing data ke unit baru
+    chart.data.datasets[0].data = chart.data.datasets[0].data.map(value => {
+      const bytesPerSecond = value * (currentUnit === 'Gbps' ? 1000000000 : currentUnit === 'Mbps' ? 1000000 : currentUnit === 'Kbps' ? 1000 : 1);
+      return getValueInUnit(bytesPerSecond, currentUnit);
+    });
+    chart.data.datasets[1].data = chart.data.datasets[1].data.map(value => {
+      const bytesPerSecond = value * (currentUnit === 'Gbps' ? 1000000000 : currentUnit === 'Mbps' ? 1000000 : currentUnit === 'Kbps' ? 1000 : 1);
+      return getValueInUnit(bytesPerSecond, currentUnit);
+    });
+  }
   
-  // Update status berdasarkan traffic
+  // Format nilai untuk tampilan real-time
+  const rxFormatted = formatBandwidth(rx);
+  const txFormatted = formatBandwidth(tx);
+  const totalFormatted = formatBandwidth(rx + tx);
+  
+  // Update real-time info dengan unit yang sesuai
+  document.getElementById('currentRx').innerHTML = `<span style="color: #36a2eb; font-weight: bold;">${rxFormatted.value}</span> <small>${rxFormatted.unit}</small>`;
+  document.getElementById('currentTx').innerHTML = `<span style="color: #ff6384; font-weight: bold;">${txFormatted.value}</span> <small>${txFormatted.unit}</small>`;
+  document.getElementById('currentTotal').innerHTML = `<span style="font-weight: bold;">${totalFormatted.value}</span> <small>${totalFormatted.unit}</small>`;
+  
+  // Update status berdasarkan traffic (dalam Mbps untuk konsistensi)
+  const totalMbps = (rx + tx) / 1000000;
   const statusElement = document.getElementById('currentStatus');
-  if (parseFloat(totalMbps) > 10) {
-    statusElement.textContent = 'High';
+  
+  if (totalMbps > 100) { // > 100 Mbps
+    statusElement.textContent = 'Very High';
     statusElement.parentElement.parentElement.className = 'card bg-danger text-white';
-  } else if (parseFloat(totalMbps) > 1) {
-    statusElement.textContent = 'Medium';
+  } else if (totalMbps > 50) { // > 50 Mbps
+    statusElement.textContent = 'High';
     statusElement.parentElement.parentElement.className = 'card bg-warning text-white';
-  } else if (parseFloat(totalMbps) > 0.1) {
-    statusElement.textContent = 'Low';
+  } else if (totalMbps > 10) { // > 10 Mbps
+    statusElement.textContent = 'Medium';
     statusElement.parentElement.parentElement.className = 'card bg-info text-white';
+  } else if (totalMbps > 1) { // > 1 Mbps
+    statusElement.textContent = 'Low';
+    statusElement.parentElement.parentElement.className = 'card bg-success text-white';
   } else {
     statusElement.textContent = 'Idle';
     statusElement.parentElement.parentElement.className = 'card bg-secondary text-white';
   }
+  
+  // Konversi nilai ke unit chart yang aktif
+  const rxChartValue = getValueInUnit(rx, currentUnit);
+  const txChartValue = getValueInUnit(tx, currentUnit);
   
   // Update chart
   if (chart.data.labels.length >= maxPoints) {
@@ -307,10 +436,13 @@ function addTrafficData(rx, tx, interface) {
     chart.data.datasets[0].data.shift();
     chart.data.datasets[1].data.shift();
   }
+  
   chart.data.labels.push(label);
-  chart.data.datasets[0].data.push(parseFloat(rxMbps));
-  chart.data.datasets[1].data.push(parseFloat(txMbps));
-  chart.update();
+  chart.data.datasets[0].data.push(rxChartValue);
+  chart.data.datasets[1].data.push(txChartValue);
+  
+  // Update chart dengan animasi smooth
+  chart.update('none'); // 'none' untuk update tanpa animasi untuk performa yang lebih baik
 }
 
 function resetChart() {
@@ -318,6 +450,18 @@ function resetChart() {
   chart.data.labels = [];
   chart.data.datasets[0].data = [];
   chart.data.datasets[1].data = [];
+  
+  // Reset unit ke Mbps default
+  currentUnit = 'Mbps';
+  chart.options.scales.y.title.text = 'Bandwidth (Mbps)';
+  
+  // Reset real-time info
+  document.getElementById('currentRx').innerHTML = '<span style="color: #36a2eb; font-weight: bold;">0</span> <small>Mbps</small>';
+  document.getElementById('currentTx').innerHTML = '<span style="color: #ff6384; font-weight: bold;">0</span> <small>Mbps</small>';
+  document.getElementById('currentTotal').innerHTML = '<span style="font-weight: bold;">0</span> <small>Mbps</small>';
+  document.getElementById('currentStatus').textContent = 'Idle';
+  document.getElementById('currentStatus').parentElement.parentElement.className = 'card bg-secondary text-white';
+  
   chart.update();
 }
 
