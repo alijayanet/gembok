@@ -181,20 +181,38 @@ let currentInterface = localStorage.getItem('selectedInterface') || 'ether1-ISP'
 let currentUnit = 'Mbps'; // Unit aktif: bps, Kbps, Mbps, Gbps
 
 // Fungsi untuk konversi unit bandwidth
-function formatBandwidth(bytesPerSecond) {
+function formatBandwidth(bytesPerSecond, isTotal = false) {
   const bps = bytesPerSecond;
   const kbps = bps / 1000;
   const mbps = bps / 1000000;
   const gbps = bps / 1000000000;
   
-  if (gbps >= 1) {
-    return { value: gbps.toFixed(3), unit: 'Gbps' };
-  } else if (mbps >= 1) {
-    return { value: mbps.toFixed(2), unit: 'Mbps' };
-  } else if (kbps >= 1) {
-    return { value: kbps.toFixed(1), unit: 'Kbps' };
+  if (isTotal) {
+    // Untuk TOTAL TRAFFIC - format yang lebih ringkas
+    if (gbps >= 10) {
+      return { value: gbps.toFixed(0), unit: 'Gbps' }; // Tanpa desimal untuk > 10 Gbps
+    } else if (gbps >= 1) {
+      return { value: gbps.toFixed(1), unit: 'Gbps' }; // 1 desimal untuk 1-10 Gbps
+    } else if (mbps >= 100) {
+      return { value: mbps.toFixed(0), unit: 'Mbps' }; // Tanpa desimal untuk > 100 Mbps
+    } else if (mbps >= 1) {
+      return { value: mbps.toFixed(1), unit: 'Mbps' }; // 1 desimal untuk 1-100 Mbps
+    } else if (kbps >= 1) {
+      return { value: kbps.toFixed(0), unit: 'Kbps' }; // Tanpa desimal untuk Kbps
+    } else {
+      return { value: bps.toFixed(0), unit: 'bps' };
+    }
   } else {
-    return { value: bps.toFixed(0), unit: 'bps' };
+    // Untuk RX/TX individual - format asli yang sudah benar
+    if (gbps >= 1) {
+      return { value: gbps.toFixed(3), unit: 'Gbps' };
+    } else if (mbps >= 1) {
+      return { value: mbps.toFixed(2), unit: 'Mbps' };
+    } else if (kbps >= 1) {
+      return { value: kbps.toFixed(1), unit: 'Kbps' };
+    } else {
+      return { value: bps.toFixed(0), unit: 'bps' };
+    }
   }
 }
 
@@ -287,7 +305,9 @@ let chart = new Chart(ctx, {
         callbacks: {
           label: function(context) {
             const value = context.parsed.y;
-            const formatted = formatBandwidth(value * (currentUnit === 'Gbps' ? 1000000000 : currentUnit === 'Mbps' ? 1000000 : currentUnit === 'Kbps' ? 1000 : 1));
+            const multiplier = currentUnit === 'Gbps' ? 1000000000 : currentUnit === 'Mbps' ? 1000000 : currentUnit === 'Kbps' ? 1000 : 1;
+            const bytesPerSecond = value * multiplier;
+            const formatted = formatBandwidth(bytesPerSecond); // Format asli untuk tooltip
             return context.dataset.label + ': ' + formatted.value + ' ' + formatted.unit;
           }
         }
@@ -375,7 +395,7 @@ function addTrafficData(rx, tx, interface) {
   const now = new Date();
   const label = now.toLocaleTimeString('id-ID', { hour12: false });
   
-  // Tentukan unit optimal berdasarkan nilai maksimum saat ini
+  // Tentukan unit optimal berdasarkan nilai maksimum RX/TX (bukan total)
   const maxCurrentValue = Math.max(rx, tx);
   const optimalUnit = determineOptimalUnit(maxCurrentValue);
   
@@ -385,45 +405,66 @@ function addTrafficData(rx, tx, interface) {
     chart.options.scales.y.title.text = 'Bandwidth (' + currentUnit + ')';
     
     // Convert existing data ke unit baru
+    const multiplier = currentUnit === 'Gbps' ? 1000000000 : currentUnit === 'Mbps' ? 1000000 : currentUnit === 'Kbps' ? 1000 : 1;
     chart.data.datasets[0].data = chart.data.datasets[0].data.map(value => {
-      const bytesPerSecond = value * (currentUnit === 'Gbps' ? 1000000000 : currentUnit === 'Mbps' ? 1000000 : currentUnit === 'Kbps' ? 1000 : 1);
+      const bytesPerSecond = value * multiplier;
       return getValueInUnit(bytesPerSecond, currentUnit);
     });
     chart.data.datasets[1].data = chart.data.datasets[1].data.map(value => {
-      const bytesPerSecond = value * (currentUnit === 'Gbps' ? 1000000000 : currentUnit === 'Mbps' ? 1000000 : currentUnit === 'Kbps' ? 1000 : 1);
+      const bytesPerSecond = value * multiplier;
       return getValueInUnit(bytesPerSecond, currentUnit);
     });
   }
   
   // Format nilai untuk tampilan real-time
-  const rxFormatted = formatBandwidth(rx);
-  const txFormatted = formatBandwidth(tx);
-  const totalFormatted = formatBandwidth(rx + tx);
+  const rxFormatted = formatBandwidth(rx); // RX dengan format asli yang sudah benar
+  const txFormatted = formatBandwidth(tx); // TX dengan format asli yang sudah benar
+  
+  // Hitung TOTAL dengan logic yang benar - konversi RX dan TX ke unit yang sama dulu
+  const rxMbps = rx / 1000000; // Konversi RX ke Mbps
+  const txMbps = tx / 1000000; // Konversi TX ke Mbps
+  const totalMbps = rxMbps + txMbps; // Jumlahkan dalam Mbps
+  
+  // Format total dengan logic sederhana
+  let totalFormatted;
+  if (totalMbps >= 1000) {
+    // Jika > 1000 Mbps, tampilkan sebagai Gbps
+    totalFormatted = { value: (totalMbps / 1000).toFixed(1), unit: 'Gbps' };
+  } else if (totalMbps >= 100) {
+    // Jika 100-1000 Mbps, tampilkan tanpa desimal
+    totalFormatted = { value: totalMbps.toFixed(0), unit: 'Mbps' };
+  } else if (totalMbps >= 1) {
+    // Jika 1-100 Mbps, tampilkan dengan 1 desimal
+    totalFormatted = { value: totalMbps.toFixed(1), unit: 'Mbps' };
+  } else {
+    // Jika < 1 Mbps, tampilkan sebagai Kbps
+    const totalKbps = totalMbps * 1000;
+    totalFormatted = { value: totalKbps.toFixed(0), unit: 'Kbps' };
+  }
   
   // Update real-time info dengan unit yang sesuai
   document.getElementById('currentRx').innerHTML = `<span style="color: #36a2eb; font-weight: bold;">${rxFormatted.value}</span> <small>${rxFormatted.unit}</small>`;
   document.getElementById('currentTx').innerHTML = `<span style="color: #ff6384; font-weight: bold;">${txFormatted.value}</span> <small>${txFormatted.unit}</small>`;
   document.getElementById('currentTotal').innerHTML = `<span style="font-weight: bold;">${totalFormatted.value}</span> <small>${totalFormatted.unit}</small>`;
   
-  // Update status berdasarkan traffic (dalam Mbps untuk konsistensi)
-  const totalMbps = (rx + tx) / 1000000;
+  // Update status berdasarkan traffic total (dalam Mbps untuk konsistensi)
   const statusElement = document.getElementById('currentStatus');
   
   if (totalMbps > 100) { // > 100 Mbps
     statusElement.textContent = 'Very High';
-    statusElement.parentElement.parentElement.className = 'card bg-danger text-white';
+    statusElement.parentElement.parentElement.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
   } else if (totalMbps > 50) { // > 50 Mbps
     statusElement.textContent = 'High';
-    statusElement.parentElement.parentElement.className = 'card bg-warning text-white';
+    statusElement.parentElement.parentElement.style.background = 'linear-gradient(135deg, #fd7e14 0%, #e55a00 100%)';
   } else if (totalMbps > 10) { // > 10 Mbps
     statusElement.textContent = 'Medium';
-    statusElement.parentElement.parentElement.className = 'card bg-info text-white';
+    statusElement.parentElement.parentElement.style.background = 'linear-gradient(135deg, #17a2b8 0%, #138496 100%)';
   } else if (totalMbps > 1) { // > 1 Mbps
     statusElement.textContent = 'Low';
-    statusElement.parentElement.parentElement.className = 'card bg-success text-white';
+    statusElement.parentElement.parentElement.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
   } else {
     statusElement.textContent = 'Idle';
-    statusElement.parentElement.parentElement.className = 'card bg-secondary text-white';
+    statusElement.parentElement.parentElement.style.background = 'linear-gradient(135deg, #6c757d 0%, #495057 100%)';
   }
   
   // Konversi nilai ke unit chart yang aktif
@@ -455,12 +496,15 @@ function resetChart() {
   currentUnit = 'Mbps';
   chart.options.scales.y.title.text = 'Bandwidth (Mbps)';
   
-  // Reset real-time info
-  document.getElementById('currentRx').innerHTML = '<span style="color: #36a2eb; font-weight: bold;">0</span> <small>Mbps</small>';
-  document.getElementById('currentTx').innerHTML = '<span style="color: #ff6384; font-weight: bold;">0</span> <small>Mbps</small>';
-  document.getElementById('currentTotal').innerHTML = '<span style="font-weight: bold;">0</span> <small>Mbps</small>';
-  document.getElementById('currentStatus').textContent = 'Idle';
-  document.getElementById('currentStatus').parentElement.parentElement.className = 'card bg-secondary text-white';
+  // Reset real-time info dengan format yang konsisten
+  document.getElementById('currentRx').innerHTML = '<span style="color: #36a2eb; font-weight: bold;">0.00</span> <small>Mbps</small>';
+  document.getElementById('currentTx').innerHTML = '<span style="color: #ff6384; font-weight: bold;">0.00</span> <small>Mbps</small>';
+  document.getElementById('currentTotal').innerHTML = '<span style="font-weight: bold;">0.0</span> <small>Mbps</small>';
+  
+  // Reset status
+  const statusElement = document.getElementById('currentStatus');
+  statusElement.textContent = 'Idle';
+  statusElement.parentElement.parentElement.style.background = 'linear-gradient(135deg, #6c757d 0%, #495057 100%)';
   
   chart.update();
 }
