@@ -383,6 +383,10 @@ app.use('/admin/trouble', adminAuth, adminTroubleReportRouter);
 const testTroubleReportRouter = require('./routes/testTroubleReport');
 app.use('/test/trouble', testTroubleReportRouter);
 
+// Import dan gunakan route publicTools (tanpa auth)
+const publicToolsRouter = require('./routes/publicTools');
+app.use('/tools', publicToolsRouter);
+
 // Route untuk halaman test trouble report
 app.get('/test-trouble-report', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'test-trouble-report.html'));
@@ -616,6 +620,11 @@ app.get('/whatsapp/status', (req, res) => {
 // Redirect root ke portal pelanggan
 app.get('/', (req, res) => {
   res.redirect('/customer/login');
+});
+
+// Route alternatif untuk tool umum
+app.get('/network-tools', (req, res) => {
+  res.redirect('/tools');
 });
 
 // Import PPPoE monitoring modules

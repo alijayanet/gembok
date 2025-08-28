@@ -3814,6 +3814,401 @@ async function handleVoucherCommand(remoteJid, params) {
         return;
     }
 
+    const username = params[0];
+    const profile = params[1];
+    const buyerNumber = params[2];
+
+    // Validasi username dan profile
+    if (!username || !profile) {
+        await sock.sendMessage(remoteJid, { 
+            text: `❌ *GAGAL MEMBUAT VOUCHER*\n\nUsername dan profile harus diisi.`
+        });
+        return;
+    }
+
+    // Password otomatis sama dengan username untuk voucher
+    const password = username;
+
+    await sock.sendMessage(remoteJid, { 
+        text: `⏳ *PROSES PEMBUATAN VOUCHER*\n\nSedang membuat voucher...\nMohon tunggu sebentar.` 
+    });
+
+    // Buat voucher di Mikrotik
+    const result = await addHotspotUser(username, password, profile);
+    
+    // Format pesan untuk admin berdasarkan result.success
+    let responseMessage;
+    if (result.success) {
+        responseMessage = `✅ *BERHASIL MEMBUAT VOUCHER*\n\n` +
+                         `• Username: ${username}\n` +
+                         `• Password: ${password}\n` +
+                         `• Profile: ${profile}\n` +
+                         `• Status: ${result.message || 'Voucher berhasil dibuat'}`;
+    } else {
+        responseMessage = `❌ *GAGAL MEMBUAT VOUCHER*\n\n` +
+                         `• Username: ${username}\n` +
+                         `• Password: ${password}\n` +
+                         `• Profile: ${profile}\n` +
+                         `• Alasan: ${result.message || 'Terjadi kesalahan saat membuat voucher'}`;
+    }
+
+    // Jika ada nomor pembeli dan voucher berhasil dibuat, kirim juga ke pembeli
+    if (buyerNumber && result.success) {
+        // Hapus semua karakter non-angka
+        let cleanNumber = buyerNumber.replace(/\D/g, '');
+        
+        // Jika nomor diawali 0, ganti dengan 62
+        if (cleanNumber.startsWith('0')) {
+            cleanNumber = '62' + cleanNumber.substring(1);
+        } 
+        // Jika nomor diawali 8 (tanpa 62), tambahkan 62
+        else if (cleanNumber.startsWith('8')) {
+            cleanNumber = '62' + cleanNumber;
+        }
+        
+        const buyerJid = `${cleanNumber}@s.whatsapp.net`;
+        
+        // Dapatkan header dan footer dari settings
+        const settings = getAppSettings();
+        const header = settings.company_header || 'VOUCHER INTERNET ANDA';
+        const footer = settings.footer_info || 'Terima kasih telah menggunakan layanan kami.';
+        
+        const buyerMessage = `🎫 *${header.toUpperCase()}*\n\n` +
+                           `Berikut voucher internet Anda:\n` +
+                           `• Username: ${username}\n` +
+                           `• Password: ${password}\n` +
+                           `• Kecepatan: ${profile}\n\n` +
+                           `_${footer}_`;
+        
+        try {
+            // Coba kirim pesan langsung tanpa cek nomor terdaftar
+            await sock.sendMessage(buyerJid, { 
+                text: buyerMessage 
+            }, { 
+                waitForAck: false 
+            });
+            responseMessage += '\n\n✅ Notifikasi berhasil dikirim ke pembeli.';
+        } catch (error) {
+            console.error('Gagal mengirim notifikasi ke pembeli:', error);
+            responseMessage += '\n\n⚠️ Gagal mengirim notifikasi ke pembeli. Pastikan nomor WhatsApp aktif dan terdaftar.';
+        }
+    }
+
+    await sock.sendMessage(remoteJid, { text: responseMessage });
+}
+
+// Handler untuk tool jaringan ISP
+async function handleToolsCommand(remoteJid) {
+    try {
+        const { getSetting } = require('./settingsManager');
+        const serverHost = getSetting('server_host', 'localhost');
+        const serverPort = getSetting('server_port', '3001');
+        const toolsUrl = `http://${serverHost}:${serverPort}/tools`;
+        
+        const toolsMessage = `🛠️ *TOOL JARINGAN ISP*\n\n` +
+                           `Akses tool jaringan ISP melalui link berikut:\n` +
+                           `🔗 ${toolsUrl}\n\n` +
+                           `📋 *Tool yang tersedia:*\n` +
+                           `• 🧮 Kalkulator Burst Limit\n` +
+                           `• 🖥️ Generator Konfigurasi VPS & MikroTik\n` +
+                           `• 🌐 Generator DHCP Option 43\n` +
+                           `• 📊 Kalkulator Redaman Splitter Optik\n\n` +
+                           `💡 *Atau gunakan perintah langsung:*\n` +
+                           `• burstlimit [up] [down] [burst_up] [burst_down]\n` +
+                           `• wireguard [vps_ip] [port]\n` +
+                           `• option43 [url]\n` +
+                           `• splitter [daya] [splitter] [panjang] [loss]`;
+                           
+        await sock.sendMessage(remoteJid, { text: toolsMessage });
+    } catch (error) {
+        console.error('Error in handleToolsCommand:', error);
+        await sock.sendMessage(remoteJid, {
+            text: '❌ *TERJADI KESALAHAN*\n\nGagal menampilkan tool jaringan. Silakan coba lagi.'
+        });
+    }
+}
+
+// Handler untuk burst limit calculator
+async function handleBurstLimitCommand(remoteJid, params) {
+    try {
+        if (params.length < 4) {
+            await sock.sendMessage(remoteJid, {
+                text: `❌ *FORMAT SALAH*\n\n` +
+                      `Format yang benar:\n` +
+                      `burstlimit [upload] [download] [burst_upload] [burst_download]\n\n` +
+                      `Contoh:\n` +
+                      `burstlimit 2 5 4 10`
+            });
+            return;
+        }
+
+        const uploadRate = parseFloat(params[0]);
+        const downloadRate = parseFloat(params[1]);
+        const uploadBurstRate = parseFloat(params[2]);
+        const downloadBurstRate = parseFloat(params[3]);
+        const burstTime = params[4] || '8';
+
+        if (isNaN(uploadRate) || isNaN(downloadRate) || isNaN(uploadBurstRate) || isNaN(downloadBurstRate)) {
+            await sock.sendMessage(remoteJid, {
+                text: '❌ *ERROR*\n\nSemua parameter harus berupa angka.'
+            });
+            return;
+        }
+
+        // Konversi ke Kbps untuk burst calculation
+        const uploadKbps = uploadRate * 1000;
+        const downloadKbps = downloadRate * 1000;
+        const uploadBurstKbps = uploadBurstRate * 1000;
+        const downloadBurstKbps = downloadBurstRate * 1000;
+
+        // Hitung threshold (75% dari burst)
+        const uploadThreshold = Math.ceil(uploadBurstKbps * 0.75);
+        const downloadThreshold = Math.ceil(downloadBurstKbps * 0.75);
+
+        const result = `📊 *HASIL BURST LIMIT CALCULATOR*\n\n` +
+                      `📥 *Input:*\n` +
+                      `• Upload Rate: ${uploadRate} Mbps\n` +
+                      `• Download Rate: ${downloadRate} Mbps\n` +
+                      `• Upload Burst: ${uploadBurstRate} Mbps\n` +
+                      `• Download Burst: ${downloadBurstRate} Mbps\n` +
+                      `• Burst Time: ${burstTime} detik\n\n` +
+                      `🔧 *Konfigurasi MikroTik:*\n` +
+                      `\`\`\`\n` +
+                      `/ip hotspot user profile set [find name="NamaProfile"] \\\n` +
+                      `    rate-limit="${uploadRate}M/${downloadRate}M" \\\n` +
+                      `    burst-limit="${uploadBurstKbps}K/${downloadBurstKbps}K" \\\n` +
+                      `    burst-threshold="${uploadThreshold}K/${downloadThreshold}K" \\\n` +
+                      `    burst-time="${burstTime}s/${burstTime}s"\n` +
+                      `\`\`\``;
+
+        await sock.sendMessage(remoteJid, { text: result });
+    } catch (error) {
+        console.error('Error in handleBurstLimitCommand:', error);
+        await sock.sendMessage(remoteJid, {
+            text: '❌ *TERJADI KESALAHAN*\n\nGagal menghitung burst limit. Silakan coba lagi.'
+        });
+    }
+}
+
+// Handler untuk WireGuard config generator
+async function handleWireGuardCommand(remoteJid, params) {
+    try {
+        if (params.length < 1) {
+            await sock.sendMessage(remoteJid, {
+                text: `❌ *FORMAT SALAH*\n\n` +
+                      `Format yang benar:\n` +
+                      `wireguard [vps_ip] [port]\n\n` +
+                      `Contoh:\n` +
+                      `wireguard 123.123.123.123 51820`
+            });
+            return;
+        }
+
+        const vpsPublicIp = params[0];
+        const wgPort = params[1] || '51820';
+        const vpsInterface = 'eth0';
+        const vpsLocalIp = '10.10.10.1';
+        const mikrotikLocalIp = '10.10.10.2';
+
+        // Generate private keys (simplified)
+        const vpsPrivateKey = "wG" + Math.random().toString(36).substring(2, 42) + "=";
+        const mikrotikPrivateKey = "wG" + Math.random().toString(36).substring(2, 42) + "=";
+        const vpsPublicKey = "wG" + Math.random().toString(36).substring(2, 42) + "=";
+        const mikrotikPublicKey = "wG" + Math.random().toString(36).substring(2, 42) + "=";
+
+        const result = `🔐 *WIREGUARD CONFIG GENERATOR*\n\n` +
+                      `📥 *Input:*\n` +
+                      `• VPS IP: ${vpsPublicIp}\n` +
+                      `• Port: ${wgPort}\n\n` +
+                      `🖥️ *KONFIGURASI VPS:*\n` +
+                      `\`\`\`\n` +
+                      `[Interface]\n` +
+                      `PrivateKey = ${vpsPrivateKey}\n` +
+                      `Address = ${vpsLocalIp}/24\n` +
+                      `ListenPort = ${wgPort}\n` +
+                      `PostUp = iptables -A FORWARD -i %i -j ACCEPT\n` +
+                      `PostDown = iptables -D FORWARD -i %i -j ACCEPT\n\n` +
+                      `[Peer]\n` +
+                      `PublicKey = ${mikrotikPublicKey}\n` +
+                      `AllowedIPs = ${mikrotikLocalIp}/32\n` +
+                      `\`\`\`\n\n` +
+                      `🌐 *KONFIGURASI MIKROTIK:*\n` +
+                      `\`\`\`\n` +
+                      `/interface wireguard add listen-port=${wgPort} name=wireguard1 private-key="${mikrotikPrivateKey}"\n` +
+                      `/ip address add address=${mikrotikLocalIp}/24 interface=wireguard1\n` +
+                      `/interface wireguard peers add allowed-address=${vpsLocalIp}/32 endpoint=${vpsPublicIp}:${wgPort} interface=wireguard1 public-key="${vpsPublicKey}"\n` +
+                      `\`\`\``;
+
+        await sock.sendMessage(remoteJid, { text: result });
+    } catch (error) {
+        console.error('Error in handleWireGuardCommand:', error);
+        await sock.sendMessage(remoteJid, {
+            text: '❌ *TERJADI KESALAHAN*\n\nGagal generate konfigurasi WireGuard. Silakan coba lagi.'
+        });
+    }
+}
+
+// Handler untuk DHCP Option 43 generator
+async function handleOption43Command(remoteJid, params) {
+    try {
+        if (params.length < 1) {
+            await sock.sendMessage(remoteJid, {
+                text: `❌ *FORMAT SALAH*\n\n` +
+                      `Format yang benar:\n` +
+                      `option43 [url]\n\n` +
+                      `Contoh:\n` +
+                      `option43 https://acs.example.com:7547`
+            });
+            return;
+        }
+
+        const url = params.join(' ');
+
+        // Convert string to hex
+        function stringToHex(str) {
+            let hex = '';
+            for (let i = 0; i < str.length; i++) {
+                hex += str.charCodeAt(i).toString(16).padStart(2, '0');
+            }
+            return hex;
+        }
+
+        const urlHex = stringToHex(url);
+        const urlLenHex = (urlHex.length / 2).toString(16).padStart(2, '0');
+        const option43 = '01' + urlLenHex + urlHex;
+
+        const result = `🌐 *DHCP OPTION 43 GENERATOR*\n\n` +
+                      `📥 *Input URL:*\n` +
+                      `${url}\n\n` +
+                      `🔢 *Hasil (Hex):*\n` +
+                      `\`${option43}\`\n\n` +
+                      `🔧 *Konfigurasi MikroTik:*\n` +
+                      `\`\`\`\n` +
+                      `/ip dhcp-server option add code=43 name=acs-url value=0x${option43}\n` +
+                      `/ip dhcp-server option sets add name=acs-option options=acs-url\n` +
+                      `/ip dhcp-server set [find] dhcp-option-set=acs-option\n` +
+                      `\`\`\`\n\n` +
+                      `📋 *Info:*\n` +
+                      `• Panjang URL: ${url.length} karakter\n` +
+                      `• Format: 01 + Panjang + URL (hex)`;
+
+        await sock.sendMessage(remoteJid, { text: result });
+    } catch (error) {
+        console.error('Error in handleOption43Command:', error);
+        await sock.sendMessage(remoteJid, {
+            text: '❌ *TERJADI KESALAHAN*\n\nGagal generate DHCP Option 43. Silakan coba lagi.'
+        });
+    }
+}
+
+// Handler untuk splitter calculator
+async function handleSplitterCommand(remoteJid, params) {
+    try {
+        if (params.length < 4) {
+            await sock.sendMessage(remoteJid, {
+                text: `❌ *FORMAT SALAH*\n\n` +
+                      `Format yang benar:\n` +
+                      `splitter [daya_input] [jenis_splitter] [panjang_km] [loss_per_km]\n\n` +
+                      `Jenis splitter: 2, 4, 8, 16, 32, 64\n\n` +
+                      `Contoh:\n` +
+                      `splitter -2.5 16 2.5 0.35`
+            });
+            return;
+        }
+
+        const inputPower = parseFloat(params[0]);
+        const splitterRatio = parseInt(params[1]);
+        const cableLength = parseFloat(params[2]);
+        const cableLoss = parseFloat(params[3]);
+        const connectorCount = parseInt(params[4]) || 4;
+
+        if (isNaN(inputPower) || isNaN(splitterRatio) || isNaN(cableLength) || isNaN(cableLoss)) {
+            await sock.sendMessage(remoteJid, {
+                text: '❌ *ERROR*\n\nParameter harus berupa angka yang valid.'
+            });
+            return;
+        }
+
+        // Mapping splitter loss
+        const splitterLossMap = {
+            2: 3.5, 4: 7.0, 8: 10.5, 16: 14.0, 32: 17.5, 64: 21.0
+        };
+        
+        const splitterLoss = splitterLossMap[splitterRatio];
+        if (!splitterLoss) {
+            await sock.sendMessage(remoteJid, {
+                text: '❌ *ERROR*\n\nJenis splitter tidak valid. Gunakan: 2, 4, 8, 16, 32, atau 64.'
+            });
+            return;
+        }
+
+        // Perhitungan redaman
+        const connectorLoss = connectorCount * 0.5; // 0.5 dB per connector
+        const totalCableLoss = cableLength * cableLoss;
+        const totalLoss = splitterLoss + totalCableLoss + connectorLoss;
+        const outputPower = inputPower - totalLoss;
+
+        // Status berdasarkan output power
+        let status = '';
+        if (outputPower >= -15) {
+            status = '🟢 EXCELLENT';
+        } else if (outputPower >= -20) {
+            status = '🔵 GOOD';
+        } else if (outputPower >= -25) {
+            status = '🟡 FAIR';
+        } else if (outputPower >= -28) {
+            status = '🟠 POOR';
+        } else {
+            status = '🔴 CRITICAL';
+        }
+
+        const result = `📊 *KALKULATOR REDAMAN SPLITTER*\n\n` +
+                      `📥 *Input:*\n` +
+                      `• Daya Input: ${inputPower} dBm\n` +
+                      `• Splitter: 1:${splitterRatio} (${splitterLoss} dB)\n` +
+                      `• Panjang Kabel: ${cableLength} km\n` +
+                      `• Loss per km: ${cableLoss} dB/km\n` +
+                      `• Jumlah Connector: ${connectorCount}\n\n` +
+                      `🔢 *Hasil Perhitungan:*\n` +
+                      `• Splitter Loss: ${splitterLoss} dB\n` +
+                      `• Cable Loss: ${totalCableLoss.toFixed(2)} dB\n` +
+                      `• Connector Loss: ${connectorLoss.toFixed(1)} dB\n` +
+                      `• **Total Loss: ${totalLoss.toFixed(2)} dB**\n` +
+                      `• **Output Power: ${outputPower.toFixed(2)} dBm**\n\n` +
+                      `📈 *Status: ${status}*\n\n` +
+                      `💡 *Rekomendasi:*\n` +
+                      (outputPower >= -20 ? '✅ Sinyal bagus, tidak perlu perbaikan' :
+                       outputPower >= -25 ? '⚠️ Monitor secara berkala' :
+                       '❌ Perlu optimasi atau perbaikan jaringan');
+
+        await sock.sendMessage(remoteJid, { text: result });
+    } catch (error) {
+        console.error('Error in handleSplitterCommand:', error);
+        await sock.sendMessage(remoteJid, {
+            text: '❌ *TERJADI KESALAHAN*\n\nGagal menghitung redaman splitter. Silakan coba lagi.'
+        });
+    }
+}
+
+// Handler untuk membuat voucher hotspot
+async function handleVoucherCommand(remoteJid, params) {
+    if (!sock) {
+        console.error('Sock instance not set');
+        return;
+    }
+
+    if (params.length < 2) {
+        await sock.sendMessage(remoteJid, { 
+            text: `❌ *FORMAT SALAH*\n\n` +
+                  `Format yang benar:\n` +
+                  `vcr [username] [profile] [nomer_pembeli]\n\n` +
+                  `Contoh:\n` +
+                  `• vcr pelanggan1 1Mbps 62812345678\n` +
+                  `• vcr pelanggan2 2Mbps`
+        });
+        return;
+    }
+
     try {
         const username = params[0];
         const profile = params[1];
@@ -4941,6 +5336,35 @@ Pesan GenieACS telah diaktifkan kembali.`);
                 await mikrotikCommands.handleRestartRouter(remoteJid);
                 return;
             }
+            
+            // Tool jaringan ISP commands (admin only)
+            if (command.startsWith('burstlimit ') || command.startsWith('!burstlimit ') || command.startsWith('/burstlimit ')) {
+                const params = messageText.split(' ').slice(1);
+                console.log(`Admin menjalankan burst limit calculator`);
+                await handleBurstLimitCommand(remoteJid, params);
+                return;
+            }
+            
+            if (command.startsWith('wireguard ') || command.startsWith('!wireguard ') || command.startsWith('/wireguard ')) {
+                const params = messageText.split(' ').slice(1);
+                console.log(`Admin menjalankan WireGuard generator`);
+                await handleWireGuardCommand(remoteJid, params);
+                return;
+            }
+            
+            if (command.startsWith('option43 ') || command.startsWith('!option43 ') || command.startsWith('/option43 ')) {
+                const params = messageText.split(' ').slice(1);
+                console.log(`Admin menjalankan DHCP Option 43 generator`);
+                await handleOption43Command(remoteJid, params);
+                return;
+            }
+            
+            if (command.startsWith('splitter ') || command.startsWith('!splitter ') || command.startsWith('/splitter ')) {
+                const params = messageText.split(' ').slice(1);
+                console.log(`Admin menjalankan splitter calculator`);
+                await handleSplitterCommand(remoteJid, params);
+                return;
+            }
 
             // Perintah konfirmasi restart
             if (command === 'confirm restart' || command === '!confirm restart' || command === '/confirm restart') {
@@ -4971,6 +5395,13 @@ Pesan GenieACS telah diaktifkan kembali.`);
             if (command === 'info' || command === '!info' || command === '/info') {
                 console.log(`Menjalankan perintah info layanan untuk ${senderNumber}`);
                 await handleInfoLayanan(remoteJid);
+                return;
+            }
+                    
+            // Perintah tools jaringan ISP
+            if (command === 'tools' || command === '!tools' || command === '/tools') {
+                console.log(`Menjalankan perintah tools jaringan untuk ${senderNumber}`);
+                await handleToolsCommand(remoteJid);
                 return;
             }
             

@@ -69,6 +69,14 @@ function getAdminHelpMessage() {
     message += `• *ya/iya/yes* — Konfirmasi ya\n`;
     message += `• *tidak/no/batal* — Konfirmasi tidak\n\n`;
     
+    // Network Tools Commands
+    message += `🛠️ *TOOL JARINGAN*\n`;
+    message += `• *tools* — Akses halaman tool jaringan\n`;
+    message += `• *burstlimit [up] [down] [burst_up] [burst_down]* — Hitung burst limit\n`;
+    message += `• *wireguard [vps_ip] [port]* — Generate config WireGuard\n`;
+    message += `• *option43 [url]* — Generate DHCP Option 43\n`;
+    message += `• *splitter [daya] [splitter] [panjang] [loss]* — Hitung redaman splitter\n\n`;
+    
     message += `💡 *TIPS:*\n`;
     message += `• Semua perintah case-insensitive\n`;
     message += `• Bisa menggunakan prefix ! atau /\n`;
@@ -99,7 +107,13 @@ function getCustomerHelpMessage() {
     message += `📞 *BANTUAN*\n`;
     message += `• *menu* — Tampilkan menu ini\n`;
     message += `• *help* — Tampilkan bantuan\n`;
-    message += `• *info* — Informasi layanan\n\n`;
+    message += `• *info* — Informasi layanan\n`;
+    message += `• *tools* — Akses tool jaringan ISP\n\n`;
+    
+    // Tool Jaringan untuk Pelanggan
+    message += `🛠️ *TOOL JARINGAN (UMUM)*\n`;
+    message += `• *burstlimit [up] [down] [burst_up] [burst_down]* — Hitung burst limit\n`;
+    message += `• *splitter [daya] [splitter] [panjang] [loss]* — Hitung redaman splitter\n\n`;
     
     message += `💡 *TIPS:*\n`;
     message += `• Pastikan perangkat Anda terdaftar di sistem\n`;

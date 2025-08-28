@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Tool Jaringan ISP - Gembok</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            padding: 20px 0;
+        }
+        
+        .header-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tool-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            height: 100%;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .tool-title {
+            color: #4361ee;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #4361ee;
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .footer-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-info {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(67, 97, 238, 0.3);
+            color: #2d3748;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-info h6 {
+            color: #4361ee;
+            font-weight: 700;
+        }
+        
+        .alert-info li {
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .alert-info strong {
+            color: #4361ee;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 10px;
+            }
+            .header-section, .tool-card, .footer-section {
+                margin-bottom: 15px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container main-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1 class="mb-3">
+                <i class="bi bi-tools text-primary"></i>
+                Tool Jaringan ISP
+            </h1>
+            <p class="text-muted mb-0">
+                Kumpulan tool untuk membantu konfigurasi dan perhitungan jaringan ISP
+            </p>
+        </div>
+
+        <div class="row">
+            <!-- Kalkulator Burst Limit -->
+            <div class="col-lg-6 mb-4">
+                <div class="tool-card">
+                    <h5 class="tool-title">
+                        <i class="bi bi-calculator"></i> Kalkulator Burst Limit
+                    </h5>
+                    <p class="small text-muted mb-3">Untuk profil Hotspot atau PPPoE MikroTik.</p>
+                    
+                    <!-- Rate Limit -->
+                    <label class="form-label small fw-bold">Rate Limit (Upload/Download)</label>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm" id="uploadRate" placeholder="Upload (Mbps)">
+                        </div>
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm" id="downloadRate" placeholder="Download (Mbps)">
+                        </div>
+                    </div>
+
+                    <!-- Burst Limit -->
+                    <label class="form-label small fw-bold">Burst Limit (Upload/Download)</label>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm" id="uploadBurstRate" placeholder="Upload Burst">
+                        </div>
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm" id="downloadBurstRate" placeholder="Download Burst">
+                        </div>
+                    </div>
+
+                    <!-- Burst Time -->
+                    <div class="mb-3">
+                        <label for="burstTime" class="form-label small fw-bold">Burst Time (detik)</label>
+                        <input type="number" class="form-control form-control-sm" id="burstTime" value="8" placeholder="8">
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button class="btn btn-primary btn-sm w-100" id="generateBurstLimit">
+                        <i class="bi bi-lightning-charge"></i> Generate Burst Limit
+                    </button>
+
+                    <!-- Result -->
+                    <div class="result-box d-none" id="burstResult"></div>
+                </div>
+            </div>
+
+            <!-- Generator VPS & MikroTik -->
+            <div class="col-lg-6 mb-4">
+                <div class="tool-card">
+                    <h5 class="tool-title">
+                        <i class="bi bi-server"></i> Generator Konfigurasi VPS & MikroTik
+                    </h5>
+                    <p class="small text-muted mb-3">Generate skrip WireGuard untuk menghubungkan VPS dan MikroTik.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">IP Publik VPS</label>
+                        <input type="text" class="form-control form-control-sm" id="vpsPublicIp" placeholder="123.123.123.123">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Interface VPS (eth0/ens3)</label>
+                        <input type="text" class="form-control form-control-sm" id="vpsInterface" value="eth0">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Port WireGuard</label>
+                        <input type="number" class="form-control form-control-sm" id="wgPort" value="51820">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">IP VPS WireGuard</label>
+                        <input type="text" class="form-control form-control-sm" id="vpsLocalIp" value="10.10.10.1">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">IP MikroTik WireGuard</label>
+                        <input type="text" class="form-control form-control-sm" id="mikrotikLocalIp" value="10.10.10.2">
+                    </div>
+
+                    <button class="btn btn-primary btn-sm w-100" id="generateWireGuard">
+                        <i class="bi bi-file-earmark-code"></i> Generate Konfigurasi
+                    </button>
+
+                    <!-- Result -->
+                    <div class="result-box d-none" id="wireGuardResult"></div>
+                </div>
+            </div>
+
+            <!-- Generator DHCP Option 43 -->
+            <div class="col-lg-6 mb-4">
+                <div class="tool-card">
+                    <h5 class="tool-title">
+                        <i class="bi bi-ethernet"></i> Generator DHCP Option 43
+                    </h5>
+                    <p class="small text-muted mb-3">Generate nilai hex untuk DHCP Option 43 (Vendor Specific Information).</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">URL GenieACS</label>
+                        <input type="text" class="form-control form-control-sm" id="genieacsUrl" placeholder="https://acs.example.com:7547">
+                    </div>
+
+                    <button class="btn btn-primary btn-sm w-100" id="generateOption43">
+                        <i class="bi bi-code-slash"></i> Generate Option 43
+                    </button>
+
+                    <!-- Result -->
+                    <div class="result-box d-none" id="option43Result"></div>
+                </div>
+            </div>
+
+            <!-- Kalkulator Redaman Splitter -->
+            <div class="col-lg-6 mb-4">
+                <div class="tool-card">
+                    <h5 class="tool-title">
+                        <i class="bi bi-diagram-3"></i> Kalkulator Redaman Splitter Optik
+                    </h5>
+                    <p class="small text-muted mb-3">Hitung redaman total untuk splitter fiber optik.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Daya Input (dBm)</label>
+                        <input type="number" step="0.1" class="form-control form-control-sm" id="inputPower" placeholder="-2.5">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Jenis Splitter</label>
+                        <select class="form-select form-select-sm" id="splitterType">
+                            <option value="">Pilih Splitter</option>
+                            <option value="2" data-loss="3.5">1:2 (3.5 dB)</option>
+                            <option value="4" data-loss="7.0">1:4 (7.0 dB)</option>
+                            <option value="8" data-loss="10.5">1:8 (10.5 dB)</option>
+                            <option value="16" data-loss="14.0">1:16 (14.0 dB)</option>
+                            <option value="32" data-loss="17.5">1:32 (17.5 dB)</option>
+                            <option value="64" data-loss="21.0">1:64 (21.0 dB)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Panjang Kabel (km)</label>
+                        <input type="number" step="0.1" class="form-control form-control-sm" id="cableLength" placeholder="2.5">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Redaman per km (dB/km)</label>
+                        <input type="number" step="0.01" class="form-control form-control-sm" id="cableLoss" value="0.35" placeholder="0.35">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Jumlah Connector</label>
+                        <input type="number" class="form-control form-control-sm" id="connectorCount" value="4" placeholder="4">
+                    </div>
+
+                    <button class="btn btn-primary btn-sm w-100" id="calculateLoss">
+                        <i class="bi bi-calculator"></i> Hitung Redaman
+                    </button>
+
+                    <!-- Result -->
+                    <div class="result-box d-none" id="lossResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h6><i class="bi bi-info-circle me-2"></i>Informasi Tool</h6>
+                    <ul class="mb-0 small">
+                        <li><strong>Burst Limit:</strong> Membantu konfigurasi bandwidth management di MikroTik</li>
+                        <li><strong>VPS & MikroTik:</strong> Generate konfigurasi WireGuard untuk tunnel VPS-MikroTik</li>
+                        <li><strong>DHCP Option 43:</strong> Untuk auto-provisioning ONU/ONT melalui GenieACS</li>
+                        <li><strong>Redaman Splitter:</strong> Menghitung total loss dalam jaringan fiber optik</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-section">
+            <p class="text-muted mb-0">
+                <i class="bi bi-tools me-2"></i>
+                Tool Jaringan ISP - Powered by Gembok
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Utility function untuk copy ke clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Hasil berhasil disalin ke clipboard!');
+            }).catch(() => {
+                // Fallback untuk browser lama
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Hasil berhasil disalin ke clipboard!');
+            });
+        }
+
+        // 1. Kalkulator Burst Limit
+        document.getElementById('generateBurstLimit').addEventListener('click', function() {
+            const uploadRate = document.getElementById('uploadRate').value;
+            const downloadRate = document.getElementById('downloadRate').value;
+            const uploadBurstRate = document.getElementById('uploadBurstRate').value;
+            const downloadBurstRate = document.getElementById('downloadBurstRate').value;
+            const burstTime = document.getElementById('burstTime').value || '8';
+
+            if (!uploadRate || !downloadRate || !uploadBurstRate || !downloadBurstRate) {
+                alert('Harap isi semua field yang diperlukan');
+                return;
+            }
+
+            // Konversi ke Kbps untuk burst calculation
+            const uploadKbps = parseInt(uploadRate) * 1000;
+            const downloadKbps = parseInt(downloadRate) * 1000;
+            const uploadBurstKbps = parseInt(uploadBurstRate) * 1000;
+            const downloadBurstKbps = parseInt(downloadBurstRate) * 1000;
+
+            // Hitung threshold (75% dari burst)
+            const uploadThreshold = Math.ceil(uploadBurstKbps * 0.75);
+            const downloadThreshold = Math.ceil(downloadBurstKbps * 0.75);
+
+            const result = `/ip hotspot user profile set [find name="NamaProfile"] \\
+    rate-limit="${uploadRate}M/${downloadRate}M" \\
+    burst-limit="${uploadBurstKbps}K/${downloadBurstKbps}K" \\
+    burst-threshold="${uploadThreshold}K/${downloadThreshold}K" \\
+    burst-time="${burstTime}s/${burstTime}s"`;
+
+            const resultDiv = document.getElementById('burstResult');
+            resultDiv.textContent = result;
+            resultDiv.classList.remove('d-none');
+            resultDiv.onclick = () => copyToClipboard(result);
+        });
+
+        // 2. Generator WireGuard
+        document.getElementById('generateWireGuard').addEventListener('click', function() {
+            const vpsPublicIp = document.getElementById('vpsPublicIp').value;
+            const vpsInterface = document.getElementById('vpsInterface').value;
+            const wgPort = document.getElementById('wgPort').value;
+            const vpsLocalIp = document.getElementById('vpsLocalIp').value;
+            const mikrotikLocalIp = document.getElementById('mikrotikLocalIp').value;
+
+            if (!vpsPublicIp) {
+                alert('IP Publik VPS harus diisi');
+                return;
+            }
+
+            // Generate private keys (simplified)
+            const vpsPrivateKey = "wG" + Math.random().toString(36).substring(2, 42) + "=";
+            const mikrotikPrivateKey = "wG" + Math.random().toString(36).substring(2, 42) + "=";
+            const vpsPublicKey = "wG" + Math.random().toString(36).substring(2, 42) + "=";
+            const mikrotikPublicKey = "wG" + Math.random().toString(36).substring(2, 42) + "=";
+
+            const result = `# ========================================
+# KONFIGURASI VPS (Ubuntu/Debian)
+# ========================================
+
+# Install WireGuard
+sudo apt update && sudo apt install wireguard -y
+
+# Generate keys
+wg genkey | tee /etc/wireguard/privatekey | wg pubkey | tee /etc/wireguard/publickey
+
+# Konfigurasi /etc/wireguard/wg0.conf
+[Interface]
+PrivateKey = ${vpsPrivateKey}
+Address = ${vpsLocalIp}/24
+ListenPort = ${wgPort}
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o ${vpsInterface} -j MASQUERADE
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o ${vpsInterface} -j MASQUERADE
+
+[Peer]
+PublicKey = ${mikrotikPublicKey}
+AllowedIPs = ${mikrotikLocalIp}/32
+
+# Start WireGuard
+sudo wg-quick up wg0
+sudo systemctl enable wg-quick@wg0
+
+# ========================================
+# KONFIGURASI MIKROTIK
+# ========================================
+
+# Buat WireGuard interface
+/interface wireguard add listen-port=${wgPort} name=wireguard1 private-key="${mikrotikPrivateKey}"
+
+# Set IP address
+/ip address add address=${mikrotikLocalIp}/24 interface=wireguard1
+
+# Tambah peer (VPS)
+/interface wireguard peers add allowed-address=${vpsLocalIp}/32 endpoint=${vpsPublicIp}:${wgPort} interface=wireguard1 public-key="${vpsPublicKey}"
+
+# Routing (opsional - untuk akses internet via VPS)
+# /ip route add distance=1 dst-address=0.0.0.0/0 gateway=${vpsLocalIp}
+
+# ========================================
+# TESTING KONEKSI
+# ========================================
+
+# Dari VPS: ping ${mikrotikLocalIp}
+# Dari MikroTik: /ping ${vpsLocalIp}`;
+
+            const resultDiv = document.getElementById('wireGuardResult');
+            resultDiv.textContent = result;
+            resultDiv.classList.remove('d-none');
+            resultDiv.onclick = () => copyToClipboard(result);
+        });
+
+        // 3. Generator DHCP Option 43
+        document.getElementById('generateOption43').addEventListener('click', function() {
+            const url = document.getElementById('genieacsUrl').value.trim();
+
+            if (!url) {
+                alert('URL GenieACS harus diisi');
+                return;
+            }
+
+            // Convert string to hex
+            function stringToHex(str) {
+                let hex = '';
+                for (let i = 0; i < str.length; i++) {
+                    hex += str.charCodeAt(i).toString(16).padStart(2, '0');
+                }
+                return hex;
+            }
+
+            const urlHex = stringToHex(url);
+            const urlLenHex = (urlHex.length / 2).toString(16).padStart(2, '0');
+            const option43 = '01' + urlLenHex + urlHex;
+
+            const result = `DHCP Option 43 (Hex): ${option43}
+
+Konfigurasi untuk berbagai perangkat:
+
+MIKROTIK:
+/ip dhcp-server option add code=43 name=acs-url value=0x${option43}
+/ip dhcp-server option sets add name=acs-option options=acs-url
+/ip dhcp-server set [find] dhcp-option-set=acs-option
+
+CISCO:
+ip dhcp pool <pool-name>
+option 43 hex ${option43}
+
+LINUX DHCP (isc-dhcp-server):
+option vendor-specific-info "${option43}";
+
+Penjelasan:
+- URL: ${url}
+- Panjang URL: ${url.length} karakter (0x${urlLenHex})
+- Format: 01 + Panjang + URL dalam hex`;
+
+            const resultDiv = document.getElementById('option43Result');
+            resultDiv.textContent = result;
+            resultDiv.classList.remove('d-none');
+            resultDiv.onclick = () => copyToClipboard(result);
+        });
+
+        // 4. Kalkulator Redaman Splitter
+        document.getElementById('calculateLoss').addEventListener('click', function() {
+            const inputPower = parseFloat(document.getElementById('inputPower').value);
+            const splitterSelect = document.getElementById('splitterType');
+            const splitterLoss = parseFloat(splitterSelect.selectedOptions[0]?.dataset.loss || 0);
+            const cableLength = parseFloat(document.getElementById('cableLength').value);
+            const cableLoss = parseFloat(document.getElementById('cableLoss').value);
+            const connectorCount = parseInt(document.getElementById('connectorCount').value) || 0;
+
+            if (isNaN(inputPower) || !splitterLoss || isNaN(cableLength) || isNaN(cableLoss)) {
+                alert('Harap isi semua field dengan benar');
+                return;
+            }
+
+            // Perhitungan redaman
+            const connectorLoss = connectorCount * 0.5; // 0.5 dB per connector
+            const totalCableLoss = cableLength * cableLoss;
+            const totalLoss = splitterLoss + totalCableLoss + connectorLoss;
+            const outputPower = inputPower - totalLoss;
+
+            // Status berdasarkan output power
+            let status = '';
+            let statusColor = '';
+            if (outputPower >= -15) {
+                status = 'EXCELLENT';
+                statusColor = 'green';
+            } else if (outputPower >= -20) {
+                status = 'GOOD';
+                statusColor = 'blue';
+            } else if (outputPower >= -25) {
+                status = 'FAIR';
+                statusColor = 'orange';
+            } else if (outputPower >= -28) {
+                status = 'POOR';
+                statusColor = 'red';
+            } else {
+                status = 'CRITICAL';
+                statusColor = 'darkred';
+            }
+
+            const result = `===== HASIL PERHITUNGAN REDAMAN =====
+
+Input Power: ${inputPower} dBm
+Splitter Loss: ${splitterLoss} dB (1:${splitterSelect.value})
+Cable Loss: ${totalCableLoss.toFixed(2)} dB (${cableLength} km × ${cableLoss} dB/km)
+Connector Loss: ${connectorLoss.toFixed(1)} dB (${connectorCount} × 0.5 dB)
+
+TOTAL LOSS: ${totalLoss.toFixed(2)} dB
+OUTPUT POWER: ${outputPower.toFixed(2)} dBm
+
+STATUS: ${status}
+
+===== BREAKDOWN DETAIL =====
+• Daya input dari OLT: ${inputPower} dBm
+• Redaman splitter: -${splitterLoss} dB
+• Redaman kabel: -${totalCableLoss.toFixed(2)} dB
+• Redaman connector: -${connectorLoss.toFixed(1)} dB
+• Daya output ke ONU: ${outputPower.toFixed(2)} dBm
+
+===== REKOMENDASI =====`;
+
+            if (outputPower >= -15) {
+                result += '\n✅ Sinyal EXCELLENT - Tidak perlu perbaikan';
+            } else if (outputPower >= -20) {
+                result += '\n✅ Sinyal GOOD - Kondisi normal';
+            } else if (outputPower >= -25) {
+                result += '\n⚠️ Sinyal FAIR - Monitor secara berkala';
+            } else if (outputPower >= -28) {
+                result += '\n⚠️ Sinyal POOR - Pertimbangkan optimasi jaringan';
+            } else {
+                result += '\n❌ Sinyal CRITICAL - Perlu perbaikan segera!';
+            }
+
+            const resultDiv = document.getElementById('lossResult');
+            resultDiv.textContent = result;
+            resultDiv.classList.remove('d-none');
+            resultDiv.onclick = () => copyToClipboard(result);
+        });
+    </script>
+</body>
+</html>
