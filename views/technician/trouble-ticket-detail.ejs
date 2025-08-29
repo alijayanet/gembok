@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .main-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .header-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; border-radius: 15px; margin-bottom: 30px; }
+        .detail-card { background: white; border: none; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .status-badge { font-size: 1rem; padding: 8px 16px; }
+        .timeline { position: relative; padding-left: 30px; }
+        .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: #e9ecef; }
+        .timeline-item { position: relative; margin-bottom: 20px; }
+        .timeline-item::before { content: ''; position: absolute; left: -18px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #007bff; border: 3px solid white; box-shadow: 0 0 0 3px #e9ecef; }
+        .timeline-item.status-open::before { background: #dc3545; }
+        .timeline-item.status-in_progress::before { background: #ffc107; }
+        .timeline-item.status-resolved::before { background: #28a745; }
+        .timeline-item.status-closed::before { background: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2"><i class="bi bi-file-text me-3"></i>Detail Laporan Gangguan</h1>
+                    <p class="mb-0 opacity-75">ID Tiket: #<%= report.id %></p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="d-flex gap-2 justify-content-md-end">
+                        <a href="/technician/troubletickets" class="btn btn-light">
+                            <i class="bi bi-arrow-left me-1"></i> Kembali
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Laporan -->
+        <div class="detail-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informasi Laporan</h5>
+                <span class="badge status-badge <%= 
+                    report.status === 'open' ? 'bg-danger' : 
+                    report.status === 'in_progress' ? 'bg-warning text-dark' : 
+                    report.status === 'resolved' ? 'bg-success' : 
+                    'bg-secondary' 
+                %>">
+                    <% if (report.status === 'open') { %>
+                        <i class="bi bi-exclamation-circle me-1"></i>Belum Ditangani
+                    <% } else if (report.status === 'in_progress') { %>
+                        <i class="bi bi-gear me-1"></i>Sedang Ditangani
+                    <% } else if (report.status === 'resolved') { %>
+                        <i class="bi bi-check-circle me-1"></i>Terselesaikan
+                    <% } else { %>
+                        <i class="bi bi-archive me-1"></i>Ditutup
+                    <% } %>
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-person me-2"></i>Informasi Pelanggan</h6>
+                        <table class="table table-borderless table-sm">
+                            <tr>
+                                <td width="30%"><strong>Nama:</strong></td>
+                                <td><%= report.name || 'Tidak diketahui' %></td>
+                            </tr>
+                            <tr>
+                                <td><strong>No. HP:</strong></td>
+                                <td><%= report.phone || 'Tidak diketahui' %></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Lokasi:</strong></td>
+                                <td><%= report.location || 'Tidak diketahui' %></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-gear me-2"></i>Informasi Teknis</h6>
+                        <table class="table table-borderless table-sm">
+                            <tr>
+                                <td width="30%"><strong>Kategori:</strong></td>
+                                <td><%= report.category || 'Tidak diketahui' %></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dibuat:</strong></td>
+                                <td><%= new Date(report.createdAt).toLocaleDateString('id-ID') %> <%= new Date(report.createdAt).toLocaleTimeString('id-ID') %></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Update:</strong></td>
+                                <td><%= new Date(report.updatedAt).toLocaleDateString('id-ID') %> <%= new Date(report.updatedAt).toLocaleTimeString('id-ID') %></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6><i class="bi bi-chat-text me-2"></i>Deskripsi Masalah</h6>
+                    <div class="bg-light p-3 rounded">
+                        <%= report.description || 'Tidak ada deskripsi' %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="detail-card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Tindakan Cepat</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <% if (report.status === 'open') { %>
+                                <button class="btn btn-warning" onclick="updateStatus('in_progress')">
+                                    <i class="bi bi-play me-1"></i>Mulai Penanganan
+                                </button>
+                                <button class="btn btn-success" onclick="updateStatus('resolved')">
+                                    <i class="bi bi-check me-1"></i>Tandai Selesai
+                                </button>
+                            <% } else if (report.status === 'in_progress') { %>
+                                <button class="btn btn-success" onclick="updateStatus('resolved')">
+                                    <i class="bi bi-check me-1"></i>Tandai Selesai
+                                </button>
+                                <button class="btn btn-secondary" onclick="updateStatus('open')">
+                                    <i class="bi bi-arrow-left me-1"></i>Kembalikan ke Open
+                                </button>
+                            <% } else if (report.status === 'resolved') { %>
+                                <button class="btn btn-warning" onclick="updateStatus('in_progress')">
+                                    <i class="bi bi-gear me-1"></i>Buka Kembali
+                                </button>
+                                <button class="btn btn-dark" onclick="updateStatus('closed')">
+                                    <i class="bi bi-archive me-1"></i>Tutup Laporan
+                                </button>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="https://wa.me/<%= report.phone.replace(/^0/, '62') %>" target="_blank" class="btn btn-success w-100">
+                            <i class="bi bi-whatsapp me-1"></i>Hubungi Pelanggan
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline/Notes -->
+        <% if (report.notes && report.notes.length > 0) { %>
+        <div class="detail-card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Riwayat Penanganan</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <% report.notes.reverse().forEach(note => { %>
+                        <div class="timeline-item status-<%= note.status %>">
+                            <div class="bg-light p-3 rounded">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-primary">
+                                        <%= 
+                                            note.status === 'open' ? 'Dibuka' : 
+                                            note.status === 'in_progress' ? 'Sedang Ditangani' : 
+                                            note.status === 'resolved' ? 'Terselesaikan' : 
+                                            'Ditutup' 
+                                        %>
+                                    </span>
+                                    <small class="text-muted">
+                                        <%= new Date(note.timestamp).toLocaleDateString('id-ID') %> 
+                                        <%= new Date(note.timestamp).toLocaleTimeString('id-ID') %>
+                                    </small>
+                                </div>
+                                <p class="mb-0"><%= note.content %></p>
+                                <% if (note.notificationSent) { %>
+                                    <small class="text-success">
+                                        <i class="bi bi-check-circle me-1"></i>Notifikasi terkirim
+                                    </small>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Add Note -->
+        <div class="detail-card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Tambah Catatan</h5>
+            </div>
+            <div class="card-body">
+                <form id="addNoteForm">
+                    <div class="mb-3">
+                        <label for="noteContent" class="form-label">Catatan Teknisi</label>
+                        <textarea class="form-control" id="noteContent" rows="3" placeholder="Tambahkan catatan penanganan..."></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="noteStatus" class="form-label">Status Baru</label>
+                            <select class="form-select" id="noteStatus">
+                                <option value="<%= report.status %>" selected>Tetap <%= 
+                                    report.status === 'open' ? 'Belum Ditangani' : 
+                                    report.status === 'in_progress' ? 'Sedang Ditangani' : 
+                                    report.status === 'resolved' ? 'Terselesaikan' : 
+                                    'Ditutup' 
+                                %></option>
+                                <% if (report.status !== 'open') { %>
+                                    <option value="open">Belum Ditangani</option>
+                                <% } %>
+                                <% if (report.status !== 'in_progress') { %>
+                                    <option value="in_progress">Sedang Ditangani</option>
+                                <% } %>
+                                <% if (report.status !== 'resolved') { %>
+                                    <option value="resolved">Terselesaikan</option>
+                                <% } %>
+                                <% if (report.status !== 'closed') { %>
+                                    <option value="closed">Ditutup</option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-save me-1"></i>Simpan Catatan
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Function to update status quickly
+        function updateStatus(newStatus) {
+            const statusNames = {
+                'open': 'Belum Ditangani',
+                'in_progress': 'Sedang Ditangani', 
+                'resolved': 'Terselesaikan',
+                'closed': 'Ditutup'
+            };
+            
+            if (confirm(`Ubah status laporan menjadi "${statusNames[newStatus]}"?`)) {
+                fetch(`/technician/troubletickets/<%= report.id %>/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: newStatus,
+                        notes: `Status diubah menjadi ${statusNames[newStatus]} oleh teknisi`,
+                        sendNotification: true
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Gagal mengubah status: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat mengubah status');
+                });
+            }
+        }
+
+        // Form submit handler for adding notes
+        document.getElementById('addNoteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const content = document.getElementById('noteContent').value.trim();
+            const status = document.getElementById('noteStatus').value;
+            
+            if (!content) {
+                alert('Silakan isi catatan terlebih dahulu');
+                return;
+            }
+            
+            fetch(`/technician/troubletickets/<%= report.id %>/update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    status: status,
+                    notes: content,
+                    sendNotification: true
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Gagal menyimpan catatan: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menyimpan catatan');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -387,6 +387,10 @@ app.use('/test/trouble', testTroubleReportRouter);
 const publicToolsRouter = require('./routes/publicTools');
 app.use('/tools', publicToolsRouter);
 
+// Import dan gunakan route technicianTroubleReport
+const technicianTroubleReportRouter = require('./routes/technicianTroubleReport');
+app.use('/technician', technicianTroubleReportRouter);
+
 // Route untuk halaman test trouble report
 app.get('/test-trouble-report', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'test-trouble-report.html'));
