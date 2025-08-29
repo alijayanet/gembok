@@ -580,11 +580,11 @@ global.appSettings = {
   whatsappRestartOnError: getSetting('whatsapp_restart_on_error', true),
   
   // Monitoring
-  pppoeMonitorInterval: getSetting('pppoe_monitor_interval', 60000),
+  pppoeMonitorInterval: getSetting('pppoe_monitor_interval_minutes', 1) * 60 * 1000, // Convert menit ke ms
   rxPowerWarning: getSetting('rx_power_warning', -27),
   rxPowerCritical: getSetting('rx_power_critical', -30),
   rxPowerNotificationEnable: getSetting('rx_power_notification_enable', true),
-  rxPowerNotificationInterval: getSetting('rx_power_notification_interval', 300000),
+  rxPowerNotificationInterval: getSetting('rx_power_notification_interval_minutes', 5) * 60 * 1000, // Convert menit ke ms
   
   // Company Info
   companyHeader: getSetting('company_header', 'ISP Monitor'),

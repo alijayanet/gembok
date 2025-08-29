@@ -1,0 +1,72 @@
+{
+  "test-device-001": {
+    "deviceId": "test-device-001",
+    "serial": "TEST001",
+    "tag": "081234567890",
+    "lat": -6.2088,
+    "lng": 106.8456,
+    "address": "Jl. Sudirman No. 123, Jakarta Pusat",
+    "lastUpdated": "2025-08-27T19:45:00.000Z",
+    "updatedBy": "admin"
+  },
+  "test-device-002": {
+    "deviceId": "test-device-002",
+    "serial": "TEST002",
+    "tag": "081234567891",
+    "lat": -6.2188,
+    "lng": 106.8556,
+    "address": "Jl. Thamrin No. 456, Jakarta Pusat",
+    "lastUpdated": "2025-08-27T19:45:00.000Z",
+    "updatedBy": "admin"
+  },
+  "C0FD84-F663NV3A-ZTEGCB8BB94C": {
+    "deviceId": "C0FD84-F663NV3A-ZTEGCB8BB94C",
+    "serial": "C0FD84-F663NV3A-ZTEGCB8BB94C",
+    "tag": "-",
+    "lat": -6.254222,
+    "lng": 107.922447,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-08-27T13:02:14.048Z",
+    "updatedBy": "admin"
+  },
+  "1C25E1-GM220%2DS-CIOT12E8C8B8": {
+    "deviceId": "1C25E1-GM220%2DS-CIOT12E8C8B8",
+    "serial": "1C25E1-GM220%2DS-CIOT12E8C8B8",
+    "tag": "-",
+    "lat": -6.26127,
+    "lng": 107.93192,
+    "address": "Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-08-27T13:27:53.781Z",
+    "updatedBy": "admin"
+  },
+  "2C3341-G663%2DXPON-GGCL25574599": {
+    "deviceId": "2C3341-G663%2DXPON-GGCL25574599",
+    "serial": "2C3341-G663%2DXPON-GGCL25574599",
+    "tag": "081321960111",
+    "lat": -6.252933,
+    "lng": 107.922531,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-08-28T03:43:20.263Z",
+    "updatedBy": "admin"
+  },
+  "68D482-F650-ZICG094F9AFE": {
+    "deviceId": "68D482-F650-ZICG094F9AFE",
+    "serial": "68D482-F650-ZICG094F9AFE",
+    "tag": "083159616518",
+    "lat": -6.256773,
+    "lng": 107.921973,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-08-28T03:42:28.096Z",
+    "updatedBy": "admin"
+  },
+  "90869B-ZXHN%20F477-01FFFFFFFF011FFF2390869BCA8CACA4": {
+    "deviceId": "90869B-ZXHN%20F477-01FFFFFFFF011FFF2390869BCA8CACA4",
+    "serial": "90869B-ZXHN%20F477-01FFFFFFFF011FFF2390869BCA8CACA4",
+    "tag": "087828060111",
+    "lat": -6.254977,
+    "lng": 107.922388,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-08-27T14:48:22.186Z",
+    "updatedBy": "admin"
+  }
+}

@@ -185,3 +185,15 @@ SyntaxError: E:\gembok-main\settings.json: Expected ',' or '}' after property va
     at require (node:internal/modules/helpers:136:16)
     at Object.<anonymous> (E:\gembok-main\config\genieacs.js:6:18)
     at Module._compile (node:internal/modules/cjs/loader:1562:14)
+2025-08-29 13:01:37 error: uncaughtException: File superadmin.txt tidak ditemukan!
+Error: File superadmin.txt tidak ditemukan!
+    at getSuperAdminNumber (E:\gembok\config\whatsapp.js:66:15)
+    at Object.<anonymous> (E:\gembok\config\whatsapp.js:71:26)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)

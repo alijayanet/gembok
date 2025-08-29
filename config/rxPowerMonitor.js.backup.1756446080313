@@ -151,7 +151,7 @@ async function sendCriticalNotification(device, rxPowerValue, threshold) {
   const deviceId = device._id;
   const cacheKey = `${deviceId}_critical`;
   const now = Date.now();
-  const interval = getSetting('rx_power_notification_interval_minutes', 5) * 60 * 1000; // Convert menit ke ms
+  const interval = getSetting('rx_power_notification_interval', 300000); // 5 menit
   
   // Cek apakah sudah pernah notifikasi dalam interval waktu
   if (notificationCache[cacheKey] && (now - notificationCache[cacheKey]) < interval) {
@@ -188,7 +188,7 @@ async function sendWarningNotification(device, rxPowerValue, threshold) {
   const deviceId = device._id;
   const cacheKey = `${deviceId}_warning`;
   const now = Date.now();
-  const interval = getSetting('rx_power_notification_interval_minutes', 5) * 60 * 1000; // Convert menit ke ms
+  const interval = getSetting('rx_power_notification_interval', 300000); // 5 menit
   
   // Cek apakah sudah pernah notifikasi dalam interval waktu
   if (notificationCache[cacheKey] && (now - notificationCache[cacheKey]) < interval) {
@@ -303,7 +303,7 @@ async function sendToTechnicians(message, priority = 'normal') {
 // Fungsi untuk memulai monitoring RX Power
 function startRXPowerMonitoring() {
   const notificationEnabled = getSetting('rx_power_notification_enable', true);
-  const interval = getSetting('rx_power_notification_interval_minutes', 5) * 60 * 1000; // Convert menit ke ms
+  const interval = getSetting('rx_power_notification_interval', 300000); // 5 menit
   
   if (!notificationEnabled) {
     console.log('📊 RX Power monitoring is DISABLED in settings');

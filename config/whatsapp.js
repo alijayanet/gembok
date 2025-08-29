@@ -63,9 +63,15 @@ function decryptAdminNumber(encryptedNumber) {
 function getSuperAdminNumber() {
     const filePath = path.join(__dirname, 'superadmin.txt');
     if (!fs.existsSync(filePath)) {
-        throw new Error('File superadmin.txt tidak ditemukan!');
+        console.warn('⚠️ File superadmin.txt tidak ditemukan! Super admin features akan dinonaktifkan.');
+        return null; // Return null instead of throwing error
     }
-    return fs.readFileSync(filePath, 'utf-8').trim();
+    try {
+        return fs.readFileSync(filePath, 'utf-8').trim();
+    } catch (error) {
+        console.error('❌ Error reading superadmin.txt:', error.message);
+        return null;
+    }
 }
 
 const superAdminNumber = getSuperAdminNumber();
@@ -95,8 +101,8 @@ function isAdminNumber(number) {
         // Log debug
         console.log('DEBUG Admins from settings.json:', admins);
         console.log('DEBUG Nomor Masuk:', cleanNumber);
-        // Cek super admin
-        if (cleanNumber === superAdminNumber) return true;
+        // Cek super admin (hanya jika superAdminNumber tersedia)
+        if (superAdminNumber && cleanNumber === superAdminNumber) return true;
         // Cek di daftar admin
         if (admins.includes(cleanNumber)) return true;
         return false;
@@ -415,7 +421,8 @@ async function connectToWhatsApp() {
                     `🏢 *${companyHeader}*\n\n` +
                     `📞 ${footerInfo}`;
                     
-                    // Kirim ke admin dari environment variable
+                    // DISABLED: Kirim ke admin dari environment variable
+                    /*
                     const adminNumber = getSetting('admins.0', '');
                     if (adminNumber) {
                         setTimeout(async () => {
@@ -429,8 +436,10 @@ async function connectToWhatsApp() {
                             }
                         }, 5000);
                     }
+                    */
                     
-                    // Kirim ke admin utama (dari .env)
+                    // DISABLED: Kirim ke admin utama (dari .env)
+                    /*
                     if (adminNumber) {
                         setTimeout(async () => {
                             try {
@@ -444,23 +453,33 @@ async function connectToWhatsApp() {
                             }
                         }, 3000);
                     }
+                    */
                     // Kirim juga ke super admin (jika berbeda dengan admin utama)
-                    const superAdminNumber = require('fs').readFileSync('./config/superadmin.txt', 'utf8').trim();
-                    if (superAdminNumber && superAdminNumber !== adminNumber) {
-                        setTimeout(async () => {
-                            try {
-                                const donationText = `Rekening untuk pengembangan aplikasi GEMBOK\n4206 01 003 953 53 1\nBRI a.n. WARJAYA\n\nDonasi melalui e-wallet:\n081947215703\n\nTerima kasih atas partisipasi dan dukungan Anda 🙏`;
-                                const startupMessage = `${getSetting('company_header', 'ALIJAYA DIGITAL NETWORK')}\n👋 *Selamat datang!*\n\nAplikasi WhatsApp Bot berhasil dijalankan.\n\n${donationText}\n\n${getSetting('footer_info', '')}`;
-                                
-                                await sock.sendMessage(`${superAdminNumber}@s.whatsapp.net`, {
-                                    text: startupMessage
-                                });
-                                const maskedNumber = superAdminNumber.substring(0, 4) + '****' + superAdminNumber.substring(superAdminNumber.length - 4);
-                                console.log(`Pesan notifikasi terkirim ke super admin ${maskedNumber}`);
-                            } catch (error) {
-                                console.error(`Error sending connection notification to super admin:`, error);
-                            }
-                        }, 5000);
+                    try {
+                        const adminNumber = getSetting('admins.0', ''); // Define adminNumber in this scope
+                        const superAdminNumber = fs.existsSync('./config/superadmin.txt') ? 
+                            fs.readFileSync('./config/superadmin.txt', 'utf8').trim() : null;
+                        
+                        if (superAdminNumber && superAdminNumber !== adminNumber) {
+                            setTimeout(async () => {
+                                try {
+                                    const donationText = `Rekening untuk pengembangan aplikasi GEMBOK\n4206 01 003 953 53 1\nBRI a.n. WARJAYA\n\nDonasi melalui e-wallet:\n081947215703\n\nTerima kasih atas partisipasi dan dukungan Anda 🙏`;
+                                    const startupMessage = `${getSetting('company_header', 'ALIJAYA DIGITAL NETWORK')}\n👋 *Selamat datang!*\n\nAplikasi WhatsApp Bot berhasil dijalankan.\n\n${donationText}\n\n${getSetting('footer_info', '')}`;
+                                    
+                                    await sock.sendMessage(`${superAdminNumber}@s.whatsapp.net`, {
+                                        text: startupMessage
+                                    });
+                                    const maskedNumber = superAdminNumber.substring(0, 4) + '****' + superAdminNumber.substring(superAdminNumber.length - 4);
+                                    console.log(`Pesan notifikasi terkirim ke super admin ${maskedNumber}`);
+                                } catch (error) {
+                                    console.error(`Error sending connection notification to super admin:`, error);
+                                }
+                            }, 5000);
+                        } else if (!superAdminNumber) {
+                            console.log('⚠️ Super admin tidak dikonfigurasi (file superadmin.txt tidak ada)');
+                        }
+                    } catch (error) {
+                        console.error('Error handling super admin notification:', error);
                     }
                 } catch (error) {
                     console.error('Error sending connection notification:', error);

@@ -402,7 +402,7 @@ async function monitorPPPoEConnections() {
             return;
         }
         // Dapatkan interval monitoring dari konfigurasi
-        const interval = parseInt(getSetting('pppoe_monitor_interval_minutes', '1')) * 60 * 1000; // Convert menit ke ms
+        const interval = parseInt(getSetting('pppoe_monitor_interval', '60000'));
         
         // Bersihkan interval sebelumnya jika ada
         if (monitorInterval) {

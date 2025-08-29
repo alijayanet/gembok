@@ -909,9 +909,9 @@ const deviceInfo = {
 function scheduleMonitoring() {
     // Ambil pengaturan dari settings.json
     const rxPowerRecapEnabled = getSetting('rxpower_recap_enable', true) !== false;
-    const rxPowerRecapInterval = getSetting('rxpower_recap_interval', 6) * 60 * 60 * 1000; // Convert jam ke ms
+    const rxPowerRecapInterval = getSetting('rxpower_recap_interval', 6 * 60 * 60 * 1000);
     const offlineNotifEnabled = getSetting('offline_notification_enable', true) !== false;
-    const offlineNotifInterval = getSetting('offline_notification_interval', 12) * 60 * 60 * 1000; // Convert jam ke ms
+    const offlineNotifInterval = getSetting('offline_notification_interval', 12 * 60 * 60 * 1000);
 
     setTimeout(async () => {
         if (rxPowerRecapEnabled) {
