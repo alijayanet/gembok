@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billing Management | Admin Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/responsive-admin.css">
+  <style>
+    .card {
+      border: none;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+    .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+    }
+    .stats-card {
+      border-left: 4px solid;
+      transition: transform 0.2s;
+    }
+    .stats-card:hover {
+      transform: translateY(-5px);
+    }
+    .stats-card.packages { border-left-color: #28a745; }
+    .stats-card.customers { border-left-color: #007bff; }
+    .stats-card.invoices { border-left-color: #ffc107; }
+    .stats-card.revenue { border-left-color: #dc3545; }
+    .btn-action {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+    }
+    
+    .alert {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+      animation: slideInDown 0.5s ease-out;
+    }
+    
+    .alert-success {
+      background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+      border-left: 4px solid #28a745;
+      color: #155724;
+    }
+    
+    .alert-danger {
+      background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+      border-left: 4px solid #dc3545;
+      color: #721c24;
+    }
+    
+    @keyframes slideInDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .alert.fade-out {
+      animation: fadeOut 0.8s ease-out forwards;
+    }
+    
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/admin/dashboard">
+        <i class="bi bi-gear-fill"></i> Admin Portal
+      </a>
+      <div class="navbar-nav ms-auto">
+        <a class="nav-link" href="/admin/dashboard">Dashboard</a>
+        <a class="nav-link active" href="/admin/billing">Billing</a>
+        <a class="nav-link" href="/admin/logout">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid mt-4">
+    <!-- Alert Messages -->
+    <% if (success) { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> <%= success %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+    <% if (error) { %>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+
+    <!-- Stats Cards -->
+    <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
+      <div class="col">
+        <div class="card stats-card packages">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h5 class="text-success"><%= stats.totalPackages %></h5>
+                <p class="card-text">Paket Aktif</p>
+              </div>
+
+        
+              <div class="align-self-center">
+                <i class="bi bi-box-seam text-success" style="font-size: 2rem;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card stats-card customers">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h5 class="text-primary"><%= stats.totalCustomers %></h5>
+                <p class="card-text">Total Pelanggan</p>
+              </div>
+              <div class="align-self-center">
+                <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card stats-card invoices">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h5 class="text-warning"><%= stats.unpaidInvoices %></h5>
+                <p class="card-text">Tagihan Belum Lunas</p>
+              </div>
+              <div class="align-self-center">
+                <i class="bi bi-receipt text-warning" style="font-size: 2rem;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card stats-card revenue">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h5 class="text-danger">Rp <%= stats.totalRevenue.toLocaleString('id-ID') %></h5>
+                <p class="card-text">Total Pendapatan</p>
+              </div>
+              <div class="align-self-center">
+                <i class="bi bi-cash-coin text-danger" style="font-size: 2rem;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Invoice Service Status -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h6 class="mb-0">
+              <i class="bi bi-calendar-event me-2"></i>Monthly Invoice Service
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <h6>Status Service:</h6>
+                <div id="monthlyInvoiceStatus">
+                  <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span>Checking service status...</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <h6>Actions:</h6>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-success btn-sm" onclick="triggerMonthlyInvoices()">
+                    <i class="bi bi-play-circle me-1"></i>Generate Now
+                  </button>
+                  <button class="btn btn-info btn-sm" onclick="refreshMonthlyInvoiceStatus()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh Status
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" id="billingTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="packages-tab" data-bs-toggle="tab" data-bs-target="#packages" type="button" role="tab">
+          <i class="bi bi-box-seam"></i> Paket Langganan
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="customers-tab" data-bs-toggle="tab" data-bs-target="#customers" type="button" role="tab">
+          <i class="bi bi-people"></i> Pelanggan
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#invoices" type="button" role="tab">
+          <i class="bi bi-receipt"></i> Tagihan
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">
+          <i class="bi bi-gear"></i> Pengaturan
+        </button>
+      </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="billingTabContent">
+      
+      <!-- PACKAGES TAB -->
+      <div class="tab-pane fade show active" id="packages" role="tabpanel">
+        <div class="card mt-3">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="bi bi-box-seam"></i> Manajemen Paket Langganan</h5>
+              <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addPackageModal">
+                <i class="bi bi-plus"></i> Tambah Paket
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Global Isolir Profile Selector -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <form class="row g-2 align-items-end" method="POST" action="/admin/billing/settings/isolir-profile">
+                  <div class="col-12">
+                    <label class="form-label">Profile Isolir (PPPoE)</label>
+                    <select class="form-select" name="billing_isolir_profile" required>
+                      <option value="">Pilih Profile Isolir...</option>
+                      <% if (typeof pppoeProfiles !== 'undefined' && pppoeProfiles.length > 0) { %>
+                        <% pppoeProfiles.forEach(profile => { %>
+                          <option value="<%= profile.name %>" <%= (settings && settings.billing_isolir_profile === profile.name) ? 'selected' : '' %>>
+                            <%= profile.name %>
+                            <% if (profile.rateLimit && profile.rateLimit !== 'Unlimited') { %>
+                              - <%= profile.rateLimit %>
+                            <% } %>
+                          </option>
+                        <% }) %>
+                      <% } else { %>
+                        <option value="" disabled>Tidak ada profile ditemukan</option>
+                      <% } %>
+                    </select>
+                    <div class="form-text">
+                      🔒 Profil yang dipakai saat isolir massal/otomatis. Saat ini: <code><%= (settings && settings.billing_isolir_profile) ? settings.billing_isolir_profile : 'isolir' %></code>
+                    </div>
+                  </div>
+                  <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                      <i class="bi bi-save me-1"></i>Simpan Profil Isolir
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover" id="packagesTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama Paket</th>
+                    <th>Kecepatan</th>
+                    <th>Harga</th>
+                    <th>Deskripsi</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% packages.forEach(pkg => { %>
+                    <tr>
+                      <td><%= pkg.id %></td>
+                      <td><%= pkg.name %></td>
+                      <td><%= pkg.speed %></td>
+                      <td>Rp <%= pkg.price.toLocaleString('id-ID') %></td>
+                      <td><%= pkg.description %></td>
+                      <td>
+                        <% if (pkg.status === 'active') { %>
+                          <span class="badge bg-success">Aktif</span>
+                        <% } else { %>
+                          <span class="badge bg-secondary">Nonaktif</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <button class="btn btn-primary btn-action" 
+                                data-pkg-id="<%= pkg.id %>"
+                                data-pkg-name="<%= pkg.name %>"
+                                data-pkg-speed="<%= pkg.speed %>"
+                                data-pkg-price="<%= pkg.price %>"
+                                data-pkg-description="<%= pkg.description || '' %>"
+                                data-pkg-profile="<%= pkg.pppoe_profile || '' %>"
+                                onclick="editPackageFromData(this)">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <% if (pkg.status === 'active') { %>
+                          <form method="POST" action="/admin/billing/packages/delete/<%= pkg.id %>" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus paket ini?')">
+                            <button type="submit" class="btn btn-danger btn-action">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </form>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS TAB -->
+      <div class="tab-pane fade" id="customers" role="tabpanel">
+        <div class="card mt-3">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="bi bi-people"></i> Manajemen Pelanggan</h5>
+                             <div class="btn-group" role="group">
+                 <button class="btn btn-success btn-sm" onclick="syncFromGenieACS()" title="Sync customer dari GenieACS berdasarkan tag">
+                   <i class="bi bi-arrow-repeat me-1"></i>Sync GenieACS
+                 </button>
+                 <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#assignPackageModal">
+                   <i class="bi bi-plus"></i> Tambah Pelanggan
+                 </button>
+                 <button class="btn btn-danger btn-sm" onclick="deleteSelectedCustomers()" id="deleteSelectedBtn" disabled>
+                   <i class="bi bi-trash me-1"></i>Hapus Terpilih
+                 </button>
+               </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Info Workflow -->
+            <div class="alert alert-light border-0 bg-light mb-3">
+              <div class="row">
+                <div class="col-md-8">
+                  <h6 class="mb-2"><i class="bi bi-lightbulb text-warning me-2"></i><strong>Workflow Praktis Customer Management:</strong></h6>
+                  <div class="small">
+                    <span class="badge bg-primary me-2">1</span>Tambah ONU ke GenieACS<br>
+                    <span class="badge bg-primary me-2">2</span>Tag ONU dengan nomor HP (format: <code>phone:081234567890</code> atau langsung <code>081234567890</code>)<br>
+                    <span class="badge bg-primary me-2">3</span>Klik tombol <strong>"Sync GenieACS"</strong> untuk import customer otomatis<br>
+                    <span class="badge bg-primary me-2">4</span>Klik <strong>"Tambah Pelanggan"</strong> untuk assign paket → Customer siap ditagih!
+                  </div>
+                </div>
+                <div class="col-md-4 text-end">
+                  <div class="small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>Customer dengan tag nomor HP akan otomatis tersync
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="table-responsive">
+                             <table class="table table-hover" id="customersTable">
+                 <thead>
+                   <tr>
+                     <th>
+                       <input type="checkbox" id="selectAllCustomers" class="form-check-input">
+                     </th>
+                     <th>No. HP</th>
+                     <th>Nama</th>
+                     <th>Username</th>
+                     <th>PPPoE User</th>
+                     <th>Paket</th>
+                     <th>Harga</th>
+                     <th>Status Bayar</th>
+                     <th>Aksi</th>
+                   </tr>
+                 </thead>
+                <tbody>
+                                     <% customers.forEach(customer => { %>
+                     <tr>
+                       <td>
+                         <input type="checkbox" class="form-check-input customer-checkbox" value="<%= customer.phone %>">
+                       </td>
+                       <td><%= customer.phone %></td>
+                       <td><%= customer.name || '-' %></td>
+                       <td><%= customer.username || '-' %></td>
+                       <td>
+                         <% if (customer.pppoe_username) { %>
+                           <code><%= customer.pppoe_username %></code>
+                         <% } else { %>
+                           <span class="text-muted">-</span>
+                         <% } %>
+                       </td>
+                       <td><%= customer.package_name || 'Belum ada paket' %></td>
+                       <td>
+                         <% if (customer.package_price) { %>
+                           Rp <%= customer.package_price.toLocaleString('id-ID') %>
+                         <% } else { %>
+                           -
+                         <% } %>
+                       </td>
+                       <td>
+                         <% if (customer.payment_status === 'paid') { %>
+                           <span class="badge bg-success">Lunas</span>
+                         <% } else if (customer.payment_status === 'unpaid') { %>
+                           <span class="badge bg-warning">Belum Lunas</span>
+                         <% } else { %>
+                           <span class="badge bg-secondary">-</span>
+                         <% } %>
+                       </td>
+                       <td>
+                         <button class="btn btn-primary btn-action" onclick="viewCustomer('<%= customer.phone %>')" data-bs-toggle="modal" data-bs-target="#customerDetailModal">
+                           <i class="bi bi-eye"></i>
+                         </button>
+                         <% if (customer.package_id) { %>
+                           <button class="btn btn-success btn-action" onclick="createInvoice('<%= customer.phone %>', '<%= customer.package_id %>')">
+                             <i class="bi bi-receipt"></i>
+                           </button>
+                         <% } %>
+                         <button class="btn btn-danger btn-action" onclick="deleteCustomer('<%= customer.phone %>', '<%= customer.name || customer.phone %>')" title="Hapus pelanggan">
+                           <i class="bi bi-trash"></i>
+                         </button>
+                       </td>
+                     </tr>
+                   <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVOICES TAB -->
+      <div class="tab-pane fade" id="invoices" role="tabpanel">
+        <div class="card mt-3">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="bi bi-receipt"></i> Manajemen Tagihan</h5>
+              <form method="POST" action="/admin/billing/generate-monthly-invoices" class="d-inline">
+                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Generate tagihan bulanan untuk semua pelanggan aktif?')">
+                  <i class="bi bi-calendar"></i> Generate Tagihan Bulanan
+                </button>
+              </form>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover" id="invoicesTable">
+                <thead>
+                  <tr>
+                    <th>No. Tagihan</th>
+                    <th>Pelanggan</th>
+                    <th>No. HP</th>
+                    <th>Paket</th>
+                    <th>Jumlah</th>
+                    <th>Jatuh Tempo</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% invoices.forEach(invoice => { %>
+                    <tr>
+                      <td><%= invoice.invoice_number %></td>
+                      <td><%= invoice.customer_name || '-' %></td>
+                      <td><%= invoice.customer_phone %></td>
+                      <td><%= invoice.package_name %></td>
+                      <td>Rp <%= invoice.amount.toLocaleString('id-ID') %></td>
+                      <td>
+                        <% const dueDate = new Date(invoice.due_date); %>
+                        <% const isOverdue = dueDate < new Date() && invoice.status === 'unpaid'; %>
+                        <% if (isOverdue) { %>
+                          <span class="text-danger fw-bold"><%= dueDate.toLocaleDateString('id-ID') %></span>
+                        <% } else { %>
+                          <%= dueDate.toLocaleDateString('id-ID') %>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (invoice.status === 'paid') { %>
+                          <span class="badge bg-success">Lunas</span>
+                        <% } else if (new Date(invoice.due_date) < new Date()) { %>
+                          <span class="badge bg-danger">Terlambat</span>
+                        <% } else { %>
+                          <span class="badge bg-warning">Belum Lunas</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (invoice.status === 'unpaid') { %>
+                          <form method="POST" action="/admin/billing/invoices/mark-paid/<%= invoice.id %>" class="d-inline">
+                            <button type="submit" class="btn btn-success btn-action" onclick="return confirm('Tandai tagihan ini sebagai lunas?')">
+                              <i class="bi bi-check"></i> Lunas
+                            </button>
+                          </form>
+                        <% } else { %>
+                          <span class="text-muted">Sudah Lunas</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SETTINGS TAB -->
+      <div class="tab-pane fade" id="settings" role="tabpanel">
+        <div class="card mt-3">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-gear"></i> Pengaturan WhatsApp</h5>
+          </div>
+          <div class="card-body">
+            <form method="POST" action="/admin/billing/settings/whatsapp-templates">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Template Tagihan Baru (WA)</label>
+                    <textarea class="form-control" name="invoice_template" rows="10"><%= (typeof settings !== 'undefined' && settings && settings.wa_invoice_template) ? settings.wa_invoice_template : invoiceTemplateDefault %></textarea>
+                    <div class="form-text">
+                      Placeholder yang didukung: <code>{{invoice_number}}</code>, <code>{{package_name}}</code>, <code>{{amount}}</code>, <code>{{due_date}}</code>, <code>{{customer_name}}</code>, <code>{{customer_phone}}</code>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Template Pembayaran Diterima (WA)</label>
+                    <textarea class="form-control" name="payment_template" rows="10"><%= (typeof settings !== 'undefined' && settings && settings.wa_payment_template) ? settings.wa_payment_template : paymentTemplateDefault %></textarea>
+                    <div class="form-text">
+                      Placeholder yang didukung: <code>{{invoice_number}}</code>, <code>{{amount}}</code>, <code>{{paid_at}}</code>, <code>{{customer_name}}</code>, <code>{{customer_phone}}</code>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Template Isolir (WA)</label>
+                    <textarea class="form-control" name="isolir_template" rows="10"><%= (typeof settings !== 'undefined' && settings && settings.wa_isolir_template) ? settings.wa_isolir_template : isolirTemplateDefault %></textarea>
+                    <div class="form-text">
+                      Placeholder yang didukung: <code>{{customer_name}}</code>, <code>{{package_name}}</code>, <code>{{invoice_number}}</code>, <code>{{amount}}</code>, <code>{{due_date}}</code>, <code>{{payment_accounts}}</code>, <code>{{footer_info}}</code>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Nomor Rekening / E-Wallet</label>
+                    <textarea class="form-control" name="payment_accounts" rows="10" placeholder="Contoh:\nBCA 123456789 a/n PT Contoh\nDANA 0812xxxxxxx a/n Admin"><%= (typeof settings !== 'undefined' && settings && settings.payment_accounts) ? settings.payment_accounts : '' %></textarea>
+                    <div class="form-text">
+                      Akan disisipkan ke template lewat placeholder <code>{{payment_accounts}}</code>. Anda bisa menulis beberapa baris untuk beberapa metode pembayaran.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Hanya Nomor (Opsional)</label>
+                    <textarea class="form-control" name="payment_numbers" rows="6" placeholder="Contoh: 08123456789, 081298765432 atau pisah per baris"><%= (typeof settings !== 'undefined' && settings && settings.payment_numbers) ? settings.payment_numbers : '' %></textarea>
+                    <div class="form-text">
+                      Jika Anda hanya ingin menyimpan nomor saja di settings, isi di sini (pisah dengan koma atau baris baru). Sistem akan otomatis menampilkan nomor-nomor ini di <code>{{payment_accounts}}</code> bila kolom Rekening/E-Wallet kosong.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="text-end">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-save me-1"></i>Simpan Template
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Alerts / Toasts -->
+        <div id="toast-flags" data-success="<%= (typeof success !== 'undefined' && success) ? 'true' : 'false' %>" data-error="<%= (typeof error !== 'undefined' && error) ? 'true' : 'false' %>"></div>
+        <div aria-live="polite" aria-atomic="true" class="position-relative">
+          <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+            <div id="toastSuccess" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="d-flex">
+                <div class="toast-body">
+                  <%= typeof success !== 'undefined' && success ? success : '' %>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+            </div>
+            <div id="toastError" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="d-flex">
+                <div class="toast-body">
+                  <%= typeof error !== 'undefined' && error ? error : '' %>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <script>
+          (function() {
+            const flagsEl = document.getElementById('toast-flags');
+            const hasSuccess = (flagsEl?.dataset?.success === 'true');
+            const hasError = (flagsEl?.dataset?.error === 'true');
+            const show = (id) => {
+              const el = document.getElementById(id);
+              if (!el) return;
+              // Bootstrap 5 Toast
+              if (window.bootstrap && bootstrap.Toast) {
+                const t = new bootstrap.Toast(el, { delay: 4000 });
+                t.show();
+              } else {
+                // Fallback simple
+                el.style.display = 'block';
+                setTimeout(() => el.style.display = 'none', 4000);
+              }
+            };
+            if (hasSuccess) show('toastSuccess');
+            if (hasError) show('toastError');
+          })();
+        </script>
+        <% if (typeof success !== 'undefined' && success) { %>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <%= success %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% } %>
+        <% if (typeof error !== 'undefined' && error) { %>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <%= error %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% } %>
+
+        <!-- Send Manual Invoice -->
+        <div class="card mt-3">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-send"></i> Kirim Tagihan Manual (WA)</h5>
+          </div>
+          <div class="card-body">
+            <form id="sendInvoiceForm" method="POST" action="/admin/billing/messages/send-invoice" class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label">Pilih Pelanggan (seperti dropdown broadcast)</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-search"></i></span>
+                  <input type="text" id="searchCustomer" class="form-control" placeholder="Cari nama atau nomor...">
+                </div>
+                <select id="customerSelect" class="form-select mt-2" size="8" aria-label="Daftar pelanggan">
+                  <% if (Array.isArray(customers) && customers.length > 0) { %>
+                    <% customers.forEach(c => { const label = (c.name && c.name.trim().length>0) ? `${c.name} (${c.phone})` : c.phone; %>
+                      <option value="<%= c.phone %>"><%= label %></option>
+                    <% }) %>
+                  <% } else { %>
+                      <option disabled>Tidak ada data pelanggan</option>
+                  <% } %>
+                </select>
+                <input type="hidden" name="phone" id="selectedPhone" required>
+                <div class="form-text">
+                  • Ketik untuk menyaring, lalu pilih salah satu dari daftar. Nilai yang dikirim adalah nomor HP (otomatis diformat ke 62).
+                </div>
+              </div>
+              <div class="col-md-4 d-flex align-items-end justify-content-end">
+                <button type="submit" class="btn btn-success w-100">
+                  <i class="bi bi-whatsapp me-1"></i>Kirim Tagihan via WhatsApp
+                </button>
+              </div>
+            </form>
+            <script>
+              (function(){
+                const search = document.getElementById('searchCustomer');
+                const select = document.getElementById('customerSelect');
+                const hidden = document.getElementById('selectedPhone');
+
+                function filterOptions() {
+                  const q = (search.value || '').toLowerCase();
+                  for (const opt of select.options) {
+                    if (!opt.value) continue;
+                    const text = (opt.text || '').toLowerCase();
+                    opt.hidden = q && !text.includes(q);
+                  }
+                }
+
+                function updateHidden() {
+                  const val = select.value;
+                  hidden.value = val || '';
+                }
+
+                search.addEventListener('input', filterOptions);
+                select.addEventListener('change', updateHidden);
+                // Initialize on load
+                filterOptions();
+                updateHidden();
+
+                // On submit: if nothing selected but user typed a full number, use it
+                document.getElementById('sendInvoiceForm').addEventListener('submit', function(e){
+                  if (!hidden.value) {
+                    const typed = (search.value || '').trim();
+                    if (typed) {
+                      hidden.value = typed;
+                    }
+                  }
+                });
+              })();
+            </script>
+          </div>
+        </div>
+        <!-- Send Manual Invoice Batch -->
+        <div class="card mt-3">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-send-check"></i> Kirim Tagihan Manual (Batch)</h5>
+          </div>
+          <div class="card-body">
+            <form id="sendInvoiceBatchForm" method="POST" action="/admin/billing/messages/send-invoice-batch" class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label">Pilih Banyak Pelanggan</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-search"></i></span>
+                  <input type="text" id="searchCustomerBatch" class="form-control" placeholder="Cari nama atau nomor...">
+                </div>
+                <select id="customerSelectBatch" class="form-select mt-2" multiple size="10" aria-label="Daftar pelanggan (multi)">
+                  <% if (Array.isArray(customers) && customers.length > 0) { %>
+                    <% customers.forEach(c => { const label = (c.name && c.name.trim().length>0) ? `${c.name} (${c.phone})` : c.phone; %>
+                      <option value="<%= c.phone %>"><%= label %></option>
+                    <% }) %>
+                  <% } else { %>
+                      <option disabled>Tidak ada data pelanggan</option>
+                  <% } %>
+                </select>
+                <input type="hidden" name="phones" id="selectedPhonesCsv" required>
+                <div class="form-text">
+                  • Pilih beberapa pelanggan (Ctrl/Shift-Click). Sistem akan mengirim pesan tagihan ke masing-masing pelanggan terpilih.
+                </div>
+              </div>
+              <div class="col-md-4 d-flex align-items-end justify-content-end">
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="bi bi-whatsapp me-1"></i>Kirim Tagihan Batch
+                </button>
+              </div>
+            </form>
+            <script>
+              (function(){
+                const search = document.getElementById('searchCustomerBatch');
+                const select = document.getElementById('customerSelectBatch');
+                const hidden = document.getElementById('selectedPhonesCsv');
+
+                function filter() {
+                  const q = (search.value || '').toLowerCase();
+                  for (const opt of select.options) {
+                    if (!opt.value) continue;
+                    const text = (opt.text || '').toLowerCase();
+                    opt.hidden = q && !text.includes(q);
+                  }
+                }
+                function updateHiddenCsv() {
+                  const selected = Array.from(select.selectedOptions).map(o => o.value).filter(Boolean);
+                  hidden.value = selected.join(',');
+                }
+                search.addEventListener('input', filter);
+                select.addEventListener('change', updateHiddenCsv);
+                // Init
+                filter();
+                updateHiddenCsv();
+                document.getElementById('sendInvoiceBatchForm').addEventListener('submit', function(){
+                  updateHiddenCsv();
+                });
+              })();
+            </script>
+          </div>
+        </div>
+
+        <!-- Broadcast Outage Message -->
+        <div class="card mt-3">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-broadcast"></i> Broadcast Gangguan (WA)</h5>
+          </div>
+          <div class="card-body">
+            <form method="POST" action="/admin/billing/messages/broadcast-outage" id="broadcastForm">
+              <div class="mb-3">
+                <label class="form-label">Pesan Broadcast</label>
+                <textarea name="message_text" class="form-control" rows="5" placeholder="Contoh: Mohon maaf, saat ini terjadi gangguan di area X. Estimasi selesai pukul ..." required></textarea>
+              </div>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Target Penerima</label>
+                  <select name="target" id="broadcastTarget" class="form-select" required>
+                    <option value="all">Semua pelanggan</option>
+                    <option value="active">Pelanggan aktif</option>
+                    <option value="package">Berdasarkan paket</option>
+                    <option value="list">Daftar nomor manual</option>
+                  </select>
+                </div>
+                <div class="col-md-4" id="packageSelector" style="display:none;">
+                  <label class="form-label">Pilih Paket</label>
+                  <select name="package_ids" class="form-select" multiple>
+                    <% packages.forEach(pkg => { %>
+                      <option value="<%= pkg.id %>"><%= pkg.name %> - <%= pkg.speed %></option>
+                    <% }) %>
+                  </select>
+                  <div class="form-text">Tahan Ctrl (Windows) untuk memilih lebih dari satu.</div>
+                </div>
+                <div class="col-md-4" id="manualList" style="display:none;">
+                  <label class="form-label">Daftar Nomor (pisahkan koma)</label>
+                  <input type="text" name="phones" class="form-control" placeholder="08123...,08124..., ...">
+                </div>
+                <div class="col-md-4 d-flex align-items-end justify-content-end">
+                  <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-megaphone me-1"></i>Kirim Broadcast
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      
+        <script>
+          (function(){
+            const targetSel = document.getElementById('broadcastTarget');
+            const pkgSel = document.getElementById('packageSelector');
+            const listInput = document.getElementById('manualList');
+            if (targetSel) {
+              const onChange = () => {
+                const v = targetSel.value;
+                pkgSel.style.display = (v === 'package') ? '' : 'none';
+                listInput.style.display = (v === 'list') ? '' : 'none';
+              };
+              targetSel.addEventListener('change', onChange);
+              onChange();
+            }
+          })();
+        </script>
+      
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Package Modal -->
+  <div class="modal fade" id="addPackageModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Tambah Paket Baru</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="POST" action="/admin/billing/packages/create">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="packageName" class="form-label">Nama Paket</label>
+              <input type="text" class="form-control" id="packageName" name="name" required>
+            </div>
+            <div class="mb-3">
+              <label for="packageSpeed" class="form-label">Kecepatan</label>
+              <input type="text" class="form-control" id="packageSpeed" name="speed" placeholder="10 Mbps" required>
+            </div>
+            <div class="mb-3">
+              <label for="packagePrice" class="form-label">Harga (Rp)</label>
+              <input type="number" class="form-control" id="packagePrice" name="price" required>
+            </div>
+            <div class="mb-3">
+              <label for="packageDescription" class="form-label">Deskripsi</label>
+              <textarea class="form-control" id="packageDescription" name="description" rows="3"></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <label for="packageProfile" class="form-label">Profile PPPoE</label>
+              <select class="form-control" id="packageProfile" name="pppoe_profile">
+                <option value="">Pilih Profile PPPoE...</option>
+                <% if (typeof pppoeProfiles !== 'undefined' && pppoeProfiles.length > 0) { %>
+                  <% pppoeProfiles.forEach(profile => { %>
+                    <option value="<%= profile.name %>">
+                      <%= profile.name %> 
+                      <% if (profile.rateLimit && profile.rateLimit !== 'Unlimited') { %>
+                        - <%= profile.rateLimit %>
+                      <% } %>
+                    </option>
+                  <% }) %>
+                <% } else { %>
+                  <option value="" disabled>Tidak ada profile ditemukan</option>
+                <% } %>
+              </select>
+              <div class="form-text">
+                ⚙️  Profile PPPoE dari Mikrotik yang akan digunakan untuk paket ini<br>
+                💡 Pastikan profile sudah dikonfigurasi di Mikrotik dengan bandwidth yang sesuai
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Package Modal -->
+  <div class="modal fade" id="editPackageModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Paket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="POST" id="editPackageForm">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="editPackageName" class="form-label">Nama Paket</label>
+              <input type="text" class="form-control" id="editPackageName" name="name" required>
+            </div>
+            <div class="mb-3">
+              <label for="editPackageSpeed" class="form-label">Kecepatan</label>
+              <input type="text" class="form-control" id="editPackageSpeed" name="speed" required>
+            </div>
+            <div class="mb-3">
+              <label for="editPackagePrice" class="form-label">Harga (Rp)</label>
+              <input type="number" class="form-control" id="editPackagePrice" name="price" required>
+            </div>
+            <div class="mb-3">
+              <label for="editPackageDescription" class="form-label">Deskripsi</label>
+              <textarea class="form-control" id="editPackageDescription" name="description" rows="3"></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <label for="editPackageProfile" class="form-label">Profile PPPoE</label>
+              <select class="form-control" id="editPackageProfile" name="pppoe_profile">
+                <option value="">Pilih Profile PPPoE...</option>
+                <% if (typeof pppoeProfiles !== 'undefined' && pppoeProfiles.length > 0) { %>
+                  <% pppoeProfiles.forEach(profile => { %>
+                    <option value="<%= profile.name %>">
+                      <%= profile.name %> 
+                      <% if (profile.rateLimit && profile.rateLimit !== 'Unlimited') { %>
+                        - <%= profile.rateLimit %>
+                      <% } %>
+                    </option>
+                  <% }) %>
+                <% } else { %>
+                  <option value="" disabled>Tidak ada profile ditemukan</option>
+                <% } %>
+              </select>
+              <div class="form-text">
+                ⚙️  Profile PPPoE dari Mikrotik untuk paket ini
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Update</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Package Modal -->
+  <div class="modal fade" id="assignPackageModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Tambah Pelanggan Baru</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="POST" action="/admin/billing/customers/assign-package">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="customerPhone" class="form-label">Nomor HP Pelanggan</label>
+              <input type="text" class="form-control" id="customerPhone" name="phone" placeholder="081234567890" required>
+              <div class="form-text">
+                📱 Nomor HP harus sudah ada tag di GenieACS<br>
+                💡 Gunakan tombol "Sync GenieACS" untuk import customer otomatis
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="customerName" class="form-label">Nama Pelanggan (opsional)</label>
+              <input type="text" class="form-control" id="customerName" name="name">
+            </div>
+            
+            <div class="mb-3">
+              <label for="pppoeUsername" class="form-label">PPPoE Username</label>
+              <input type="text" class="form-control" id="pppoeUsername" name="pppoe_username" placeholder="username_pppoe" required>
+              <div class="form-text">
+                🔑 Username PPPoE untuk isolir/unisolir via Mikrotik<br>
+                💡 Biasanya sama dengan nomor HP atau custom username
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="assignPackageId" class="form-label">Pilih Paket</label>
+              <select class="form-control" id="assignPackageId" name="package_id" required>
+                <option value="">Pilih Paket...</option>
+                <% packages.filter(p => p.status === 'active').forEach(pkg => { %>
+                  <option value="<%= pkg.id %>"><%= pkg.name %> - <%= pkg.speed %> - Rp <%= pkg.price.toLocaleString('id-ID') %></option>
+                <% }) %>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="enableIsolir" name="enable_isolir" value="true" checked>
+                <label class="form-check-label" for="enableIsolir">
+                  <strong>Aktifkan Auto-Isolir</strong>
+                </label>
+                <div class="form-text">
+                  🔒 Customer akan otomatis diisolir jika belum bayar lewat jatuh tempo<br>
+                  ⚙️  Profile isolir akan digunakan: <code><%= typeof settings !== 'undefined' ? settings.billing_isolir_profile || 'isolir' : 'isolir' %></code>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Tambah Pelanggan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Customer Modal -->
+  <div class="modal fade" id="editCustomerModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-pencil me-2"></i>Edit Customer
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="POST" action="/admin/billing/customers/update" id="editCustomerForm">
+          <div class="modal-body">
+            <input type="hidden" id="editCustomerPhone" name="phone">
+            
+            <div class="mb-3">
+              <label for="editCustomerName" class="form-label">Nama Pelanggan</label>
+              <input type="text" class="form-control" id="editCustomerName" name="name" placeholder="Masukkan nama pelanggan">
+            </div>
+            
+            <div class="mb-3">
+              <label for="editCustomerUsername" class="form-label">Username</label>
+              <input type="text" class="form-control" id="editCustomerUsername" name="username" placeholder="Username untuk login">
+            </div>
+            
+            <div class="mb-3">
+              <label for="editPppoeUsername" class="form-label">PPPoE Username</label>
+              <input type="text" class="form-control" id="editPppoeUsername" name="pppoe_username" placeholder="username_pppoe">
+              <div class="form-text">
+                🔑 Username PPPoE di Mikrotik untuk isolir/unisolir
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="editCustomerPackage" class="form-label">Paket Langganan</label>
+              <select class="form-control" id="editCustomerPackage" name="package_id">
+                <option value="">Pilih Paket...</option>
+                <% packages.filter(p => p.status === 'active').forEach(pkg => { %>
+                  <option value="<%= pkg.id %>" data-price="<%= pkg.price %>">
+                    <%= pkg.name %> - <%= pkg.speed %> - Rp <%= pkg.price.toLocaleString('id-ID') %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label for="editCustomerPaymentStatus" class="form-label">Status Pembayaran</label>
+              <select class="form-control" id="editCustomerPaymentStatus" name="payment_status">
+                <option value="">Pilih Status...</option>
+                <option value="paid">Lunas</option>
+                <option value="unpaid">Belum Lunas</option>
+                <option value="overdue">Terlambat</option>
+              </select>
+            </div>
+            
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              <strong>Workflow Customer:</strong>
+              <ul class="mb-0 mt-2">
+                <li>Tambah device ke GenieACS → tag dengan nomor HP</li>
+                <li>Klik "Sync GenieACS" untuk import customer otomatis</li>
+                <li>Assign paket → Edit data jika diperlukan</li>
+              </ul>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check me-1"></i>Simpan Perubahan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Detail Modal -->
+  <div class="modal fade" id="customerDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-person-circle me-2"></i>Detail Pelanggan
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <!-- Customer Info -->
+            <div class="col-md-6">
+              <div class="card border-0 bg-light">
+                <div class="card-body">
+                  <h6 class="card-title text-primary">
+                    <i class="bi bi-person me-2"></i>Informasi Pelanggan
+                  </h6>
+                  <div class="mb-2">
+                    <strong>No. HP:</strong>
+                    <span id="detailPhone">-</span>
+                  </div>
+                  <div class="mb-2">
+                    <strong>Nama:</strong>
+                    <span id="detailName">-</span>
+                  </div>
+                  <div class="mb-2">
+                    <strong>Username:</strong>
+                    <span id="detailUsername">-</span>
+                  </div>
+                  <div class="mb-2">
+                    <strong>Status Device:</strong>
+                    <span id="detailDeviceStatus" class="badge">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Package Info -->
+            <div class="col-md-6">
+              <div class="card border-0 bg-light">
+                <div class="card-body">
+                  <h6 class="card-title text-primary">
+                    <i class="bi bi-box-seam me-2"></i>Paket & Billing
+                  </h6>
+                  <div class="mb-2">
+                    <strong>Paket:</strong>
+                    <span id="detailPackage">-</span>
+                  </div>
+                  <div class="mb-2">
+                    <strong>Harga:</strong>
+                    <span id="detailPrice">-</span>
+                  </div>
+                  <div class="mb-2">
+                    <strong>Status Pembayaran:</strong>
+                    <span id="detailPaymentStatus" class="badge">-</span>
+                  </div>
+                  <div class="mb-2">
+                    <strong>Bergabung:</strong>
+                    <span id="detailJoinDate">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Invoices Summary -->
+          <div class="row mt-3">
+            <div class="col-12">
+              <div class="card border-0 bg-light">
+                <div class="card-body">
+                  <h6 class="card-title text-primary">
+                    <i class="bi bi-receipt me-2"></i>Ringkasan Tagihan
+                  </h6>
+                  <div class="row text-center">
+                    <div class="col-3">
+                      <div class="h4 text-primary mb-1" id="detailTotalInvoices">0</div>
+                      <small class="text-muted">Total Tagihan</small>
+                    </div>
+                    <div class="col-3">
+                      <div class="h4 text-success mb-1" id="detailPaidInvoices">0</div>
+                      <small class="text-muted">Lunas</small>
+                    </div>
+                    <div class="col-3">
+                      <div class="h4 text-warning mb-1" id="detailUnpaidInvoices">0</div>
+                      <small class="text-muted">Belum Lunas</small>
+                    </div>
+                    <div class="col-3">
+                      <div class="h4 text-danger mb-1" id="detailUnpaidAmount">Rp 0</div>
+                      <small class="text-muted">Total Hutang</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Invoices -->
+          <div class="row mt-3">
+            <div class="col-12">
+              <h6 class="text-primary">
+                <i class="bi bi-clock-history me-2"></i>5 Tagihan Terakhir
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-sm" id="detailInvoicesTable">
+                  <thead>
+                    <tr>
+                      <th>No. Tagihan</th>
+                      <th>Jumlah</th>
+                      <th>Jatuh Tempo</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Data will be populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+              <div id="noInvoicesMessage" class="text-center text-muted py-3" style="display: none;">
+                <i class="bi bi-receipt"></i><br>
+                Belum ada tagihan
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          <button type="button" class="btn btn-primary" id="editCustomerBtn">
+            <i class="bi bi-pencil me-1"></i>Edit Customer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+  <script>
+    $(document).ready(function() {
+      // Auto-hide alert notifications after 4 seconds with smooth animation
+      setTimeout(function() {
+        $('.alert-success, .alert-danger').addClass('fade-out');
+        setTimeout(function() {
+          $('.alert-success, .alert-danger').remove();
+        }, 800); // Match animation duration
+      }, 4000);
+      
+      // Initialize DataTables
+      $('#packagesTable').DataTable({
+        responsive: true,
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/id.json' }
+      });
+      
+      $('#customersTable').DataTable({
+        responsive: true,
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/id.json' }
+      });
+      
+      $('#invoicesTable').DataTable({
+        responsive: true,
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/id.json' }
+      });
+      
+      // Edit Customer Button Handler
+      $('#editCustomerBtn').on('click', function() {
+        if (window.currentCustomerData) {
+          // Close current modal
+          $('#customerDetailModal').modal('hide');
+          
+          // Wait for modal to close before opening edit modal
+          $('#customerDetailModal').on('hidden.bs.modal', function(e) {
+            // Remove the event listener to prevent multiple bindings
+            $(this).off('hidden.bs.modal');
+            
+                      // Fill edit form with current data
+          $('#editCustomerPhone').val(window.currentCustomerData.phone);
+          $('#editCustomerName').val(window.currentCustomerData.name || '');
+          $('#editCustomerUsername').val(window.currentCustomerData.username || '');
+          $('#editPppoeUsername').val(window.currentCustomerData.pppoe_username || '');
+          $('#editCustomerPackage').val(window.currentCustomerData.package_id || '');
+          $('#editCustomerPaymentStatus').val(window.currentCustomerData.payment_status || '');
+            
+            // Show edit modal
+            $('#editCustomerModal').modal('show');
+          });
+        }
+      });
+      
+      // Edit Customer Form Validation
+      $('#editCustomerForm').on('submit', function(e) {
+        const phone = $('#editCustomerPhone').val();
+        const name = $('#editCustomerName').val();
+        
+        if (!phone) {
+          e.preventDefault();
+          alert('Nomor HP tidak boleh kosong');
+          return false;
+        }
+        
+        if (name && name.length < 2) {
+          e.preventDefault();
+          alert('Nama minimal 2 karakter');
+          return false;
+        }
+        
+        // Show loading state on submit button
+        const submitBtn = $(this).find('button[type=submit]');
+        const originalText = submitBtn.html();
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Menyimpan...');
+        
+        // Reset button after form submission (in case of error)
+        setTimeout(function() {
+          submitBtn.prop('disabled', false).html(originalText);
+        }, 5000);
+      });
+    });
+
+    // Sync customers from GenieACS
+    function syncFromGenieACS() {
+      if (confirm('Sync semua customer dari GenieACS berdasarkan tag nomor HP?\n\nProses ini akan:\n• Mencari semua device di GenieACS yang memiliki tag nomor HP\n• Menambahkan customer baru ke sistem billing\n• Update info device untuk customer yang sudah ada\n\nLanjutkan?')) {
+        // Show loading state
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Syncing...';
+        
+        // Create and submit form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/admin/billing/customers/sync-genieacs';
+        
+        // Add CSRF token if needed
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = 'sync-request';
+        form.appendChild(csrfInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+        
+        // Reset button after timeout (in case form doesn't submit)
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+        }, 10000);
+      }
+    }
+
+    function editPackage(id, name, speed, price, description, pppoeProfile = '') {
+      document.getElementById('editPackageForm').action = `/admin/billing/packages/update/${id}`;
+      document.getElementById('editPackageName').value = name;
+      document.getElementById('editPackageSpeed').value = speed;
+      document.getElementById('editPackagePrice').value = price;
+      document.getElementById('editPackageDescription').value = description;
+      document.getElementById('editPackageProfile').value = pppoeProfile;
+      
+      const modal = new bootstrap.Modal(document.getElementById('editPackageModal'));
+      modal.show();
+    }
+
+    function editPackageFromData(button) {
+      const id = button.getAttribute('data-pkg-id');
+      const name = button.getAttribute('data-pkg-name');
+      const speed = button.getAttribute('data-pkg-speed');
+      const price = button.getAttribute('data-pkg-price');
+      const description = button.getAttribute('data-pkg-description');
+      const profile = button.getAttribute('data-pkg-profile');
+      
+      editPackage(id, name, speed, price, description, profile);
+    }
+
+    function viewCustomer(phone) {
+      // Show loading state
+      $('#customerDetailModal .modal-body').html(`
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3">Memuat data pelanggan...</p>
+        </div>
+      `);
+      
+      // Fetch customer details from API
+      $.get(`/admin/billing/api/customer/${phone}`)
+        .done(function(response) {
+          if (response.success) {
+            populateCustomerDetails(response);
+          } else {
+            showError('Gagal memuat data pelanggan: ' + response.message);
+          }
+        })
+        .fail(function() {
+          showError('Terjadi kesalahan saat memuat data pelanggan');
+        });
+    }
+    
+    function populateCustomerDetails(data) {
+      const customer = data.customer || {};
+      const invoices = data.invoices || [];
+      
+      // Restore modal content
+      restoreModalContent();
+      
+      // Populate customer info
+      $('#detailPhone').text(customer.phone || '-');
+      $('#detailName').text(customer.name || 'Belum diisi');
+      $('#detailUsername').text(customer.username || customer.phone || '-');
+      $('#detailPppoeUsername').text(customer.pppoe_username || customer.phone || '-');
+      
+      // Device status
+      const deviceStatus = $('#detailDeviceStatus');
+      if (data.device_status === 'active') {
+        deviceStatus.removeClass().addClass('badge bg-success').text('Aktif');
+      } else {
+        deviceStatus.removeClass().addClass('badge bg-danger').text('Tidak Aktif');
+      }
+      
+      // Package info
+      $('#detailPackage').text(customer.package_name || 'Belum ada paket');
+      if (customer.package_price) {
+        $('#detailPrice').text('Rp ' + parseFloat(customer.package_price).toLocaleString('id-ID'));
+      } else {
+        $('#detailPrice').text('-');
+      }
+      
+      // Payment status
+      const paymentStatus = $('#detailPaymentStatus');
+      if (customer.payment_status === 'paid') {
+        paymentStatus.removeClass().addClass('badge bg-success').text('Lunas');
+      } else if (customer.payment_status === 'unpaid') {
+        paymentStatus.removeClass().addClass('badge bg-warning').text('Belum Lunas');
+      } else if (customer.payment_status === 'overdue') {
+        paymentStatus.removeClass().addClass('badge bg-danger').text('Terlambat');
+      } else {
+        paymentStatus.removeClass().addClass('badge bg-secondary').text('-');
+      }
+      
+      // Join date
+      if (customer.created_at) {
+        $('#detailJoinDate').text(new Date(customer.created_at).toLocaleDateString('id-ID'));
+      } else {
+        $('#detailJoinDate').text('-');
+      }
+      
+      // Invoice summary
+      const totalInvoices = invoices.length;
+      const paidInvoices = invoices.filter(inv => inv.status === 'paid').length;
+      const unpaidInvoices = invoices.filter(inv => inv.status === 'unpaid').length;
+      const unpaidAmount = invoices
+        .filter(inv => inv.status === 'unpaid')
+        .reduce((sum, inv) => sum + parseFloat(inv.amount || 0), 0);
+      
+      $('#detailTotalInvoices').text(totalInvoices);
+      $('#detailPaidInvoices').text(paidInvoices);
+      $('#detailUnpaidInvoices').text(unpaidInvoices);
+      $('#detailUnpaidAmount').text('Rp ' + unpaidAmount.toLocaleString('id-ID'));
+      
+      // Recent invoices (last 5)
+      const recentInvoices = invoices.slice(0, 5);
+      const tableBody = $('#detailInvoicesTable tbody');
+      tableBody.empty();
+      
+      if (recentInvoices.length > 0) {
+        $('#detailInvoicesTable').show();
+        $('#noInvoicesMessage').hide();
+        
+        recentInvoices.forEach(invoice => {
+          const dueDate = new Date(invoice.due_date);
+          const isOverdue = dueDate < new Date() && invoice.status === 'unpaid';
+          
+          let statusBadge = '';
+          if (invoice.status === 'paid') {
+            statusBadge = '<span class="badge bg-success">Lunas</span>';
+          } else if (isOverdue) {
+            statusBadge = '<span class="badge bg-danger">Terlambat</span>';
+          } else {
+            statusBadge = '<span class="badge bg-warning">Belum Lunas</span>';
+          }
+          
+          const row = `
+            <tr>
+              <td>${invoice.invoice_number}</td>
+              <td>Rp ${parseFloat(invoice.amount).toLocaleString('id-ID')}</td>
+              <td>${dueDate.toLocaleDateString('id-ID')}</td>
+              <td>${statusBadge}</td>
+            </tr>
+          `;
+          tableBody.append(row);
+        });
+      } else {
+        $('#detailInvoicesTable').hide();
+        $('#noInvoicesMessage').show();
+      }
+      
+      // Store current customer data for edit
+      window.currentCustomerData = {
+        phone: customer.phone,
+        name: customer.name,
+        username: customer.username,
+        pppoe_username: customer.pppoe_username,
+        package_id: customer.package_id,
+        payment_status: customer.payment_status
+      };
+    }
+    
+    function restoreModalContent() {
+      $('#customerDetailModal .modal-body').html(`
+        <div class="row">
+          <!-- Customer Info -->
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="card-title text-primary">
+                  <i class="bi bi-person me-2"></i>Informasi Pelanggan
+                </h6>
+                <div class="mb-2">
+                  <strong>No. HP:</strong>
+                  <span id="detailPhone">-</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Nama:</strong>
+                  <span id="detailName">-</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Username:</strong>
+                  <span id="detailUsername">-</span>
+                </div>
+                <div class="mb-2">
+                  <strong>PPPoE User:</strong>
+                  <code id="detailPppoeUsername">-</code>
+                </div>
+                <div class="mb-2">
+                  <strong>Status Device:</strong>
+                  <span id="detailDeviceStatus" class="badge">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Package Info -->
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="card-title text-primary">
+                  <i class="bi bi-box-seam me-2"></i>Paket & Billing
+                </h6>
+                <div class="mb-2">
+                  <strong>Paket:</strong>
+                  <span id="detailPackage">-</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Harga:</strong>
+                  <span id="detailPrice">-</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Status Pembayaran:</strong>
+                  <span id="detailPaymentStatus" class="badge">-</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Bergabung:</strong>
+                  <span id="detailJoinDate">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Invoices Summary -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="card-title text-primary">
+                  <i class="bi bi-receipt me-2"></i>Ringkasan Tagihan
+                </h6>
+                <div class="row text-center">
+                  <div class="col-3">
+                    <div class="h4 text-primary mb-1" id="detailTotalInvoices">0</div>
+                    <small class="text-muted">Total Tagihan</small>
+                  </div>
+                  <div class="col-3">
+                    <div class="h4 text-success mb-1" id="detailPaidInvoices">0</div>
+                    <small class="text-muted">Lunas</small>
+                  </div>
+                  <div class="col-3">
+                    <div class="h4 text-warning mb-1" id="detailUnpaidInvoices">0</div>
+                    <small class="text-muted">Belum Lunas</small>
+                  </div>
+                  <div class="col-3">
+                    <div class="h4 text-danger mb-1" id="detailUnpaidAmount">Rp 0</div>
+                    <small class="text-muted">Total Hutang</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Recent Invoices -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <h6 class="text-primary">
+              <i class="bi bi-clock-history me-2"></i>5 Tagihan Terakhir
+            </h6>
+            <div class="table-responsive">
+              <table class="table table-sm" id="detailInvoicesTable">
+                <thead>
+                  <tr>
+                    <th>No. Tagihan</th>
+                    <th>Jumlah</th>
+                    <th>Jatuh Tempo</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Data will be populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+            <div id="noInvoicesMessage" class="text-center text-muted py-3" style="display: none;">
+              <i class="bi bi-receipt"></i><br>
+              Belum ada tagihan
+            </div>
+          </div>
+        </div>
+      `);
+    }
+    
+    function showError(message) {
+      $('#customerDetailModal .modal-body').html(`
+        <div class="alert alert-danger text-center">
+          <i class="bi bi-exclamation-triangle me-2"></i>${message}
+        </div>
+      `);
+    }
+
+    function createInvoice(phone, packageId) {
+      if (confirm(`Buat tagihan untuk pelanggan ${phone}?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/admin/billing/invoices/create';
+        
+        const phoneInput = document.createElement('input');
+        phoneInput.type = 'hidden';
+        phoneInput.name = 'customer_phone';
+        phoneInput.value = phone;
+        
+        const packageInput = document.createElement('input');
+        packageInput.type = 'hidden';
+        packageInput.name = 'package_id';
+        packageInput.value = packageId;
+        
+        form.appendChild(phoneInput);
+        form.appendChild(packageInput);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+
+    // Monthly Invoice Service Functions
+    function refreshMonthlyInvoiceStatus() {
+      const statusDiv = document.getElementById('monthlyInvoiceStatus');
+      statusDiv.innerHTML = `
+        <div class="d-flex align-items-center">
+          <div class="spinner-border spinner-border-sm me-2" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <span>Checking service status...</span>
+        </div>
+      `;
+      
+      fetch('/admin/billing/api/monthly-invoice-status')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const status = data.status;
+            const nextRun = new Date(status.nextRun).toLocaleDateString('id-ID');
+            
+            statusDiv.innerHTML = `
+              <div class="d-flex align-items-center">
+                <span class="badge ${status.enabled ? 'bg-success' : 'bg-danger'} me-2">
+                  ${status.enabled ? 'Enabled' : 'Disabled'}
+                </span>
+                <span>Service ${status.isRunning ? 'Running' : 'Stopped'}</span>
+              </div>
+              <small class="text-muted d-block mt-1">
+                Next run: ${nextRun} at 00:00
+              </small>
+            `;
+          } else {
+            statusDiv.innerHTML = `
+              <div class="text-danger">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Error loading status: ${data.message}
+              </div>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching monthly invoice status:', error);
+          statusDiv.innerHTML = `
+            <div class="text-danger">
+              <i class="bi bi-exclamation-triangle me-1"></i>
+              Connection error: ${error.message}
+            </div>
+          `;
+        });
+    }
+
+    function triggerMonthlyInvoices() {
+      if (confirm('Yakin ingin menjalankan generasi invoice bulanan sekarang?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/admin/billing/trigger-monthly-invoices';
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+
+           // Load monthly invoice status on page load
+       document.addEventListener('DOMContentLoaded', function() {
+         // Delay sedikit untuk memastikan DOM sudah siap
+         setTimeout(() => {
+           refreshMonthlyInvoiceStatus();
+         }, 1000);
+         
+         // Initialize customer deletion functionality
+         initializeCustomerDeletion();
+       });
+       
+       // Customer deletion functionality
+       function initializeCustomerDeletion() {
+         // Select all checkbox
+         const selectAllCheckbox = document.getElementById('selectAllCustomers');
+         const customerCheckboxes = document.querySelectorAll('.customer-checkbox');
+         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+         
+         // Select all functionality
+         selectAllCheckbox.addEventListener('change', function() {
+           customerCheckboxes.forEach(checkbox => {
+             checkbox.checked = this.checked;
+           });
+           updateDeleteButtonState();
+         });
+         
+         // Individual checkbox change
+         customerCheckboxes.forEach(checkbox => {
+           checkbox.addEventListener('change', function() {
+             updateDeleteButtonState();
+             updateSelectAllState();
+           });
+         });
+         
+         // Update delete button state
+         function updateDeleteButtonState() {
+           const checkedCount = document.querySelectorAll('.customer-checkbox:checked').length;
+           deleteSelectedBtn.disabled = checkedCount === 0;
+           if (checkedCount > 0) {
+             deleteSelectedBtn.innerHTML = `<i class="bi bi-trash me-1"></i>Hapus Terpilih (${checkedCount})`;
+           } else {
+             deleteSelectedBtn.innerHTML = `<i class="bi bi-trash me-1"></i>Hapus Terpilih`;
+           }
+         }
+         
+         // Update select all state
+         function updateSelectAllState() {
+           const checkedCount = document.querySelectorAll('.customer-checkbox:checked').length;
+           const totalCount = customerCheckboxes.length;
+           
+           if (checkedCount === 0) {
+             selectAllCheckbox.indeterminate = false;
+             selectAllCheckbox.checked = false;
+           } else if (checkedCount === totalCount) {
+             selectAllCheckbox.indeterminate = false;
+             selectAllCheckbox.checked = true;
+           } else {
+             selectAllCheckbox.indeterminate = true;
+             selectAllCheckbox.checked = false;
+           }
+         }
+       }
+       
+       // Delete single customer
+       function deleteCustomer(phone, name) {
+         if (confirm(`Yakin ingin menghapus pelanggan ${name} (${phone})?\n\nTindakan ini akan:\n• Menghapus data pelanggan dari sistem billing\n• Menghapus semua tagihan terkait\n• Tidak akan mempengaruhi data di GenieACS\n\nLanjutkan?`)) {
+           const form = document.createElement('form');
+           form.method = 'POST';
+           form.action = '/admin/billing/customers/delete';
+           
+           const phoneInput = document.createElement('input');
+           phoneInput.type = 'hidden';
+           phoneInput.name = 'phone';
+           phoneInput.value = phone;
+           
+           form.appendChild(phoneInput);
+           document.body.appendChild(form);
+           form.submit();
+         }
+       }
+       
+       // Delete multiple selected customers
+       function deleteSelectedCustomers() {
+         const checkedCheckboxes = document.querySelectorAll('.customer-checkbox:checked');
+         const selectedPhones = Array.from(checkedCheckboxes).map(cb => cb.value);
+         
+         if (selectedPhones.length === 0) {
+           alert('Pilih pelanggan yang akan dihapus terlebih dahulu');
+           return;
+         }
+         
+         const confirmMessage = `Yakin ingin menghapus ${selectedPhones.length} pelanggan terpilih?\n\nTindakan ini akan:\n• Menghapus data pelanggan dari sistem billing\n• Menghapus semua tagihan terkait\n• Tidak akan mempengaruhi data di GenieACS\n\nLanjutkan?`;
+         
+         if (confirm(confirmMessage)) {
+           const form = document.createElement('form');
+           form.method = 'POST';
+           form.action = '/admin/billing/customers/delete-multiple';
+           
+           selectedPhones.forEach(phone => {
+             const phoneInput = document.createElement('input');
+             phoneInput.type = 'hidden';
+             phoneInput.name = 'phones[]';
+             phoneInput.value = phone;
+             form.appendChild(phoneInput);
+           });
+           
+           document.body.appendChild(form);
+           form.submit();
+         }
+       }
+  </script>
+</body>
+</html>

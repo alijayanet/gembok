@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Tagihan | Portal Pelanggan</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --accent-color: #4895ef;
+      --success-color: #4cc9f0;
+      --warning-color: #f72585;
+      --card-border-radius: 16px;
+      --btn-border-radius: 50px;
+      --transition-speed: 0.3s;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+    }
+    
+    .navbar {
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .navbar-brand {
+      font-weight: 700;
+      color: var(--primary-color) !important;
+      letter-spacing: -0.5px;
+    }
+    
+    .card {
+      border: none;
+      border-radius: var(--card-border-radius);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      transition: all var(--transition-speed) ease;
+      margin-bottom: 25px;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+      border: none;
+      padding: 25px;
+      border-radius: var(--card-border-radius) var(--card-border-radius) 0 0;
+    }
+    
+    .card-header h5 {
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .info-card {
+      background: white;
+      border-radius: var(--card-border-radius);
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.03);
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .status-badge {
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .table thead th {
+      background: linear-gradient(135deg, rgba(67, 97, 238, 0.05), rgba(76, 201, 240, 0.1));
+      border: none;
+      font-weight: 700;
+      padding: 15px;
+      color: var(--primary-color);
+    }
+    
+    .table tbody td {
+      padding: 15px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      vertical-align: middle;
+    }
+    
+    .table tbody tr:hover {
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+    
+    .btn-back {
+      background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+      color: white;
+      border: none;
+      border-radius: var(--btn-border-radius);
+      padding: 12px 24px;
+      font-weight: 600;
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .btn-back:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      color: white;
+    }
+    
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .summary-card {
+      background: white;
+      border-radius: var(--card-border-radius);
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.03);
+      border-left: 4px solid;
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .summary-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+    
+    .summary-card.total { border-left-color: var(--primary-color); }
+    .summary-card.paid { border-left-color: var(--success-color); }
+    .summary-card.unpaid { border-left-color: var(--warning-color); }
+    
+    .summary-number {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    
+    .summary-label {
+      color: #6c757d;
+      font-weight: 500;
+    }
+    
+    .alert {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+      animation: slideInDown 0.5s ease-out;
+    }
+    
+    .alert-success {
+      background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+      border-left: 4px solid #28a745;
+      color: #155724;
+    }
+    
+    .alert-danger {
+      background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+      border-left: 4px solid #dc3545;
+      color: #721c24;
+    }
+    
+    .alert-warning {
+      background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+      border-left: 4px solid #ffc107;
+      color: #856404;
+    }
+    
+    .alert-info {
+      background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+      border-left: 4px solid #17a2b8;
+      color: #0c5460;
+    }
+    
+    @keyframes slideInDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .alert.fade-out {
+      animation: fadeOut 0.8s ease-out forwards;
+    }
+    
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-light">
+    <div class="container d-flex justify-content-between align-items-center">
+      <span class="navbar-brand">
+        <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>" alt="Logo" style="height: 40px; max-width: 80px; border-radius: 10px;">
+        Detail Tagihan
+      </span>
+      <a href="/customer/dashboard" class="btn btn-back">
+        <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
+      </a>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div class="info-card">
+      <div class="row">
+        <div class="col-md-6">
+          <h6 class="text-primary mb-3">
+            <i class="bi bi-person-circle me-2"></i>Informasi Pelanggan
+          </h6>
+          <div class="mb-2">
+            <strong>Nama:</strong> <%= billingData.customer.name || 'Belum diisi' %>
+          </div>
+          <div class="mb-2">
+            <strong>No. HP:</strong> <%= billingData.customer.phone %>
+          </div>
+          <div class="mb-2">
+            <strong>Username:</strong> <%= billingData.customer.username || billingData.customer.phone %>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h6 class="text-primary mb-3">
+            <i class="bi bi-box-seam me-2"></i>Paket Langganan
+          </h6>
+          <div class="mb-2">
+            <strong>Paket:</strong> 
+            <% if (billingData.customer.package_name) { %>
+              <span class="badge bg-info status-badge">
+                <%= billingData.customer.package_name %>
+              </span>
+            <% } else { %>
+              <span class="text-muted">Belum ada paket</span>
+            <% } %>
+          </div>
+          <div class="mb-2">
+            <strong>Harga:</strong> 
+            <% if (billingData.customer.package_price) { %>
+              <span class="fw-bold text-primary">
+                Rp <%= parseFloat(billingData.customer.package_price).toLocaleString('id-ID') %>
+              </span>
+            <% } else { %>
+              <span class="text-muted">-</span>
+            <% } %>
+          </div>
+          <div class="mb-2">
+            <strong>Status Pembayaran:</strong>
+            <% if (billingData.customer.payment_status === 'paid') { %>
+              <span class="badge bg-success status-badge">
+                <i class="bi bi-check-circle-fill"></i> Lunas
+              </span>
+            <% } else if (billingData.customer.payment_status === 'unpaid') { %>
+              <span class="badge bg-warning status-badge">
+                <i class="bi bi-clock-fill"></i> Belum Lunas
+              </span>
+            <% } else if (billingData.customer.payment_status === 'overdue') { %>
+              <span class="badge bg-danger status-badge">
+                <i class="bi bi-exclamation-triangle-fill"></i> Terlambat
+              </span>
+            <% } else { %>
+              <span class="badge bg-secondary status-badge">Belum Ada Tagihan</span>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% if (billingData.invoices && billingData.invoices.length > 0) { %>
+    <!-- Summary -->
+    <div class="summary-grid">
+      <div class="summary-card total">
+        <div class="summary-number text-primary"><%= billingData.invoices.length %></div>
+        <div class="summary-label">Total Tagihan</div>
+      </div>
+      <div class="summary-card paid">
+        <div class="summary-number text-success">
+          <%= billingData.invoices.filter(inv => inv.status === 'paid').length %>
+        </div>
+        <div class="summary-label">Tagihan Lunas</div>
+      </div>
+      <div class="summary-card unpaid">
+        <div class="summary-number text-warning">
+          <%= billingData.invoices.filter(inv => inv.status === 'unpaid').length %>
+        </div>
+        <div class="summary-label">Tagihan Belum Lunas</div>
+      </div>
+    </div>
+
+    <!-- Total Belum Lunas -->
+    <% 
+      const unpaidTotal = billingData.invoices
+        .filter(inv => inv.status === 'unpaid')
+        .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+    %>
+    <% if (unpaidTotal > 0) { %>
+    <div class="alert alert-warning">
+      <h5><i class="bi bi-exclamation-triangle me-2"></i>Total Tagihan Belum Lunas</h5>
+      <h3 class="text-danger mb-0">Rp <%= unpaidTotal.toLocaleString('id-ID') %></h3>
+    </div>
+    <% } %>
+
+    <!-- Riwayat Tagihan -->
+    <div class="card">
+      <div class="card-header">
+        <h5>
+          <i class="bi bi-receipt me-2"></i>Riwayat Tagihan
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover" id="invoicesTable">
+            <thead>
+              <tr>
+                <th>No. Tagihan</th>
+                <th>Paket</th>
+                <th>Jumlah</th>
+                <th>Jatuh Tempo</th>
+                <th>Status</th>
+                <th>Tanggal Dibuat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% billingData.invoices.forEach(function(invoice) { %>
+                <tr>
+                  <td>
+                    <span class="fw-bold"><%= invoice.invoice_number %></span>
+                  </td>
+                  <td><%= invoice.package_name %></td>
+                  <td>
+                    <span class="fw-bold text-primary">
+                      Rp <%= parseFloat(invoice.amount).toLocaleString('id-ID') %>
+                    </span>
+                  </td>
+                  <td>
+                    <% 
+                      const dueDate = new Date(invoice.due_date);
+                      const isOverdue = dueDate < new Date() && invoice.status === 'unpaid';
+                    %>
+                    <% if (isOverdue) { %>
+                      <span class="text-danger fw-bold">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <%= dueDate.toLocaleDateString('id-ID') %>
+                      </span>
+                    <% } else { %>
+                      <%= dueDate.toLocaleDateString('id-ID') %>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (invoice.status === 'paid') { %>
+                      <span class="badge bg-success status-badge">
+                        <i class="bi bi-check-circle-fill"></i> Lunas
+                      </span>
+                    <% } else if (invoice.status === 'unpaid') { %>
+                      <% if (isOverdue) { %>
+                        <span class="badge bg-danger status-badge">
+                          <i class="bi bi-exclamation-triangle-fill"></i> Terlambat
+                        </span>
+                      <% } else { %>
+                        <span class="badge bg-warning status-badge">
+                          <i class="bi bi-clock-fill"></i> Belum Lunas
+                        </span>
+                      <% } %>
+                    <% } %>
+                  </td>
+                  <td>
+                    <%= new Date(invoice.created_at).toLocaleDateString('id-ID') %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <% } else { %>
+    <!-- No Invoices -->
+    <div class="card">
+      <div class="card-body text-center py-5">
+        <i class="bi bi-receipt" style="font-size: 4rem; color: var(--primary-color); opacity: 0.3;"></i>
+        <h5 class="mt-3">Belum Ada Tagihan</h5>
+        <p class="text-muted">Anda belum memiliki tagihan. Tagihan akan muncul setelah admin membuat invoice untuk paket Anda.</p>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Contact Info -->
+    <div class="alert alert-info">
+      <i class="bi bi-info-circle me-2"></i>
+      Jika ada pertanyaan tentang tagihan, silakan hubungi admin melalui WhatsApp: 
+      <a href="https://wa.me/<%= billingData.customer.adminNumberWA || '6281947215703' %>" target="_blank" class="alert-link">
+        <i class="bi bi-whatsapp me-1"></i><%= billingData.customer.adminNumber || '081947215703' %>
+      </a>
+    </div>
+  </div>
+
+  <footer class="text-center py-4 mt-5">
+    <div class="text-muted">
+      &copy; <%= new Date().getFullYear() %> <%= settings.company_header || 'ALIJAYA DIGITAL NETWORK' %>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+  <script>
+    $(document).ready(function() {
+      // Auto-hide alert notifications after 4 seconds with smooth animation
+      setTimeout(function() {
+        $('.alert-success, .alert-danger, .alert-warning, .alert-info').addClass('fade-out');
+        setTimeout(function() {
+          $('.alert-success, .alert-danger, .alert-warning, .alert-info').remove();
+        }, 800); // Match animation duration
+      }, 4000);
+      
+      // Initialize DataTable for invoices
+      if ($('#invoicesTable').length) {
+        $('#invoicesTable').DataTable({
+          responsive: true,
+          language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/id.json'
+          },
+          order: [[5, 'desc']], // Sort by creation date descending
+          columnDefs: [{
+            targets: '_all',
+            className: 'align-middle'
+          }]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

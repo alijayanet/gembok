@@ -379,6 +379,10 @@ app.use('/admin/setting', adminAuth, adminSettingRouter);
 const adminTroubleReportRouter = require('./routes/adminTroubleReport');
 app.use('/admin/trouble', adminAuth, adminTroubleReportRouter);
 
+// Import dan gunakan route adminBilling
+const adminBillingRouter = require('./routes/adminBilling');
+app.use('/admin/billing', adminBillingRouter);
+
 // Import dan gunakan route testTroubleReport untuk debugging
 const testTroubleReportRouter = require('./routes/testTroubleReport');
 app.use('/test/trouble', testTroubleReportRouter);
@@ -676,6 +680,10 @@ try {
             const troubleReport = require('./config/troubleReport');
             troubleReport.setSockInstance(sock);
 
+            // Set sock instance untuk billing commands
+            const billingCommands = require('./config/billing-commands');
+            billingCommands.setSock(sock);
+
             logger.info('WhatsApp connected successfully');
 
             // Initialize PPPoE monitoring jika MikroTik dikonfigurasi
@@ -757,6 +765,18 @@ startServer(port);
 
 // Tambahkan perintah untuk menambahkan nomor pelanggan ke tag GenieACS
 const { addCustomerTag } = require('./config/customerTag');
+
+// Initialize billing system
+const billing = require('./config/billing');
+billing.initializeBilling();
+
+// Initialize isolir service
+const isolirService = require('./config/isolir-service');
+isolirService.initializeIsolirService();
+
+// Initialize monthly invoice service
+const monthlyInvoiceService = require('./config/monthly-invoice-service');
+monthlyInvoiceService.initializeMonthlyInvoiceService();
 
 // Export app untuk testing
 module.exports = app;

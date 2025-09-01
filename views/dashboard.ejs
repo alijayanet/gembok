@@ -432,6 +432,29 @@
       border-radius: 12px;
       border: none;
       padding: 15px 20px;
+      animation: slideInDown 0.5s ease-out;
+    }
+    
+    @keyframes slideInDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
     }
     .alert-success {
       background: rgba(40, 167, 69, 0.1);
@@ -472,6 +495,116 @@
     .navbar-nav .nav-link.active:hover {
       background-color: var(--secondary-color);
       color: white !important;
+    }
+
+    /* Hamburger Menu Styles */
+    .navbar-toggler {
+      border: none;
+      background: transparent;
+      padding: 8px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .navbar-toggler:focus {
+      box-shadow: none;
+    }
+
+    .navbar-toggler:hover {
+      background-color: rgba(67, 97, 238, 0.1);
+    }
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='m4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+    /* Mobile Menu Dropdown */
+    .navbar-collapse {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      margin-top: 12px;
+      padding: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* Mobile menu links */
+    @media (max-width: 991.98px) {
+      .navbar-nav {
+        flex-direction: column !important;
+        gap: 8px;
+      }
+      
+      .navbar-nav .nav-link {
+        margin: 0;
+        padding: 12px 16px !important;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      
+      .navbar-nav .nav-link:hover {
+        transform: none;
+        background-color: rgba(67, 97, 238, 0.1);
+      }
+      
+      .navbar-nav .nav-link.active {
+        background-color: var(--primary-color);
+        color: white !important;
+      }
+      
+      .mobile-nav-section {
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        margin-top: 16px;
+        padding-top: 16px;
+      }
+      
+      .mobile-nav-section .btn {
+        width: 100%;
+        justify-content: flex-start;
+        margin-bottom: 8px;
+      }
+    }
+
+    /* Navbar behavior */
+    @media (min-width: 992px) {
+      /* Desktop: Show navbar content, hide hamburger */
+      .navbar-collapse {
+        display: flex !important;
+      }
+      
+      .navbar-toggler {
+        display: none !important;
+      }
+      
+      .navbar-nav {
+        flex-direction: row !important;
+      }
+      
+      .nav-link {
+        padding: 8px 16px !important;
+      }
+    }
+    
+    @media (max-width: 991.98px) {
+      /* Mobile: Hide navbar content by default, show hamburger */
+      .navbar-collapse:not(.show) {
+        display: none !important;
+      }
+      
+      .navbar-toggler {
+        display: block !important;
+      }
+      
+      .navbar-nav {
+        flex-direction: column !important;
+      }
+      
+      .nav-link {
+        padding: 12px 16px !important;
+      }
     }
 
     .footer {
@@ -580,27 +713,15 @@
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-light shadow-sm">
-    <div class="container d-flex justify-content-between align-items-center">
-      <div class="d-flex align-items-center">
-        <span class="navbar-brand me-3">
-          <img id="logoImage" src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?v=<%= new Date().getTime() %>" alt="Logo" style="height: 40px; max-width: 80px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
-          <span>Portal Pelanggan</span>
-        </span>
+  <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
+    <div class="container">
+      <!-- Brand -->
+      <span class="navbar-brand">
+        <img id="logoImage" src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>?v=<%= new Date().getTime() %>" alt="Logo" style="height: 40px; max-width: 80px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
+        <span>Portal Pelanggan</span>
+      </span>
 
-        <!-- Navigation Menu -->
-        <nav class="navbar-nav flex-row">
-          <a href="/customer/dashboard" class="nav-link px-3 <%= currentPage === 'dashboard' ? 'active fw-bold' : '' %>">
-            <i class="bi bi-house-door me-1"></i>Dashboard
-          </a>
-          <a href="/customer/map" class="nav-link px-3 <%= currentPage === 'map' ? 'active fw-bold' : '' %>">
-            <i class="bi bi-geo-alt-fill me-1"></i>Lokasi ONU
-          </a>
-          <a href="/customer/trouble/simple" class="nav-link px-3">
-            <i class="bi bi-exclamation-triangle me-1"></i>Laporan Gangguan
-          </a>
-        </nav>
-      </div>
+      <!-- Status Badge - Always visible -->
       <div class="d-flex align-items-center gap-2">
         <% if (customer.status === 'Online') { %>
           <span class="status-badge bg-success">Online</span>
@@ -609,14 +730,47 @@
         <% } else { %>
           <span class="status-badge bg-secondary"><%= customer.status %></span>
         <% } %>
-        <button class="btn btn-outline-secondary btn-nav" onclick="location.reload()">
-          <i class="bi bi-arrow-clockwise"></i>
-        </button>
-        <form method="POST" action="/customer/logout" class="d-inline">
-          <button type="submit" class="btn btn-outline-danger btn-nav">
-            <i class="bi bi-box-arrow-right"></i>
+      </div>
+
+      <!-- Mobile Hamburger -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Collapsible content -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <!-- Desktop Navigation (shown as horizontal on large screens) -->
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a href="/customer/dashboard" class="nav-link <%= currentPage === 'dashboard' ? 'active fw-bold' : '' %>">
+              <i class="bi bi-house-door me-1"></i>Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/customer/map" class="nav-link <%= currentPage === 'map' ? 'active fw-bold' : '' %>">
+              <i class="bi bi-geo-alt-fill me-1"></i>Lokasi ONU
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/customer/trouble/simple" class="nav-link">
+              <i class="bi bi-exclamation-triangle me-1"></i>Laporan Gangguan
+            </a>
+          </li>
+        </ul>
+
+        <!-- Desktop & Mobile Actions -->
+        <div class="d-flex flex-column flex-lg-row gap-2">
+          <button class="btn btn-outline-secondary btn-nav" onclick="location.reload()">
+            <i class="bi bi-arrow-clockwise me-lg-0 me-2"></i>
+            <span class="d-lg-none">Refresh</span>
           </button>
-        </form>
+          <form method="POST" action="/customer/logout">
+            <button type="submit" class="btn btn-outline-danger btn-nav">
+              <i class="bi bi-box-arrow-right me-lg-0 me-2"></i>
+              <span class="d-lg-none">Logout</span>
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   </nav>
@@ -633,7 +787,12 @@
       <script>
         setTimeout(function() {
           var notif = document.getElementById('notif-alert');
-          if (notif) notif.classList.remove('show');
+          if (notif) {
+            notif.style.animation = 'fadeOut 0.8s ease-out forwards';
+            setTimeout(function() {
+              notif.remove();
+            }, 800);
+          }
         }, 3000);
       </script>
 
