@@ -1,0 +1,5 @@
+{
+  "wa_invoice_template": "📄 *TAGIHAN BARU*\r\n\r\nTagihan baru telah dibuat untuk Anda:\r\n\r\n📋 No. Tagihan: {{invoice_number}}\r\n📦 Paket: {{package_name}}\r\n💰 Jumlah: {{amount}}\r\n📅 Jatuh Tempo: {{due_date}}\r\n\r\n💡 Silakan lakukan pembayaran sebelum jatuh tempo.\r\n\r\n💳 Pembayaran dapat dilakukan ke: \r\n{{payment_accounts}}\r\n\r\nMohon abaikan pesan ini kalau anda sudahj membayar\r\nTerima kasih atas perhatian dan kepercayaanya",
+  "wa_payment_template": "✅ *PEMBAYARAN DITERIMA*\r\n\r\nTerima kasih, pembayaran Anda telah diterima:\r\n\r\n📋 No. Tagihan: {{invoice_number}}\r\n💰 Jumlah: {{amount}}\r\n📅 Dibayar: {{paid_at}}\r\n\r\n✅ Status akun Anda sudah lunas.",
+  "wa_isolir_template": "🔒 *LAYANAN DIISOLIR*\r\n\r\nYth. {{customer_name}},\r\n\r\nLayanan internet Anda telah diisolir karena keterlambatan pembayaran.\r\n\r\n📦 Paket: {{package_name}}\r\n📋 Tagihan: {{invoice_number}}\r\n💰 Jumlah: {{amount}}\r\n📅 Jatuh Tempo: {{due_date}}\r\n\r\n💳 Pembayaran dapat dilakukan ke: \r\n{{payment_accounts}}\r\n\r\nMohon segera melunasi tagainyanya\r\nterima kasih atas perhatian dan kepercayaanya"
+}

@@ -2362,3 +2362,105 @@
 2025-08-29 13:23:13 error: No Mikrotik connection available
 2025-08-29 13:23:13 error: Error connecting to Mikrotik: 
 2025-08-29 13:23:13 error: No Mikrotik connection available for PPPoE monitoring
+2025-08-31 19:47:11 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:11 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:11 error: No Mikrotik connection available
+2025-08-31 19:47:14 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:16 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:18 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:19 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:19 error: No Mikrotik connection available
+2025-08-31 19:47:19 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:19 error: No Mikrotik connection available for PPPoE monitoring
+2025-08-31 19:47:20 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:22 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:24 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:26 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:28 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:30 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:32 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:34 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:36 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:38 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:40 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:42 error: Error connecting to Mikrotik: 
+2025-08-31 19:47:44 error: Error connecting to Mikrotik: 
+2025-08-31 19:48:50 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 19:49:23 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 19:49:49 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 19:49:52 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 19:49:55 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 19:49:56 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 19:52:24 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 19:52:57 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 19:53:24 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 19:53:30 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 19:53:57 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 19:54:30 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 20:02:27 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 20:03:00 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 20:03:27 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 20:03:33 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 20:04:00 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 20:04:33 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 20:09:57 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 20:10:00 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 20:10:03 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 20:20:57 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 20:21:00 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 20:21:03 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 20:38:41 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 20:39:14 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 20:39:41 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 20:39:47 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 20:40:14 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 20:40:47 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 20:55:39 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 20:56:12 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 20:56:39 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 20:56:45 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 20:57:12 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 20:57:45 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 21:01:16 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:01:49 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:02:16 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:02:22 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 21:02:49 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:04:51 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:05:24 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:05:51 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:05:57 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 21:06:24 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:06:51 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:06:54 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:06:57 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 21:06:57 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 21:07:21 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:07:24 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:07:27 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 21:14:48 error: Error creating missing invoices: Assignment to constant variable.
+2025-08-31 21:16:10 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:16:44 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:17:11 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:17:17 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 21:17:44 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:24:32 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:25:05 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:25:32 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:25:38 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 21:26:05 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:26:38 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 21:33:13 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:33:46 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:34:13 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-08-31 21:34:20 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-08-31 21:34:46 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-08-31 21:35:19 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-09-01 08:35:04 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-09-01 08:35:07 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-09-01 08:35:10 error: Failed to send PPPoE notification to 62822180947xx after 2 retries
+2025-09-01 08:36:51 error: Error sending packages list: Connection Closed
+2025-09-01 08:37:28 error: Error checking billing: Connection Closed
+2025-09-01 08:39:04 error: Failed to send PPPoE notification to 6281947215703 after 2 retries
+2025-09-01 08:39:07 error: Failed to send PPPoE notification to 62838076656xx after 2 retries
+2025-09-01 08:39:10 error: Failed to send PPPoE notification to 62822180947xx after 2 retries

@@ -45,6 +45,22 @@ function getAdminHelpMessage() {
     message += `• *resource* — Info resource\n`;
     message += `• *reboot* — Restart router\n\n`;
     
+    // Billing Commands
+    message += `💰 *BILLING SYSTEM*\n`;
+    message += `• *paket* — Lihat daftar paket internet\n`;
+    message += `• *cekbilling [nomor/nama]* — Cek info billing pelanggan\n`;
+    message += `• *tetapkan [nomor/nama] [id_paket]* — Tetapkan paket ke pelanggan\n`;
+    message += `• *buattagihan [nomor/nama]* — Buat tagihan baru\n`;
+    message += `• *bayar [id_tagihan]* — Konfirmasi pembayaran\n`;
+    message += `• *isolir [nomor/nama]* — Isolir customer manual\n`;
+    message += `• *unisolir [nomor/nama] [profile]* — Unisolir customer manual\n\n`;
+    message += `💡 *BILLING TIPS:*\n`;
+    message += `• Gunakan nomor HP: *cekbilling 081234567890*\n`;
+    message += `• Gunakan nama: *cekbilling John Doe*\n`;
+    message += `• Tetapkan paket: *tetapkan "John Doe" PKG001*\n`;
+    message += `• Buat tagihan: *buattagihan John Doe*\n`;
+    message += `• Jika ada multiple nama: akan tampil daftar pilihan\n\n`;
+    
     // Hotspot & PPPoE Commands
     message += `📶 *HOTSPOT & PPPoE*\n`;
     message += `• *vcr [username] [profile] [nomor]* — Buat voucher\n`;

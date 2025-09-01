@@ -6,6 +6,7 @@ const { findDeviceByTag } = require('../config/addWAN');
 const { sendMessage } = require('../config/sendMessage');
 const { getSettingsWithCache, getSetting } = require('../config/settingsManager');
 const { setParameterValues } = require('../config/genieacs');
+const billing = require('../config/billing');
 const router = express.Router();
 
 // Validasi nomor pelanggan ke GenieACS
@@ -314,15 +315,22 @@ router.get('/dashboard', async (req, res) => {
     return res.render('dashboard', {
       customer: fallbackCustomer,
       connectedUsers: [],
+      billingData: null,
       notif: 'Data perangkat tidak ditemukan.',
       settings,
       currentPage: 'dashboard'
     });
   }
+  
+  // Load billing data
+  const billingData = billing.getBillingDataForCustomer(phone);
+  console.log(`💰 Billing data for ${phone}:`, billingData ? 'Available' : 'Not available');
+  
   const customerWithAdmin = addAdminNumber(data);
   res.render('dashboard', {
     customer: customerWithAdmin,
     connectedUsers: data.connectedUsers,
+    billingData: billingData,
     settings,
     currentPage: 'dashboard'
   });
@@ -640,6 +648,28 @@ router.get('/map/data', async (req, res) => {
       message: 'Error mengambil data map: ' + error.message
     });
   }
+});
+
+// GET: Halaman detail billing untuk customer
+router.get('/billing', async (req, res) => {
+  const phone = req.session && (req.session.customerPhone || req.session.phone);
+  if (!phone) return res.redirect('/customer/login');
+  
+  const settings = JSON.parse(fs.readFileSync(path.join(__dirname, '../settings.json'), 'utf8'));
+  const billingData = billing.getBillingDataForCustomer(phone);
+  
+  if (!billingData) {
+    return res.render('error', {
+      message: 'Data billing tidak ditemukan. Silakan hubungi admin untuk mendaftarkan nomor Anda ke sistem billing.',
+      settings
+    });
+  }
+  
+  res.render('customer-billing', {
+    billingData: billingData,
+    settings,
+    currentPage: 'billing'
+  });
 });
 
 module.exports = router;

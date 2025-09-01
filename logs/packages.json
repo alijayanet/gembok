@@ -1,0 +1,35 @@
+[
+  {
+    "id": "PKG001",
+    "name": "Paket Bronze",
+    "speed": "5 Mbps",
+    "price": 110000,
+    "description": "Paket internet rumahan 5 Mbps unlimited",
+    "status": "active",
+    "created_at": "2025-08-31T12:46:17.129Z",
+    "updated_at": "2025-08-31T13:54:40.237Z",
+    "pppoe_profile": "3MB"
+  },
+  {
+    "id": "PKG002",
+    "name": "Paket Silver",
+    "speed": "10 Mbps",
+    "price": 165000,
+    "description": "Paket internet rumahan 10 Mbps unlimited",
+    "status": "active",
+    "created_at": "2025-08-31T12:46:17.129Z",
+    "updated_at": "2025-08-31T13:54:54.827Z",
+    "pppoe_profile": "5MB"
+  },
+  {
+    "id": "PKG003",
+    "name": "Paket Gold",
+    "speed": "20 Mbps",
+    "price": 220000,
+    "description": "Paket internet bisnis 20 Mbps unlimited",
+    "status": "active",
+    "created_at": "2025-08-31T12:46:17.129Z",
+    "updated_at": "2025-08-31T13:55:11.995Z",
+    "pppoe_profile": "GOLD"
+  }
+]

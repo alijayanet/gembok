@@ -167,7 +167,14 @@ async function sendGroupMessage(numbers, message) {
         };
     } catch (error) {
         console.error('Error in sendGroupMessage:', error);
-        return { success: false, sent: 0, failed: numberArray ? numberArray.length : 0, results: [] };
+        // Hindari referensi ke variabel di luar scope (numberArray)
+        let estimatedFailed = 0;
+        if (Array.isArray(numbers)) {
+            estimatedFailed = numbers.length;
+        } else if (typeof numbers === 'string') {
+            estimatedFailed = numbers.split(',').map(n => n.trim()).filter(Boolean).length;
+        }
+        return { success: false, sent: 0, failed: estimatedFailed, results: [] };
     }
 }
 

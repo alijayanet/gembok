@@ -42,6 +42,9 @@ const { getSetting } = require('./settingsManager');
 // Import help messages
 const { getAdminHelpMessage, getCustomerHelpMessage, getGeneralHelpMessage } = require('./help-messages');
 
+// Import billing commands
+const billingCommands = require('./billing-commands');
+
 // Fungsi untuk mendekripsi nomor admin yang dienkripsi
 function decryptAdminNumber(encryptedNumber) {
     try {
@@ -4656,6 +4659,79 @@ Pesan GenieACS telah diaktifkan kembali.`);
             console.log(`Menjalankan perintah menu untuk ${senderNumber}`);
             await handleHelpCommand(remoteJid, isAdmin);
             return;
+        }
+        
+        // BILLING COMMANDS - Hanya untuk admin (mendukung Bahasa Indonesia & alias Inggris)
+        if (isAdmin) {
+            // Perintah paket/packages - lihat daftar paket
+            if (
+                command === 'paket' || command === '!paket' || command === '/paket' ||
+                command === 'packages' || command === '!packages' || command === '/packages'
+            ) {
+                console.log(`Menjalankan perintah paket/packages untuk admin ${senderNumber}`);
+                await billingCommands.handlePackagesCommand(remoteJid);
+                return;
+            }
+            
+            // Perintah cekbilling/billing - cek info billing customer
+            if (
+                command.startsWith('cekbilling ') || command.startsWith('!cekbilling ') || command.startsWith('/cekbilling ') ||
+                command.startsWith('billing ') || command.startsWith('!billing ') || command.startsWith('/billing ')
+            ) {
+                const phone = messageText.split(' ').slice(1)[0];
+                console.log(`Menjalankan perintah cekbilling/billing untuk ${phone} oleh admin ${senderNumber}`);
+                await billingCommands.handleBillingCheckCommand(remoteJid, phone);
+                return;
+            }
+            
+            // Perintah tetapkan/assign - tetapkan paket ke customer
+            if (
+                command.startsWith('tetapkan ') || command.startsWith('!tetapkan ') || command.startsWith('/tetapkan ') ||
+                command.startsWith('assign ') || command.startsWith('!assign ') || command.startsWith('/assign ')
+            ) {
+                const params = messageText.split(' ').slice(1);
+                console.log(`Menjalankan perintah tetapkan/assign dengan params:`, params, `oleh admin ${senderNumber}`);
+                await billingCommands.handleAssignPackageCommand(remoteJid, params);
+                return;
+            }
+            
+            // Perintah buattagihan/invoice - buat tagihan
+            if (
+                command.startsWith('buattagihan ') || command.startsWith('!buattagihan ') || command.startsWith('/buattagihan ') ||
+                command.startsWith('invoice ') || command.startsWith('!invoice ') || command.startsWith('/invoice ')
+            ) {
+                const params = messageText.split(' ').slice(1);
+                console.log(`Menjalankan perintah buattagihan/invoice dengan params:`, params, `oleh admin ${senderNumber}`);
+                await billingCommands.handleCreateInvoiceCommand(remoteJid, params);
+                return;
+            }
+            
+            // Perintah bayar/payment - konfirmasi pembayaran
+            if (
+                command.startsWith('bayar ') || command.startsWith('!bayar ') || command.startsWith('/bayar ') ||
+                command.startsWith('payment ') || command.startsWith('!payment ') || command.startsWith('/payment ')
+            ) {
+                const invoiceId = messageText.split(' ').slice(1)[0];
+                console.log(`Menjalankan perintah bayar/payment untuk tagihan ${invoiceId} oleh admin ${senderNumber}`);
+                await billingCommands.handlePaymentCommand(remoteJid, invoiceId);
+                return;
+            }
+            
+            // Perintah isolir - manual isolir customer
+            if (command.startsWith('isolir ') || command.startsWith('!isolir ') || command.startsWith('/isolir ')) {
+                const params = messageText.split(' ').slice(1);
+                console.log(`Menjalankan perintah isolir untuk admin ${senderNumber}`);
+                await billingCommands.handleIsolirCommand(remoteJid, params);
+                return;
+            }
+            
+            // Perintah unisolir - manual unisolir customer
+            if (command.startsWith('unisolir ') || command.startsWith('!unisolir ') || command.startsWith('/unisolir ')) {
+                const params = messageText.split(' ').slice(1);
+                console.log(`Menjalankan perintah unisolir untuk admin ${senderNumber}`);
+                await billingCommands.handleUnisolirCommand(remoteJid, params);
+                return;
+            }
         }
         
         // Perintah status

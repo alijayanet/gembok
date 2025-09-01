@@ -197,3 +197,133 @@ Error: File superadmin.txt tidak ditemukan!
     at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
     at Module.require (node:internal/modules/cjs/loader:1335:12)
     at require (node:internal/modules/helpers:136:16)
+2025-08-31 20:28:43 error: uncaughtException: Identifier 'customer' has already been declared
+E:\gembok\config\billing-commands.js:138
+    const customer = billingData.customer;
+          ^
+
+SyntaxError: Identifier 'customer' has already been declared
+    at wrapSafe (node:internal/modules/cjs/loader:1512:18)
+    at Module._compile (node:internal/modules/cjs/loader:1534:20)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (E:\gembok\config\whatsapp.js:46:25)
+2025-08-31 20:30:36 error: uncaughtException: Cannot find module './settings'
+Require stack:
+- E:\gembok\config\isolir-service.js
+- E:\gembok\app.js
+Error: Cannot find module './settings'
+Require stack:
+- E:\gembok\config\isolir-service.js
+- E:\gembok\app.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1244:15)
+    at Function._load (node:internal/modules/cjs/loader:1070:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (E:\gembok\config\isolir-service.js:1:24)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+2025-08-31 20:31:27 error: uncaughtException: Cannot find module './settings'
+Require stack:
+- E:\gembok\config\isolir-service.js
+- E:\gembok\app.js
+Error: Cannot find module './settings'
+Require stack:
+- E:\gembok\config\isolir-service.js
+- E:\gembok\app.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1244:15)
+    at Function._load (node:internal/modules/cjs/loader:1070:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (E:\gembok\config\isolir-service.js:1:24)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+2025-08-31 20:32:59 error: uncaughtException: Cannot find module './settings'
+Require stack:
+- E:\gembok\config\isolir-service.js
+- E:\gembok\app.js
+Error: Cannot find module './settings'
+Require stack:
+- E:\gembok\config\isolir-service.js
+- E:\gembok\app.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1244:15)
+    at Function._load (node:internal/modules/cjs/loader:1070:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (E:\gembok\config\isolir-service.js:1:24)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+2025-08-31 20:33:25 error: uncaughtException: Cannot find module './settings'
+Require stack:
+- E:\gembok\config\isolir-service.js
+- E:\gembok\app.js
+Error: Cannot find module './settings'
+Require stack:
+- E:\gembok\config\isolir-service.js
+- E:\gembok\app.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1244:15)
+    at Function._load (node:internal/modules/cjs/loader:1070:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (E:\gembok\config\isolir-service.js:1:24)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+2025-08-31 20:34:12 error: uncaughtException: Cannot find module './settings'
+Require stack:
+- E:\gembok\config\isolir-service.js
+- E:\gembok\app.js
+Error: Cannot find module './settings'
+Require stack:
+- E:\gembok\config\isolir-service.js
+- E:\gembok\app.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1244:15)
+    at Function._load (node:internal/modules/cjs/loader:1070:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (E:\gembok\config\isolir-service.js:1:24)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+2025-08-31 20:34:53 error: uncaughtException: logger.info is not a function
+TypeError: logger.info is not a function
+    at Object.initializeIsolirService (E:\gembok\config\isolir-service.js:22:10)
+    at Object.<anonymous> (E:\gembok\app.js:775:15)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49
+2025-08-31 20:35:15 error: uncaughtException: logger.info is not a function
+TypeError: logger.info is not a function
+    at Object.initializeIsolirService (E:\gembok\config\isolir-service.js:22:10)
+    at Object.<anonymous> (E:\gembok\app.js:775:15)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49
