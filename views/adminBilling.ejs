@@ -234,6 +234,11 @@
         </button>
       </li>
       <li class="nav-item" role="presentation">
+        <button class="nav-link" id="mikrotik-script-tab" data-bs-toggle="tab" data-bs-target="#mikrotik-script" type="button" role="tab">
+          <i class="bi bi-terminal"></i> Script Mikrotik
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
         <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">
           <i class="bi bi-gear"></i> Pengaturan
         </button>
@@ -525,6 +530,173 @@
                   <% }) %>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- MIKROTIK SCRIPT TAB -->
+      <div class="tab-pane fade" id="mikrotik-script" role="tabpanel">
+        <div class="card mt-3">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="bi bi-terminal"></i> Script Mikrotik untuk Isolir IP Statik</h5>
+              <button class="btn btn-primary btn-sm" onclick="copyMikrotikScript()">
+                <i class="bi bi-clipboard"></i> Copy Script
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info">
+              <h6><i class="bi bi-info-circle"></i> Instruksi Setup:</h6>
+              <ol class="mb-0">
+                <li>Copy script di bawah ini</li>
+                <li>Buka Mikrotik Terminal (Winbox/SSH)</li>
+                <li>Paste dan jalankan script</li>
+                <li>Test dengan menambah customer IP statik di form "Tambah Pelanggan"</li>
+              </ol>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Script Setup Mikrotik (Copy-Paste Ready):</label>
+              <textarea id="mikrotikScript" class="form-control" rows="25" readonly style="font-family: 'Courier New', monospace; font-size: 12px;"># ===========================================
+# SCRIPT MIKROTIK UNTUK ISOLIR IP STATIK
+# Copy-paste script ini ke Mikrotik Terminal
+# ===========================================
+
+# ========================================
+# 1. SETUP FIREWALL RULES UNTUK ISOLIR
+# ========================================
+
+# Method 1: BLOKIR TOTAL (Recommended untuk isolir ketat)
+/ip firewall filter add \
+  chain=forward \
+  src-address-list=ISOLIR \
+  action=drop \
+  comment="Block Isolated Static IP - Drop" \
+  place-before=0
+
+# Method 2: RATE LIMIT (Alternative untuk isolir dengan bandwidth terbatas)
+# Uncomment jika ingin menggunakan rate limit instead of drop
+# /ip firewall filter add \
+#   chain=forward \
+#   src-address-list=ISOLIR \
+#   action=set-priority \
+#   new-priority=1 \
+#   comment="Block Isolated Static IP - Rate Limit" \
+#   place-before=0
+
+# Queue untuk rate limit isolated customers (jika menggunakan Method 2)
+# /queue simple add \
+#   name="Isolir-Queue" \
+#   target=192.168.0.0/16 \
+#   max-limit=64k/64k \
+#   comment="Bandwidth limit for isolated customers"
+
+# ========================================
+# 2. SETUP FIREWALL RULES UNTUK LOGGING (OPSIONAL)
+# ========================================
+
+# Log semua akses dari IP yang di-isolir (untuk monitoring)
+/ip firewall filter add \
+  chain=forward \
+  src-address-list=ISOLIR \
+  action=log \
+  log-prefix="ISOLIR-ACCESS" \
+  comment="Log Isolated IP Access" \
+  place-before=[find comment="Block Isolated Static IP - Drop"]
+
+# ========================================
+# 3. COMMANDS UNTUK MANAGEMENT
+# ========================================
+
+# Lihat semua IP yang sedang di-isolir
+:put "=== DAFTAR IP YANG SEDANG DI-ISOLIR ==="
+/ip firewall address-list print where list=ISOLIR
+
+# Lihat traffic dari IP yang di-isolir
+:put "=== FIREWALL LOG ISOLIR ==="
+/log print where message~"ISOLIR-ACCESS"
+
+# ========================================
+# 4. TESTING COMMANDS
+# ========================================
+
+# Test tambah IP ke isolir (ganti 192.168.100.99 dengan IP test)
+:put "=== TEST: Menambah IP 192.168.100.99 ke isolir ==="
+# /ip firewall address-list add list=ISOLIR address=192.168.100.99 comment="Test Customer - Isolated"
+
+# Test hapus IP dari isolir
+:put "=== TEST: Menghapus IP 192.168.100.99 dari isolir ==="
+# /ip firewall address-list remove [find list=ISOLIR address=192.168.100.99]
+
+# Cek rule firewall yang aktif
+:put "=== FIREWALL RULES YANG AKTIF ==="
+/ip firewall filter print where comment~"Isolated"
+
+# ========================================
+# 5. BACKUP & RESTORE COMMANDS
+# ========================================
+
+# Export current firewall rules (backup)
+# /ip firewall export file=firewall-backup-before-isolir
+
+# Export address list (backup isolated customers)
+# /ip firewall address-list export file=isolated-customers-backup
+
+:put "=== SETUP ISOLIR IP STATIK SELESAI ==="
+:put "=== Silakan test dengan menambah IP customer ke address list ISOLIR ==="
+:put "=== Contoh: /ip firewall address-list add list=ISOLIR address=192.168.100.10 comment=\"Customer001\" ==="</textarea>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card border-success">
+                  <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-check-circle"></i> Fitur yang Didukung</h6>
+                  </div>
+                  <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                      <li><i class="bi bi-check text-success"></i> Auto-isolir customer overdue</li>
+                      <li><i class="bi bi-check text-success"></i> Manual isolir via WhatsApp</li>
+                      <li><i class="bi bi-check text-success"></i> Manual isolir via Admin Panel</li>
+                      <li><i class="bi bi-check text-success"></i> Support PPPoE + IP Statik</li>
+                      <li><i class="bi bi-check text-success"></i> Notification WhatsApp</li>
+                      <li><i class="bi bi-check text-success"></i> Logging & monitoring</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-warning">
+                  <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Catatan Penting</h6>
+                  </div>
+                  <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                      <li><i class="bi bi-arrow-right text-warning"></i> Backup firewall sebelum install</li>
+                      <li><i class="bi bi-arrow-right text-warning"></i> Test dengan IP customer dummy</li>
+                      <li><i class="bi bi-arrow-right text-warning"></i> Monitor log untuk troubleshooting</li>
+                      <li><i class="bi bi-arrow-right text-warning"></i> Firewall rule order penting</li>
+                      <li><i class="bi bi-arrow-right text-warning"></i> Restart aplikasi setelah setup</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <div class="alert alert-success">
+                <h6><i class="bi bi-clipboard-check"></i> Cara Test Setup:</h6>
+                <ol class="mb-0">
+                  <li>Jalankan script di atas di Mikrotik</li>
+                  <li>Buka tab "Paket & Pelanggan" → "Tambah Pelanggan"</li>
+                  <li>Pilih tipe koneksi "IP Statik (Router-to-Router)"</li>
+                  <li>Isi IP statik customer (contoh: 192.168.100.10)</li>
+                  <li>Test isolir via WhatsApp: <code>isolir [nomor_hp]</code></li>
+                  <li>Cek di Mikrotik: <code>/ip firewall address-list print where list=ISOLIR</code></li>
+                </ol>
+              </div>
             </div>
           </div>
         </div>
@@ -998,11 +1170,31 @@
             </div>
             
             <div class="mb-3">
+              <label for="connectionType" class="form-label">Tipe Koneksi</label>
+              <select class="form-control" id="connectionType" name="connection_type" onchange="toggleConnectionFields()" required>
+                <option value="pppoe">PPPoE (Dial-up)</option>
+                <option value="static">IP Statik (Router-to-Router)</option>
+              </select>
+              <div class="form-text">
+                🔗 Pilih tipe koneksi customer untuk isolir yang tepat
+              </div>
+            </div>
+
+            <div class="mb-3" id="pppoeField">
               <label for="pppoeUsername" class="form-label">PPPoE Username</label>
-              <input type="text" class="form-control" id="pppoeUsername" name="pppoe_username" placeholder="username_pppoe" required>
+              <input type="text" class="form-control" id="pppoeUsername" name="pppoe_username" placeholder="username_pppoe">
               <div class="form-text">
                 🔑 Username PPPoE untuk isolir/unisolir via Mikrotik<br>
                 💡 Biasanya sama dengan nomor HP atau custom username
+              </div>
+            </div>
+
+            <div class="mb-3" id="staticIpField" style="display: none;">
+              <label for="staticIp" class="form-label">IP Statik Customer</label>
+              <input type="text" class="form-control" id="staticIp" name="static_ip" placeholder="192.168.100.10" pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$">
+              <div class="form-text">
+                🌐 IP statik yang digunakan customer (untuk isolir via firewall)<br>
+                💡 Format: 192.168.x.x atau sesuai network Anda
               </div>
             </div>
             <div class="mb-3">
@@ -1062,10 +1254,26 @@
             </div>
             
             <div class="mb-3">
+              <label for="editConnectionType" class="form-label">Tipe Koneksi</label>
+              <select class="form-control" id="editConnectionType" name="connection_type" onchange="toggleEditConnectionFields()">
+                <option value="pppoe">PPPoE (Dial-up)</option>
+                <option value="static">IP Statik (Router-to-Router)</option>
+              </select>
+            </div>
+
+            <div class="mb-3" id="editPppoeField">
               <label for="editPppoeUsername" class="form-label">PPPoE Username</label>
               <input type="text" class="form-control" id="editPppoeUsername" name="pppoe_username" placeholder="username_pppoe">
               <div class="form-text">
                 🔑 Username PPPoE di Mikrotik untuk isolir/unisolir
+              </div>
+            </div>
+
+            <div class="mb-3" id="editStaticIpField" style="display: none;">
+              <label for="editStaticIp" class="form-label">IP Statik Customer</label>
+              <input type="text" class="form-control" id="editStaticIp" name="static_ip" placeholder="192.168.100.10" pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$">
+              <div class="form-text">
+                🌐 IP statik customer untuk isolir via firewall
               </div>
             </div>
             
@@ -1255,6 +1463,101 @@
   <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
   <script>
+    // Toggle connection type fields
+    function toggleConnectionFields() {
+      const connectionType = document.getElementById('connectionType').value;
+      const pppoeField = document.getElementById('pppoeField');
+      const staticIpField = document.getElementById('staticIpField');
+      const pppoeInput = document.getElementById('pppoeUsername');
+      const staticIpInput = document.getElementById('staticIp');
+      
+      if (connectionType === 'static') {
+        pppoeField.style.display = 'none';
+        staticIpField.style.display = 'block';
+        pppoeInput.required = false;
+        staticIpInput.required = true;
+      } else {
+        pppoeField.style.display = 'block';
+        staticIpField.style.display = 'none';
+        pppoeInput.required = true;
+        staticIpInput.required = false;
+      }
+    }
+
+    // Toggle edit connection type fields
+    function toggleEditConnectionFields() {
+      const connectionType = document.getElementById('editConnectionType').value;
+      const pppoeField = document.getElementById('editPppoeField');
+      const staticIpField = document.getElementById('editStaticIpField');
+      
+      if (connectionType === 'static') {
+        pppoeField.style.display = 'none';
+        staticIpField.style.display = 'block';
+      } else {
+        pppoeField.style.display = 'block';
+        staticIpField.style.display = 'none';
+      }
+    }
+
+    // Copy Mikrotik Script to clipboard
+    function copyMikrotikScript() {
+      const scriptTextarea = document.getElementById('mikrotikScript');
+      scriptTextarea.select();
+      scriptTextarea.setSelectionRange(0, 99999); // For mobile devices
+
+      try {
+        document.execCommand('copy');
+        
+        // Show success feedback
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="bi bi-check"></i> Copied!';
+        button.classList.remove('btn-primary');
+        button.classList.add('btn-success');
+        
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.classList.remove('btn-success');
+          button.classList.add('btn-primary');
+        }, 2000);
+
+        // Show toast notification
+        if (typeof bootstrap !== 'undefined') {
+          const toastHtml = `
+            <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="d-flex">
+                <div class="toast-body">
+                  <i class="bi bi-check-circle"></i> Script Mikrotik berhasil di-copy ke clipboard!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+              </div>
+            </div>`;
+          
+          // Add toast to page if toast container exists
+          let toastContainer = document.querySelector('.toast-container');
+          if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+          }
+          
+          toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+          const toastElement = toastContainer.lastElementChild;
+          const toast = new bootstrap.Toast(toastElement);
+          toast.show();
+          
+          // Remove toast element after it's hidden
+          toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+          });
+        }
+        
+      } catch (err) {
+        console.error('Failed to copy script: ', err);
+        alert('Gagal copy script. Silakan copy manual dari textarea.');
+      }
+    }
+
     $(document).ready(function() {
       // Auto-hide alert notifications after 4 seconds with smooth animation
       setTimeout(function() {
@@ -1296,8 +1599,13 @@
           $('#editCustomerName').val(window.currentCustomerData.name || '');
           $('#editCustomerUsername').val(window.currentCustomerData.username || '');
           $('#editPppoeUsername').val(window.currentCustomerData.pppoe_username || '');
+          $('#editStaticIp').val(window.currentCustomerData.static_ip || '');
+          $('#editConnectionType').val(window.currentCustomerData.connection_type || 'pppoe');
           $('#editCustomerPackage').val(window.currentCustomerData.package_id || '');
           $('#editCustomerPaymentStatus').val(window.currentCustomerData.payment_status || '');
+          
+          // Toggle fields berdasarkan connection type
+          toggleEditConnectionFields();
             
             // Show edit modal
             $('#editCustomerModal').modal('show');
