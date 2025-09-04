@@ -1,6 +1,6 @@
 const { getSetting } = require('./settingsManager');
 const billing = require('./billing');
-const { setPPPoEProfile } = require('./mikrotik');
+const { setPPPoEProfile, addFirewallAddressList, removeFirewallAddressList } = require('./mikrotik');
 const { logger } = require('./logger');
 const fs = require('fs');
 const path = require('path');
@@ -67,16 +67,32 @@ async function checkAndIsolirCustomers() {
           continue;
         }
         
-        // Skip jika tidak ada pppoe_username (tidak bisa diisolir)
-        if (!customer.pppoe_username) {
-          logger.warn(`⚠️  Customer ${customer.phone} tidak memiliki PPPoE username, skip isolir`);
+        // Skip jika tidak ada pppoe_username dan tidak ada static_ip (tidak bisa diisolir)
+        if (!customer.pppoe_username && !customer.static_ip) {
+          logger.warn(`⚠️  Customer ${customer.phone} tidak memiliki PPPoE username atau Static IP, skip isolir`);
           continue;
         }
         
         logger.info(`🔒 Isolating customer: ${customer.phone} (${customer.name || 'No name'}) - ${customer.days_past_due} days overdue`);
         
-        // Isolir via Mikrotik
-        const isolirResult = await setPPPoEProfile(customer.pppoe_username, isolirProfile);
+        let isolirResult;
+        
+        // Isolir berdasarkan tipe koneksi
+        if (customer.connection_type === 'static' && customer.static_ip) {
+          // Isolir Static IP via Firewall Address List
+          isolirResult = await addFirewallAddressList(
+            customer.static_ip, 
+            'ISOLIR', 
+            `Customer ${customer.name || customer.phone} - Isolated for non-payment`
+          );
+          logger.info(`🔒 Isolating Static IP: ${customer.static_ip}`);
+        } else if (customer.pppoe_username) {
+          // Isolir PPPoE via Profile Change
+          isolirResult = await setPPPoEProfile(customer.pppoe_username, isolirProfile);
+          logger.info(`🔒 Isolating PPPoE: ${customer.pppoe_username}`);
+        } else {
+          isolirResult = { success: false, message: 'Tidak ada method isolir yang tersedia' };
+        }
         
         if (isolirResult.success) {
           // Update status di billing
@@ -114,7 +130,7 @@ async function checkAndIsolirCustomers() {
 }
 
 /**
- * Manual isolir single customer
+ * Manual isolir single customer (Enhanced untuk PPPoE dan Static IP)
  */
 async function isolirCustomer(phone) {
   try {
@@ -123,24 +139,42 @@ async function isolirCustomer(phone) {
       return { success: false, message: 'Customer tidak ditemukan' };
     }
     
-    if (!customer.pppoe_username) {
-      return { success: false, message: 'Customer tidak memiliki PPPoE username' };
+    if (!customer.pppoe_username && !customer.static_ip) {
+      return { success: false, message: 'Customer tidak memiliki PPPoE username atau Static IP' };
     }
     
     if (customer.isolir_status === 'isolated') {
       return { success: false, message: 'Customer sudah dalam status isolir' };
     }
     
-    const isolirProfile = getSetting('billing_isolir_profile', 'isolir');
-    const result = await setPPPoEProfile(customer.pppoe_username, isolirProfile);
+    let result;
+    let method = '';
+    
+    // Isolir berdasarkan tipe koneksi
+    if (customer.connection_type === 'static' && customer.static_ip) {
+      // Isolir Static IP via Firewall Address List
+      result = await addFirewallAddressList(
+        customer.static_ip, 
+        'ISOLIR', 
+        `Customer ${customer.name || customer.phone} - Manual isolir`
+      );
+      method = `Firewall Address List (IP: ${customer.static_ip})`;
+    } else if (customer.pppoe_username) {
+      // Isolir PPPoE via Profile Change
+      const isolirProfile = getSetting('billing_isolir_profile', 'isolir');
+      result = await setPPPoEProfile(customer.pppoe_username, isolirProfile);
+      method = `PPPoE Profile (Username: ${customer.pppoe_username})`;
+    } else {
+      return { success: false, message: 'Tidak ada method isolir yang tersedia' };
+    }
     
     if (result.success) {
       billing.updateCustomerIsolirStatus(phone, 'isolated');
-      logger.info(`🔒 Manual isolir: ${phone} (${customer.name})`);
+      logger.info(`🔒 Manual isolir: ${phone} (${customer.name}) via ${method}`);
       
       await sendIsolirNotification(customer);
       
-      return { success: true, message: 'Customer berhasil diisolir' };
+      return { success: true, message: `Customer berhasil diisolir via ${method}` };
     } else {
       return { success: false, message: result.message };
     }
@@ -152,7 +186,7 @@ async function isolirCustomer(phone) {
 }
 
 /**
- * Manual unisolir single customer  
+ * Manual unisolir single customer (Enhanced untuk PPPoE dan Static IP)
  */
 async function unisolirCustomer(phone, newProfile = null) {
   try {
@@ -161,35 +195,52 @@ async function unisolirCustomer(phone, newProfile = null) {
       return { success: false, message: 'Customer tidak ditemukan' };
     }
     
-    if (!customer.pppoe_username) {
-      return { success: false, message: 'Customer tidak memiliki PPPoE username' };
+    if (!customer.pppoe_username && !customer.static_ip) {
+      return { success: false, message: 'Customer tidak memiliki PPPoE username atau Static IP' };
     }
     
-    // Tentukan profile yang akan digunakan
-    let profileToUse = newProfile;
-    if (!profileToUse && customer.package_id) {
-      // Ambil profile dari package data
-      const package = billing.getPackageById(customer.package_id);
-      if (package && package.pppoe_profile) {
-        profileToUse = package.pppoe_profile;
-      } else if (customer.package_name) {
-        // Fallback ke nama package sebagai profile
-        profileToUse = customer.package_name.toLowerCase().replace(/\s+/g, '_');
+    if (customer.isolir_status !== 'isolated') {
+      return { success: false, message: 'Customer tidak dalam status isolir' };
+    }
+    
+    let result;
+    let method = '';
+    
+    // Unisolir berdasarkan tipe koneksi
+    if (customer.connection_type === 'static' && customer.static_ip) {
+      // Unisolir Static IP via Remove dari Firewall Address List
+      result = await removeFirewallAddressList(customer.static_ip, 'ISOLIR');
+      method = `Firewall Address List (IP: ${customer.static_ip})`;
+    } else if (customer.pppoe_username) {
+      // Unisolir PPPoE via Profile Restore
+      let profileToUse = newProfile;
+      if (!profileToUse && customer.package_id) {
+        // Ambil profile dari package data
+        const package = billing.getPackageById(customer.package_id);
+        if (package && package.pppoe_profile) {
+          profileToUse = package.pppoe_profile;
+        } else if (customer.package_name) {
+          // Fallback ke nama package sebagai profile
+          profileToUse = customer.package_name.toLowerCase().replace(/\s+/g, '_');
+        }
       }
+      if (!profileToUse) {
+        profileToUse = 'default';
+      }
+      
+      result = await setPPPoEProfile(customer.pppoe_username, profileToUse);
+      method = `PPPoE Profile (Username: ${customer.pppoe_username} -> ${profileToUse})`;
+    } else {
+      return { success: false, message: 'Tidak ada method unisolir yang tersedia' };
     }
-    if (!profileToUse) {
-      profileToUse = 'default';
-    }
-    
-    const result = await setPPPoEProfile(customer.pppoe_username, profileToUse);
     
     if (result.success) {
       billing.updateCustomerIsolirStatus(phone, 'normal');
-      logger.info(`🔓 Manual unisolir: ${phone} (${customer.name}) -> profile: ${profileToUse}`);
+      logger.info(`🔓 Manual unisolir: ${phone} (${customer.name}) via ${method}`);
       
-      await sendUnisolirNotification(customer, profileToUse);
+      await sendUnisolirNotification(customer, method);
       
-      return { success: true, message: `Customer berhasil di-unisolir ke profile ${profileToUse}` };
+      return { success: true, message: `Customer berhasil di-unisolir via ${method}` };
     } else {
       return { success: false, message: result.message };
     }

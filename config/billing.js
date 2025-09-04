@@ -363,7 +363,7 @@ function createOrUpdateCustomer(customerData) {
   }
 }
 
-function assignPackageToCustomer(phone, packageId, customerName = null, enableIsolir = true, pppoeUsername = null) {
+function assignPackageToCustomer(phone, packageId, customerName = null, enableIsolir = true, pppoeUsername = null, staticIP = null, connectionType = 'pppoe') {
   try {
     const package = getPackageById(packageId);
     if (!package) {
@@ -376,6 +376,8 @@ function assignPackageToCustomer(phone, packageId, customerName = null, enableIs
       name: customerName || phone,
       username: phone, // Username for login portal
       pppoe_username: pppoeUsername || phone, // PPPoE username for Mikrotik
+      static_ip: staticIP, // Static IP for non-PPPoE customers
+      connection_type: connectionType, // 'pppoe' or 'static'
       package_id: packageId,
       package_name: package.name,
       package_price: package.price,

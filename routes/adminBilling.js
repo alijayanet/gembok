@@ -558,10 +558,19 @@ router.post('/customers/update', adminAuth, async (req, res) => {
 
 router.post('/customers/assign-package', adminAuth, async (req, res) => {
   try {
-    const { phone, package_id, name, enable_isolir, pppoe_username } = req.body;
+    const { phone, package_id, name, enable_isolir, pppoe_username, static_ip, connection_type } = req.body;
     
-    if (!phone || !package_id || !pppoe_username) {
-      return res.redirect('/admin/billing?error=' + encodeURIComponent('Nomor HP, paket, dan PPPoE username wajib diisi'));
+    // Validasi berdasarkan tipe koneksi
+    if (!phone || !package_id) {
+      return res.redirect('/admin/billing?error=' + encodeURIComponent('Nomor HP dan paket wajib diisi'));
+    }
+    
+    if (connection_type === 'static' && !static_ip) {
+      return res.redirect('/admin/billing?error=' + encodeURIComponent('IP Statik wajib diisi untuk tipe koneksi statik'));
+    }
+    
+    if (connection_type === 'pppoe' && !pppoe_username) {
+      return res.redirect('/admin/billing?error=' + encodeURIComponent('PPPoE Username wajib diisi untuk tipe koneksi PPPoE'));
     }
     
     // Validasi customer ada di GenieACS
@@ -572,7 +581,15 @@ router.post('/customers/assign-package', adminAuth, async (req, res) => {
     
     // Assign package with PPPoE username
     const enableIsolirBool = enable_isolir === 'true';
-    const customer = billing.assignPackageToCustomer(phone, package_id, name, enableIsolirBool, pppoe_username);
+    const customer = billing.assignPackageToCustomer(
+      phone, 
+      package_id, 
+      name, 
+      enableIsolirBool, 
+      pppoe_username, 
+      static_ip, 
+      connection_type || 'pppoe'
+    );
     if (customer && name) {
       // Update nama jika disediakan
       billing.createOrUpdateCustomer({ ...customer, name });

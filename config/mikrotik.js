@@ -1202,6 +1202,39 @@ async function disconnectHotspotUser(username) {
     }
 }
 
+// Fungsi untuk kick/putus koneksi user PPPoE aktif
+async function kickPPPoEUser(username) {
+    try {
+        const conn = await getMikrotikConnection();
+        if (!conn) {
+            logger.error('No Mikrotik connection available');
+            return { success: false, message: 'Koneksi ke Mikrotik gagal' };
+        }
+
+        // Cari user PPPoE aktif
+        const activeSessions = await conn.write('/ppp/active/print', [
+            '?name=' + username
+        ]);
+
+        if (activeSessions.length === 0) {
+            return { success: false, message: 'User tidak ditemukan dalam sesi aktif PPPoE' };
+        }
+
+        // Putus semua sesi aktif user ini
+        for (const session of activeSessions) {
+            await conn.write('/ppp/active/remove', [
+                '=.id=' + session['.id']
+            ]);
+        }
+
+        logger.info(`Kicked PPPoE user: ${username}`);
+        return { success: true, message: `User ${username} berhasil di-kick dari PPPoE` };
+    } catch (error) {
+        logger.error(`Error kicking PPPoE user: ${error.message}`);
+        return { success: false, message: error.message };
+    }
+}
+
 // Fungsi untuk menambah profile hotspot
 async function addHotspotProfile(profileData) {
     try {
@@ -1350,6 +1383,78 @@ async function getFirewallRules(chain = '') {
     } catch (error) {
         logger.error(`Error getting firewall rules: ${error.message}`);
         return { success: false, message: `Gagal ambil data firewall rule: ${error.message}`, data: [] };
+    }
+}
+
+// Fungsi untuk menambah IP ke firewall address list (untuk isolir static IP)
+async function addFirewallAddressList(ipAddress, listName, comment = '') {
+    try {
+        const conn = await getMikrotikConnection();
+        if (!conn) {
+            logger.error('No Mikrotik connection available');
+            return { success: false, message: 'Koneksi ke Mikrotik gagal' };
+        }
+
+        // Cek apakah IP sudah ada di address list
+        const existing = await conn.write('/ip/firewall/address-list/print', [
+            `?list=${listName}`,
+            `?address=${ipAddress}`
+        ]);
+
+        if (existing.length > 0) {
+            return { success: false, message: `IP ${ipAddress} sudah ada di address list ${listName}` };
+        }
+
+        // Tambahkan IP ke address list
+        const params = [
+            `=list=${listName}`,
+            `=address=${ipAddress}`
+        ];
+        if (comment) {
+            params.push(`=comment=${comment}`);
+        }
+
+        await conn.write('/ip/firewall/address-list/add', params);
+        logger.info(`IP ${ipAddress} ditambahkan ke address list ${listName}`);
+
+        return { success: true, message: `IP ${ipAddress} berhasil ditambahkan ke address list ${listName}` };
+    } catch (error) {
+        logger.error(`Error adding IP to firewall address list: ${error.message}`);
+        return { success: false, message: `Gagal menambah IP ke address list: ${error.message}` };
+    }
+}
+
+// Fungsi untuk menghapus IP dari firewall address list (untuk unisolir static IP)
+async function removeFirewallAddressList(ipAddress, listName) {
+    try {
+        const conn = await getMikrotikConnection();
+        if (!conn) {
+            logger.error('No Mikrotik connection available');
+            return { success: false, message: 'Koneksi ke Mikrotik gagal' };
+        }
+
+        // Cari entry di address list
+        const entries = await conn.write('/ip/firewall/address-list/print', [
+            `?list=${listName}`,
+            `?address=${ipAddress}`
+        ]);
+
+        if (entries.length === 0) {
+            return { success: false, message: `IP ${ipAddress} tidak ditemukan di address list ${listName}` };
+        }
+
+        // Hapus semua entry yang cocok
+        for (const entry of entries) {
+            await conn.write('/ip/firewall/address-list/remove', [
+                `=.id=${entry['.id']}`
+            ]);
+        }
+
+        logger.info(`IP ${ipAddress} dihapus dari address list ${listName}`);
+        return { success: true, message: `IP ${ipAddress} berhasil dihapus dari address list ${listName}` };
+    } catch (error) {
+        logger.error(`Error removing IP from firewall address list: ${error.message}`);
+        return { success: false, message: `Gagal menghapus IP dari address list: ${error.message}` };
     }
 }
 
@@ -1725,6 +1830,8 @@ module.exports = {
     getMikrotikConnection,
     getActivePPPoEConnections,
     getOfflinePPPoEUsers,
+    addFirewallAddressList,
+    removeFirewallAddressList,
     getInactivePPPoEUsers,
     getRouterResources,
     getResourceInfo,
@@ -1767,5 +1874,6 @@ module.exports = {
     editHotspotProfile,
     deleteHotspotProfile,
     getHotspotServers,
-    disconnectHotspotUser
+    disconnectHotspotUser,
+    kickPPPoEUser
 };

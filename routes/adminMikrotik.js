@@ -15,9 +15,9 @@ const {
     addHotspotProfile,
     editHotspotProfile,
     deleteHotspotProfile,
-    getHotspotProfileDetail
+    getHotspotProfileDetail,
+    kickPPPoEUser
 } = require('../config/mikrotik');
-const { kickPPPoEUser } = require('../config/mikrotik2');
 const fs = require('fs');
 const path = require('path');
 
