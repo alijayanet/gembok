@@ -1,0 +1,71 @@
+{
+  "name": "Gembok Admin Mobile",
+  "short_name": "Gembok",
+  "description": "Mobile admin interface for Gembok ISP Management System",
+  "start_url": "/admin/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "/img/screenshot-dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View system overview",
+      "url": "/admin/dashboard",
+      "icons": [
+        {
+          "src": "/img/icon-dashboard.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "short_name": "Analytics",
+      "description": "View detailed analytics",
+      "url": "/admin/analytics",
+      "icons": [
+        {
+          "src": "/img/icon-analytics.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Trouble Reports",
+      "short_name": "Troubles",
+      "description": "Manage trouble reports",
+      "url": "/admin/trouble",
+      "icons": [
+        {
+          "src": "/img/icon-trouble.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

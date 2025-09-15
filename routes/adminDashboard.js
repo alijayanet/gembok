@@ -131,7 +131,13 @@ router.get('/map/data', adminAuth, async (req, res) => {
     const fs = require('fs');
     const path = require('path');
     const locationsFile = path.join(__dirname, '../logs/onu-locations.json');
+    const odpsFile = path.join(__dirname, '../logs/odps.json');
+    const linksFile = path.join(__dirname, '../logs/onu-odp.json');
+    const odpLinksFile = path.join(__dirname, '../logs/odp-links.json');
     let savedLocations = {};
+    let odps = [];
+    let links = [];
+    let odpLinks = [];
     
     try {
       if (fs.existsSync(locationsFile)) {
@@ -140,6 +146,35 @@ router.get('/map/data', adminAuth, async (req, res) => {
       }
     } catch (e) {
       console.log('No saved locations file found or invalid format');
+    }
+
+    try {
+      if (fs.existsSync(odpsFile)) {
+        odps = JSON.parse(fs.readFileSync(odpsFile, 'utf8'));
+        console.log(`📍 Loaded ${odps.length} ODP points`);
+      }
+    } catch (e) {
+      console.log('No ODP file found or invalid format');
+    }
+
+    try {
+      if (fs.existsSync(linksFile)) {
+        links = JSON.parse(fs.readFileSync(linksFile, 'utf8'));
+        if (!Array.isArray(links)) links = [];
+        console.log(`📍 Loaded ${links.length} ONU-ODP links`);
+      }
+    } catch (e) {
+      console.log('No ONU-ODP link file found or invalid format');
+    }
+
+    try {
+      if (fs.existsSync(odpLinksFile)) {
+        odpLinks = JSON.parse(fs.readFileSync(odpLinksFile, 'utf8'));
+        if (!Array.isArray(odpLinks)) odpLinks = [];
+        console.log(`📍 Loaded ${odpLinks.length} ODP-ODP links`);
+      }
+    } catch (e) {
+      console.log('No ODP-ODP link file found or invalid format');
     }
 
     if (!devices || devices.length === 0) {
@@ -342,6 +377,15 @@ router.get('/map/data', adminAuth, async (req, res) => {
 
     console.log(`📍 Berhasil memproses ${mapDevices.length} dari ${devices.length} perangkat ONU untuk admin map`);
 
+    // Lampirkan info penggunaan port per ODP (computed)
+    const odpsWithUsage = Array.isArray(odps)
+      ? odps.map(o => {
+          const total = typeof o.total_ports === 'number' ? o.total_ports : 8;
+          const used = Array.isArray(links) ? links.filter(l => l.odpId === o.id).length : 0;
+          return { ...o, total_ports: total, used_ports: used };
+        })
+      : [];
+
     res.json({
       success: true,
       devices: mapDevices,
@@ -360,6 +404,9 @@ router.get('/map/data', adminAuth, async (req, res) => {
         saved: Object.keys(savedLocations).length,
         mapped: withLocationCount
       },
+      odps: odpsWithUsage,
+      links: links,
+      odpLinks: odpLinks,
       message: `Berhasil mengambil ${mapDevices.length} perangkat ONU untuk monitoring`
     });
 
@@ -375,3 +422,101 @@ router.get('/map/data', adminAuth, async (req, res) => {
 });
 
 module.exports = router;
+
+// POST: Tambah titik ODP (admin only)
+router.post('/map/odps', adminAuth, express.json(), (req, res) => {
+  try {
+    const { id, name, lat, lng, total_ports } = req.body || {};
+    if (typeof lat !== 'number' || typeof lng !== 'number') {
+      return res.status(400).json({ success: false, message: 'Lat/Lng wajib berupa number' });
+    }
+    const odpsFile = path.join(__dirname, '../logs/odps.json');
+    let odps = [];
+    try {
+      if (fs.existsSync(odpsFile)) {
+        odps = JSON.parse(fs.readFileSync(odpsFile, 'utf8'));
+      }
+    } catch (_) {}
+
+    const newOdp = {
+      id: id && String(id).trim() ? String(id).trim() : `ODP-${(odps.length + 1).toString().padStart(3, '0')}`,
+      name: name && String(name).trim() ? String(name).trim() : 'ODP',
+      lat,
+      lng,
+      total_ports: typeof total_ports === 'number' ? total_ports : 8
+    };
+
+    odps.push(newOdp);
+    fs.writeFileSync(odpsFile, JSON.stringify(odps, null, 2));
+
+    return res.json({ success: true, message: 'ODP tersimpan', data: newOdp });
+  } catch (error) {
+    console.error('Error saving ODP:', error);
+    return res.status(500).json({ success: false, message: 'Gagal menyimpan ODP', error: error.message });
+  }
+});
+
+// POST: Hubungkan ONU ke ODP (admin only)
+router.post('/map/link-onu-odp', adminAuth, express.json(), (req, res) => {
+  try {
+    const { onuId, odpId } = req.body || {};
+    if (!onuId || !odpId) {
+      return res.status(400).json({ success: false, message: 'onuId dan odpId wajib diisi' });
+    }
+    const linksFile = path.join(__dirname, '../logs/onu-odp.json');
+    let links = [];
+    try {
+      if (fs.existsSync(linksFile)) {
+        links = JSON.parse(fs.readFileSync(linksFile, 'utf8'));
+      }
+    } catch (_) {}
+
+    // Hapus link lama untuk ONU ini jika ada, lalu tambah yang baru
+    links = Array.isArray(links) ? links.filter(l => l.onuId !== onuId) : [];
+    links.push({ onuId, odpId });
+    fs.writeFileSync(linksFile, JSON.stringify(links, null, 2));
+
+    return res.json({ success: true, message: 'Link ONU-ODP tersimpan', data: { onuId, odpId } });
+  } catch (error) {
+    console.error('Error saving ONU-ODP link:', error);
+    return res.status(500).json({ success: false, message: 'Gagal menyimpan link', error: error.message });
+  }
+});
+
+// POST: Buat/hapus link kabel antar ODP (admin only)
+router.post('/map/link-odp-odp', adminAuth, express.json(), (req, res) => {
+  try {
+    const { fromOdpId, toOdpId, action } = req.body || {};
+    if (!fromOdpId || !toOdpId) {
+      return res.status(400).json({ success: false, message: 'fromOdpId dan toOdpId wajib diisi' });
+    }
+    const file = path.join(__dirname, '../logs/odp-links.json');
+    let links = [];
+    try {
+      if (fs.existsSync(file)) {
+        links = JSON.parse(fs.readFileSync(file, 'utf8'));
+      }
+    } catch (_) {}
+
+    // Normalisasi - hindari duplikasi (A-B sama dengan B-A)
+    const key = (a, b) => [a, b].sort().join(':::');
+    const set = new Set(Array.isArray(links) ? links.map(l => key(l.fromOdpId, l.toOdpId)) : []);
+    const currentKey = key(fromOdpId, toOdpId);
+
+    if (action === 'delete') {
+      const newLinks = Array.isArray(links) ? links.filter(l => key(l.fromOdpId, l.toOdpId) !== currentKey) : [];
+      fs.writeFileSync(file, JSON.stringify(newLinks, null, 2));
+      return res.json({ success: true, message: 'Link ODP-ODP dihapus' });
+    }
+
+    if (!set.has(currentKey)) {
+      links = Array.isArray(links) ? links : [];
+      links.push({ fromOdpId, toOdpId });
+      fs.writeFileSync(file, JSON.stringify(links, null, 2));
+    }
+    return res.json({ success: true, message: 'Link ODP-ODP disimpan', data: { fromOdpId, toOdpId } });
+  } catch (error) {
+    console.error('Error saving ODP-ODP link:', error);
+    return res.status(500).json({ success: false, message: 'Gagal menyimpan link ODP-ODP', error: error.message });
+  }
+});
