@@ -80,6 +80,25 @@
         transform: translateY(-20px);
       }
     }
+    /* Alignments for tables */
+    /* Paksa alignment via nth-child agar konsisten dengan DataTables pagination/redraw */
+    /* Customers table */
+    #customersTable th:nth-child(1),
+    #customersTable td:nth-child(1) { text-align: center; }
+    #customersTable th:nth-child(7),
+    #customersTable td:nth-child(7) { text-align: right; }
+    #customersTable th:nth-child(9),
+    #customersTable td:nth-child(9) { text-align: center; }
+    /* Invoices table */
+    #invoicesTable th:nth-child(5),
+    #invoicesTable td:nth-child(5) { text-align: right; }
+    #invoicesTable th:nth-child(8),
+    #invoicesTable td:nth-child(8) { text-align: center; }
+
+    /* Force tables to occupy full width to avoid right empty space */
+    #customersTable,
+    #invoicesTable,
+    #packagesTable { width: 100% !important; }
   </style>
 </head>
 <body>
@@ -171,6 +190,105 @@
               <div class="align-self-center">
                 <i class="bi bi-cash-coin text-danger" style="font-size: 2rem;"></i>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Billing Recap (This Month) -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Rekap Bulan (<%= stats.recap.month %>/<%= stats.recap.year %>)</h6>
+              <form class="d-flex align-items-center" method="GET" action="/admin/billing">
+                <div class="input-group input-group-sm" style="width: auto;">
+                  <span class="input-group-text">Bulan</span>
+                  <select name="month" class="form-select form-select-sm">
+                    <% for (let m=1;m<=12;m++){ %>
+                      <option value="<%= m %>" <%= (m===stats.recap.month)?'selected':'' %>><%= m %></option>
+                    <% } %>
+                  </select>
+                  <span class="input-group-text">Tahun</span>
+                  <input type="number" name="year" class="form-control form-control-sm" value="<%= stats.recap.year %>" min="2000" max="2100" style="max-width:100px;">
+                  <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-arrow-repeat"></i></button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row text-center">
+              <div class="col-6 col-md-2 mb-3">
+                <div class="h5 mb-1"><%= stats.recap.invoices_count %></div>
+                <small class="text-muted">Tagihan Dibuat</small>
+              </div>
+              <div class="col-6 col-md-2 mb-3">
+                <div class="h5 mb-1"><%= stats.recap.paid_count %></div>
+                <small class="text-muted">Lunas</small>
+              </div>
+              <div class="col-6 col-md-2 mb-3">
+                <div class="h5 mb-1"><%= stats.recap.unpaid_count %></div>
+                <small class="text-muted">Belum Lunas</small>
+              </div>
+              <div class="col-6 col-md-3 mb-3">
+                <div class="h5 mb-1">Rp <%= Number(stats.recap.paid_amount||0).toLocaleString('id-ID') %></div>
+                <small class="text-muted">Nominal Lunas</small>
+              </div>
+              <div class="col-6 col-md-3 mb-3">
+                <div class="h5 mb-1 text-danger">Rp <%= Number(stats.recap.unpaid_amount||0).toLocaleString('id-ID') %></div>
+                <small class="text-muted">Nominal Belum Lunas</small>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-12">
+                <h6 class="mb-2"><i class="bi bi-exclamation-octagon text-danger"></i> Top 5 Overdue</h6>
+                <div class="table-responsive">
+                  <table class="table table-sm">
+                    <thead>
+                      <tr>
+                        <th>No. HP</th>
+                        <th>Nama</th>
+                        <th>Hari Terlambat (maks)</th>
+                        <th>Nominal Tertunggak</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% if (stats.recap.top_overdue && stats.recap.top_overdue.length > 0) { %>
+                        <% stats.recap.top_overdue.forEach(o => { %>
+                          <tr>
+                            <td><%= o.phone %></td>
+                            <td><%= o.name || '-' %></td>
+                            <td><%= o.days %></td>
+                            <td>Rp <%= Number(o.amount||0).toLocaleString('id-ID') %></td>
+                            <td>
+                              <form method="POST" action="/admin/billing/customers/unisolir" class="d-inline">
+                                <input type="hidden" name="phone" value="<%= o.phone %>">
+                                <button type="submit" class="btn btn-secondary btn-sm" onclick="return confirm('Unisolir pelanggan ini tanpa pelunasan?')">
+                                  <i class="bi bi-unlock"></i> Unisolir
+                                </button>
+                              </form>
+                            </td>
+                          </tr>
+                        <% }) %>
+                      <% } else { %>
+                        <tr><td colspan="5" class="text-muted text-center">Tidak ada overdue</td></tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="text-end">
+              <form method="POST" action="/admin/billing/messages/send-invoice-batch" class="d-inline">
+                <input type="hidden" name="phones" value="<%= (stats.recap.top_overdue||[]).map(o=>o.phone).join(',') %>">
+                <button type="submit" class="btn btn-warning btn-sm" <%= (stats.recap.top_overdue && stats.recap.top_overdue.length)?'':'disabled' %>>
+                  <i class="bi bi-send"></i> Kirim Reminder Top Overdue
+                </button>
+              </form>
             </div>
           </div>
         </div>
@@ -362,6 +480,9 @@
                  <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#assignPackageModal">
                    <i class="bi bi-plus"></i> Tambah Pelanggan
                  </button>
+                 <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCustomerOnlyModal">
+                   <i class="bi bi-person-plus"></i> Tambah Hanya Pelanggan
+                 </button>
                  <button class="btn btn-danger btn-sm" onclick="deleteSelectedCustomers()" id="deleteSelectedBtn" disabled>
                    <i class="bi bi-trash me-1"></i>Hapus Terpilih
                  </button>
@@ -390,70 +511,86 @@
             </div>
             
             <div class="table-responsive">
-                             <table class="table table-hover" id="customersTable">
-                 <thead>
-                   <tr>
-                     <th>
-                       <input type="checkbox" id="selectAllCustomers" class="form-check-input">
-                     </th>
-                     <th>No. HP</th>
-                     <th>Nama</th>
-                     <th>Username</th>
-                     <th>PPPoE User</th>
-                     <th>Paket</th>
-                     <th>Harga</th>
-                     <th>Status Bayar</th>
-                     <th>Aksi</th>
-                   </tr>
-                 </thead>
+              <table class="table table-hover" id="customersTable">
+                <thead>
+                  <tr>
+                    <th class="text-center">
+                      <input type="checkbox" id="selectAllCustomers" class="form-check-input">
+                    </th>
+                    <th class="text-start">No. HP</th>
+                    <th class="text-start">Nama</th>
+                    <th class="text-start">Username</th>
+                    <th class="text-start">PPPoE User</th>
+                    <th class="text-start">Paket</th>
+                    <th class="text-end">Harga</th>
+                    <th class="text-start">Status Bayar</th>
+                    <th class="text-center">Aksi</th>
+                    <th class="text-start">Auto-Isolir</th>
+                    <th class="text-start">Tgl Isolir</th>
+                  </tr>
+                </thead>
                 <tbody>
-                                     <% customers.forEach(customer => { %>
-                     <tr>
-                       <td>
-                         <input type="checkbox" class="form-check-input customer-checkbox" value="<%= customer.phone %>">
-                       </td>
-                       <td><%= customer.phone %></td>
-                       <td><%= customer.name || '-' %></td>
-                       <td><%= customer.username || '-' %></td>
-                       <td>
-                         <% if (customer.pppoe_username) { %>
-                           <code><%= customer.pppoe_username %></code>
-                         <% } else { %>
-                           <span class="text-muted">-</span>
-                         <% } %>
-                       </td>
-                       <td><%= customer.package_name || 'Belum ada paket' %></td>
-                       <td>
-                         <% if (customer.package_price) { %>
-                           Rp <%= customer.package_price.toLocaleString('id-ID') %>
-                         <% } else { %>
-                           -
-                         <% } %>
-                       </td>
-                       <td>
-                         <% if (customer.payment_status === 'paid') { %>
-                           <span class="badge bg-success">Lunas</span>
-                         <% } else if (customer.payment_status === 'unpaid') { %>
-                           <span class="badge bg-warning">Belum Lunas</span>
-                         <% } else { %>
-                           <span class="badge bg-secondary">-</span>
-                         <% } %>
-                       </td>
-                       <td>
-                         <button class="btn btn-primary btn-action" onclick="viewCustomer('<%= customer.phone %>')" data-bs-toggle="modal" data-bs-target="#customerDetailModal">
-                           <i class="bi bi-eye"></i>
-                         </button>
-                         <% if (customer.package_id) { %>
-                           <button class="btn btn-success btn-action" onclick="createInvoice('<%= customer.phone %>', '<%= customer.package_id %>')">
-                             <i class="bi bi-receipt"></i>
-                           </button>
-                         <% } %>
-                         <button class="btn btn-danger btn-action" onclick="deleteCustomer('<%= customer.phone %>', '<%= customer.name || customer.phone %>')" title="Hapus pelanggan">
-                           <i class="bi bi-trash"></i>
-                         </button>
-                       </td>
-                     </tr>
-                   <% }) %>
+                  <% customers.forEach(customer => { %>
+                    <tr>
+                      <td class="checkbox-cell">
+                        <input type="checkbox" class="form-check-input customer-checkbox" value="<%= customer.phone %>">
+                      </td>
+                      <td><%= customer.phone %></td>
+                      <td><%= customer.name || '-' %></td>
+                      <td><%= customer.username || '-' %></td>
+                      <td>
+                        <% if (customer.pppoe_username) { %>
+                          <code><%= customer.pppoe_username %></code>
+                        <% } else { %>
+                          <span class="text-muted">-</span>
+                        <% } %>
+                      </td>
+                      <td><%= customer.package_name || 'Belum ada paket' %></td>
+                      <td class="price-cell">
+                        <% if (customer.package_price) { %>
+                          Rp <%= customer.package_price.toLocaleString('id-ID') %>
+                        <% } else { %>
+                          -
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (customer.payment_status === 'paid') { %>
+                          <span class="badge bg-success">Lunas</span>
+                        <% } else if (customer.payment_status === 'unpaid') { %>
+                          <span class="badge bg-warning">Belum Lunas</span>
+                        <% } else { %>
+                          <span class="badge bg-secondary">-</span>
+                        <% } %>
+                      </td>
+                      <td class="text-center">
+                        <button class="btn btn-primary btn-action" onclick="viewCustomer('<%= customer.phone %>')" data-bs-toggle="modal" data-bs-target="#customerDetailModal">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                        <% if (customer.package_id) { %>
+                          <button class="btn btn-success btn-action" onclick="createInvoice('<%= customer.phone %>', '<%= customer.package_id %>')">
+                            <i class="bi bi-receipt"></i>
+                          </button>
+                        <% } %>
+                        <button class="btn btn-danger btn-action" onclick="deleteCustomer('<%= customer.phone %>', '<%= customer.name || customer.phone %>')" title="Hapus pelanggan">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </td>
+                      <td>
+                        <% if (customer.enable_isolir) { %>
+                          <span class="badge bg-success">ON</span>
+                        <% } else { %>
+                          <span class="badge bg-secondary">OFF</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (customer.isolir_scheduled_date) { %>
+                          <%= new Date(customer.isolir_scheduled_date).toLocaleDateString('id-ID') %>
+                        <% } else { %>
+                          -
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
                 </tbody>
               </table>
             </div>
@@ -479,14 +616,14 @@
               <table class="table table-hover" id="invoicesTable">
                 <thead>
                   <tr>
-                    <th>No. Tagihan</th>
-                    <th>Pelanggan</th>
-                    <th>No. HP</th>
-                    <th>Paket</th>
-                    <th>Jumlah</th>
-                    <th>Jatuh Tempo</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
+                    <th class="text-start">No. Tagihan</th>
+                    <th class="text-start">Pelanggan</th>
+                    <th class="text-start">No. HP</th>
+                    <th class="text-start">Paket</th>
+                    <th class="text-end">Jumlah</th>
+                    <th class="text-start">Jatuh Tempo</th>
+                    <th class="text-start">Status</th>
+                    <th class="text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -496,7 +633,7 @@
                       <td><%= invoice.customer_name || '-' %></td>
                       <td><%= invoice.customer_phone %></td>
                       <td><%= invoice.package_name %></td>
-                      <td>Rp <%= invoice.amount.toLocaleString('id-ID') %></td>
+                      <td class="text-end">Rp <%= invoice.amount.toLocaleString('id-ID') %></td>
                       <td>
                         <% const dueDate = new Date(invoice.due_date); %>
                         <% const isOverdue = dueDate < new Date() && invoice.status === 'unpaid'; %>
@@ -515,11 +652,17 @@
                           <span class="badge bg-warning">Belum Lunas</span>
                         <% } %>
                       </td>
-                      <td>
+                      <td class="text-center">
                         <% if (invoice.status === 'unpaid') { %>
                           <form method="POST" action="/admin/billing/invoices/mark-paid/<%= invoice.id %>" class="d-inline">
                             <button type="submit" class="btn btn-success btn-action" onclick="return confirm('Tandai tagihan ini sebagai lunas?')">
                               <i class="bi bi-check"></i> Lunas
+                            </button>
+                          </form>
+                          <form method="POST" action="/admin/billing/customers/unisolir" class="d-inline">
+                            <input type="hidden" name="phone" value="<%= invoice.customer_phone %>">
+                            <button type="submit" class="btn btn-secondary btn-action" onclick="return confirm('Unisolir pelanggan ini tanpa pelunasan? Akses akan dipulihkan sementara.')">
+                              <i class="bi bi-unlock"></i> Unisolir
                             </button>
                           </form>
                         <% } else { %>
@@ -1456,6 +1599,77 @@
     </div>
   </div>
 
+  <!-- Add Customer Only Modal -->
+  <div class="modal fade" id="addCustomerOnlyModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Tambah Hanya Data Pelanggan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="POST" action="/admin/billing/customers/update">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="newCustomerPhone" class="form-label">Nomor HP Pelanggan</label>
+              <input type="text" class="form-control" id="newCustomerPhone" name="phone" placeholder="081234567890" required>
+            </div>
+            <div class="mb-3">
+              <label for="newCustomerName" class="form-label">Nama Pelanggan (opsional)</label>
+              <input type="text" class="form-control" id="newCustomerName" name="name">
+            </div>
+            <div class="mb-3">
+              <label for="newCustomerUsername" class="form-label">Username (opsional)</label>
+              <input type="text" class="form-control" id="newCustomerUsername" name="username" placeholder="Default akan nomor HP">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tipe Koneksi</label>
+              <select class="form-select" name="connection_type" id="newConnectionType" onchange="toggleNewConnectionFields()">
+                <option value="pppoe">PPPoE</option>
+                <option value="static">IP Statik</option>
+              </select>
+            </div>
+            <div class="mb-3" id="newPppoeField">
+              <label class="form-label">PPPoE Username</label>
+              <input type="text" class="form-control" name="pppoe_username" placeholder="username_pppoe">
+            </div>
+            <div class="mb-3" id="newStaticField" style="display:none;">
+              <label class="form-label">IP Statik</label>
+              <input type="text" class="form-control" name="static_ip" placeholder="192.168.100.10" pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$">
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="newEnableIsolir" name="enable_isolir" value="true" checked>
+                <label class="form-check-label" for="newEnableIsolir">Aktifkan Auto-Isolir</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tanggal Isolir Terjadwal (opsional)</label>
+              <input type="date" class="form-control" name="isolir_date">
+              <div class="form-text">Jika diisi, sistem akan mengisolir pada tanggal ini.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Pilih Paket (opsional, disarankan)</label>
+              <select class="form-select" name="package_id">
+                <option value="">-- Pilih Paket --</option>
+                <% packages.filter(p => p.status === 'active').forEach(pkg => { %>
+                  <option value="<%= pkg.id %>"><%= pkg.name %> - <%= pkg.speed %> - Rp <%= pkg.price.toLocaleString('id-ID') %></option>
+                <% }) %>
+              </select>
+              <div class="form-text">Invoice akan otomatis dibuat tiap tanggal 1. Jika pelanggan daftar setelah tanggal 1, invoice pertama akan terbit pada tanggal 1 bulan berikutnya.</div>
+            </div>
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle"></i> Pelanggan akan dibuat aktif tanpa paket. Paket dapat ditetapkan nanti.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -1463,6 +1677,14 @@
   <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
   <script>
+    function toggleNewConnectionFields() {
+      const sel = document.getElementById('newConnectionType');
+      const ppp = document.getElementById('newPppoeField');
+      const sta = document.getElementById('newStaticField');
+      if (!sel) return;
+      if (sel.value === 'static') { ppp.style.display = 'none'; sta.style.display = 'block'; }
+      else { ppp.style.display = 'block'; sta.style.display = 'none'; }
+    }
     // Toggle connection type fields
     function toggleConnectionFields() {
       const connectionType = document.getElementById('connectionType').value;
@@ -1574,11 +1796,97 @@
       });
       
       $('#customersTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+          url: '/admin/billing/api/customers',
+          dataSrc: 'data'
+        },
+        autoWidth: false,
+        columns: [
+          { data: null, orderable: false, className: 'text-center', render: (d, t, row) => `<input type="checkbox" class="form-check-input customer-checkbox" value="${row.phone}">` },
+          { data: 'phone', className: 'text-start' },
+          { data: 'name', className: 'text-start' },
+          { data: 'username', className: 'text-start' },
+          { data: 'pppoe_username', className: 'text-start', render: (v) => v ? `<code>${v}</code>` : '<span class="text-muted">-</span>' },
+          { data: 'package_name', className: 'text-start' },
+          { data: 'package_price', className: 'text-end', render: (v) => v ? `Rp ${parseFloat(v).toLocaleString('id-ID')}` : '-' },
+          { data: 'payment_status', className: 'text-start', render: (s) => {
+              if (s === 'paid') return '<span class="badge bg-success">Lunas<\/span>';
+              if (s === 'unpaid') return '<span class="badge bg-warning">Belum Lunas<\/span>';
+              if (s === 'overdue') return '<span class="badge bg-danger">Terlambat<\/span>';
+              return '<span class="badge bg-secondary">-<\/span>';
+            }
+          },
+          { data: null, orderable: false, className: 'text-center', render: (d, t, row) => `
+              <button class=\"btn btn-primary btn-action\" onclick=\"viewCustomer('${row.phone}')\" data-bs-toggle=\"modal\" data-bs-target=\"#customerDetailModal\"><i class=\"bi bi-eye\"></i><\/button>
+              <button class=\"btn btn-success btn-action\" onclick=\"createInvoice('${row.phone}', '${row.package_id || ''}')\"><i class=\"bi bi-receipt\"></i><\/button>
+              <button class=\"btn btn-danger btn-action\" onclick=\"deleteCustomer('${row.phone}', '${row.name || row.phone}')\" title=\"Hapus pelanggan\"><i class=\"bi bi-trash\"></i><\/button>
+            ` },
+          { data: 'enable_isolir', className: 'text-start', render: (v) => v ? '<span class="badge bg-success">ON<\/span>' : '<span class="badge bg-secondary">OFF<\/span>' },
+          { data: 'isolir_scheduled_date', className: 'text-start', render: (d) => d ? new Date(d).toLocaleDateString('id-ID') : '-' }
+        ],
+        columnDefs: [
+          { targets: 0, className: 'text-center' },
+          { targets: 6, className: 'text-end' },
+          { targets: 8, className: 'text-center' }
+        ],
+        createdRow: function(row, data) {
+          // Enforce alignment on redraw/pagination
+          $('td:eq(0)', row).addClass('text-center');
+          $('td:eq(6)', row).addClass('text-end');
+          $('td:eq(8)', row).addClass('text-center');
+        },
+        order: [[8, 'desc']],
         responsive: true,
         language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/id.json' }
       });
       
       $('#invoicesTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+          url: '/admin/billing/api/invoices',
+          dataSrc: 'data'
+        },
+        autoWidth: false,
+        columns: [
+          { data: 'invoice_number', className: 'text-start' },
+          { data: 'customer_name', className: 'text-start' },
+          { data: 'customer_phone', className: 'text-start' },
+          { data: 'package_name', className: 'text-start' },
+          { data: 'amount', className: 'text-end', render: (data) => `Rp ${parseFloat(data||0).toLocaleString('id-ID')}` },
+          { data: 'due_date', className: 'text-start', render: (d) => (d ? new Date(d).toLocaleDateString('id-ID') : '-') },
+          { data: 'status', className: 'text-start', render: (s, t, row) => {
+              if (s === 'paid') return '<span class="badge bg-success">Lunas<\/span>';
+              const overdue = row.due_date && new Date(row.due_date) < new Date();
+              if (overdue) return '<span class="badge bg-danger">Terlambat<\/span>';
+              return '<span class="badge bg-warning">Belum Lunas<\/span>';
+            }
+          },
+          { data: 'id', orderable: false, className: 'text-center', render: (id, t, row) => {
+              if (row.status === 'unpaid') {
+                return `
+                  <form method="POST" action="/admin/billing/invoices/mark-paid/${id}" class="d-inline">
+                    <button type="submit" class="btn btn-success btn-action" onclick="return confirm('Tandai tagihan ini sebagai lunas?')">
+                      <i class="bi bi-check"></i> Lunas
+                    </button>
+                  <\/form>`;
+              }
+              return '<span class="text-muted">Sudah Lunas<\/span>';
+            }
+          }
+        ],
+        columnDefs: [
+          { targets: 4, className: 'text-end' },
+          { targets: 7, className: 'text-center' }
+        ],
+        createdRow: function(row) {
+          // Enforce alignment on redraw/pagination
+          $('td:eq(4)', row).addClass('text-end');
+          $('td:eq(7)', row).addClass('text-center');
+        },
+        order: [[6, 'desc']],
         responsive: true,
         language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/id.json' }
       });
