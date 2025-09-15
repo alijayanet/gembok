@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-09-15T06:11:57.790Z",
+  "backupName": "backup-2025-09-15T06-11-57-764Z",
+  "files": [
+    "logs/packages.json",
+    "logs/customers.json",
+    "logs/invoices.json",
+    "logs/trouble_reports.json",
+    "logs/onu-locations.json",
+    "settings.json"
+  ],
+  "successCount": 6,
+  "errorCount": 0,
+  "version": "1.0.0",
+  "system": {
+    "nodeVersion": "v22.13.1",
+    "platform": "win32",
+    "arch": "x64"
+  }
+}

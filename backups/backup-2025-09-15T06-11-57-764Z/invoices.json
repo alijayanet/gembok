@@ -1,0 +1,28 @@
+[
+  {
+    "id": "INV0001",
+    "invoice_number": "INV-202508-0001",
+    "customer_phone": "081321960111",
+    "customer_name": "santo",
+    "package_id": "PKG001",
+    "package_name": "Paket Bronze",
+    "amount": 110000,
+    "status": "paid",
+    "created_at": "2025-08-31T14:14:48.941Z",
+    "due_date": "2025-09-30T14:14:48.941Z",
+    "paid_at": "2025-08-31T14:14:48.955Z"
+  },
+  {
+    "id": "INV0002",
+    "invoice_number": "INV-202509-0002",
+    "customer_phone": "081321960111",
+    "customer_name": "santo",
+    "package_id": "PKG001",
+    "package_name": "Paket Bronze",
+    "amount": 110000,
+    "status": "paid",
+    "created_at": "2025-09-01T01:34:01.661Z",
+    "due_date": "2025-10-01T01:34:01.661Z",
+    "paid_at": "2025-09-01T02:45:36.527Z"
+  }
+]

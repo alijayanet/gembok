@@ -9,10 +9,42 @@ const { setParameterValues } = require('../config/genieacs');
 const billing = require('../config/billing');
 const router = express.Router();
 
-// Validasi nomor pelanggan ke GenieACS
+// Validasi nomor pelanggan ke GenieACS dan data pelanggan
 async function isValidCustomer(phone) {
+  console.log(`🔍 Validating customer phone: ${phone}`);
+  
+  // Cek di GenieACS berdasarkan tag
   const device = await findDeviceByTag(phone);
-  return !!device;
+  if (device) {
+    console.log(`✅ Customer found in GenieACS: ${device._id}`);
+    return true;
+  }
+  
+  // Cek di data pelanggan JSON
+  try {
+    const customers = billing.getAllCustomers();
+    console.log(`📊 Checking ${customers.length} customers in JSON data`);
+    
+    const customer = customers.find(c => 
+      c.phone === phone || 
+      c.username === phone ||
+      c.phone === phone.replace(/^0/, '62') ||
+      c.phone === phone.replace(/^62/, '0')
+    );
+    
+    if (customer) {
+      console.log(`✅ Customer found in JSON data: ${customer.name} (${customer.phone})`);
+      return true;
+    } else {
+      console.log(`❌ Customer not found in JSON data`);
+      console.log(`Available phones:`, customers.map(c => c.phone));
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error checking customer data:', error);
+    return false;
+  }
 }
 
 // Simpan OTP sementara di memory (bisa diganti redis/db)
@@ -64,7 +96,33 @@ function getParameterWithPaths(device, paths) {
 // Helper: Ambil info perangkat dan user terhubung dari GenieACS
 async function getCustomerDeviceData(phone) {
   const device = await findDeviceByTag(phone);
-  if (!device) return null;
+  if (!device) {
+    // Jika device tidak ada di GenieACS, coba ambil data dari pelanggan
+    try {
+      const customers = billing.getAllCustomers();
+      const customer = customers.find(c => 
+        c.phone === phone || 
+        c.username === phone ||
+        c.phone === phone.replace(/^0/, '62') ||
+        c.phone === phone.replace(/^62/, '0')
+      );
+      
+      if (customer) {
+        // Return data pelanggan dasar jika device tidak ada di GenieACS
+        return {
+          deviceId: customer.device_id || customer.serial_number || 'N/A',
+          serialNumber: customer.serial_number || 'N/A',
+          ssid: 'N/A',
+          lastInform: 'N/A',
+          isOnline: false,
+          customer: customer
+        };
+      }
+    } catch (error) {
+      console.error('Error getting customer data:', error);
+    }
+    return null;
+  }
   // Ambil SSID
   const ssid = device?.InternetGatewayDevice?.LANDevice?.['1']?.WLANConfiguration?.['1']?.SSID?._value || '-';
   // Status online/offline with proper time-based determination

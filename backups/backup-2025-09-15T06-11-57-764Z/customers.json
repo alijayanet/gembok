@@ -1,0 +1,48 @@
+[
+  {
+    "id": "CUST0001",
+    "phone": "081321960111",
+    "username": "081321960111",
+    "package_id": "PKG001",
+    "package_name": "Paket Bronze",
+    "package_price": 110000,
+    "payment_status": "paid",
+    "status": "active",
+    "created_at": "2025-08-31T12:53:28.946Z",
+    "name": "santo",
+    "updated_at": "2025-09-04T05:19:42.697Z",
+    "pppoe_username": "santo",
+    "enable_isolir": true,
+    "isolir_status": "normal",
+    "device_id": "2C3341-G663%2DXPON-GGCL25574599",
+    "serial_number": "2C3341-G663%2DXPON-GGCL25574599",
+    "synced_from_genieacs": true
+  },
+  {
+    "id": "CUST0002",
+    "phone": "6283878045492",
+    "name": "6283878045492",
+    "username": "6283878045492",
+    "payment_status": "unpaid",
+    "status": "active",
+    "created_at": "2025-09-04T05:19:42.688Z"
+  },
+  {
+    "id": "CUST0003",
+    "phone": "6287828060111",
+    "name": "6287828060111",
+    "username": "6287828060111",
+    "payment_status": "unpaid",
+    "status": "active",
+    "created_at": "2025-09-04T05:19:42.695Z"
+  },
+  {
+    "id": "CUST0004",
+    "phone": "6283159616518",
+    "name": "6283159616518",
+    "username": "6283159616518",
+    "payment_status": "unpaid",
+    "status": "active",
+    "created_at": "2025-09-04T05:19:42.700Z"
+  }
+]

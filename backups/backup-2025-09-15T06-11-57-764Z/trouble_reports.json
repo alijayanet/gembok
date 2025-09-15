@@ -1,0 +1,256 @@
+[
+  {
+    "id": "TR0319601KW",
+    "status": "resolved",
+    "createdAt": "2025-07-18T08:40:31.960Z",
+    "updatedAt": "2025-07-18T08:40:42.045Z",
+    "phone": "081234567890",
+    "name": "Test User",
+    "location": "Test Location",
+    "category": "Internet Lambat",
+    "description": "Test deskripsi masalah internet lambat untuk testing notifikasi WhatsApp",
+    "notes": [
+      {
+        "timestamp": "2025-07-18T08:40:37.031Z",
+        "content": "Test update status - sedang ditangani oleh teknisi",
+        "status": "in_progress",
+        "notificationSent": true
+      },
+      {
+        "timestamp": "2025-07-18T08:40:42.046Z",
+        "content": "Test update status - masalah sudah teratasi",
+        "status": "resolved"
+      }
+    ]
+  },
+  {
+    "id": "TR300403DAW",
+    "status": "resolved",
+    "createdAt": "2025-07-19T02:48:20.403Z",
+    "updatedAt": "2025-07-19T02:57:13.830Z",
+    "phone": "081234567890",
+    "name": "Test User",
+    "location": "Test Location",
+    "category": "Internet Lambat",
+    "description": "Test laporan gangguan untuk verifikasi sistem notifikasi WhatsApp",
+    "notes": [
+      {
+        "timestamp": "2025-07-19T02:57:13.830Z",
+        "content": "jjjj",
+        "status": "resolved",
+        "notificationSent": true
+      }
+    ]
+  },
+  {
+    "id": "TR3215161DV",
+    "status": "open",
+    "createdAt": "2025-07-19T02:48:41.517Z",
+    "updatedAt": "2025-07-19T02:48:41.517Z",
+    "phone": "081234567890",
+    "name": "Test User",
+    "location": "Test Location",
+    "category": "Internet Lambat",
+    "description": "Test laporan gangguan untuk verifikasi sistem notifikasi WhatsApp"
+  },
+  {
+    "id": "TR2939389P2",
+    "status": "open",
+    "createdAt": "2025-07-19T05:18:13.938Z",
+    "updatedAt": "2025-07-19T05:18:13.940Z",
+    "phone": "6281234567890",
+    "name": "Test Customer",
+    "location": "Test Location",
+    "category": "Internet Lambat",
+    "description": "Ini adalah test laporan gangguan untuk memverifikasi notifikasi ke grup teknisi dan teknisi individual."
+  },
+  {
+    "id": "TR346203N3R",
+    "status": "open",
+    "createdAt": "2025-07-19T05:19:06.204Z",
+    "updatedAt": "2025-07-19T05:19:06.205Z",
+    "phone": "6281234567890",
+    "name": "Test Customer",
+    "location": "Test Location",
+    "category": "Internet Lambat",
+    "description": "Ini adalah test laporan gangguan untuk memverifikasi notifikasi ke grup teknisi dan teknisi individual."
+  },
+  {
+    "id": "TR439013QR1",
+    "status": "open",
+    "createdAt": "2025-07-19T05:20:39.013Z",
+    "updatedAt": "2025-07-19T05:20:39.015Z",
+    "phone": "6281234567890",
+    "name": "Test Customer",
+    "location": "Test Location",
+    "category": "Internet Lambat",
+    "description": "Ini adalah test laporan gangguan untuk memverifikasi notifikasi ke grup teknisi dan teknisi individual."
+  },
+  {
+    "id": "TR477735C8G",
+    "status": "open",
+    "createdAt": "2025-07-19T05:21:17.735Z",
+    "updatedAt": "2025-07-19T05:21:17.736Z",
+    "phone": "6281234567890",
+    "name": "Test Customer",
+    "location": "Test Location",
+    "category": "Internet Lambat",
+    "description": "Ini adalah test laporan gangguan untuk memverifikasi notifikasi ke grup teknisi dan teknisi individual."
+  },
+  {
+    "id": "TR856527YY5",
+    "status": "open",
+    "createdAt": "2025-07-19T05:27:36.527Z",
+    "updatedAt": "2025-07-19T05:27:36.528Z",
+    "phone": "6281234567890",
+    "name": "Test Customer",
+    "location": "Test Location",
+    "category": "Internet Lambat",
+    "description": "Ini adalah test laporan gangguan dari dashboard pelanggan untuk memverifikasi notifikasi ke grup teknisi. Koneksi internet sangat lambat dan sering putus-putus."
+  },
+  {
+    "id": "TR856643GIJ",
+    "status": "open",
+    "createdAt": "2025-07-19T05:27:36.643Z",
+    "updatedAt": "2025-07-19T05:27:36.643Z",
+    "phone": "6281234567890",
+    "name": "John Doe",
+    "location": "Jl. Contoh No. 123, Jakarta",
+    "category": "Internet Lambat",
+    "description": "Internet sangat lambat sejak pagi, kecepatan download hanya 1 Mbps padahal biasanya 50 Mbps."
+  },
+  {
+    "id": "TR212104NZ9",
+    "status": "open",
+    "createdAt": "2025-07-19T05:33:32.104Z",
+    "updatedAt": "2025-07-19T05:33:32.105Z",
+    "phone": "6281234567890",
+    "name": "Test Customer",
+    "location": "Test Location",
+    "category": "Internet Lambat",
+    "description": "Internet sangat lambat sejak pagi, kecepatan download hanya 1 Mbps."
+  },
+  {
+    "id": "TR212532W6M",
+    "status": "open",
+    "createdAt": "2025-07-19T05:33:32.532Z",
+    "updatedAt": "2025-07-19T05:33:32.532Z",
+    "phone": "6281234567890",
+    "name": "Test Customer",
+    "location": "Test Location"
+  },
+  {
+    "id": "TR21254704P",
+    "status": "open",
+    "createdAt": "2025-07-19T05:33:32.547Z",
+    "updatedAt": "2025-07-19T05:33:32.548Z",
+    "phone": "6281234567890",
+    "name": "Test Customer",
+    "location": "Test Location",
+    "category": "Internet Lambat",
+    "description": ""
+  },
+  {
+    "id": "TR2125624O4",
+    "status": "open",
+    "createdAt": "2025-07-19T05:33:32.562Z",
+    "updatedAt": "2025-07-19T05:33:32.562Z",
+    "phone": "6281234567890",
+    "name": "Test Customer",
+    "location": "Test Location",
+    "category": "Internet Lambat",
+    "description": "Internet sangat lambat sejak pagi, kecepatan download hanya 1 Mbps padahal biasanya 50 Mbps. Koneksi sering putus-putus dan ping sangat tinggi. Sudah dicoba restart router tapi masih sama. Mohon bantuan teknisi untuk memeriksa koneksi di lokasi kami."
+  },
+  {
+    "id": "TR6956645AF",
+    "status": "open",
+    "createdAt": "2025-07-19T05:41:35.665Z",
+    "updatedAt": "2025-07-19T05:41:35.665Z",
+    "phone": "081321960111",
+    "name": "nyoba",
+    "location": "tanjungpura",
+    "category": "WiFi Tidak Muncul",
+    "description": "hkhkhkh"
+  },
+  {
+    "id": "TR876499R0I",
+    "status": "open",
+    "createdAt": "2025-07-19T05:44:36.499Z",
+    "updatedAt": "2025-07-19T05:44:36.499Z",
+    "phone": "081321960111",
+    "name": "nyoba",
+    "location": "tanjungpura",
+    "category": "WiFi Tidak Muncul",
+    "description": "hkhkhkh"
+  },
+  {
+    "id": "TR9396536LE",
+    "status": "open",
+    "createdAt": "2025-07-19T05:45:39.653Z",
+    "updatedAt": "2025-07-19T05:45:39.653Z",
+    "phone": "081321960111",
+    "name": "nyoba",
+    "location": "tanjungpura",
+    "category": "WiFi Tidak Muncul",
+    "description": "hkhkhkh"
+  },
+  {
+    "id": "TR679698PGM",
+    "status": "open",
+    "createdAt": "2025-07-19T05:57:59.698Z",
+    "updatedAt": "2025-07-19T05:57:59.698Z",
+    "phone": "081321960111",
+    "name": "nyoba",
+    "location": "tanjungpura",
+    "category": "WiFi Tidak Muncul",
+    "description": "hkhkhkh"
+  },
+  {
+    "id": "TR4324576VV",
+    "status": "open",
+    "createdAt": "2025-07-19T06:10:32.457Z",
+    "updatedAt": "2025-07-19T06:10:32.457Z",
+    "phone": "081321960111",
+    "name": "testing",
+    "location": "tanjungpura",
+    "category": "Internet Lambat",
+    "description": "test kirim laporan"
+  },
+  {
+    "id": "TR6509930TF",
+    "status": "resolved",
+    "createdAt": "2025-07-19T06:14:10.993Z",
+    "updatedAt": "2025-07-19T06:20:30.304Z",
+    "phone": "081321960111",
+    "name": "testing",
+    "location": "tanjungpura",
+    "category": "Koneksi Putus-Putus",
+    "description": "test lagi ya",
+    "notes": [
+      {
+        "timestamp": "2025-07-19T06:20:30.304Z",
+        "content": "besed",
+        "status": "resolved"
+      }
+    ]
+  },
+  {
+    "id": "TR733808KB0",
+    "status": "resolved",
+    "createdAt": "2025-07-19T06:15:33.808Z",
+    "updatedAt": "2025-07-19T06:19:27.884Z",
+    "phone": "081321960111",
+    "name": "Rasman",
+    "location": "Tanjungpura",
+    "category": "Koneksi Putus-Putus",
+    "description": "Test laporan gangguan",
+    "notes": [
+      {
+        "timestamp": "2025-07-19T06:19:27.884Z",
+        "content": "sudah beres bos",
+        "status": "resolved",
+        "notificationSent": true
+      }
+    ]
+  }
+]
