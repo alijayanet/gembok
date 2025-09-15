@@ -108,14 +108,14 @@
         
         <!-- Back Section -->
         <div class="d-flex justify-content-center mt-4">
-            <a href="/customer/dashboard" class="btn btn-outline-secondary">
+            <a href="/mobile-customer" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i>Kembali ke Dashboard
             </a>
         </div>
         
         <div id="resultBox" class="result-box d-none"></div>
         <div id="backBtnBox" class="d-none mt-3 text-center">
-            <a href="/customer/dashboard" class="btn btn-secondary">Kembali ke Dashboard</a>
+            <a href="/mobile-customer" class="btn btn-secondary">Kembali ke Dashboard</a>
         </div>
     </div>
     <script>
@@ -168,7 +168,7 @@
             }
             if (json && json.success) {
                 resultBox.innerHTML = `<div class="alert alert-success">${json.message}<br><b>ID Tiket:</b> ${json.reportId}<br><small>Anda akan diarahkan ke dashboard dalam 3 detik...</small></div>`;
-                setTimeout(() => { window.location.href = '/customer/dashboard'; }, 3000);
+                setTimeout(() => { window.location.href = '/mobile-customer'; }, 3000);
             } else {
                 resultBox.innerHTML = `<div class="alert alert-danger">${json && json.message ? json.message : 'Gagal mengirim laporan.'}</div>`;
             }

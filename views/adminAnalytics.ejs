@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Gembok Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .analytics-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .analytics-card.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .analytics-card.warning {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        .analytics-card.danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+        .analytics-card.info {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+        .trend-indicator {
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+        .trend-up { color: #28a745; }
+        .trend-down { color: #dc3545; }
+        .trend-stable { color: #ffc107; }
+        .real-time-badge {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-online { background-color: #28a745; }
+        .status-offline { background-color: #dc3545; }
+        .status-unknown { background-color: #6c757d; }
+    </style>
+</head>
+<body>
+    <%- include('partials/admin-header') %>
+    
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <a href="/admin/dashboard" class="btn btn-outline-secondary btn-sm mb-2">
+                            <i class="fas fa-arrow-left me-1"></i>Kembali ke Dashboard
+                        </a>
+                        <h2 class="mb-0"><i class="fas fa-chart-line me-2"></i>Advanced Analytics Dashboard</h2>
+                    </div>
+                    <div>
+                        <span class="badge bg-success real-time-badge">
+                            <i class="fas fa-circle me-1"></i>Real-time
+                        </span>
+                        <small class="text-muted ms-2">Last updated: <%= new Date(lastUpdated).toLocaleString('id-ID') %></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="analytics-card success">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="metric-label">Total Devices</p>
+                            <p class="metric-value"><%= typeof genieacs !== 'undefined' ? genieacs.total : 0 %></p>
+                        </div>
+                        <i class="fas fa-wifi fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="analytics-card info">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="metric-label">Online Devices</p>
+                            <p class="metric-value"><%= typeof genieacs !== 'undefined' ? genieacs.online : 0 %></p>
+                        </div>
+                        <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="analytics-card warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="metric-label">Active PPPoE</p>
+                            <p class="metric-value"><%= typeof mikrotik !== 'undefined' ? mikrotik.active : 0 %></p>
+                        </div>
+                        <i class="fas fa-network-wired fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="analytics-card danger">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="metric-label">Total Revenue</p>
+                            <p class="metric-value">Rp <%= (typeof billing !== 'undefined' && billing.invoices) ? billing.invoices.totalAmount.toLocaleString('id-ID') : '0' %></p>
+                        </div>
+                        <i class="fas fa-dollar-sign fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Detailed Statistics -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-cogs me-2"></i>Device Manufacturers</h5>
+                    </div>
+                    <div class="card-body">
+                        <% Object.entries(genieacs.byManufacturer).forEach(([manufacturer, count]) => { %>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><%= manufacturer %></span>
+                            <span class="badge bg-primary"><%= count %></span>
+                        </div>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-users me-2"></i>Customer Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><span class="status-indicator status-online"></span>Active</span>
+                            <span class="badge bg-success"><%= billing.customers.active %></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><span class="status-indicator status-offline"></span>Inactive</span>
+                            <span class="badge bg-secondary"><%= billing.customers.inactive %></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><span class="status-indicator status-unknown"></span>Isolir</span>
+                            <span class="badge bg-danger"><%= billing.customers.isolir %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-file-invoice me-2"></i>Invoice Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Pending</span>
+                            <span class="badge bg-warning"><%= billing.invoices.pending %></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Paid</span>
+                            <span class="badge bg-success"><%= billing.invoices.paid %></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Overdue</span>
+                            <span class="badge bg-danger"><%= billing.invoices.overdue %></span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>Pending Amount</strong>
+                            <strong class="text-warning">Rp <%= billing.invoices.pendingAmount.toLocaleString('id-ID') %></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Real-time updates setiap 30 detik
+        setInterval(async () => {
+            try {
+                const response = await fetch('/admin/analytics/api/real-time');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update real-time data di halaman
+                    console.log('Real-time data updated:', data.data);
+                }
+            } catch (error) {
+                console.error('Error updating real-time data:', error);
+            }
+        }, 30000);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

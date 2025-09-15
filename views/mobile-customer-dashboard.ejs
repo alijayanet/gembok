@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Gembok Mobile - Dashboard Pelanggan</title>
+    <link rel="manifest" href="/manifest.json">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .mobile-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        .mobile-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .mobile-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .stat-card.warning {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        .stat-card.danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+        .stat-card.success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+        .customer-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        .info-value {
+            font-weight: bold;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status-active { background: #28a745; color: white; }
+        .status-inactive { background: #6c757d; color: white; }
+        .status-isolir { background: #dc3545; color: white; }
+        .status-pending { background: #ffc107; color: #000; }
+        .status-paid { background: #28a745; color: white; }
+        .status-overdue { background: #dc3545; color: white; }
+        .status-online { background: #28a745; color: white; }
+        .status-offline { background: #dc3545; color: white; }
+        .status-unknown { background: #6c757d; color: white; }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+        }
+        .list-item:last-child {
+            margin-bottom: 0;
+        }
+        .list-content {
+            flex: 1;
+        }
+        .list-title {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        .list-subtitle {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .list-amount {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .list-amount.overdue {
+            color: #dc3545;
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .back-link {
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        .back-link:hover {
+            color: #495057;
+            text-decoration: none;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #495057;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        .menu-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .menu-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .menu-card .card-body {
+            padding: 1.5rem 1rem;
+        }
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .stat-card.success .stat-icon {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+        
+        .stat-card.warning .stat-icon {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+        
+        .stat-card.info .stat-icon {
+            background-color: rgba(13, 202, 240, 0.1);
+            color: #0dcaf0;
+        }
+        .stat-number h4 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <div class="d-flex justify-content-end align-items-center mb-2">
+                <form method="POST" action="/mobile-customer/logout" style="display: inline;">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    </button>
+                </form>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">Dashboard Pelanggan</h4>
+                    <small class="text-muted">Gembok Mobile</small>
+                </div>
+                <div>
+                    <span class="badge bg-success pulse">
+                        <i class="fas fa-circle me-1"></i>Online
+                    </span>
+                    <br>
+                    <small class="text-muted">Updated: <%= new Date(lastUpdated).toLocaleString('id-ID') %></small>
+                </div>
+            </div>
+            
+            <!-- Notifikasi -->
+            <% if (typeof notif !== 'undefined' && notif) { %>
+            <div class="alert alert-info alert-dismissible fade show mt-2" role="alert">
+                <i class="fas fa-info-circle me-2"></i><%= notif %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <% } %>
+        </div>
+
+        <!-- Content Area -->
+        <div class="p-3">
+            <!-- Customer Info -->
+            <div class="customer-info">
+                <h5 class="mb-3"><i class="fas fa-user me-2"></i>Informasi Pelanggan</h5>
+                <div class="info-item">
+                    <span class="info-label">Nama:</span>
+                    <span class="info-value"><%= data.customer.name %></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Customer ID:</span>
+                    <span class="info-value"><%= data.customer.id %></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Paket:</span>
+                    <span class="info-value">
+                        <%= data.customer.package || 'Tidak ada paket' %>
+                        <% if (data.customer.package_price && data.customer.package_price > 0) { %>
+                            <br><small class="text-success fw-bold">Rp <%= data.customer.package_price.toLocaleString('id-ID') %>/bulan</small>
+                        <% } %>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="status-badge status-<%= data.customer.status %>">
+                        <%= data.customer.status === 'active' ? 'Aktif' : 
+                            data.customer.status === 'inactive' ? 'Tidak Aktif' : 
+                            data.customer.status === 'isolir' ? 'Isolir' : data.customer.status %>
+                    </span>
+                </div>
+                <% if (data.customer.phone) { %>
+                <div class="info-item">
+                    <span class="info-label">Telepon:</span>
+                    <span class="info-value"><%= data.customer.phone %></span>
+                </div>
+                <% } %>
+                <% if (data.customer.address) { %>
+                <div class="info-item">
+                    <span class="info-label">Alamat:</span>
+                    <span class="info-value"><%= data.customer.address %></span>
+                </div>
+                <% } %>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="row mb-3">
+                <div class="col-12 mb-2">
+                    <div class="stat-card success">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon me-3">
+                                <i class="fas fa-wifi"></i>
+                            </div>
+                            <div>
+                                <p class="stat-number mb-0"><%= data.devices.online %></p>
+                                <p class="stat-label mb-0">Device Online</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mb-2">
+                    <div class="stat-card warning">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon me-3">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <p class="stat-number mb-0"><%= data.invoices.pending %></p>
+                                <p class="stat-label mb-0">Tagihan Pending</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="stat-card info">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon me-3">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div>
+                                <p class="stat-number mb-0">Rp <%= data.invoices.totalAmount.toLocaleString('id-ID') %></p>
+                                <p class="stat-label mb-0">Total Bayar</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Recent Invoices -->
+            <div class="mobile-card">
+                <h6 class="section-title"><i class="fas fa-file-invoice me-2"></i>Tagihan Terbaru</h6>
+                <% if (data.invoices.recent && data.invoices.recent.length > 0) { %>
+                    <% data.invoices.recent.forEach(invoice => { %>
+                        <div class="list-item">
+                            <div class="list-content">
+                                <div class="list-title"><%= invoice.description %></div>
+                                <div class="list-subtitle">Due: <%= new Date(invoice.dueDate).toLocaleDateString('id-ID') %></div>
+                            </div>
+                            <div class="text-end">
+                                <div class="list-amount <%= invoice.status === 'overdue' ? 'overdue' : '' %>">
+                                    Rp <%= invoice.amount.toLocaleString('id-ID') %>
+                                </div>
+                                <span class="status-badge status-<%= invoice.status %>">
+                                    <%= invoice.status === 'pending' ? 'Pending' : 
+                                        invoice.status === 'paid' ? 'Lunas' : 
+                                        invoice.status === 'overdue' ? 'Overdue' : invoice.status %>
+                                </span>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-file-invoice"></i>
+                        <p>Tidak ada tagihan</p>
+                    </div>
+                <% } %>
+            </div>
+
+
+            <!-- Menu Utama -->
+            <div class="mobile-card">
+                <h6 class="section-title"><i class="fas fa-cog me-2"></i>Menu Utama</h6>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="card menu-card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-wifi fs-1 text-primary mb-2"></i>
+                                <h6>Ganti SSID</h6>
+                                <small class="text-muted">Ubah nama WiFi</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card menu-card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-shield-alt fs-1 text-warning mb-2"></i>
+                                <h6>Ganti Password</h6>
+                                <small class="text-muted">Ubah password WiFi</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Ganti SSID -->
+            <div class="mobile-card">
+                <h6 class="section-title"><i class="fas fa-wifi me-2"></i>Ganti Nama WiFi (SSID)</h6>
+                <form method="POST" action="/mobile-customer/change-ssid">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="ssid" placeholder="Nama WiFi baru" required maxlength="32">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-check me-1"></i>Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Form Ganti Password -->
+            <div class="mobile-card">
+                <h6 class="section-title"><i class="fas fa-shield-alt me-2"></i>Ganti Password WiFi</h6>
+                <form method="POST" action="/mobile-customer/change-password">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="password" placeholder="Password baru" required maxlength="32">
+                        <button class="btn btn-warning" type="submit">
+                            <i class="fas fa-check me-1"></i>Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Restart Perangkat -->
+            <div class="mobile-card">
+                <h6 class="section-title"><i class="fas fa-sync-alt me-2"></i>Restart Perangkat</h6>
+                <button class="btn btn-danger w-100" type="button" id="restartDeviceBtn">
+                    <i class="fas fa-sync-alt me-1"></i>Restart Perangkat
+                </button>
+                <small class="text-muted mt-2 d-block">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Restart perangkat akan memutus koneksi internet sementara (1-2 menit)
+                </small>
+            </div>
+
+            <!-- Laporan Gangguan -->
+            <div class="mobile-card">
+                <h6 class="section-title"><i class="fas fa-exclamation-triangle me-2"></i>Laporan Gangguan</h6>
+                <div class="d-grid gap-3">
+                    <a href="/customer/trouble/simple" class="btn btn-warning text-white">
+                        <i class="fas fa-bolt me-1"></i>Form Laporan Gangguan Simpel
+                    </a>
+                    <a href="/customer/trouble/list" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-1"></i>Lihat Riwayat Laporan
+                    </a>
+                </div>
+                <small class="text-muted mt-3 d-block">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Laporkan masalah koneksi atau gangguan layanan internet Anda
+                </small>
+            </div>
+
+            <!-- Summary Stats - Individual Cards -->
+            <div class="row g-3 mb-3">
+                <div class="col-12">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="stat-number"><%= data.invoices.total %></p>
+                                <p class="stat-label">Total Tagihan</p>
+                            </div>
+                            <i class="fas fa-file-invoice fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-12">
+                    <div class="stat-card warning">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="stat-number"><%= data.troubleReports.total %></p>
+                                <p class="stat-label">Laporan Gangguan</p>
+                            </div>
+                            <i class="fas fa-exclamation-triangle fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-12">
+                    <div class="stat-card success">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="stat-number">Rp <%= data.invoices.totalAmount.toLocaleString('id-ID') %></h4>
+                                <p class="stat-label">Total Bayar</p>
+                            </div>
+                            <i class="fas fa-money-bill-wave fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Trouble Reports -->
+            <div class="mobile-card">
+                <h6 class="section-title"><i class="fas fa-exclamation-triangle me-2"></i>Laporan Gangguan</h6>
+                <% if (data.troubleReports.recent && data.troubleReports.recent.length > 0) { %>
+                    <% data.troubleReports.recent.forEach(report => { %>
+                        <div class="list-item">
+                            <div class="list-content">
+                                <div class="list-title"><%= report.title %></div>
+                                <div class="list-subtitle"><%= new Date(report.created_at).toLocaleDateString('id-ID') %></div>
+                            </div>
+                            <span class="status-badge status-<%= report.status %>">
+                                <%= report.status === 'pending' ? 'Pending' : 
+                                    report.status === 'in_progress' ? 'Proses' : 
+                                    report.status === 'resolved' ? 'Selesai' : report.status %>
+                            </span>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Tidak ada laporan gangguan</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto refresh setiap 30 detik
+        setInterval(function() {
+            location.reload();
+        }, 30000);
+        
+        // Handle offline/online status
+        window.addEventListener('online', function() {
+            console.log('Back online');
+        });
+        
+        window.addEventListener('offline', function() {
+            console.log('Gone offline');
+        });
+
+        // Restart Device Button
+        document.getElementById('restartDeviceBtn').addEventListener('click', function() {
+            if (confirm('Apakah Anda yakin ingin restart perangkat? Koneksi internet akan terputus sementara.')) {
+                // Disable button
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Restarting...';
+                
+                // Simulate restart process
+                setTimeout(function() {
+                    alert('Perangkat berhasil di-restart! Koneksi akan kembali normal dalam 1-2 menit.');
+                    location.reload();
+                }, 3000);
+            }
+        });
+
+        // Menu card click handlers
+        document.querySelectorAll('.menu-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const title = this.querySelector('h6').textContent;
+                if (title === 'Ganti SSID') {
+                    document.querySelector('input[name="ssid"]').focus();
+                } else if (title === 'Ganti Password') {
+                    document.querySelector('input[name="password"]').focus();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gembok API Documentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .api-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 2rem auto;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 1200px;
+        }
+        .api-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .api-key-section {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        .endpoint-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #007bff;
+        }
+        .method-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .method-get { background: #28a745; color: white; }
+        .method-post { background: #007bff; color: white; }
+        .method-delete { background: #dc3545; color: white; }
+        .code-block {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid #007bff;
+        }
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        .copy-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="api-container">
+            <!-- Header -->
+            <div class="api-header">
+                <div class="text-start mb-3">
+                    <a href="/admin/dashboard" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>Kembali ke Dashboard
+                    </a>
+                </div>
+                <h1><i class="fas fa-code me-2"></i>Gembok API Documentation</h1>
+                <p class="lead">RESTful API untuk integrasi eksternal dengan sistem Gembok ISP Management</p>
+                <div class="badge bg-success fs-6">Version 1.0.0</div>
+            </div>
+
+            <!-- API Key Section -->
+            <div class="api-key-section">
+                <h3><i class="fas fa-key me-2"></i>API Key Authentication</h3>
+                <p>Semua request API memerlukan API key untuk autentikasi. Gunakan salah satu metode berikut:</p>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Method 1: Query Parameter</h5>
+                        <div class="code-block position-relative">
+                            <button class="copy-btn" onclick="copyToClipboard('query-example')">Copy</button>
+                            <code id="query-example">GET /api/external/overview?api_key=gembok-api-2024</code>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Method 2: Header</h5>
+                        <div class="code-block position-relative">
+                            <button class="copy-btn" onclick="copyToClipboard('header-example')">Copy</button>
+                            <code id="header-example">X-API-Key: gembok-api-2024</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <h5>API Key Anda:</h5>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="apiKey" value="gembok-api-2024" readonly>
+                        <button class="btn btn-outline-light" onclick="copyToClipboard('apiKey')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Endpoints -->
+            <h2><i class="fas fa-list me-2"></i>API Endpoints</h2>
+
+            <!-- Health Check -->
+            <div class="endpoint-card">
+                <h4>
+                    <span class="method-badge method-get">GET</span>
+                    /api/external/health
+                </h4>
+                <p>Health check endpoint untuk memverifikasi status API</p>
+                <div class="code-block">
+                    <strong>Response:</strong>
+                    <pre><code>{
+  "success": true,
+  "message": "Gembok API is running",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "version": "1.0.0"
+}</code></pre>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="testEndpoint('/api/external/health')">
+                    <i class="fas fa-play"></i> Test Endpoint
+                </button>
+            </div>
+
+            <!-- Overview -->
+            <div class="endpoint-card">
+                <h4>
+                    <span class="method-badge method-get">GET</span>
+                    /api/external/overview
+                </h4>
+                <p>Mendapatkan ringkasan data sistem secara keseluruhan</p>
+                <div class="code-block">
+                    <strong>Response:</strong>
+                    <pre><code>{
+  "success": true,
+  "data": {
+    "devices": { "total": 100, "online": 95, "offline": 5 },
+    "pppoe": { "active": 80 },
+    "packages": { "total": 5, "active": 5 },
+    "customers": { "total": 150, "active": 140, "inactive": 10 },
+    "invoices": { "total": 200, "pending": 20, "paid": 180 },
+    "troubleReports": { "total": 15, "pending": 5, "resolved": 10 }
+  }
+}</code></pre>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="testEndpoint('/api/external/overview')">
+                    <i class="fas fa-play"></i> Test Endpoint
+                </button>
+            </div>
+
+            <!-- Devices -->
+            <div class="endpoint-card">
+                <h4>
+                    <span class="method-badge method-get">GET</span>
+                    /api/external/devices
+                </h4>
+                <p>Mendapatkan daftar perangkat GenieACS</p>
+                <div class="code-block">
+                    <strong>Query Parameters:</strong>
+                    <ul>
+                        <li><code>status</code> - Filter berdasarkan status (online/offline)</li>
+                        <li><code>manufacturer</code> - Filter berdasarkan manufacturer</li>
+                        <li><code>model</code> - Filter berdasarkan model</li>
+                    </ul>
+                    <strong>Example:</strong>
+                    <code>GET /api/external/devices?status=online&manufacturer=Huawei</code>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="testEndpoint('/api/external/devices')">
+                    <i class="fas fa-play"></i> Test Endpoint
+                </button>
+            </div>
+
+            <!-- Customers -->
+            <div class="endpoint-card">
+                <h4>
+                    <span class="method-badge method-get">GET</span>
+                    /api/external/customers
+                </h4>
+                <p>Mendapatkan daftar pelanggan</p>
+                <div class="code-block">
+                    <strong>Query Parameters:</strong>
+                    <ul>
+                        <li><code>status</code> - Filter berdasarkan status (active/inactive/isolir)</li>
+                        <li><code>package_id</code> - Filter berdasarkan package ID</li>
+                    </ul>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="testEndpoint('/api/external/customers')">
+                    <i class="fas fa-play"></i> Test Endpoint
+                </button>
+            </div>
+
+            <!-- Invoices -->
+            <div class="endpoint-card">
+                <h4>
+                    <span class="method-badge method-get">GET</span>
+                    /api/external/invoices
+                </h4>
+                <p>Mendapatkan daftar invoice</p>
+                <div class="code-block">
+                    <strong>Query Parameters:</strong>
+                    <ul>
+                        <li><code>status</code> - Filter berdasarkan status (pending/paid/overdue)</li>
+                        <li><code>customer_id</code> - Filter berdasarkan customer ID</li>
+                        <li><code>start_date</code> - Filter dari tanggal</li>
+                        <li><code>end_date</code> - Filter sampai tanggal</li>
+                    </ul>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="testEndpoint('/api/external/invoices')">
+                    <i class="fas fa-play"></i> Test Endpoint
+                </button>
+            </div>
+
+            <!-- Trouble Reports -->
+            <div class="endpoint-card">
+                <h4>
+                    <span class="method-badge method-get">GET</span>
+                    /api/external/trouble-reports
+                </h4>
+                <p>Mendapatkan daftar laporan gangguan</p>
+                <div class="code-block">
+                    <strong>Query Parameters:</strong>
+                    <ul>
+                        <li><code>status</code> - Filter berdasarkan status (pending/in_progress/resolved)</li>
+                        <li><code>category</code> - Filter berdasarkan kategori</li>
+                        <li><code>phone</code> - Filter berdasarkan nomor telepon</li>
+                    </ul>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="testEndpoint('/api/external/trouble-reports')">
+                    <i class="fas fa-play"></i> Test Endpoint
+                </button>
+            </div>
+
+            <!-- Create Trouble Report -->
+            <div class="endpoint-card">
+                <h4>
+                    <span class="method-badge method-post">POST</span>
+                    /api/external/trouble-reports
+                </h4>
+                <p>Membuat laporan gangguan baru</p>
+                <div class="code-block">
+                    <strong>Request Body:</strong>
+                    <pre><code>{
+  "phone": "081234567890",
+  "name": "John Doe",
+  "location": "Jakarta",
+  "category": "Internet Lambat",
+  "description": "Internet sangat lambat sejak pagi"
+}</code></pre>
+                </div>
+                <button class="btn btn-success btn-sm" onclick="testCreateTroubleReport()">
+                    <i class="fas fa-play"></i> Test Create
+                </button>
+            </div>
+
+            <!-- Test Section -->
+            <div class="test-section">
+                <h3><i class="fas fa-flask me-2"></i>API Testing</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Test API Key</h5>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="testApiKey" placeholder="Enter API Key">
+                            <button class="btn btn-outline-primary" onclick="testApiKey()">
+                                <i class="fas fa-check"></i> Test
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Response</h5>
+                        <div id="testResult" class="code-block" style="min-height: 100px;">
+                            <em>Click "Test API Key" to see response</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rate Limiting -->
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle me-2"></i>Rate Limiting</h5>
+                <p>API memiliki rate limiting: <strong>100 requests per menit</strong> per IP address.</p>
+            </div>
+
+            <!-- Error Codes -->
+            <div class="alert alert-warning">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>Error Codes</h5>
+                <ul class="mb-0">
+                    <li><strong>401 UNAUTHORIZED</strong> - Invalid or missing API key</li>
+                    <li><strong>429 RATE_LIMIT_EXCEEDED</strong> - Too many requests</li>
+                    <li><strong>500 INTERNAL_SERVER_ERROR</strong> - Server error</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Copy to clipboard function
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.value || element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                // Show success feedback
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                btn.classList.add('btn-success');
+                btn.classList.remove('btn-outline-light');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-light');
+                }, 2000);
+            });
+        }
+
+        // Test API key
+        async function testApiKey() {
+            const apiKey = document.getElementById('testApiKey').value || 'gembok-api-2024';
+            const resultDiv = document.getElementById('testResult');
+            
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+            
+            try {
+                const response = await fetch(`/api/external/health?api_key=${apiKey}`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `<pre><code>${JSON.stringify(data, null, 2)}</code></pre>`;
+                
+                if (data.success) {
+                    resultDiv.style.borderLeftColor = '#28a745';
+                } else {
+                    resultDiv.style.borderLeftColor = '#dc3545';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<pre><code>Error: ${error.message}</code></pre>`;
+                resultDiv.style.borderLeftColor = '#dc3545';
+            }
+        }
+
+        // Test endpoint
+        async function testEndpoint(endpoint) {
+            const apiKey = 'gembok-api-2024';
+            const resultDiv = document.getElementById('testResult');
+            
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+            
+            try {
+                const response = await fetch(`${endpoint}?api_key=${apiKey}`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `<pre><code>${JSON.stringify(data, null, 2)}</code></pre>`;
+                
+                if (data.success) {
+                    resultDiv.style.borderLeftColor = '#28a745';
+                } else {
+                    resultDiv.style.borderLeftColor = '#dc3545';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<pre><code>Error: ${error.message}</code></pre>`;
+                resultDiv.style.borderLeftColor = '#dc3545';
+            }
+        }
+
+        // Test create trouble report
+        async function testCreateTroubleReport() {
+            const apiKey = 'gembok-api-2024';
+            const resultDiv = document.getElementById('testResult');
+            
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+            
+            try {
+                const response = await fetch('/api/external/trouble-reports', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
+                    body: JSON.stringify({
+                        phone: '081234567890',
+                        name: 'Test User',
+                        location: 'Test Location',
+                        category: 'Internet Lambat',
+                        description: 'Test trouble report from API docs'
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `<pre><code>${JSON.stringify(data, null, 2)}</code></pre>`;
+                
+                if (data.success) {
+                    resultDiv.style.borderLeftColor = '#28a745';
+                } else {
+                    resultDiv.style.borderLeftColor = '#dc3545';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<pre><code>Error: ${error.message}</code></pre>`;
+                resultDiv.style.borderLeftColor = '#dc3545';
+            }
+        }
+
+        // Auto-fill API key
+        document.getElementById('testApiKey').value = 'gembok-api-2024';
+    </script>
+</body>
+</html>

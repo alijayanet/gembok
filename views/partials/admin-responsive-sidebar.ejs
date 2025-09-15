@@ -32,6 +32,9 @@
     <a href="/admin/dashboard" class="<%= typeof page !== 'undefined' && page === 'dashboard' ? 'active' : '' %>">
         <i class="bi bi-house"></i> Dashboard
     </a>
+    <a href="/admin/analytics" class="<%= typeof page !== 'undefined' && page === 'analytics' ? 'active' : '' %>">
+        <i class="bi bi-graph-up"></i> Analytics
+    </a>
     <a href="/admin/genieacs" class="<%= typeof page !== 'undefined' && page === 'genieacs' ? 'active' : '' %>">
         <i class="bi bi-hdd-network"></i> GenieACS
     </a>
@@ -58,6 +61,15 @@
     </a>
     <a href="/admin/trouble" class="<%= typeof page !== 'undefined' && page === 'trouble' ? 'active' : '' %>">
         <i class="bi bi-exclamation-triangle"></i> Laporan Gangguan
+    </a>
+    <a href="/admin/backup" class="<%= typeof page !== 'undefined' && page === 'backup' ? 'active' : '' %>">
+        <i class="bi bi-database"></i> Backup
+    </a>
+    <a href="/mobile" target="_blank" class="<%= typeof page !== 'undefined' && page === 'mobile' ? 'active' : '' %>">
+        <i class="bi bi-phone"></i> Mobile App
+    </a>
+    <a href="/api-docs" target="_blank" class="<%= typeof page !== 'undefined' && page === 'api' ? 'active' : '' %>">
+        <i class="bi bi-code-slash"></i> API Docs
     </a>
     <a href="/admin/setting" class="<%= typeof page !== 'undefined' && page === 'setting' ? 'active' : '' %>">
         <i class="bi bi-gear"></i> Setting

@@ -383,6 +383,14 @@ app.use('/admin/trouble', adminAuth, adminTroubleReportRouter);
 const adminBillingRouter = require('./routes/adminBilling');
 app.use('/admin/billing', adminBillingRouter);
 
+// Import dan gunakan route adminAnalytics
+const adminAnalyticsRouter = require('./routes/adminAnalytics');
+app.use('/admin', adminAnalyticsRouter);
+
+// Import dan gunakan route adminBackup
+const adminBackupRouter = require('./routes/adminBackup');
+app.use('/admin', adminBackupRouter);
+
 // Import dan gunakan route testTroubleReport untuk debugging
 const testTroubleReportRouter = require('./routes/testTroubleReport');
 app.use('/test/trouble', testTroubleReportRouter);
@@ -545,6 +553,11 @@ app.get('/test-upload-logo', (req, res) => {
 const apiDashboardRouter = require('./routes/apiDashboard');
 app.use('/api', apiDashboardRouter);
 
+// Import dan gunakan route API external
+const apiExternalRouter = require('./routes/apiExternal');
+app.use('/api/external', apiExternalRouter);
+
+
 // Konstanta
 const VERSION = '1.0.0';
 
@@ -613,6 +626,665 @@ app.get('/health', (req, res) => {
         version: VERSION,
         whatsapp: global.whatsappStatus.status
     });
+});
+
+// Route untuk mobile dashboard
+app.get('/mobile', async (req, res) => {
+    try {
+        // Ambil data langsung di server untuk menghindari masalah AJAX
+        const { getDevices } = require('./config/genieacs');
+        const { getActivePPPoEConnections } = require('./config/mikrotik');
+        const { getAllPackages, getAllCustomers, getAllInvoices } = require('./config/billing');
+        const { getAllTroubleReports } = require('./config/troubleReport');
+
+        // Ambil data async
+        const [devices, pppoeData] = await Promise.all([
+            getDevices().catch(() => []),
+            getActivePPPoEConnections().catch(() => ({ success: false, data: [] }))
+        ]);
+
+        // Ambil data sync
+        let packages = [];
+        let customers = [];
+        let invoices = [];
+        let troubleReports = [];
+
+        try { packages = getAllPackages(); } catch (error) { /* ignore */ }
+        try { customers = getAllCustomers(); } catch (error) { /* ignore */ }
+        try { invoices = getAllInvoices(); } catch (error) { /* ignore */ }
+        try { troubleReports = getAllTroubleReports(); } catch (error) { /* ignore */ }
+
+        // Hitung data
+        const now = Date.now();
+        const onlineDevices = devices.filter(dev => {
+            if (!dev._lastInform) return false;
+            try {
+                const lastInform = new Date(dev._lastInform).getTime();
+                if (isNaN(lastInform)) return false;
+                return (now - lastInform) < 3600 * 1000;
+            } catch (error) {
+                return false;
+            }
+        }).length;
+
+        const mobileData = {
+            devices: {
+                total: devices.length,
+                online: onlineDevices,
+                offline: devices.length - onlineDevices
+            },
+            pppoe: {
+                active: pppoeData.success ? pppoeData.data.length : 0
+            },
+            packages: {
+                total: packages.length,
+                active: packages.filter(pkg => pkg.status === 'active').length
+            },
+            customers: {
+                total: customers.length,
+                active: customers.filter(cust => cust.status === 'active').length,
+                inactive: customers.filter(cust => cust.status === 'inactive').length,
+                isolir: customers.filter(cust => cust.status === 'isolir').length
+            },
+            invoices: {
+                total: invoices.length,
+                pending: invoices.filter(inv => inv.status === 'pending').length,
+                paid: invoices.filter(inv => inv.status === 'paid').length,
+                overdue: invoices.filter(inv => inv.status === 'overdue').length,
+                totalAmount: invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0)
+            },
+            troubleReports: {
+                total: troubleReports.length,
+                pending: troubleReports.filter(tr => tr.status === 'pending').length,
+                inProgress: troubleReports.filter(tr => tr.status === 'in_progress').length,
+                resolved: troubleReports.filter(tr => tr.status === 'resolved').length
+            }
+        };
+
+        res.render('mobile-dashboard', {
+            title: 'Gembok Mobile',
+            page: 'mobile',
+            data: mobileData,
+            lastUpdated: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error loading mobile dashboard:', error);
+        res.render('mobile-dashboard', {
+            title: 'Gembok Mobile',
+            page: 'mobile',
+            data: {
+                devices: { total: 0, online: 0, offline: 0 },
+                pppoe: { active: 0 },
+                packages: { total: 0, active: 0 },
+                customers: { total: 0, active: 0, inactive: 0, isolir: 0 },
+                invoices: { total: 0, pending: 0, paid: 0, overdue: 0, totalAmount: 0 },
+                troubleReports: { total: 0, pending: 0, inProgress: 0, resolved: 0 }
+            },
+            lastUpdated: new Date().toISOString(),
+            error: error.message
+        });
+    }
+});
+
+// Route untuk mobile dashboard pelanggan
+app.get('/mobile-customer', async (req, res) => {
+    try {
+        console.log(`🔍 Mobile customer GET request received at ${new Date().toISOString()}`);
+        console.log(`Query params:`, req.query);
+        console.log(`Session:`, req.session);
+        console.log(`Session ID:`, req.sessionID);
+        
+        // Ambil data pelanggan dari session atau parameter
+        const customerId = req.query.customer_id || req.session.customerId || req.session.phone;
+        
+        console.log(`🔍 Mobile customer access - customerId: ${customerId}, session.phone: ${req.session.phone}`);
+        
+        if (!customerId) {
+            console.log(`❌ No customerId found, showing login page`);
+            return res.render('mobile-customer-login', {
+                title: 'Gembok Mobile - Login',
+                page: 'mobile-customer',
+                error: 'Customer ID diperlukan'
+            });
+        }
+        
+        console.log(`✅ CustomerId found: ${customerId}, proceeding to dashboard`);
+
+        // Ambil data pelanggan
+        const { getAllCustomers, getAllInvoices, getAllPackages } = require('./config/billing');
+        const { getAllTroubleReports } = require('./config/troubleReport');
+        const { getDevices } = require('./config/genieacs');
+
+        let customers = [];
+        let invoices = [];
+        let packages = [];
+        let troubleReports = [];
+        let devices = [];
+
+        try { customers = getAllCustomers(); } catch (error) { /* ignore */ }
+        try { invoices = getAllInvoices(); } catch (error) { /* ignore */ }
+        try { packages = getAllPackages(); } catch (error) { /* ignore */ }
+        try { troubleReports = getAllTroubleReports(); } catch (error) { /* ignore */ }
+        try { devices = await getDevices(); } catch (error) { /* ignore */ }
+
+        // Cari data pelanggan berdasarkan ID atau nomor HP
+        console.log(`🔍 Looking for customer with customerId: ${customerId}`);
+        console.log(`🔍 Available customers:`, customers.map(c => ({ id: c.id, phone: c.phone, name: c.name })));
+        
+        const customer = customers.find(c => 
+            c.id === customerId || 
+            c.customer_id === customerId ||
+            c.phone === customerId ||
+            c.username === customerId ||
+            c.phone === customerId.replace(/^0/, '62') ||
+            c.phone === customerId.replace(/^62/, '0')
+        );
+        
+        console.log(`🔍 Found customer:`, customer ? { id: customer.id, phone: customer.phone, name: customer.name } : 'Not found');
+        
+        if (!customer) {
+            console.log(`❌ Customer not found for ID: ${customerId}`);
+            console.log(`Available customers:`, customers.map(c => ({ id: c.id, phone: c.phone, username: c.username })));
+            return res.render('mobile-customer-login', {
+                title: 'Gembok Mobile - Login',
+                page: 'mobile-customer',
+                error: 'Pelanggan tidak ditemukan. Pastikan Customer ID atau nomor HP benar.'
+            });
+        }
+        
+        console.log(`✅ Customer found: ${customer.name} (${customer.phone})`);
+
+        // Ambil data invoice pelanggan
+        const customerInvoices = invoices.filter(inv => 
+            inv.customer_id === customerId || inv.customer_name === customer.name
+        );
+
+        // Ambil data trouble report pelanggan
+        const customerTroubleReports = troubleReports.filter(tr => 
+            tr.customer_id === customerId || tr.customer_name === customer.name
+        );
+
+        // Cari device pelanggan berdasarkan serial number atau customer_id
+        const customerDevices = devices.filter(dev => {
+            if (!dev._deviceId) return false;
+            
+            // Pastikan _deviceId adalah string
+            const deviceId = String(dev._deviceId);
+            const serialNumber = String(customer.serial_number || '');
+            const customerName = String(customer.name || '');
+            
+            // Hanya cocokkan jika serial_number ada dan tidak kosong
+            if (serialNumber && serialNumber !== '' && serialNumber !== 'undefined') {
+                return deviceId.includes(serialNumber);
+            }
+            
+            // Jika tidak ada serial_number, coba cari berdasarkan customer_id di tag
+            if (dev.tags && Array.isArray(dev.tags)) {
+                return dev.tags.includes(customerId) || 
+                       dev.tags.includes(customer.phone) ||
+                       dev.tags.includes(customer.username);
+            }
+            
+            return false;
+        });
+
+        // Hitung status device
+        const now = Date.now();
+        const onlineDevices = customerDevices.filter(dev => {
+            if (!dev._lastInform) return false;
+            try {
+                const lastInform = new Date(dev._lastInform).getTime();
+                if (isNaN(lastInform)) return false;
+                return (now - lastInform) < 3600 * 1000;
+            } catch (error) {
+                return false;
+            }
+        }).length;
+
+        // Data untuk mobile customer dashboard
+        const customerData = {
+            customer: {
+                id: customer.id || customer.customer_id,
+                name: customer.name,
+                email: customer.email || '',
+                phone: customer.phone || '',
+                address: customer.address || '',
+                package: customer.package_name || customer.package || '',
+                package_price: customer.package_price || 0,
+                status: customer.status || 'active',
+                serial_number: customer.serial_number || '',
+                registration_date: customer.registration_date || customer.created_at
+            },
+            devices: {
+                total: customerDevices.length,
+                online: onlineDevices,
+                offline: customerDevices.length - onlineDevices,
+                list: customerDevices.map(dev => ({
+                    id: String(dev._deviceId || ''),
+                    serial: String(dev._deviceId || ''),
+                    status: dev._lastInform ? 
+                        (now - new Date(dev._lastInform).getTime() < 3600 * 1000 ? 'online' : 'offline') : 'unknown',
+                    lastSeen: dev._lastInform || 'Tidak diketahui'
+                }))
+            },
+            invoices: {
+                total: customerInvoices.length,
+                pending: customerInvoices.filter(inv => inv.status === 'pending').length,
+                paid: customerInvoices.filter(inv => inv.status === 'paid').length,
+                overdue: customerInvoices.filter(inv => inv.status === 'overdue').length,
+                totalAmount: customerInvoices.reduce((sum, inv) => sum + (inv.amount || 0), 0),
+                recent: customerInvoices.slice(0, 5).map(inv => ({
+                    id: inv.id,
+                    amount: inv.amount || 0,
+                    status: inv.status,
+                    dueDate: inv.due_date || inv.created_at,
+                    description: inv.description || 'Tagihan bulanan'
+                }))
+            },
+            troubleReports: {
+                total: customerTroubleReports.length,
+                pending: customerTroubleReports.filter(tr => tr.status === 'pending').length,
+                inProgress: customerTroubleReports.filter(tr => tr.status === 'in_progress').length,
+                resolved: customerTroubleReports.filter(tr => tr.status === 'resolved').length,
+                recent: customerTroubleReports.slice(0, 5).map(tr => ({
+                    id: tr.id,
+                    title: tr.title || 'Laporan Gangguan',
+                    status: tr.status,
+                    priority: tr.priority || 'normal',
+                    created_at: tr.created_at,
+                    description: tr.description || ''
+                }))
+            }
+        };
+
+        console.log(`🎉 Rendering mobile customer dashboard for: ${customer.name} (${customer.phone})`);
+        console.log(`📊 Dashboard data:`, {
+            devices: customerData.devices,
+            invoices: customerData.invoices,
+            troubleReports: customerData.troubleReports
+        });
+        
+        res.render('mobile-customer-dashboard', {
+            title: 'Gembok Mobile - Customer',
+            page: 'mobile-customer',
+            data: customerData,
+            lastUpdated: new Date().toISOString(),
+            notif: req.query.notif || null
+        });
+    } catch (error) {
+        console.error('Error loading mobile customer dashboard:', error);
+        res.render('mobile-customer-login', {
+            title: 'Gembok Mobile - Login',
+            page: 'mobile-customer',
+            error: error.message
+        });
+    }
+});
+
+// Route POST untuk login mobile customer
+app.post('/mobile-customer/login', async (req, res) => {
+    try {
+        console.log(`🔍 Mobile customer POST login request received`);
+        console.log(`Body:`, req.body);
+        
+        const { customer_id } = req.body;
+        
+        if (!customer_id) {
+            console.log(`❌ No customer_id in body`);
+            return res.render('mobile-customer-login', {
+                title: 'Gembok Mobile - Login',
+                page: 'mobile-customer',
+                error: 'Customer ID diperlukan'
+            });
+        }
+        
+        console.log(`🔍 Processing login for customer_id: ${customer_id}`);
+
+        // Validasi customer
+        const { getAllCustomers } = require('./config/billing');
+        const customers = getAllCustomers();
+        
+        const customer = customers.find(c => 
+            c.id === customer_id || 
+            c.customer_id === customer_id ||
+            c.phone === customer_id ||
+            c.username === customer_id ||
+            c.phone === customer_id.replace(/^0/, '62') ||
+            c.phone === customer_id.replace(/^62/, '0')
+        );
+        
+        if (!customer) {
+            console.log(`❌ Mobile customer login failed for: ${customer_id}`);
+            return res.render('mobile-customer-login', {
+                title: 'Gembok Mobile - Login',
+                page: 'mobile-customer',
+                error: 'Pelanggan tidak ditemukan. Pastikan Customer ID atau nomor HP benar.'
+            });
+        }
+
+        // Simpan session
+        req.session.phone = customer.phone;
+        req.session.customerId = customer.id;
+        
+        console.log(`✅ Mobile customer login success: ${customer.name} (${customer.phone})`);
+        console.log(`📝 Session saved:`, {
+            phone: req.session.phone,
+            customerId: req.session.customerId
+        });
+        
+        // Render dashboard langsung setelah login
+        console.log(`🔄 Rendering dashboard directly after login`);
+        
+        // Ambil data pelanggan untuk dashboard (menggunakan import yang sudah ada)
+        const { getAllInvoices, getAllPackages } = require('./config/billing');
+        const { getAllTroubleReports } = require('./config/troubleReport');
+        const { getDevices } = require('./config/genieacs');
+
+        let allCustomers = [];
+        let allInvoices = [];
+        let allPackages = [];
+        let allTroubleReports = [];
+        let allDevices = [];
+
+        try { allCustomers = getAllCustomers(); } catch (error) { /* ignore */ }
+        try { allInvoices = getAllInvoices(); } catch (error) { /* ignore */ }
+        try { allPackages = getAllPackages(); } catch (error) { /* ignore */ }
+        try { allTroubleReports = getAllTroubleReports(); } catch (error) { /* ignore */ }
+        try { allDevices = await getDevices(); } catch (error) { /* ignore */ }
+
+        // Cari data pelanggan berdasarkan ID atau nomor HP
+        console.log(`🔍 Looking for customer after login with:`, { id: customer.id, phone: customer.phone });
+        console.log(`🔍 Available customers:`, allCustomers.map(c => ({ id: c.id, phone: c.phone, name: c.name })));
+        
+        const foundCustomer = allCustomers.find(c => 
+            c.id === customer.id || 
+            c.customer_id === customer.id ||
+            c.phone === customer.phone ||
+            c.username === customer.phone
+        );
+        
+        console.log(`🔍 Found customer after login:`, foundCustomer ? { id: foundCustomer.id, phone: foundCustomer.phone, name: foundCustomer.name } : 'Not found');
+        
+        if (!foundCustomer) {
+            console.log(`❌ Customer not found after login`);
+            return res.render('mobile-customer-login', {
+                title: 'Gembok Mobile - Login',
+                page: 'mobile-customer',
+                error: 'Pelanggan tidak ditemukan setelah login'
+            });
+        }
+
+        // Ambil data invoice pelanggan
+        const customerInvoices = allInvoices.filter(inv => 
+            inv.customer_id === foundCustomer.id || inv.customer_name === foundCustomer.name
+        );
+
+        // Ambil data trouble report pelanggan
+        const customerTroubleReports = allTroubleReports.filter(tr => 
+            tr.customer_id === foundCustomer.id || tr.customer_name === foundCustomer.name
+        );
+
+               // Cari device pelanggan berdasarkan serial number atau customer_id
+               const customerDevices = allDevices.filter(dev => {
+                   if (!dev._deviceId) return false;
+                   
+                   // Pastikan _deviceId adalah string
+                   const deviceId = String(dev._deviceId);
+                   const serialNumber = String(foundCustomer.serial_number || '');
+                   const customerName = String(foundCustomer.name || '');
+                   
+                   // Hanya cocokkan jika serial_number ada dan tidak kosong
+                   if (serialNumber && serialNumber !== '' && serialNumber !== 'undefined') {
+                       return deviceId.includes(serialNumber);
+                   }
+                   
+                   // Jika tidak ada serial_number, coba cari berdasarkan customer_id di tag
+                   if (dev.tags && Array.isArray(dev.tags)) {
+                       return dev.tags.includes(foundCustomer.id) || 
+                              dev.tags.includes(foundCustomer.phone) ||
+                              dev.tags.includes(foundCustomer.username);
+                   }
+                   
+                   return false;
+               });
+
+        // Hitung status device
+        const now = Date.now();
+        const onlineDevices = customerDevices.filter(dev => {
+            if (!dev._lastInform) return false;
+            try {
+                const lastInform = new Date(dev._lastInform).getTime();
+                if (isNaN(lastInform)) return false;
+                return (now - lastInform) < 3600 * 1000;
+            } catch (error) {
+                return false;
+            }
+        }).length;
+
+               // Data untuk mobile customer dashboard
+               const customerData = {
+                   customer: {
+                       id: foundCustomer.id || foundCustomer.customer_id,
+                       name: foundCustomer.name,
+                       email: foundCustomer.email || '',
+                       phone: foundCustomer.phone || '',
+                       address: foundCustomer.address || '',
+                       package: foundCustomer.package_name || foundCustomer.package || '',
+                       package_price: foundCustomer.package_price || 0,
+                       status: foundCustomer.status || 'active',
+                       serial_number: foundCustomer.serial_number || '',
+                       registration_date: foundCustomer.registration_date || foundCustomer.created_at
+                   },
+            devices: {
+                total: customerDevices.length,
+                online: onlineDevices,
+                offline: customerDevices.length - onlineDevices,
+                list: customerDevices.map(dev => ({
+                    id: String(dev._deviceId || ''),
+                    serial: String(dev._deviceId || ''),
+                    status: dev._lastInform ? 
+                        (now - new Date(dev._lastInform).getTime() < 3600 * 1000 ? 'online' : 'offline') : 'unknown',
+                    lastSeen: dev._lastInform || 'Tidak diketahui'
+                }))
+            },
+            invoices: {
+                total: customerInvoices.length,
+                pending: customerInvoices.filter(inv => inv.status === 'pending').length,
+                paid: customerInvoices.filter(inv => inv.status === 'paid').length,
+                overdue: customerInvoices.filter(inv => inv.status === 'overdue').length,
+                totalAmount: customerInvoices.reduce((sum, inv) => sum + (inv.amount || 0), 0),
+                recent: customerInvoices.slice(0, 5).map(inv => ({
+                    id: inv.id,
+                    amount: inv.amount || 0,
+                    status: inv.status,
+                    dueDate: inv.due_date || inv.created_at,
+                    description: inv.description || 'Tagihan bulanan'
+                }))
+            },
+            troubleReports: {
+                total: customerTroubleReports.length,
+                pending: customerTroubleReports.filter(tr => tr.status === 'pending').length,
+                inProgress: customerTroubleReports.filter(tr => tr.status === 'in_progress').length,
+                resolved: customerTroubleReports.filter(tr => tr.status === 'resolved').length,
+                recent: customerTroubleReports.slice(0, 5).map(tr => ({
+                    id: tr.id,
+                    title: tr.title || 'Laporan Gangguan',
+                    status: tr.status,
+                    priority: tr.priority || 'normal',
+                    created_at: tr.created_at,
+                    description: tr.description || ''
+                }))
+            }
+        };
+
+        console.log(`🎉 Rendering mobile customer dashboard for: ${foundCustomer.name} (${foundCustomer.phone})`);
+        console.log(`📊 Dashboard data:`, {
+            devices: customerData.devices,
+            invoices: customerData.invoices,
+            troubleReports: customerData.troubleReports
+        });
+        
+        res.render('mobile-customer-dashboard', {
+            title: 'Gembok Mobile - Customer',
+            page: 'mobile-customer',
+            data: customerData,
+            lastUpdated: new Date().toISOString(),
+            notif: req.query.notif || null
+        });
+    } catch (error) {
+        console.error('Error in mobile customer login:', error);
+        res.render('mobile-customer-login', {
+            title: 'Gembok Mobile - Login',
+            page: 'mobile-customer',
+            error: error.message
+        });
+    }
+});
+
+// Route logout mobile customer
+app.post('/mobile-customer/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/mobile-customer');
+    });
+});
+
+// Mobile customer change SSID
+app.post('/mobile-customer/change-ssid', async (req, res) => {
+    try {
+        const phone = req.session && req.session.phone;
+        if (!phone) return res.redirect('/mobile-customer');
+        
+        const { ssid } = req.body;
+        
+        // Import function untuk update SSID
+        const { updateSSID } = require('./config/genieacs');
+        const result = await updateSSID(phone, ssid);
+        
+        let notificationMessage = 'Gagal mengubah SSID.';
+        
+        if (result.success) {
+            const timeInfo = result.processingTime ? ` (${result.processingTime}ms, ${result.mode} mode)` : '';
+            notificationMessage = `Nama WiFi berhasil diubah${timeInfo}.`;
+            
+            // Kirim notifikasi WhatsApp ke pelanggan
+            const { sendMessage } = require('./config/sendMessage');
+            const waJid = phone.replace(/^0/, '62') + '@s.whatsapp.net';
+            const msg = `✅ *PERUBAHAN NAMA WIFI*\n\n` +
+              `Nama WiFi Anda telah diubah menjadi:\n` +
+              `• WiFi 2.4GHz: ${ssid}\n` +
+              `• WiFi 5GHz: ${ssid}-5G\n\n` +
+              `⚡ Diproses dalam ${result.processingTime}ms menggunakan ${result.mode} mode\n\n` +
+              `Silakan hubungkan ulang perangkat Anda ke WiFi baru.`;
+            
+            try { 
+              await sendMessage(waJid, msg); 
+            } catch (e) {
+              console.warn('Gagal kirim notifikasi WhatsApp:', e.message);
+            }
+        }
+        
+        // Redirect kembali ke mobile dashboard dengan notifikasi
+        res.redirect(`/mobile-customer?notif=${encodeURIComponent(notificationMessage)}`);
+    } catch (error) {
+        console.error('Error in mobile change SSID:', error);
+        res.redirect(`/mobile-customer?notif=${encodeURIComponent('Gagal mengubah SSID.')}`);
+    }
+});
+
+// Mobile customer change password
+app.post('/mobile-customer/change-password', async (req, res) => {
+    try {
+        const phone = req.session && req.session.phone;
+        if (!phone) return res.redirect('/mobile-customer');
+        
+        const { password } = req.body;
+        
+        // Import function untuk update password
+        const { updatePassword } = require('./config/genieacs');
+        const result = await updatePassword(phone, password);
+        
+        let notificationMessage = result.error || 'Gagal mengubah password.';
+        
+        if (result.success) {
+            const timeInfo = result.processingTime ? ` (${result.processingTime}ms, ${result.mode} mode)` : '';
+            notificationMessage = `Password WiFi berhasil diubah${timeInfo}.`;
+            
+            // Kirim notifikasi WhatsApp ke pelanggan
+            const { sendMessage } = require('./config/sendMessage');
+            const waJid = phone.replace(/^0/, '62') + '@s.whatsapp.net';
+            const msg = `✅ *PERUBAHAN PASSWORD WIFI*\n\n` +
+              `Password WiFi Anda telah diubah menjadi:\n` +
+              `• Password: ${password}\n\n` +
+              `⚡ Diproses dalam ${result.processingTime}ms menggunakan ${result.mode} mode\n\n` +
+              `Silakan hubungkan ulang perangkat Anda dengan password baru.`;
+            
+            try { 
+              await sendMessage(waJid, msg); 
+            } catch (e) {
+              console.warn('Gagal kirim notifikasi WhatsApp:', e.message);
+            }
+        }
+        
+        // Redirect kembali ke mobile dashboard dengan notifikasi
+        res.redirect(`/mobile-customer?notif=${encodeURIComponent(notificationMessage)}`);
+    } catch (error) {
+        console.error('Error in mobile change password:', error);
+        res.redirect(`/mobile-customer?notif=${encodeURIComponent('Gagal mengubah password.')}`);
+    }
+});
+
+// Route untuk API Documentation
+app.get('/api-docs', (req, res) => {
+    res.render('apiDocs', {
+        title: 'API Documentation',
+        page: 'api'
+    });
+});
+
+// Route test sederhana
+app.get('/test', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Server is running',
+        timestamp: new Date().toISOString(),
+        data: {
+            devices: 111,
+            customers: 4,
+            invoices: 2,
+            troubleReports: 0
+        }
+    });
+});
+
+// Route debug mobile customer
+app.get('/debug-mobile', async (req, res) => {
+    try {
+        const { getAllCustomers } = require('./config/billing');
+        const customers = getAllCustomers();
+        
+        res.json({
+            success: true,
+            message: 'Debug mobile customer data',
+            customers: customers.map(c => ({
+                id: c.id,
+                phone: c.phone,
+                username: c.username,
+                name: c.name
+            })),
+            testPhone: '081321960111',
+            foundCustomer: customers.find(c => 
+                c.phone === '081321960111' ||
+                c.username === '081321960111' ||
+                c.phone === '081321960111'.replace(/^0/, '62') ||
+                c.phone === '081321960111'.replace(/^62/, '0')
+            )
+        });
+    } catch (error) {
+        res.json({
+            success: false,
+            error: error.message
+        });
+    }
 });
 
 // Route untuk mendapatkan status WhatsApp
@@ -777,6 +1449,10 @@ isolirService.initializeIsolirService();
 // Initialize monthly invoice service
 const monthlyInvoiceService = require('./config/monthly-invoice-service');
 monthlyInvoiceService.initializeMonthlyInvoiceService();
+
+// Initialize backup system
+const backupSystem = require('./config/backup-system');
+backupSystem.initialize();
 
 // Export app untuk testing
 module.exports = app;
