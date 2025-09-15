@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="/css/responsive-admin.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <%- include('partials/admin-responsive-sidebar', { page: 'odp', settings: settings }) %>
+    <main class="col-12 col-md-9 col-lg-10 ms-sm-auto p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>Manajemen ODP</h4>
+        <a href="/admin/map" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Kembali ke Map</a>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header">Tambah ODP</div>
+        <div class="card-body">
+          <form id="addOdpForm" class="row g-2 align-items-end">
+            <div class="col-md-2">
+              <label class="form-label">ID ODP</label>
+              <input type="text" name="id" class="form-control" placeholder="ODP-010" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Nama</label>
+              <input type="text" name="name" class="form-control" placeholder="ODP Nama" required>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Latitude</label>
+              <div class="input-group">
+                <input type="number" step="any" name="lat" class="form-control" required>
+                <button class="btn btn-outline-secondary pick-map" type="button" title="Pilih di Peta" data-target-form="add">
+                  <i class="bi bi-geo-alt"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Longitude</label>
+              <input type="number" step="any" name="lng" class="form-control" required>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Total Port</label>
+              <input type="number" min="1" max="64" name="total_ports" class="form-control" value="8" required>
+            </div>
+            <div class="col-md-1 d-grid">
+              <button class="btn btn-primary" type="submit"><i class="bi bi-plus-circle"></i> Tambah</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Daftar ODP</div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped align-middle" id="odpTable">
+              <thead><tr><th>ID</th><th>Nama</th><th>Lat</th><th>Lng</th><th>Ports</th><th>Aksi</th></tr></thead>
+              <tbody>
+                <% odps.forEach(function(o){ %>
+                  <tr>
+                    <td><code><%= o.id %></code></td>
+                    <td><input class="form-control form-control-sm" value="<%= o.name %>" data-field="name"></td>
+                    <td>
+                      <div class="input-group input-group-sm">
+                        <input class="form-control" type="number" step="any" value="<%= o.lat %>" data-field="lat">
+                        <button class="btn btn-outline-secondary pick-map-row" type="button" title="Pilih di Peta"><i class="bi bi-geo-alt"></i></button>
+                      </div>
+                    </td>
+                    <td><input class="form-control form-control-sm" type="number" step="any" value="<%= o.lng %>" data-field="lng"></td>
+                    <td>
+                      <div class="input-group input-group-sm" style="max-width:160px;">
+                        <span class="input-group-text"><%= o.used_ports || 0 %></span>
+                        <input class="form-control" type="number" min="1" max="64" value="<%= o.total_ports || 8 %>" data-field="total_ports">
+                      </div>
+                      <small class="text-muted">dipakai/total</small>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-success save-odp" data-id="<%= o.id %>"><i class="bi bi-save"></i> Simpan</button>
+                        <button class="btn btn-danger delete-odp" data-id="<%= o.id %>"><i class="bi bi-trash"></i> Hapus</button>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <div class="card-header">Koneksi ODP↔ODP</div>
+        <div class="card-body">
+          <form id="linkOdpForm" class="row g-2 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label">ODP A</label>
+              <select class="form-select" name="fromOdpId" required>
+                <option value="" selected disabled>Pilih ODP A</option>
+                <% odps.forEach(function(o){ %>
+                  <option value="<%= o.id %>"><%= o.name || o.id %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">ODP B</label>
+              <select class="form-select" name="toOdpId" required>
+                <option value="" selected disabled>Pilih ODP B</option>
+                <% odps.forEach(function(o){ %>
+                  <option value="<%= o.id %>"><%= o.name || o.id %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-2 d-grid">
+              <button class="btn btn-outline-primary" type="submit"><i class="bi bi-link-45deg"></i> Tambah Koneksi</button>
+            </div>
+          </form>
+
+          <div class="table-responsive mt-3">
+            <table class="table table-sm">
+              <thead><tr><th>#</th><th>ODP A</th><th>ODP B</th><th>Aksi</th></tr></thead>
+              <tbody>
+                <% if (odpLinks && odpLinks.length) { %>
+                  <% odpLinks.forEach(function(l, idx){ %>
+                    <tr>
+                      <td><%= idx+1 %></td>
+                      <td><%= l.fromOdpId %></td>
+                      <td><%= l.toOdpId %></td>
+                      <td>
+                        <button class="btn btn-sm btn-outline-danger delete-odp-link" data-a="<%= l.fromOdpId %>" data-b="<%= l.toOdpId %>"><i class="bi bi-x"></i> Hapus</button>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr><td colspan="4" class="text-muted">Belum ada koneksi ODP.</td></tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Map Picker Modal -->
+<div class="modal fade" id="mapPickerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-geo"></i> Pilih Lokasi ODP di Peta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="mapPicker" style="height:60vh;border-radius:8px;overflow:hidden;"></div>
+        <div class="mt-2 small text-muted">Klik pada peta untuk memilih koordinat.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        <button type="button" class="btn btn-primary" id="applyPick">Gunakan Koordinat</button>
+      </div>
+    </div>
+  </div>
+ </div>
+<script>
+$(function(){
+  let map, pickMarker, currentLatInput, currentLngInput;
+  const odpPoints = <%- JSON.stringify((odps||[]).map(o => ({ lat: o.lat, lng: o.lng }))) %>;
+  const mapModal = new bootstrap.Modal(document.getElementById('mapPickerModal'));
+  const defaultCenter = [-6.2088, 106.8456];
+  const defaultZoom = 13;
+  function ensureMap() {
+    if (map) { setTimeout(() => { map.invalidateSize(); }, 200); return; }
+    map = L.map('mapPicker').setView(defaultCenter, defaultZoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    // Centering logic mirip adminGenieacs (lebih dekat, nyaman menandai)
+    if (Array.isArray(odpPoints) && odpPoints.length > 0) {
+      const bounds = L.latLngBounds(odpPoints.map(p => L.latLng(p.lat, p.lng)));
+      try { map.fitBounds(bounds.pad(0.2)); } catch (_) { map.setView(defaultCenter, defaultZoom); }
+    } else {
+      map.setView(defaultCenter, defaultZoom);
+    }
+    map.on('click', function(e){
+      const { lat, lng } = e.latlng;
+      if (!pickMarker) pickMarker = L.marker(e.latlng, { draggable: true }).addTo(map);
+      pickMarker.setLatLng(e.latlng);
+      // preview to inputs while picking
+      if (currentLatInput && currentLngInput) {
+        currentLatInput.value = lat.toFixed(6);
+        currentLngInput.value = lng.toFixed(6);
+      }
+      // update on drag end juga
+      pickMarker.off('dragend').on('dragend', function(ev){
+        const pos = ev.target.getLatLng();
+        if (currentLatInput && currentLngInput) {
+          currentLatInput.value = pos.lat.toFixed(6);
+          currentLngInput.value = pos.lng.toFixed(6);
+        }
+      });
+    });
+  }
+
+  $('#addOdpForm').on('submit', function(e){
+    e.preventDefault();
+    $.post('/admin/odp', $(this).serialize())
+      .done(() => location.reload())
+      .fail(xhr => alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal tambah ODP'));
+  });
+
+  // Open picker for Add form
+  $(document).on('click', '.pick-map', function(){
+    const form = $(this).data('target-form');
+    currentLatInput = document.querySelector('form#addOdpForm input[name="lat"]');
+    currentLngInput = document.querySelector('form#addOdpForm input[name="lng"]');
+    ensureMap();
+    mapModal.show();
+    setTimeout(() => { map.invalidateSize(); map.setView(defaultCenter, defaultZoom); }, 220);
+  });
+
+  // Open picker for row
+  $(document).on('click', '.pick-map-row', function(){
+    const $tr = $(this).closest('tr');
+    currentLatInput = $tr.find('input[data-field="lat"]')[0];
+    currentLngInput = $tr.find('input[data-field="lng"]')[0];
+    ensureMap();
+    mapModal.show();
+    // Jika sudah ada koordinat di baris, fokus ke titik tersebut dengan zoom lebih dekat
+    const lat = parseFloat(currentLatInput && currentLatInput.value);
+    const lng = parseFloat(currentLngInput && currentLngInput.value);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      setTimeout(() => {
+        map.setView([lat, lng], 16);
+        if (!pickMarker) pickMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+        pickMarker.setLatLng([lat, lng]);
+        pickMarker.off('dragend').on('dragend', function(ev){
+          const pos = ev.target.getLatLng();
+          currentLatInput.value = pos.lat.toFixed(6);
+          currentLngInput.value = pos.lng.toFixed(6);
+        });
+        map.invalidateSize();
+      }, 250);
+    } else {
+      setTimeout(() => { map.invalidateSize(); map.setView(defaultCenter, defaultZoom); }, 220);
+    }
+  });
+
+  // Apply picked coords
+  $('#applyPick').on('click', function(){
+    mapModal.hide();
+  });
+
+  $(document).on('click', '.save-odp', function(){
+    const $tr = $(this).closest('tr');
+    const id = $(this).data('id');
+    const payload = {};
+    $tr.find('input[data-field]').each(function(){
+      payload[$(this).data('field')] = $(this).val();
+    });
+    $.post('/admin/odp/' + id, payload)
+      .done(() => location.reload())
+      .fail(xhr => alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal simpan ODP'));
+  });
+
+  $(document).on('click', '.delete-odp', function(){
+    if (!confirm('Hapus ODP ini?')) return;
+    const id = $(this).data('id');
+    $.post('/admin/odp/' + id + '/delete')
+      .done(() => location.reload())
+      .fail(xhr => alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal hapus ODP'));
+  });
+
+  // Tambah link ODP
+  $('#linkOdpForm').on('submit', function(e){
+    e.preventDefault();
+    const payload = $(this).serialize();
+    $.post('/admin/odp/link', payload)
+      .done(() => location.reload())
+      .fail(xhr => {
+        const j = xhr.responseJSON || {};
+        const msg = j.message || 'Gagal menambah koneksi ODP';
+        if (j.knownIds) {
+          alert(msg + '\nID yang dikenal: ' + j.knownIds.join(', '));
+        } else {
+          alert(msg);
+        }
+      });
+  });
+
+  // Hapus link ODP
+  $(document).on('click', '.delete-odp-link', function(){
+    if (!confirm('Hapus koneksi ODP ini?')) return;
+    const a = $(this).data('a');
+    const b = $(this).data('b');
+    $.post('/admin/odp/link', { fromOdpId: a, toOdpId: b, action: 'delete' })
+      .done(() => location.reload())
+      .fail(xhr => alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menghapus koneksi ODP'));
+  });
+});
+</script>
+</body>
+</html>
+
+

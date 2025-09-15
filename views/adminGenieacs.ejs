@@ -780,6 +780,7 @@ $(document).ready(function(){
         // Initialize map after modal is shown
         setTimeout(function() {
             initLocationMap();
+            loadOdpOptions();
         }, 300);
     });
 
@@ -1129,6 +1130,7 @@ $(document).ready(function(){
         const lat = $('#mapLatitude').val();
         const lng = $('#mapLongitude').val();
         const address = $('#mapAddress').val();
+        const selectedOdpId = $('#mapOdpSelect').val();
         
         if (!deviceId || !lat || !lng) {
             showMapAlert('danger', 'Silakan pilih lokasi di peta terlebih dahulu!');
@@ -1152,11 +1154,32 @@ $(document).ready(function(){
             },
             success: function(res) {
                 if (res.success) {
-                    showMapAlert('success', 'Lokasi berhasil disimpan!');
-                    showToast('success', 'Lokasi Tersimpan', 'Lokasi ONU telah berhasil disimpan ke peta.');
-                    setTimeout(function() {
-                        $('#mapLocationModal').modal('hide');
-                    }, 1500);
+                    if (selectedOdpId) {
+                        $.ajax({
+                            url: '/admin/map/link-onu-odp',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ onuId: deviceId, odpId: selectedOdpId }),
+                            success: function(linkRes) {
+                                if (linkRes && linkRes.success) {
+                                    showMapAlert('success', 'Lokasi & link ODP berhasil disimpan!');
+                                    showToast('success', 'Tersimpan', 'Lokasi ONU & koneksi ODP berhasil disimpan.');
+                                } else {
+                                    showMapAlert('warning', 'Lokasi tersimpan, namun gagal menyimpan link ODP.');
+                                }
+                            },
+                            error: function() {
+                                showMapAlert('warning', 'Lokasi tersimpan, namun gagal menyimpan link ODP.');
+                            },
+                            complete: function() {
+                                setTimeout(function() { $('#mapLocationModal').modal('hide'); }, 1500);
+                            }
+                        });
+                    } else {
+                        showMapAlert('success', 'Lokasi berhasil disimpan!');
+                        showToast('success', 'Lokasi Tersimpan', 'Lokasi ONU telah berhasil disimpan ke peta.');
+                        setTimeout(function() { $('#mapLocationModal').modal('hide'); }, 1500);
+                    }
                 } else {
                     showMapAlert('danger', res.message || 'Gagal menyimpan lokasi!');
                 }
@@ -1177,6 +1200,33 @@ $(document).ready(function(){
         setTimeout(function() {
             $('#mapLocationAlert').fadeOut();
         }, 5000);
+    }
+
+    // Muat daftar ODP untuk dipilih saat mapping
+    function loadOdpOptions() {
+        const $sel = $('#mapOdpSelect');
+        if ($sel.length === 0) return;
+        $sel.prop('disabled', true).html('<option value="">Memuat ODP...</option>');
+        $.get('/admin/map/data')
+            .done(function(resp) {
+                const odps = (resp && resp.odps) ? resp.odps : [];
+                if (!odps.length) {
+                    $sel.html('<option value="">Tidak ada ODP</option>');
+                    return;
+                }
+                const options = ['<option value="">(Opsional) Pilih ODP untuk menghubungkan</option>'];
+                odps.forEach(o => {
+                    const used = o.used_ports || 0; const total = o.total_ports || 8;
+                    options.push(`<option value="${o.id}">${(o.name||o.id)} — ${used}/${total} ports</option>`);
+                });
+                $sel.html(options.join(''));
+            })
+            .fail(function(){
+                $sel.html('<option value="">Gagal memuat ODP</option>');
+            })
+            .always(function(){
+                $sel.prop('disabled', false);
+            });
     }
 });
 </script>
@@ -1213,6 +1263,15 @@ $(document).ready(function(){
         <div class="mb-3">
           <label class="form-label"><strong>Klik di peta untuk set lokasi:</strong></label>
           <div id="locationMap" style="height: 300px; border: 1px solid #ddd; border-radius: 8px;"></div>
+        </div>
+
+        <!-- Pilih ODP untuk koneksi (opsional) -->
+        <div class="mb-3">
+          <label class="form-label"><strong>ODP (opsional):</strong></label>
+          <select id="mapOdpSelect" class="form-select">
+            <option value="">Memuat ODP...</option>
+          </select>
+          <small class="text-muted">Pilih ODP untuk langsung menghubungkan ONU ke ODP ini.</small>
         </div>
         
         <!-- Coordinates Display -->

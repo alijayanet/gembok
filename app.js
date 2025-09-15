@@ -111,7 +111,9 @@ app.use('/admin', adminAuthRouter);
 
 // Import dan gunakan route adminDashboard
 const adminDashboardRouter = require('./routes/adminDashboard');
+const adminODPRouter = require('./routes/adminODP');
 app.use('/admin', adminDashboardRouter);
+app.use('/admin', adminODPRouter);
 
 // Import dan gunakan route adminGenieacs
 const adminGenieacsRouter = require('./routes/adminGenieacs');

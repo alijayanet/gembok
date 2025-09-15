@@ -610,6 +610,15 @@
                     <button id="refreshBtn" class="btn btn-primary d-flex align-items-center">
                         <i class="bi bi-arrow-clockwise me-2"></i>Refresh Data
                     </button>
+                    <button id="markOdpBtn" class="btn btn-outline-primary d-flex align-items-center" title="Mode Tandai ODP">
+                        <i class="bi bi-bezier me-2"></i>Tandai ODP
+                    </button>
+                    <button id="linkOnuBtn" class="btn btn-outline-success d-flex align-items-center" title="Hubungkan ONU ke ODP">
+                        <i class="bi bi-plug me-2"></i>Link ONU→ODP
+                    </button>
+                    <button id="linkOdpBtn" class="btn btn-outline-warning d-flex align-items-center" title="Hubungkan ODP ke ODP">
+                        <i class="bi bi-link-45deg me-2"></i>Link ODP↔ODP
+                    </button>
                 </div>
             </div>
 
@@ -825,8 +834,17 @@
     let map;
     let markers = [];
     let allDevices = [];
+    let allODPs = [];
+    let allLinks = [];
+    let allOdpLinks = [];
     let currentFilter = 'all';
     let currentSearch = '';
+    let odpLayerGroup = null;
+    let cableLayerGroup = null;
+    let animateTimer = null;
+    let dashAnimId = null;
+    let dotAnimId = null;
+    let markOdpMode = false;
 
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', function() {
@@ -840,7 +858,7 @@
     function initializeMap() {
         // Default center (Indonesia center for better coverage of potential ONU locations)
         const defaultCenter = [-6.2088, 106.8456];
-        const defaultZoom = 10; // Wider zoom to better show the area
+        const defaultZoom = 13; // Lebih dekat agar tampilan awal Jakarta pas
 
         // Initialize map
         map = L.map('map', {
@@ -859,7 +877,61 @@
         // Add scale control
         L.control.scale().addTo(map);
 
+        // Prepare layer groups
+        odpLayerGroup = L.layerGroup().addTo(map);
+        cableLayerGroup = L.layerGroup().addTo(map);
         console.log('🗺️ Map initialized');
+
+        // Handle map click for ODP marking
+        map.on('click', async (e) => {
+            if (!markOdpMode) return;
+            const { lat, lng } = e.latlng;
+            const { value: name } = await Swal.fire({
+                title: 'Tambah ODP',
+                input: 'text',
+                inputLabel: `Nama ODP (lat: ${lat.toFixed(6)}, lng: ${lng.toFixed(6)})`,
+                inputPlaceholder: 'Mis. ODP Jl. Mawar',
+                showCancelButton: true,
+                confirmButtonText: 'Simpan',
+                cancelButtonText: 'Batal'
+            });
+            if (name === undefined) return;
+            const { value: odpId } = await Swal.fire({
+                title: 'ID ODP',
+                input: 'text',
+                inputLabel: 'Masukkan ID unik (mis. ODP-010). Kosongkan untuk otomatis',
+                inputPlaceholder: 'ODP-010',
+                showCancelButton: true,
+                confirmButtonText: 'Lanjut',
+                cancelButtonText: 'Batal'
+            });
+            if (odpId === undefined) return;
+            const { value: totalPorts } = await Swal.fire({
+                title: 'Total Port',
+                input: 'number',
+                inputLabel: 'Jumlah port ODP',
+                inputValue: 8,
+                showCancelButton: true,
+                confirmButtonText: 'Simpan',
+                cancelButtonText: 'Batal'
+            });
+            if (totalPorts === undefined) return;
+            try {
+                const resp = await fetch('/admin/map/odps', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: odpId, name, lat, lng, total_ports: Number(totalPorts) })
+                });
+                const json = await resp.json();
+                if (!json.success) throw new Error(json.message || 'Gagal menyimpan ODP');
+                // Refresh ODP layer
+                allODPs.push(json.data);
+                renderODPLayer();
+                Swal.fire({ icon: 'success', title: 'ODP tersimpan', timer: 1500, showConfirmButton: false });
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'Gagal menyimpan ODP', text: err.message });
+            }
+        });
     }
 
     function setupEventListeners() {
@@ -872,6 +944,114 @@
         document.getElementById('refreshDataBtn').addEventListener('click', function() {
             loadMapData();
         });
+
+        // Toggle mark ODP mode
+        const markBtn = document.getElementById('markOdpBtn');
+        if (markBtn) {
+            markBtn.addEventListener('click', function() {
+                markOdpMode = !markOdpMode;
+                this.classList.toggle('btn-outline-primary', !markOdpMode);
+                this.classList.toggle('btn-success', markOdpMode);
+                this.innerHTML = markOdpMode ? '<i class="bi bi-check2-circle me-2"></i>Mode ODP Aktif' : '<i class="bi bi-bezier me-2"></i>Tandai ODP';
+                if (markOdpMode) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Mode Tandai ODP',
+                        text: 'Klik titik di peta untuk menambahkan ODP. Isi nama lalu simpan.',
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        // Link ONU to ODP
+        const linkBtn = document.getElementById('linkOnuBtn');
+        if (linkBtn) {
+            linkBtn.addEventListener('click', async function() {
+                if (!allDevices || allDevices.length === 0 || !allODPs || allODPs.length === 0) {
+                    return Swal.fire({ icon: 'warning', title: 'Data belum siap', text: 'Pastikan data perangkat dan ODP sudah termuat.' });
+                }
+                // Pilih ONU
+                const deviceChoices = {};
+                allDevices.forEach(d => { deviceChoices[d.id] = `${d.serialNumber} (${d.pppoeUsername})`; });
+                const { value: onuId } = await Swal.fire({
+                    title: 'Pilih ONU',
+                    input: 'select',
+                    inputOptions: deviceChoices,
+                    inputPlaceholder: 'Pilih ONU',
+                    showCancelButton: true
+                });
+                if (!onuId) return;
+                // Pilih ODP (tampilkan kapasitas)
+                const odpChoices = {};
+                allODPs.forEach(o => {
+                    const used = o.used_ports || 0; const total = o.total_ports || 8;
+                    odpChoices[o.id] = `${o.name || o.id} — ${used}/${total} ports`;
+                });
+                const { value: odpId } = await Swal.fire({
+                    title: 'Pilih ODP',
+                    input: 'select',
+                    inputOptions: odpChoices,
+                    inputPlaceholder: 'Pilih ODP',
+                    showCancelButton: true
+                });
+                if (!odpId) return;
+
+                try {
+                    const resp = await fetch('/admin/map/link-onu-odp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ onuId, odpId })
+                    });
+                    const json = await resp.json();
+                    if (!json.success) throw new Error(json.message || 'Gagal menyimpan link');
+                    // Update in-memory and render
+                    allLinks = allLinks.filter(l => l.onuId !== onuId).concat([{ onuId, odpId }]);
+                    cableLayerGroup.clearLayers();
+                    renderPermanentCables();
+                    Swal.fire({ icon: 'success', title: 'Tersambung', text: 'ONU berhasil dihubungkan ke ODP.', timer: 1500, showConfirmButton: false });
+                } catch (err) {
+                    Swal.fire({ icon: 'error', title: 'Gagal menyimpan', text: err.message });
+                }
+            });
+        }
+
+        // Link ODP to ODP
+        const linkOdpBtn = document.getElementById('linkOdpBtn');
+        if (linkOdpBtn) {
+            linkOdpBtn.addEventListener('click', async function() {
+                if (!allODPs || allODPs.length < 2) {
+                    return Swal.fire({ icon: 'warning', title: 'Data ODP kurang', text: 'Tambahkan minimal 2 ODP.' });
+                }
+                const odpOptions = {};
+                allODPs.forEach(o => { odpOptions[o.id] = `${o.name || o.id}`; });
+                const { value: fromOdpId } = await Swal.fire({
+                    title: 'Pilih ODP A', input: 'select', inputOptions: odpOptions,
+                    inputPlaceholder: 'Pilih ODP A', showCancelButton: true
+                });
+                if (!fromOdpId) return;
+                const { value: toOdpId } = await Swal.fire({
+                    title: 'Pilih ODP B', input: 'select', inputOptions: odpOptions,
+                    inputPlaceholder: 'Pilih ODP B', showCancelButton: true
+                });
+                if (!toOdpId) return;
+                if (fromOdpId === toOdpId) return Swal.fire({ icon: 'warning', title: 'Tidak valid', text: 'ODP A dan ODP B harus berbeda.' });
+                try {
+                    const resp = await fetch('/admin/map/link-odp-odp', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fromOdpId, toOdpId })
+                    });
+                    const json = await resp.json();
+                    if (!json.success) throw new Error(json.message || 'Gagal menyimpan link ODP');
+                    allOdpLinks.push({ fromOdpId, toOdpId });
+                    renderOdpCables();
+                    Swal.fire({ icon: 'success', title: 'Tersambung', text: 'ODP↔ODP berhasil dihubungkan.', timer: 1500, showConfirmButton: false });
+                } catch (err) {
+                    Swal.fire({ icon: 'error', title: 'Gagal menyimpan', text: err.message });
+                }
+            });
+        }
 
         // Toggle control panel
         document.getElementById('toggleControlPanel').addEventListener('click', function() {
@@ -927,6 +1107,9 @@
 
             if (data.success) {
                 allDevices = data.devices;
+                allODPs = Array.isArray(data.odps) ? data.odps : [];
+                allLinks = Array.isArray(data.links) ? data.links : [];
+                allOdpLinks = Array.isArray(data.odpLinks) ? data.odpLinks : [];
                 displayDevicesOnMap(data.devices);
                 updateDeviceList(data.devices);
                 updateStatistics(data.summary);
@@ -944,6 +1127,11 @@
                 } else {
                     console.log('🗺️ No registered ONU locations found, using default view');
                 }
+
+                // Render ODPs if available
+                renderODPLayer();
+                renderPermanentCables();
+                renderOdpCables();
 
                 // Show success message if this is the first load
                 if (data.devices.length > 0) {
@@ -993,6 +1181,10 @@
         // Clear existing markers
         markers.forEach(marker => map.removeLayer(marker));
         markers = [];
+        // Clear cable layer
+        if (cableLayerGroup) {
+            cableLayerGroup.clearLayers();
+        }
 
         if (devices.length === 0) {
             console.log('📍 No devices to display');
@@ -1035,6 +1227,20 @@
             // Add click event
             marker.on('click', function() {
                 highlightDeviceInList(firstDevice.id);
+                // Jika sudah ada link permanen, biarkan renderPermanentCables menanganinya
+                const hasLink = allLinks && allLinks.find(l => l.onuId === firstDevice.id);
+                if (hasLink) return;
+                // Jika belum, gambar rute ke ODP terdekat (preview saja)
+                if (firstDevice.location) {
+                    const odp = findNearestODP(firstDevice.location.lat, firstDevice.location.lng);
+                    if (odp) {
+                        cableLayerGroup.clearLayers();
+                        animateCable([
+                            L.latLng(firstDevice.location.lat, firstDevice.location.lng),
+                            L.latLng(odp.lat, odp.lng)
+                        ]);
+                    }
+                }
             });
 
             marker.addTo(map);
@@ -1064,45 +1270,32 @@
             markers.push(marker);
         });
 
-        // Fit map to show all markers with registered locations
+        // Fit map: hanya fokus jika ada lokasi nyata; jika tidak, biarkan center default (Jakarta)
         if (markers.length > 0) {
-            // Separate markers for devices with actual locations vs default locations
             const realLocationMarkers = [];
-            
             Object.keys(devicesByLocation).forEach(locationKey => {
                 const devicesAtLocation = devicesByLocation[locationKey];
                 const firstDevice = devicesAtLocation[0];
-                
-                // Only include markers that are not at the default location
                 if (firstDevice.location.lat !== -2.5489 || firstDevice.location.lng !== 118.0149) {
-                    realLocationMarkers.push(markers.find(marker => 
+                    const m = markers.find(marker => 
                         marker.getLatLng().lat === firstDevice.location.lat && 
                         marker.getLatLng().lng === firstDevice.location.lng
-                    ));
+                    );
+                    if (m) realLocationMarkers.push(m);
                 }
             });
-            
-            // If we have devices with real locations, focus on them
             if (realLocationMarkers.length > 0) {
-                const group = new L.featureGroup(realLocationMarkers.filter(m => m));
+                const group = new L.featureGroup(realLocationMarkers);
                 map.fitBounds(group.getBounds().pad(0.15));
                 console.log(`📍 Map focused on ${realLocationMarkers.length} registered ONU locations`);
-            } else if (Object.keys(devicesByLocation).length > 0) {
-                // If no real locations but have devices, use the first available location
-                const firstLocationKey = Object.keys(devicesByLocation)[0];
-                const coords = firstLocationKey.split(',');
-                map.setView([parseFloat(coords[0]), parseFloat(coords[1])], 15);
-                console.log('📍 Map focused on first available ONU location');
             } else {
-                // Fallback to showing all markers including default locations
-                const group = new L.featureGroup(markers);
-                map.fitBounds(group.getBounds().pad(0.1));
-                console.log('📍 Map showing all markers including default locations');
+                // Tidak mengubah view agar tetap default Jakarta saat pertama buka
+                console.log('📍 No real locations to focus; keeping default Jakarta view');
             }
         } else {
-            // No devices with location, keep default center but zoom out to show wider area
+            // Tidak ada marker; tetap di default Jakarta
             map.setView([-6.2088, 106.8456], 10);
-            console.log('📍 No ONU locations found, using default Jakarta center with wider view');
+            console.log('📍 No markers, using default Jakarta center');
         }
 
         console.log(`📍 Displayed ${markers.length} markers on map`);
@@ -1111,6 +1304,124 @@
         const withLocation = Object.keys(devicesByLocation).length;
         const withoutLocation = devicesWithoutLocation.length;
         console.log(`📍 Location summary: ${withLocation} locations with devices, ${withoutLocation} devices without location`);
+    }
+
+    function renderPermanentCables() {
+        if (!allLinks || allLinks.length === 0) return;
+        // Gambar kabel untuk semua link permanen
+        allLinks.forEach(link => {
+            const dev = allDevices.find(d => d.id === link.onuId && d.hasLocation);
+            const odp = allODPs.find(o => o.id === link.odpId);
+            if (dev && odp) {
+                animateCable([
+                    L.latLng(dev.location.lat, dev.location.lng),
+                    L.latLng(odp.lat, odp.lng)
+                ]);
+            }
+        });
+    }
+
+    function renderODPLayer() {
+        if (!odpLayerGroup) return;
+        odpLayerGroup.clearLayers();
+        if (!allODPs || allODPs.length === 0) return;
+
+        allODPs.forEach(odp => {
+            const icon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="width:18px;height:18px;border-radius:4px;background:#ff9800;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.2)" title="${odp.name}"></div>`,
+                iconSize: [18, 18],
+                iconAnchor: [9, 9]
+            });
+            const m = L.marker([odp.lat, odp.lng], { icon });
+            const used = odp.used_ports || 0; const total = odp.total_ports || 8;
+            m.bindPopup(`<strong>ODP:</strong> ${odp.name || odp.id}<br><small>Ports: ${used}/${total} terpakai</small>`);
+            m.addTo(odpLayerGroup);
+        });
+    }
+
+    function renderOdpCables() {
+        if (!allOdpLinks || allOdpLinks.length === 0) return;
+        allOdpLinks.forEach(link => {
+            const a = allODPs.find(o => o.id === link.fromOdpId);
+            const b = allODPs.find(o => o.id === link.toOdpId);
+            if (a && b) {
+                animateCable([
+                    L.latLng(a.lat, a.lng),
+                    L.latLng(b.lat, b.lng)
+                ]);
+            }
+        });
+    }
+
+    function findNearestODP(lat, lng) {
+        if (!allODPs || allODPs.length === 0) return null;
+        let best = null;
+        let bestDist = Infinity;
+        allODPs.forEach(odp => {
+            const d = map.distance([lat, lng], [odp.lat, odp.lng]);
+            if (d < bestDist) {
+                bestDist = d;
+                best = { ...odp, distance: d };
+            }
+        });
+        return best;
+    }
+
+    function animateCable(latlngs) {
+        if (!latlngs || latlngs.length < 2) return;
+        // Hentikan animasi sebelumnya
+        if (animateTimer) clearInterval(animateTimer);
+        if (dashAnimId) cancelAnimationFrame(dashAnimId);
+        if (dotAnimId) cancelAnimationFrame(dotAnimId);
+
+        const poly = L.polyline(latlngs, { color: '#2196f3', weight: 3, opacity: 0.9, dashArray: '8 12' });
+        cableLayerGroup.addLayer(poly);
+
+        // Moving dot di atas jalur
+        const dot = L.circleMarker(latlngs[0], { radius: 5, color: '#2196f3', fillColor: '#2196f3', fillOpacity: 1, pane: 'markerPane' });
+        cableLayerGroup.addLayer(dot);
+
+        // Animasi dash offset (efek aliran pada garis)
+        const startDashAnim = () => {
+            const path = poly._path; // SVGPathElement
+            if (!path) {
+                // Elemen SVG mungkin belum siap; coba lagi segera
+                dashAnimId = requestAnimationFrame(startDashAnim);
+                return;
+            }
+            let offset = 0;
+            const tick = () => {
+                offset = (offset + 2) % 1000;
+                path.style.strokeDashoffset = String(offset);
+                dashAnimId = requestAnimationFrame(tick);
+            };
+            tick();
+        };
+        // Mulai setelah layer ter-render
+        setTimeout(startDashAnim, 0);
+
+        // Animasi titik bergerak dari A ke B berulang
+        const from = latlngs[0];
+        const to = latlngs[1];
+        const durationMs = 4000;
+        let startTs = null;
+        const moveTick = (ts) => {
+            if (!startTs) startTs = ts;
+            const elapsed = ts - startTs;
+            const t = Math.min(1, elapsed / durationMs);
+            const lat = from.lat + (to.lat - from.lat) * t;
+            const lng = from.lng + (to.lng - from.lng) * t;
+            dot.setLatLng([lat, lng]);
+            if (t < 1) {
+                dotAnimId = requestAnimationFrame(moveTick);
+            } else {
+                // ulangi
+                startTs = null;
+                dotAnimId = requestAnimationFrame(moveTick);
+            }
+        };
+        dotAnimId = requestAnimationFrame(moveTick);
     }
 
     function createCustomIcon(devices) {
