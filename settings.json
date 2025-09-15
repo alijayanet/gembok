@@ -56,5 +56,6 @@
   "billing_monthly_invoice_reminder_days": "3",
   "backup_interval_hours": "24",
   "backup_max_files": "30",
+  "billing_device_source": "mikrotik",
   "admin_numbers": "6281947215703"
 }
