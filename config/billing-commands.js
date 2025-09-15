@@ -2,8 +2,8 @@
 const { logger } = require('./logger');
 const billing = require('./billing');
 const { findDeviceByTag } = require('./addWAN');
+const mikrotik = require('./mikrotik');
 const { getSetting } = require('./settingsManager');
-const { getWhatsAppStatus } = require('./whatsapp');
 
 // Set WhatsApp sock instance
 let sock = null;
@@ -15,26 +15,12 @@ function setSock(sockInstance) {
 // Helper: safely send WhatsApp message, avoid throwing when disconnected
 async function safeSend(remoteJid, content) {
   try {
-    // Basic checks
     if (!sock) {
       logger.warn(`safeSend: WhatsApp socket not set; cannot send to ${remoteJid}`);
       return false;
     }
 
-    // Check connection status from whatsapp module
-    let status;
-    try {
-      status = await getWhatsAppStatus();
-    } catch (e) {
-      // Fallback if status retrieval fails; attempt send anyway
-      status = { connected: true };
-    }
-
-    if (!status || status.connected === false) {
-      logger.warn(`safeSend: WhatsApp not connected; skip send to ${remoteJid}`);
-      return false;
-    }
-
+    // Langsung coba kirim; koneksi akan ter-handle oleh modul whatsapp
     await sock.sendMessage(remoteJid, content);
     return true;
   } catch (err) {
@@ -69,6 +55,67 @@ function renderTemplate(tpl, data) {
     const val = data[key];
     return (val === undefined || val === null) ? '' : String(val);
   });
+}
+
+// Command: List customers with pagination and search
+async function handleListCustomersCommand(remoteJid, params = []) {
+  try {
+    const all = billing.getAllCustomers();
+    const pageSize = 10;
+    let page = 1;
+    let mode = 'list';
+    let query = '';
+
+    if (params.length > 0) {
+      if (params[0] === 'cari') {
+        mode = 'search';
+        query = (params.slice(1).join(' ') || '').toLowerCase();
+      } else {
+        const p = parseInt(params[0], 10);
+        if (Number.isFinite(p) && p > 0) page = p;
+      }
+    }
+
+    let items = all;
+    if (mode === 'search' && query) {
+      items = all.filter(c => {
+        const hay = [c.name, c.phone, c.username, c.package_name]
+          .map(v => (v || '').toString().toLowerCase()).join(' ');
+        return hay.includes(query);
+      });
+    }
+
+    const total = items.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    page = Math.min(Math.max(1, page), totalPages);
+    const start = (page - 1) * pageSize;
+    const slice = items.slice(start, start + pageSize);
+
+    let msg = `👥 *DAFTAR PELANGGAN*${mode === 'search' ? ' (cari)' : ''}\n\n`;
+    if (total === 0) {
+      msg += 'Tidak ada data.\n';
+    } else {
+      slice.forEach((c, idx) => {
+        const no = start + idx + 1;
+        const price = c.package_price ? ` — ${formatCurrency(c.package_price)}` : '';
+        const status = c.payment_status === 'paid' ? 'Lunas' : (c.payment_status || '-')
+        msg += `${no}. ${c.name || '-'} (${c.phone})\n`;
+        msg += `   Paket: ${c.package_name || '-'}${price}\n`;
+        msg += `   Bayar: ${status}\n`;
+      });
+      msg += `\nHalaman ${page}/${totalPages} — Total ${total} pelanggan`;
+    }
+
+    msg += `\n\nPerintah:\n`;
+    msg += `• *pelanggan* — halaman 1\n`;
+    msg += `• *pelanggan [hal]* — contoh: pelanggan 2\n`;
+    msg += `• *pelanggan cari [kata]* — contoh: pelanggan cari budi`;
+
+    await safeSend(remoteJid, { text: formatBillingMessage(msg) });
+  } catch (error) {
+    logger.error(`Error list customers: ${error.message}`);
+    await safeSend(remoteJid, { text: formatBillingMessage('❌ Terjadi kesalahan saat mengambil daftar pelanggan.') });
+  }
 }
 
 function getInvoiceTemplate() {
@@ -180,13 +227,28 @@ async function handleBillingCheckCommand(remoteJid, phoneOrName) {
       }
     }
     
-    // Check if customer exists in GenieACS
-    const device = await findDeviceByTag(cleanPhone);
-    if (!device) {
-      await safeSend(remoteJid, { 
-        text: formatBillingMessage(`❌ Nomor ${cleanPhone} tidak ditemukan di sistem GenieACS.`) 
-      });
-      return;
+    // Tentukan sumber status device
+    const deviceSource = (getSetting('billing_device_source', 'genieacs') || 'genieacs').toLowerCase();
+    let deviceActive = false;
+    if (deviceSource === 'mikrotik') {
+      try {
+        // Cek PPPoE aktif berdasarkan pppoe_username atau fallback nomor HP
+        const username = (customer && customer.pppoe_username) ? customer.pppoe_username : cleanPhone;
+        const res = await mikrotik.getActivePPPoEConnections();
+        if (res && res.success && Array.isArray(res.data)) {
+          deviceActive = res.data.some(c => String(c.name).toLowerCase() === String(username).toLowerCase());
+        }
+      } catch (e) {
+        deviceActive = false;
+      }
+    } else {
+      // Default: cek GenieACS (kompatibel lama)
+      try {
+        const device = await findDeviceByTag(cleanPhone);
+        deviceActive = !!device;
+      } catch (e) {
+        deviceActive = false;
+      }
     }
     
     // Get billing data
@@ -208,6 +270,7 @@ async function handleBillingCheckCommand(remoteJid, phoneOrName) {
     message += `👤 *Pelanggan:* ${customer.name || 'Belum diisi'}\n`;
     message += `📱 *No. HP:* ${customer.phone}\n`;
     message += `📦 *Paket:* ${customer.package_name || 'Belum ada paket'}\n`;
+    message += `🖥️ *Status Device:* ${deviceActive ? 'Aktif' : 'Tidak Aktif'}\n`;
     
     if (customer.package_price) {
       message += `💰 *Harga:* ${formatCurrency(customer.package_price)}\n`;
@@ -468,7 +531,43 @@ async function handleCreateInvoiceCommand(remoteJid, params) {
 // Command: Mark invoice as paid
 async function handlePaymentCommand(remoteJid, invoiceId) {
   try {
-    // ...
+    // Jika input bukan pola ID invoice, perlakukan sebagai nama/nomor customer dan lunasi semua tagihan UNPAID
+    const isInvoiceId = typeof invoiceId === 'string' && /^(INV|inv)[-_]/.test(invoiceId);
+    if (!isInvoiceId) {
+      const phoneOrName = invoiceId;
+      let customer = null;
+      let cleanPhone = null;
+      const isPhoneNumber = /^\d+$/.test(String(phoneOrName).replace(/\D/g, ''));
+      if (isPhoneNumber) {
+        cleanPhone = String(phoneOrName).replace(/\D/g, '');
+        if (cleanPhone.startsWith('62')) cleanPhone = '0' + cleanPhone.substring(2);
+        customer = billing.getCustomerByPhone(cleanPhone);
+      } else {
+        customer = billing.getCustomerByName(phoneOrName);
+        if (customer) cleanPhone = customer.phone;
+      }
+
+      if (!customer) {
+        await safeSend(remoteJid, { text: formatBillingMessage(`❌ Pelanggan tidak ditemukan: ${phoneOrName}`) });
+        return;
+      }
+
+      const invoices = billing.getInvoicesByPhone(cleanPhone) || [];
+      const unpaid = invoices.filter(i => i.status === 'unpaid');
+      if (unpaid.length === 0) {
+        await safeSend(remoteJid, { text: formatBillingMessage(`ℹ️ Tidak ada tagihan UNPAID untuk ${customer.name || cleanPhone}.`) });
+        return;
+      }
+
+      let successCount = 0;
+      for (const inv of unpaid) {
+        const res = billing.markInvoiceAsPaid(inv.id);
+        if (res) successCount++;
+      }
+
+      await safeSend(remoteJid, { text: formatBillingMessage(`✅ ${successCount} tagihan ditandai LUNAS untuk ${customer.name || cleanPhone}.`) });
+      return;
+    }
 
     const invoice = billing.markInvoiceAsPaid(invoiceId);
 
@@ -701,5 +800,6 @@ module.exports = {
   handlePaymentCommand,
   getBillingHelp,
   handleIsolirCommand,
-  handleUnisolirCommand
+  handleUnisolirCommand,
+  handleListCustomersCommand
 };

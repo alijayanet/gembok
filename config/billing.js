@@ -7,6 +7,7 @@ const { getSetting } = require('./settingsManager');
 const packagesPath = path.join(__dirname, '../logs/packages.json');
 const customersPath = path.join(__dirname, '../logs/customers.json');
 const invoicesPath = path.join(__dirname, '../logs/invoices.json');
+const auditLogPath = path.join(__dirname, '../logs/billing-audit.log');
 
 // Helper: normalisasi nomor HP ke format 62xxxxxxxxxxx
 function normalizePhone(phone) {
@@ -78,6 +79,28 @@ function ensureBillingFiles() {
     fs.writeFileSync(invoicesPath, JSON.stringify([], null, 2));
     logger.info('Created empty invoices.json');
   }
+  // Ensure audit log file exists
+  try {
+    const logsDir = path.dirname(auditLogPath);
+    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+    if (!fs.existsSync(auditLogPath)) fs.writeFileSync(auditLogPath, '');
+  } catch (e) {
+    logger.warn(`Could not initialize billing audit log: ${e.message}`);
+  }
+}
+
+// AUDIT HELPER
+function writeAuditLog(action, payload = {}) {
+  try {
+    const record = {
+      ts: new Date().toISOString(),
+      action,
+      ...payload
+    };
+    fs.appendFileSync(auditLogPath, JSON.stringify(record) + '\n');
+  } catch (e) {
+    logger.warn(`Failed to write billing audit: ${e.message}`);
+  }
 }
 
 // PACKAGES MANAGEMENT
@@ -128,6 +151,7 @@ function createPackage(packageData) {
     packages.push(newPackage);
     if (savePackages(packages)) {
       logger.info(`Package created: ${newPackage.id} - ${newPackage.name}`);
+      writeAuditLog('package.created', { id: newPackage.id, name: newPackage.name, price: newPackage.price });
       return newPackage;
     }
     return null;
@@ -156,6 +180,7 @@ function updatePackage(id, packageData) {
     
     if (savePackages(packages)) {
       logger.info(`Package updated: ${id}`);
+      writeAuditLog('package.updated', { id, name: packages[index].name, price: packages[index].price });
       return packages[index];
     }
     return null;
@@ -177,6 +202,7 @@ function deletePackage(id) {
     
     if (savePackages(packages)) {
       logger.info(`Package deleted: ${id}`);
+      writeAuditLog('package.deleted', { id });
       return true;
     }
     return false;
@@ -332,6 +358,7 @@ function createOrUpdateCustomer(customerData) {
       
       if (saveCustomers(customers)) {
         logger.info(`Customer updated: ${customerData.phone}`);
+        writeAuditLog('customer.updated', { phone: customerData.phone });
         return customers[existingIndex];
       }
     } else {
@@ -353,6 +380,7 @@ function createOrUpdateCustomer(customerData) {
       
       if (saveCustomers(customers)) {
         logger.info(`Customer created: ${newCustomer.phone} - ${newCustomer.name}`);
+        writeAuditLog('customer.created', { phone: newCustomer.phone, name: newCustomer.name });
         return newCustomer;
       }
     }
@@ -434,7 +462,25 @@ function createInvoice(customerPhone, packageId, amount) {
     const currentDate = new Date();
     const dueDate = new Date();
     dueDate.setDate(currentDate.getDate() + 30); // Jatuh tempo 30 hari
+
+    // Guard: Cegah duplikasi invoice untuk bulan yang sama per pelanggan
+    try {
+      const existingForThisMonth = invoices.find(inv => {
+        const sameCustomer = normalizePhone(inv.customer_phone) === normalizePhone(customerPhone);
+        const invDate = new Date(inv.created_at);
+        return sameCustomer && invDate.getFullYear() === currentDate.getFullYear() && invDate.getMonth() === currentDate.getMonth();
+      });
+      if (existingForThisMonth) {
+        logger.warn(`Duplicate monthly invoice prevented for ${customerPhone} - ${currentDate.getMonth()+1}/${currentDate.getFullYear()}`);
+        return existingForThisMonth;
+      }
+    } catch (e) {
+      // ignore guard failure, continue create
+    }
     
+    const parsedAmount = Number.parseFloat(amount);
+    const finalAmount = Number.isFinite(parsedAmount) ? parsedAmount : package.price;
+
     const newInvoice = {
       id: generateInvoiceId(),
       invoice_number: generateInvoiceNumber(),
@@ -442,7 +488,7 @@ function createInvoice(customerPhone, packageId, amount) {
       customer_name: customer.name,
       package_id: packageId,
       package_name: package.name,
-      amount: parseFloat(amount) || package.price,
+      amount: finalAmount,
       status: 'unpaid',
       created_at: currentDate.toISOString(),
       due_date: dueDate.toISOString()
@@ -452,6 +498,7 @@ function createInvoice(customerPhone, packageId, amount) {
     
     if (saveInvoices(invoices)) {
       logger.info(`Invoice created: ${newInvoice.invoice_number} for ${customerPhone}`);
+      writeAuditLog('invoice.created', { id: newInvoice.id, invoice_number: newInvoice.invoice_number, phone: customerPhone, amount: newInvoice.amount });
       return newInvoice;
     }
     return null;
@@ -476,10 +523,41 @@ function markInvoiceAsPaid(invoiceId) {
     if (customer) {
       customer.payment_status = 'paid';
       createOrUpdateCustomer(customer);
+
+      // Jika seluruh tagihan customer sudah lunas, reset isolir_status ke normal
+      const customerInvoices = invoices.filter(inv => normalizePhone(inv.customer_phone) === normalizePhone(customer.phone));
+      const hasUnpaid = customerInvoices.some(inv => inv.status !== 'paid');
+      if (!hasUnpaid) {
+        try {
+          const customers = getAllCustomers();
+          const idx = customers.findIndex(c => normalizePhone(c.phone) === normalizePhone(customer.phone));
+          if (idx !== -1) {
+            customers[idx].isolir_status = 'normal';
+            customers[idx].isolir_updated_at = new Date().toISOString();
+            saveCustomers(customers);
+            logger.info(`Customer ${customer.phone} isolir status reset to normal after full payment`);
+          }
+
+          // Panggil unisolir otomatis (PPPoE/Static IP) via isolir-service jika tersedia
+          try {
+            const { unisolirCustomer } = require('./isolir-service');
+            if (typeof unisolirCustomer === 'function') {
+              unisolirCustomer(customer.phone).catch(e => {
+                logger.warn(`Auto unisolir failed for ${customer.phone}: ${e.message}`);
+              });
+            }
+          } catch (svcErr) {
+            logger.warn(`Isolir service not available for auto-unisolir: ${svcErr.message}`);
+          }
+        } catch (e) {
+          logger.warn(`Failed to reset isolir_status after payment for ${customer.phone}: ${e.message}`);
+        }
+      }
     }
     
     if (saveInvoices(invoices)) {
       logger.info(`Invoice marked as paid: ${invoiceId}`);
+      writeAuditLog('invoice.paid', { id: invoices[index].id, invoice_number: invoices[index].invoice_number, phone: invoices[index].customer_phone, amount: invoices[index].amount });
       return invoices[index];
     }
     return null;
@@ -557,7 +635,8 @@ function deleteCustomer(phone) {
     }
     
     const customers = getAllCustomers();
-    const customerIndex = customers.findIndex(c => c.phone === phone);
+    const target = normalizePhone(phone);
+    const customerIndex = customers.findIndex(c => normalizePhone(c.phone) === target);
     
     if (customerIndex === -1) {
       return { success: false, message: 'Pelanggan tidak ditemukan' };
@@ -565,13 +644,16 @@ function deleteCustomer(phone) {
     
     // Delete related invoices first
     const invoices = getAllInvoices();
-    const customerInvoices = invoices.filter(inv => inv.customer_phone === phone);
+    const customerInvoices = invoices.filter(inv => normalizePhone(inv.customer_phone) === target);
     
     // Remove customer invoices
-    const updatedInvoices = invoices.filter(inv => inv.customer_phone !== phone);
+    const updatedInvoices = invoices.filter(inv => normalizePhone(inv.customer_phone) !== target);
     try {
       fs.writeFileSync(invoicesPath, JSON.stringify(updatedInvoices, null, 2));
       logger.info(`Deleted ${customerInvoices.length} invoices for customer ${phone}`);
+      if (customerInvoices.length > 0) {
+        writeAuditLog('invoice.deleted_by_customer', { phone, count: customerInvoices.length });
+      }
     } catch (error) {
       logger.error(`Error deleting invoices for customer ${phone}: ${error.message}`);
       return { success: false, message: 'Gagal menghapus tagihan pelanggan' };
@@ -582,6 +664,7 @@ function deleteCustomer(phone) {
     try {
       fs.writeFileSync(customersPath, JSON.stringify(customers, null, 2));
       logger.info(`Customer ${phone} deleted successfully`);
+      writeAuditLog('customer.deleted', { phone });
       return { success: true, message: 'Pelanggan berhasil dihapus' };
     } catch (error) {
       logger.error(`Error deleting customer ${phone}: ${error.message}`);

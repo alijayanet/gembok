@@ -4,11 +4,26 @@ const fs = require('fs');
 const path = require('path');
 const { getSetting, getSettingsWithCache } = require('../config/settingsManager');
 const billing = require('../config/billing');
+const isolirService = require('../config/isolir-service');
 const { findDeviceByTag } = require('../config/addWAN');
 const { logger } = require('../config/logger');
 
 // Middleware auth admin (menggunakan yang sudah ada)
 const { adminAuth } = require('./adminAuth');
+
+// Local helpers for input validation/normalization
+function normalizePhoneLocal(phone) {
+  if (!phone) return '';
+  let p = String(phone).replace(/\D/g, '');
+  if (p.startsWith('0')) return '62' + p.slice(1);
+  if (!p.startsWith('62')) return '62' + p;
+  return p;
+}
+
+function toFiniteNumber(value, fallback = null) {
+  const n = Number.parseFloat(value);
+  return Number.isFinite(n) ? n : fallback;
+}
 
 // GET: Halaman management billing
 router.get('/', adminAuth, async (req, res) => {
@@ -34,43 +49,63 @@ router.get('/', adminAuth, async (req, res) => {
       logger.warn(`Could not fetch PPPoE profiles: ${profileError.message}`);
     }
     
-    // Check for customers without invoices and create them
-    try {
-      let createdInvoices = 0;
-      for (const customer of customers) {
-        if (customer.package_id && customer.package_price) {
-          const customerInvoices = invoices.filter(inv => inv.customer_phone === customer.phone);
-          if (customerInvoices.length === 0) {
-            // Customer has package but no invoice, create one
-            const invoice = billing.createInvoice(customer.phone, customer.package_id, customer.package_price);
-            if (invoice) {
-              // If customer payment status is paid, mark invoice as paid
-              if (customer.payment_status === 'paid') {
-                billing.markInvoiceAsPaid(invoice.id);
-              }
-              createdInvoices++;
-            }
-          }
-        }
-      }
-      
-      if (createdInvoices > 0) {
-        logger.info(`Auto-created ${createdInvoices} missing invoices for existing customers`);
-        // Refresh invoices data after creating new ones
-        invoices = billing.getAllInvoices();
-      }
-    } catch (error) {
-      logger.error(`Error creating missing invoices: ${error.message}`);
-    }
+    // Note: Dinonaktifkan auto-create invoice saat membuka halaman untuk menghindari efek samping tak terduga
 
     // Stats untuk dashboard
+    const now = new Date();
+    const queryMonth = parseInt(req.query.month || '0', 10);
+    const queryYear = parseInt(req.query.year || '0', 10);
+    const thisMonth = Number.isInteger(queryMonth) && queryMonth >= 1 && queryMonth <= 12 ? (queryMonth - 1) : now.getMonth();
+    const thisYear = Number.isInteger(queryYear) && queryYear > 1970 ? queryYear : now.getFullYear();
+    const isSelectedMonth = (iso) => {
+      const d = new Date(iso);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    };
+
+    const invoicesThisMonth = invoices.filter(i => isSelectedMonth(i.created_at));
+    const paidThisMonth = invoicesThisMonth.filter(i => i.status === 'paid');
+    const unpaidThisMonth = invoicesThisMonth.filter(i => i.status === 'unpaid');
+    const overdueAll = invoices.filter(i => i.status === 'unpaid' && new Date(i.due_date) < now);
+    const overdueThisMonth = overdueAll.filter(i => isSelectedMonth(i.created_at));
+
+    const sumAmount = (arr) => arr.reduce((sum, i) => sum + parseFloat(i.amount || 0), 0);
+
+    // Top 5 overdue customers (by days past due desc, then amount)
+    const overdueByCustomerMap = new Map();
+    for (const inv of overdueAll) {
+      const key = inv.customer_phone;
+      const due = new Date(inv.due_date);
+      const daysPast = Math.max(0, Math.floor((now - due) / (1000 * 60 * 60 * 24)));
+      const prev = overdueByCustomerMap.get(key) || { phone: inv.customer_phone, name: inv.customer_name || '', amount: 0, days: 0 };
+      prev.amount += parseFloat(inv.amount || 0);
+      prev.days = Math.max(prev.days, daysPast);
+      prev.name = prev.name || inv.customer_name || '';
+      overdueByCustomerMap.set(key, prev);
+    }
+    const topOverdue = Array.from(overdueByCustomerMap.values())
+      .sort((a, b) => (b.days - a.days) || (b.amount - a.amount))
+      .slice(0, 5);
+
     const stats = {
       totalPackages: packages.filter(p => p.status === 'active').length,
       totalCustomers: customers.length,
       totalInvoices: invoices.length,
       unpaidInvoices: invoices.filter(i => i.status === 'unpaid').length,
       totalRevenue: invoices.filter(i => i.status === 'paid')
-        .reduce((sum, i) => sum + parseFloat(i.amount), 0)
+        .reduce((sum, i) => sum + parseFloat(i.amount), 0),
+      // Recap bulan berjalan
+      recap: {
+        month: thisMonth + 1,
+        year: thisYear,
+        invoices_count: invoicesThisMonth.length,
+        paid_count: paidThisMonth.length,
+        unpaid_count: unpaidThisMonth.length,
+        paid_amount: sumAmount(paidThisMonth),
+        unpaid_amount: sumAmount(unpaidThisMonth),
+        overdue_count: overdueThisMonth.length,
+        overdue_amount: sumAmount(overdueThisMonth),
+        top_overdue: topOverdue
+      }
     };
 
     // Settings & default templates untuk WhatsApp
@@ -147,12 +182,7 @@ router.post('/messages/send-invoice-batch', adminAuth, async (req, res) => {
     if (typeof phones === 'string') {
       phones = phones.split(',').map(s => s.trim()).filter(Boolean);
     }
-    const normalize = (p) => {
-      let n = String(p).replace(/\D/g, '');
-      if (n.startsWith('0')) n = '62' + n.slice(1);
-      else if (!n.startsWith('62')) n = '62' + n;
-      return n;
-    };
+    const normalize = (p) => normalizePhoneLocal(p);
 
     const uniquePhones = Array.from(new Set(phones.map(normalize)));
 
@@ -173,6 +203,7 @@ router.post('/messages/send-invoice-batch', adminAuth, async (req, res) => {
 
     let sent = 0;
     let failed = 0;
+    const sendDelayMs = parseInt(getSetting('wa_send_delay_ms', '1200'));
     for (const p of uniquePhones) {
       try {
         const customer = billing.getCustomerByPhone(p);
@@ -194,6 +225,9 @@ router.post('/messages/send-invoice-batch', adminAuth, async (req, res) => {
         });
         const ok = await sendMessage(p, message);
         if (ok) sent++; else failed++;
+        if (sendDelayMs > 0) {
+          await new Promise(r => setTimeout(r, sendDelayMs));
+        }
       } catch (e) {
         failed++;
       }
@@ -218,13 +252,7 @@ router.post('/messages/send-invoice', adminAuth, async (req, res) => {
     }
 
     // Normalisasi nomor ke format 62xxxxxxxxxxx (untuk konsistensi billing dan WhatsApp)
-    let cleanPhone = String(phone).replace(/\D/g, '');
-    if (cleanPhone.startsWith('0')) {
-      cleanPhone = '62' + cleanPhone.slice(1);
-    } else if (!cleanPhone.startsWith('62')) {
-      // Jika pengguna menginput tanpa 0/62 (misal 8123...), tambahkan 62 di depan
-      cleanPhone = '62' + cleanPhone;
-    }
+    let cleanPhone = normalizePhoneLocal(phone);
 
     const customer = billing.getCustomerByPhone(cleanPhone);
     if (!customer) {
@@ -341,7 +369,7 @@ router.post('/packages/create', adminAuth, async (req, res) => {
     const newPackage = billing.createPackage({
       name,
       speed,
-      price: parseFloat(price),
+      price: toFiniteNumber(price, 0),
       description,
       pppoe_profile
     });
@@ -365,7 +393,7 @@ router.post('/packages/update/:id', adminAuth, async (req, res) => {
     const updatedPackage = billing.updatePackage(id, {
       name,
       speed,
-      price: parseFloat(price),
+      price: toFiniteNumber(price, 0),
       description,
       pppoe_profile
     });
@@ -506,19 +534,20 @@ router.post('/customers/sync-genieacs', adminAuth, async (req, res) => {
 // CUSTOMER MANAGEMENT
 router.post('/customers/update', adminAuth, async (req, res) => {
   try {
-    const { phone, name, username, package_id, payment_status, pppoe_username } = req.body;
+    const { phone, name, username, package_id, payment_status, pppoe_username, connection_type, static_ip, enable_isolir, isolir_date } = req.body;
     
     if (!phone) {
       return res.redirect('/admin/billing?error=' + encodeURIComponent('Nomor HP wajib diisi'));
     }
     
     // Get current customer data
-    let customer = billing.getCustomerByPhone(phone);
+    const normalizedPhone = normalizePhoneLocal(phone);
+    let customer = billing.getCustomerByPhone(normalizedPhone);
     
     if (!customer) {
       // Create new customer if doesn't exist
       customer = {
-        phone: phone,
+        phone: normalizedPhone,
         name: name || '',
         username: username || phone,
         payment_status: payment_status || 'unpaid',
@@ -531,14 +560,27 @@ router.post('/customers/update', adminAuth, async (req, res) => {
       customer.pppoe_username = pppoe_username || customer.pppoe_username;
       customer.payment_status = payment_status || customer.payment_status;
     }
+
+    // Optional connectivity fields
+    if (connection_type === 'static') {
+      customer.connection_type = 'static';
+      customer.static_ip = static_ip || customer.static_ip;
+    } else if (connection_type === 'pppoe') {
+      customer.connection_type = 'pppoe';
+    }
+    customer.enable_isolir = enable_isolir === 'true' || enable_isolir === true;
+    if (isolir_date) {
+      const d = new Date(isolir_date);
+      if (!isNaN(d.getTime())) customer.isolir_scheduled_date = d.toISOString();
+    }
     
     // If package is changed, update package info
     if (package_id && package_id !== customer.package_id) {
-      const package = billing.getPackageById(package_id);
-      if (package) {
+      const pkg = billing.getPackageById(package_id);
+      if (pkg) {
         customer.package_id = package_id;
-        customer.package_name = package.name;
-        customer.package_price = package.price;
+        customer.package_name = pkg.name;
+        customer.package_price = pkg.price;
       }
     }
     
@@ -573,16 +615,17 @@ router.post('/customers/assign-package', adminAuth, async (req, res) => {
       return res.redirect('/admin/billing?error=' + encodeURIComponent('PPPoE Username wajib diisi untuk tipe koneksi PPPoE'));
     }
     
-    // Validasi customer ada di GenieACS
-    const device = await findDeviceByTag(phone);
-    if (!device) {
-      return res.redirect('/admin/billing?error=' + encodeURIComponent('Nomor HP tidak ditemukan di GenieACS'));
-    }
+    // Opsi: validasi GenieACS bisa dilewati, pelanggan tetap bisa ditambahkan
+    const normalizedPhone = normalizePhoneLocal(phone);
+    let device = null;
+    try {
+      device = await findDeviceByTag(normalizedPhone);
+    } catch {}
     
     // Assign package with PPPoE username
     const enableIsolirBool = enable_isolir === 'true';
     const customer = billing.assignPackageToCustomer(
-      phone, 
+      normalizedPhone,
       package_id, 
       name, 
       enableIsolirBool, 
@@ -597,7 +640,7 @@ router.post('/customers/assign-package', adminAuth, async (req, res) => {
     
     // Auto-create invoice untuk customer baru
     if (customer) {
-      const invoice = billing.createInvoice(phone, package_id, customer.package_price);
+      const invoice = billing.createInvoice(normalizedPhone, package_id, customer.package_price);
       if (invoice) {
         logger.info(`Auto-created invoice ${invoice.invoice_number} for customer ${phone}`);
       }
@@ -623,7 +666,9 @@ router.post('/invoices/create', adminAuth, async (req, res) => {
       return res.redirect('/admin/billing?error=' + encodeURIComponent('Nomor HP dan paket wajib diisi'));
     }
     
-    const invoice = billing.createInvoice(customer_phone, package_id, amount);
+    const normalizedPhone = normalizePhoneLocal(customer_phone);
+    const safeAmount = toFiniteNumber(amount, undefined);
+    const invoice = billing.createInvoice(normalizedPhone, package_id, safeAmount);
     
     if (invoice) {
       res.redirect('/admin/billing?success=' + encodeURIComponent('Tagihan berhasil dibuat'));
@@ -653,6 +698,28 @@ router.post('/invoices/mark-paid/:id', adminAuth, async (req, res) => {
   }
 });
 
+// MANUAL UNISOLIR tanpa pelunasan
+router.post('/customers/unisolir', adminAuth, async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) {
+      return res.redirect('/admin/billing?error=' + encodeURIComponent('Nomor HP wajib diisi'));
+    }
+
+    const normalizedPhone = normalizePhoneLocal(phone);
+    const result = await isolirService.unisolirCustomer(normalizedPhone);
+    if (result && result.success) {
+      // Set status isolir normal di billing
+      billing.updateCustomerIsolirStatus(normalizedPhone, 'normal');
+      return res.redirect('/admin/billing?success=' + encodeURIComponent('Pelanggan berhasil di-unisolir (tanpa pelunasan)'));
+    }
+    return res.redirect('/admin/billing?error=' + encodeURIComponent(result?.message || 'Gagal unisolir pelanggan'));
+  } catch (error) {
+    logger.error(`Error manual unisolir: ${error.message}`);
+    return res.redirect('/admin/billing?error=' + encodeURIComponent('Terjadi kesalahan saat unisolir'));
+  }
+});
+
 // API ENDPOINTS for AJAX
 router.get('/api/packages', adminAuth, (req, res) => {
   try {
@@ -665,10 +732,165 @@ router.get('/api/packages', adminAuth, (req, res) => {
 
 router.get('/api/customers', adminAuth, (req, res) => {
   try {
-    const customers = billing.getAllCustomers();
-    res.json({ success: true, customers });
+    // If DataTables server-side params exist, return paginated; else return full list (backward compatible)
+    const drawRaw = req.query.draw;
+    const isDt = typeof drawRaw !== 'undefined';
+    const all = billing.getAllCustomers();
+
+    if (!isDt) {
+      return res.json({ success: true, customers: all });
+    }
+
+    const draw = parseInt(drawRaw || '1', 10);
+    const start = parseInt(req.query.start || '0', 10);
+    const length = parseInt(req.query.length || '10', 10);
+    const searchValue = (req.query.search && req.query.search.value) ? String(req.query.search.value).toLowerCase() : '';
+
+    const order = req.query.order && req.query.order[0] ? req.query.order[0] : null;
+    const columns = ['phone','name','username','pppoe_username','package_name','package_price','payment_status','status','created_at','enable_isolir','isolir_scheduled_date'];
+    let orderCol = 'created_at';
+    let orderDir = 'desc';
+    if (order) {
+      const idx = parseInt(order.column || '0', 10);
+      if (Number.isInteger(idx) && columns[idx]) orderCol = columns[idx];
+      if ((order.dir || '').toLowerCase() === 'asc') orderDir = 'asc';
+    }
+
+    let filtered = all;
+    if (searchValue) {
+      filtered = all.filter(c => {
+        const hay = [
+          c.phone,
+          c.name,
+          c.username,
+          c.pppoe_username,
+          c.package_name,
+          String(c.package_price),
+          c.payment_status,
+          c.status
+        ].map(v => (v || '').toString().toLowerCase()).join(' ');
+        return hay.includes(searchValue);
+      });
+    }
+
+    filtered.sort((a, b) => {
+      const av = a[orderCol];
+      const bv = b[orderCol];
+      if (orderCol.endsWith('_at')) {
+        const ad = new Date(av || 0).getTime();
+        const bd = new Date(bv || 0).getTime();
+        return orderDir === 'asc' ? ad - bd : bd - ad;
+      }
+      if (typeof av === 'number' && typeof bv === 'number') {
+        return orderDir === 'asc' ? av - bv : bv - av;
+      }
+      const as = (av || '').toString().toLowerCase();
+      const bs = (bv || '').toString().toLowerCase();
+      if (as < bs) return orderDir === 'asc' ? -1 : 1;
+      if (as > bs) return orderDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    const recordsTotal = all.length;
+    const recordsFiltered = filtered.length;
+    const page = filtered.slice(start, start + length);
+
+    const data = page.map(c => ({
+      phone: c.phone,
+      name: c.name || '-',
+      username: c.username || '-',
+      pppoe_username: c.pppoe_username || '',
+      package_name: c.package_name || 'Belum ada paket',
+      package_price: c.package_price || 0,
+      payment_status: c.payment_status || '-',
+      status: c.status || '-',
+      created_at: c.created_at,
+      enable_isolir: c.enable_isolir === true,
+      isolir_scheduled_date: c.isolir_scheduled_date || ''
+    }));
+
+    res.json({ draw, recordsTotal, recordsFiltered, data });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    res.json({ draw: 1, recordsTotal: 0, recordsFiltered: 0, data: [] });
+  }
+});
+
+// DataTables server-side: invoices
+router.get('/api/invoices', adminAuth, (req, res) => {
+  try {
+    const all = billing.getAllInvoices();
+
+    const draw = parseInt(req.query.draw || '1', 10);
+    const start = parseInt(req.query.start || '0', 10);
+    const length = parseInt(req.query.length || '10', 10);
+    const searchValue = (req.query.search && req.query.search.value) ? String(req.query.search.value).toLowerCase() : '';
+
+    // Sorting
+    const order = req.query.order && req.query.order[0] ? req.query.order[0] : null;
+    const columns = ['invoice_number','customer_name','customer_phone','package_name','amount','due_date','status','created_at'];
+    let orderCol = 'created_at';
+    let orderDir = 'desc';
+    if (order) {
+      const idx = parseInt(order.column || '0', 10);
+      if (Number.isInteger(idx) && columns[idx]) orderCol = columns[idx];
+      if ((order.dir || '').toLowerCase() === 'asc') orderDir = 'asc';
+    }
+
+    // Filter
+    let filtered = all;
+    if (searchValue) {
+      filtered = all.filter(inv => {
+        const hay = [
+          inv.invoice_number,
+          inv.customer_name,
+          inv.customer_phone,
+          inv.package_name,
+          String(inv.amount)
+        ].map(v => (v || '').toString().toLowerCase()).join(' ');
+        return hay.includes(searchValue);
+      });
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      const av = a[orderCol];
+      const bv = b[orderCol];
+      if (orderCol.endsWith('_at') || orderCol.includes('date')) {
+        const ad = new Date(av || 0).getTime();
+        const bd = new Date(bv || 0).getTime();
+        return orderDir === 'asc' ? ad - bd : bd - ad;
+      }
+      if (typeof av === 'number' && typeof bv === 'number') {
+        return orderDir === 'asc' ? av - bv : bv - av;
+      }
+      const as = (av || '').toString().toLowerCase();
+      const bs = (bv || '').toString().toLowerCase();
+      if (as < bs) return orderDir === 'asc' ? -1 : 1;
+      if (as > bs) return orderDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    const recordsTotal = all.length;
+    const recordsFiltered = filtered.length;
+    const page = filtered.slice(start, start + length);
+
+    // Map to row objects aligned with table columns
+    const data = page.map(inv => ({
+      invoice_number: inv.invoice_number,
+      customer_name: inv.customer_name || '-',
+      customer_phone: inv.customer_phone,
+      package_name: inv.package_name,
+      amount: inv.amount,
+      due_date: inv.due_date,
+      status: inv.status,
+      id: inv.id,
+      created_at: inv.created_at
+    }));
+
+    res.json({ draw, recordsTotal, recordsFiltered, data });
+  } catch (error) {
+    logger.error(`Error fetching invoices (DT): ${error.message}`);
+    res.json({ draw: 1, recordsTotal: 0, recordsFiltered: 0, data: [] });
   }
 });
 
@@ -676,21 +898,47 @@ router.get('/api/customer/:phone', adminAuth, async (req, res) => {
   try {
     const { phone } = req.params;
     
-    // Check if customer exists in GenieACS
-    const device = await findDeviceByTag(phone);
-    if (!device) {
-      return res.json({ success: false, message: 'Customer not found in GenieACS' });
-    }
+    // Check GenieACS (opsional)
+    const normalizedPhone = normalizePhoneLocal(phone);
+    let deviceStatus = 'inactive';
+    try {
+      const source = (getSetting && getSetting('billing_device_source', 'genieacs')) || 'genieacs';
+      if (String(source).toLowerCase() === 'mikrotik') {
+        const mikrotik = require('../config/mikrotik');
+        const customerTmp = billing.getCustomerByPhone(normalizedPhone) || {};
+        // 1) PPPoE aktif?
+        try {
+          const conns = await mikrotik.getActivePPPoEConnections();
+          const user = (customerTmp.pppoe_username || normalizedPhone || '').toLowerCase();
+          if (conns && conns.success && Array.isArray(conns.data)) {
+            deviceStatus = conns.data.some(c => String(c.name || '').toLowerCase() === user) ? 'active' : deviceStatus;
+          }
+        } catch {}
+        // 2) Static IP: bila ada IP statik, anggap aktif jika bukan di address-list ISOLIR (opsional heuristik)
+        try {
+          if (deviceStatus !== 'active' && customerTmp.static_ip) {
+            // Jika pelanggan ada IP statik dan tidak berada di daftar ISOLIR, anggap aktif
+            // (Jika ingin lebih akurat, nanti bisa tambahkan helper getAddressList)
+            deviceStatus = 'active';
+          }
+        } catch {}
+      } else {
+        // Default gunakan GenieACS
+        let device = null;
+        try { device = await findDeviceByTag(normalizedPhone); } catch {}
+        deviceStatus = device ? 'active' : 'inactive';
+      }
+    } catch {}
     
     // Get billing data
-    const customer = billing.getCustomerByPhone(phone);
-    const invoices = billing.getInvoicesByPhone(phone);
+    const customer = billing.getCustomerByPhone(normalizedPhone);
+    const invoices = billing.getInvoicesByPhone(normalizedPhone);
     
     res.json({ 
       success: true, 
       customer: customer || { phone, name: '', package_name: 'Belum ada paket' },
       invoices,
-      device_status: device ? 'active' : 'inactive'
+      device_status: deviceStatus
     });
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -771,7 +1019,8 @@ router.post('/customers/delete', adminAuth, async (req, res) => {
     }
     
     // Delete customer and related invoices
-    const result = billing.deleteCustomer(phone);
+    const normalizedPhone = normalizePhoneLocal(phone);
+    const result = billing.deleteCustomer(normalizedPhone);
     
     if (result.success) {
       res.redirect('/admin/billing?success=' + encodeURIComponent(`Pelanggan ${phone} berhasil dihapus`));
@@ -799,7 +1048,8 @@ router.post('/customers/delete-multiple', adminAuth, async (req, res) => {
     
     for (const phone of phones) {
       try {
-        const result = billing.deleteCustomer(phone);
+        const normalizedPhone = normalizePhoneLocal(phone);
+        const result = billing.deleteCustomer(normalizedPhone);
         if (result.success) {
           successCount++;
         } else {
@@ -828,6 +1078,79 @@ router.post('/customers/delete-multiple', adminAuth, async (req, res) => {
 });
 
 module.exports = router;
+ 
+// EXPORT: CSV ringkasan tagihan per periode
+router.get('/export/invoices.csv', adminAuth, async (req, res) => {
+  try {
+    const { start, end, status } = req.query;
+    const invoices = billing.getAllInvoices();
+
+    const startDate = start ? new Date(start) : null;
+    const endDate = end ? new Date(end) : null;
+    const statusFilter = (status || '').toLowerCase();
+
+    const withinRange = (inv) => {
+      const d = new Date(inv.created_at);
+      if (startDate && d < startDate) return false;
+      if (endDate) {
+        const endOfDay = new Date(endDate);
+        endOfDay.setHours(23,59,59,999);
+        if (d > endOfDay) return false;
+      }
+      return true;
+    };
+
+    const filtered = invoices.filter(inv => {
+      const okDate = withinRange(inv);
+      const okStatus = statusFilter ? String(inv.status).toLowerCase() === statusFilter : true;
+      return okDate && okStatus;
+    });
+
+    // Header CSV
+    const headers = [
+      'invoice_id','invoice_number','customer_phone','customer_name','package_id','package_name','amount','status','created_at','due_date','paid_at'
+    ];
+
+    const toCsv = (val) => {
+      if (val === null || val === undefined) return '';
+      const s = String(val);
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    };
+
+    const rows = [headers.join(',')].concat(
+      filtered.map(inv => [
+        inv.id,
+        inv.invoice_number,
+        inv.customer_phone,
+        inv.customer_name || '',
+        inv.package_id,
+        inv.package_name,
+        inv.amount,
+        inv.status,
+        inv.created_at,
+        inv.due_date,
+        inv.paid_at || ''
+      ].map(toCsv).join(','))
+    );
+
+    const csv = rows.join('\n');
+    const filenameParts = ['invoices'];
+    if (start) filenameParts.push(`from-${start}`);
+    if (end) filenameParts.push(`to-${end}`);
+    if (statusFilter) filenameParts.push(statusFilter);
+    const filename = filenameParts.join('_') + '.csv';
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csv);
+  } catch (error) {
+    logger.error(`Error exporting invoices CSV: ${error.message}`);
+    res.status(500).send('Gagal ekspor CSV');
+  }
+});
  
 // SETTINGS: Simpan template WhatsApp invoice & payment
 router.post('/settings/whatsapp-templates', adminAuth, async (req, res) => {

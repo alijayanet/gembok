@@ -6,20 +6,27 @@ let monthlyInvoiceInterval = null;
 let isServiceRunning = false;
 
 /**
- * Initialize monthly invoice service
+ * Initialize monthly invoice and reminder services
  */
 function initializeMonthlyInvoiceService() {
   const enabled = getSetting('billing_monthly_invoice_enable', 'true') === 'true';
   
   if (!enabled) {
     logger.info('🚫 Monthly invoice service disabled');
-    return;
+    // Walau service bulanan mati, kita tetap boleh mengaktifkan reminder jika diizinkan
+  } else {
+    logger.info('📅 Monthly invoice service enabled - will run on 1st of each month');
+    // Start the service
+    startMonthlyInvoiceService();
   }
-  
-  logger.info('📅 Monthly invoice service enabled - will run on 1st of each month');
-  
-  // Start the service
-  startMonthlyInvoiceService();
+
+  // Start daily reminder service (optional)
+  const reminderEnabled = getSetting('billing_reminder_enable', 'true') === 'true';
+  if (reminderEnabled) {
+    startReminderService();
+  } else {
+    logger.info('🔕 Due/overdue reminder service disabled');
+  }
 }
 
 /**
@@ -30,24 +37,41 @@ function startMonthlyInvoiceService() {
     logger.info('📅 Monthly invoice service already running');
     return;
   }
-  
-  // Calculate time until next 1st of month
-  const now = new Date();
-  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const timeUntilNextMonth = nextMonth.getTime() - now.getTime();
-  
-  logger.info(`📅 Next monthly invoice generation: ${nextMonth.toLocaleDateString('id-ID')} at 00:00`);
-  
-  // Schedule first run
-  setTimeout(() => {
-    generateMonthlyInvoices();
-    
-    // Then schedule for every 1st of month at 00:00
-    monthlyInvoiceInterval = setInterval(() => {
-      generateMonthlyInvoices();
-    }, 24 * 60 * 60 * 1000); // 24 hours
-  }, timeUntilNextMonth);
-  
+
+  // Helper to parse HH:MM from settings (default 00:00)
+  const getRunTimeToday = () => {
+    const timeStr = getSetting('billing_monthly_invoice_time', '00:00');
+    const [hh, mm] = String(timeStr).split(':').map(v => parseInt(v, 10));
+    return { hour: Number.isFinite(hh) ? hh : 0, minute: Number.isFinite(mm) ? mm : 0 };
+  };
+
+  const scheduleNextRun = () => {
+    const now = new Date();
+    const { hour, minute } = getRunTimeToday();
+
+    // Target: tanggal 1 bulan berikutnya pada jam yang ditentukan
+    const nextRun = new Date(now.getFullYear(), now.getMonth() + 1, 1, hour, minute, 0, 0);
+    const delay = Math.max(0, nextRun.getTime() - now.getTime());
+
+    logger.info(`📅 Next monthly invoice generation: ${nextRun.toLocaleDateString('id-ID')} at ${hour.toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')}`);
+
+    // Clear any previous timer and set a new one-shot timer
+    if (monthlyInvoiceInterval) {
+      clearTimeout(monthlyInvoiceInterval);
+      monthlyInvoiceInterval = null;
+    }
+
+    monthlyInvoiceInterval = setTimeout(async () => {
+      try {
+        await generateMonthlyInvoices();
+      } finally {
+        // After run, schedule the following month
+        scheduleNextRun();
+      }
+    }, delay);
+  };
+
+  scheduleNextRun();
   isServiceRunning = true;
 }
 
@@ -66,9 +90,39 @@ function stopMonthlyInvoiceService() {
 /**
  * Generate monthly invoices for all active customers
  */
+// Simple file lock to avoid parallel runs
+const fs = require('fs');
+const path = require('path');
+const LOCK_PATH = path.join(process.cwd(), 'logs', 'monthly-invoice.lock');
+
+function tryAcquireLock() {
+  try {
+    // Ensure logs dir exists
+    const logsDir = path.join(process.cwd(), 'logs');
+    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+    // Use exclusive flag to fail if exists
+    const fd = fs.openSync(LOCK_PATH, 'wx');
+    fs.writeFileSync(fd, String(Date.now()));
+    fs.closeSync(fd);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function releaseLock() {
+  try { fs.unlinkSync(LOCK_PATH); } catch {}
+}
+
 async function generateMonthlyInvoices() {
   try {
     logger.info('📅 Starting monthly invoice generation...');
+
+    // Acquire lock
+    if (!tryAcquireLock()) {
+      logger.warn('⛔ Monthly invoice generation skipped (another run is in progress)');
+      return;
+    }
     
     const customers = billing.getAllCustomers();
     const currentMonth = new Date().getMonth();
@@ -78,6 +132,7 @@ async function generateMonthlyInvoices() {
     let skippedCount = 0;
     let errorCount = 0;
     
+    const sendDelayMs = parseInt(getSetting('wa_send_delay_ms', '1200')); // default 1.2s
     for (const customer of customers) {
       try {
         // Skip if customer doesn't have package or is inactive
@@ -107,8 +162,11 @@ async function generateMonthlyInvoices() {
           generatedCount++;
           logger.info(`✅ Generated invoice ${invoice.invoice_number} for ${customer.phone} (${customer.name}) - Rp ${customer.package_price.toLocaleString('id-ID')}`);
           
-          // Send WhatsApp notification to customer
+          // Send WhatsApp notification to customer (with delay)
           await sendInvoiceNotification(customer, invoice);
+          if (sendDelayMs > 0) {
+            await new Promise(r => setTimeout(r, sendDelayMs));
+          }
           
         } else {
           errorCount++;
@@ -128,7 +186,157 @@ async function generateMonthlyInvoices() {
     
   } catch (error) {
     logger.error(`❌ Error in monthly invoice generation: ${error.message}`);
+  } finally {
+    releaseLock();
   }
+}
+
+// =========================
+// Daily Reminder Service
+// =========================
+let reminderInterval = null;
+
+function startReminderService() {
+  // Baca jam kirim reminder, default 08:00
+  const timeStr = getSetting('billing_reminder_time', '08:00');
+  const [hh, mm] = String(timeStr).split(':').map(v => parseInt(v, 10));
+  const hour = Number.isFinite(hh) ? hh : 8;
+  const minute = Number.isFinite(mm) ? mm : 0;
+
+  const scheduleNext = () => {
+    const now = new Date();
+    let next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0, 0);
+    if (next <= now) {
+      next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, hour, minute, 0, 0);
+    }
+    const delay = Math.max(0, next.getTime() - now.getTime());
+    logger.info(`🔔 Next billing reminder schedule: ${next.toLocaleDateString('id-ID')} ${hour.toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')}`);
+
+    if (reminderInterval) {
+      clearTimeout(reminderInterval);
+      reminderInterval = null;
+    }
+
+    reminderInterval = setTimeout(async () => {
+      try {
+        await runDailyReminders();
+      } catch (e) {
+        logger.error(`❌ Error running daily reminders: ${e.message}`);
+      } finally {
+        scheduleNext();
+      }
+    }, delay);
+  };
+
+  scheduleNext();
+  logger.info('🔔 Reminder service started');
+}
+
+async function runDailyReminders() {
+  const daysBefore = parseInt(getSetting('billing_monthly_invoice_reminder_days', '3'));
+  const now = new Date();
+  const customers = billing.getAllCustomers();
+  const { sendMessage } = require('./sendMessage');
+
+  let dueCount = 0;
+  let overdueCount = 0;
+
+  for (const customer of customers) {
+    try {
+      const invoices = billing.getInvoicesByPhone(customer.phone) || [];
+      if (invoices.length === 0) continue;
+
+      const unpaid = invoices.filter(inv => inv.status === 'unpaid');
+      if (unpaid.length === 0) continue;
+
+      for (const inv of unpaid) {
+        const dueDate = new Date(inv.due_date);
+        const daysDiff = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+
+        // Reminder sebelum jatuh tempo (D-n)
+        if (daysDiff === daysBefore) {
+          const msg = buildDueReminderMessage(customer, inv, daysBefore);
+          await safeSendMessage(sendMessage, customer.phone, msg);
+          dueCount++;
+        }
+
+        // Reminder overdue (H+)
+        if (dueDate < now) {
+          const msg = buildOverdueReminderMessage(customer, inv);
+          await safeSendMessage(sendMessage, customer.phone, msg);
+          overdueCount++;
+        }
+      }
+
+      // H-1 sebelum isolir_scheduled_date kirim pengingat
+      if (customer.enable_isolir && customer.isolir_scheduled_date) {
+        try {
+          const sched = new Date(customer.isolir_scheduled_date);
+          const diffDays = Math.ceil((sched - now) / (1000 * 60 * 60 * 24));
+          if (diffDays === 1) {
+            const msg = buildIsolirH1Reminder(customer, sched);
+            await safeSendMessage(sendMessage, customer.phone, msg);
+          }
+        } catch {}
+      }
+    } catch (e) {
+      logger.warn(`Reminder loop error for ${customer.phone}: ${e.message}`);
+    }
+  }
+
+  logger.info(`🔔 Reminders sent: due ${dueCount}, overdue ${overdueCount}`);
+}
+
+function buildDueReminderMessage(customer, invoice, daysBefore) {
+  const company = getSetting('company_header', 'ISP Monitor');
+  const amount = `Rp ${parseFloat(invoice.amount||0).toLocaleString('id-ID')}`;
+  const dueDate = new Date(invoice.due_date).toLocaleDateString('id-ID');
+  return (
+    `📅 *PENGINGAT JATUH TEMPO (${daysBefore} hari lagi)*\n\n` +
+    `*${company}*\n\n` +
+    `👤 ${customer.name || customer.phone}\n` +
+    `📋 No. Tagihan: ${invoice.invoice_number}\n` +
+    `💰 Jumlah: ${amount}\n` +
+    `📅 Jatuh Tempo: ${dueDate}\n\n` +
+    `Mohon melakukan pembayaran sebelum jatuh tempo. Terima kasih.`
+  );
+}
+
+function buildOverdueReminderMessage(customer, invoice) {
+  const company = getSetting('company_header', 'ISP Monitor');
+  const amount = `Rp ${parseFloat(invoice.amount||0).toLocaleString('id-ID')}`;
+  const dueDate = new Date(invoice.due_date).toLocaleDateString('id-ID');
+  const payment_accounts = getSetting('payment_accounts', '');
+  return (
+    `⚠️ *TAGIHAN TERLAMBAT (OVERDUE)*\n\n` +
+    `*${company}*\n\n` +
+    `👤 ${customer.name || customer.phone}\n` +
+    `📋 No. Tagihan: ${invoice.invoice_number}\n` +
+    `💰 Jumlah: ${amount}\n` +
+    `📅 Jatuh Tempo: ${dueDate}\n\n` +
+    (payment_accounts ? `Pembayaran: \n${payment_accounts}\n\n` : '') +
+    `Silakan melakukan pembayaran secepatnya untuk menghindari isolir layanan.`
+  );
+}
+
+async function safeSendMessage(sendMessage, phone, message) {
+  try {
+    await sendMessage(phone, message);
+  } catch (e) {
+    logger.warn(`Failed to send reminder to ${phone}: ${e.message}`);
+  }
+}
+
+function buildIsolirH1Reminder(customer, schedDate) {
+  const company = getSetting('company_header', 'ISP Monitor');
+  const when = schedDate.toLocaleDateString('id-ID');
+  return (
+    `🔔 *PENGINGAT ISOLIR (H-1)*\n\n` +
+    `*${company}*\n\n` +
+    `👤 ${customer.name || customer.phone}\n` +
+    `📅 Jadwal Isolir: ${when}\n\n` +
+    `Mohon segera melakukan pelunasan agar layanan tidak diisolir.`
+  );
 }
 
 /**

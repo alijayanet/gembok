@@ -4672,14 +4672,26 @@ Pesan GenieACS telah diaktifkan kembali.`);
                 await billingCommands.handlePackagesCommand(remoteJid);
                 return;
             }
+
+            // Perintah pelanggan: daftar + pagination + cari
+            if (
+                command === 'pelanggan' || command === '!pelanggan' || command === '/pelanggan' ||
+                command.startsWith('pelanggan ') || command.startsWith('!pelanggan ') || command.startsWith('/pelanggan ')
+            ) {
+                const params = messageText.split(' ').slice(1);
+                console.log(`Menjalankan perintah pelanggan dengan params:`, params, `oleh admin ${senderNumber}`);
+                await billingCommands.handleListCustomersCommand(remoteJid, params);
+                return;
+            }
             
-            // Perintah cekbilling/billing - cek info billing customer
+            // Perintah cekbilling/billing/cektagihan - cek info billing customer
             if (
                 command.startsWith('cekbilling ') || command.startsWith('!cekbilling ') || command.startsWith('/cekbilling ') ||
-                command.startsWith('billing ') || command.startsWith('!billing ') || command.startsWith('/billing ')
+                command.startsWith('billing ') || command.startsWith('!billing ') || command.startsWith('/billing ') ||
+                command.startsWith('cektagihan ') || command.startsWith('!cektagihan ') || command.startsWith('/cektagihan ')
             ) {
                 const phone = messageText.split(' ').slice(1)[0];
-                console.log(`Menjalankan perintah cekbilling/billing untuk ${phone} oleh admin ${senderNumber}`);
+                console.log(`Menjalankan perintah cekbilling/billing/cektagihan untuk ${phone} oleh admin ${senderNumber}`);
                 await billingCommands.handleBillingCheckCommand(remoteJid, phone);
                 return;
             }
@@ -4706,14 +4718,14 @@ Pesan GenieACS telah diaktifkan kembali.`);
                 return;
             }
             
-            // Perintah bayar/payment - konfirmasi pembayaran
+            // Perintah bayar/payment - konfirmasi pembayaran (mendukung ID invoice atau nama/nomor)
             if (
                 command.startsWith('bayar ') || command.startsWith('!bayar ') || command.startsWith('/bayar ') ||
                 command.startsWith('payment ') || command.startsWith('!payment ') || command.startsWith('/payment ')
             ) {
-                const invoiceId = messageText.split(' ').slice(1)[0];
-                console.log(`Menjalankan perintah bayar/payment untuk tagihan ${invoiceId} oleh admin ${senderNumber}`);
-                await billingCommands.handlePaymentCommand(remoteJid, invoiceId);
+                const arg = messageText.split(' ').slice(1).join(' ').trim();
+                console.log(`Menjalankan perintah bayar/payment untuk argumen "${arg}" oleh admin ${senderNumber}`);
+                await billingCommands.handlePaymentCommand(remoteJid, arg);
                 return;
             }
             
@@ -4738,6 +4750,17 @@ Pesan GenieACS telah diaktifkan kembali.`);
         if (command === 'status' || command === '!status' || command === '/status') {
             console.log(`Menjalankan perintah status untuk ${senderNumber}`);
             await handleStatusCommand(senderNumber, remoteJid);
+            return;
+        }
+
+        // Pelanggan: cek tagihan ringkasan
+        if (command === 'cektagihan' || command === '!cektagihan' || command === '/cektagihan' || command === 'tagihan' || command === '!tagihan' || command === '/tagihan') {
+            try {
+                const phone = senderNumber; // gunakan nomor pengirim
+                await billingCommands.handleBillingCheckCommand(remoteJid, phone);
+            } catch (e) {
+                console.log('Error customer cektagihan:', e.message);
+            }
             return;
         }
         

@@ -51,10 +51,39 @@ async function checkAndIsolirCustomers() {
     const graceDays = parseInt(getSetting('billing_isolir_grace_days', '3'));
     const isolirProfile = getSetting('billing_isolir_profile', 'isolir');
     const overdueCustomers = billing.getOverdueCustomers();
+    const allCustomers = billing.getAllCustomers();
     
     let isolatedCount = 0;
     let errors = 0;
     
+    // 1) Scheduled per-customer isolir_date
+    for (const c of allCustomers) {
+      try {
+        if (!c.enable_isolir) continue;
+        if (!c.isolir_scheduled_date) continue;
+        if (c.isolir_status === 'isolated') continue;
+        const sched = new Date(c.isolir_scheduled_date);
+        const today = new Date();
+        const isDue = sched <= today;
+        if (!isDue) continue;
+        // proceed isolate based on connection type
+        let isolirResult;
+        if (c.connection_type === 'static' && c.static_ip) {
+          isolirResult = await addFirewallAddressList(c.static_ip, 'ISOLIR', `Scheduled isolir for ${c.name || c.phone}`);
+        } else if (c.pppoe_username) {
+          isolirResult = await setPPPoEProfile(c.pppoe_username, isolirProfile);
+        } else {
+          isolirResult = { success: false, message: 'Tidak ada method isolir yang tersedia' };
+        }
+        if (isolirResult.success) {
+          billing.updateCustomerIsolirStatus(c.phone, 'isolated');
+          isolatedCount++;
+          logger.info(`✅ Scheduled isolir executed for ${c.phone}`);
+        }
+      } catch (e) { errors++; }
+    }
+
+    // 2) Overdue based isolir (existing logic)
     for (const customer of overdueCustomers) {
       try {
         // Skip jika belum melewati grace period
