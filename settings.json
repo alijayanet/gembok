@@ -54,5 +54,7 @@
   "billing_monthly_invoice_enable": "true",
   "billing_monthly_invoice_time": "00:00",
   "billing_monthly_invoice_reminder_days": "3",
+  "backup_interval_hours": "24",
+  "backup_max_files": "30",
   "admin_numbers": "6281947215703"
 }
