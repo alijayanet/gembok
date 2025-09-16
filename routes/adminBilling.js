@@ -688,6 +688,33 @@ router.post('/invoices/mark-paid/:id', adminAuth, async (req, res) => {
     const invoice = billing.markInvoiceAsPaid(id);
     
     if (invoice) {
+      // Optional: kirim WA pembayaran diterima ke pelanggan
+      try {
+        const customer = billing.getCustomerByPhone(invoice.customer_phone);
+        const formatCurrency = (amount) => `Rp ${parseFloat(amount).toLocaleString('id-ID')}`;
+        // Ambil template dari settings, fallback default
+        const paymentTemplateDefault =
+          '✅ *PEMBAYARAN DITERIMA*\n\n' +
+          'Terima kasih, pembayaran Anda telah diterima:\n\n' +
+          '📋 No. Tagihan: {{invoice_number}}\n' +
+          '💰 Jumlah: {{amount}}\n' +
+          '📅 Dibayar: {{paid_at}}\n\n' +
+          '✅ Status akun Anda sudah lunas.';
+        const tpl = (getSetting && getSetting('wa_payment_template')) || paymentTemplateDefault;
+        const render = (t, data) => t.replace(/{{\s*([\w_]+)\s*}}/g, (m, k) => (data[k] ?? ''));
+        const msg = render(tpl, {
+          invoice_number: invoice.invoice_number,
+          amount: formatCurrency(invoice.amount),
+          paid_at: new Date(invoice.paid_at || Date.now()).toLocaleString('id-ID'),
+          customer_name: customer?.name || invoice.customer_name || invoice.customer_phone
+        });
+        const { sendMessage } = require('../config/sendMessage');
+        if (customer?.phone) {
+          await sendMessage(customer.phone, msg);
+        }
+      } catch (e) {
+        logger.warn(`Payment WA notify failed for invoice ${id}: ${e.message}`);
+      }
       res.redirect('/admin/billing?success=' + encodeURIComponent('Tagihan berhasil ditandai lunas'));
     } else {
       res.redirect('/admin/billing?error=' + encodeURIComponent('Gagal menandai tagihan lunas'));

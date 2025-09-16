@@ -589,7 +589,6 @@ global.appSettings = {
   
   // Mikrotik
   mikrotikHost: getSetting('mikrotik_host', ''),
-  mikrotikPort: getSetting('mikrotik_port', '8728'),
   mikrotikUser: getSetting('mikrotik_user', ''),
   mikrotikPassword: getSetting('mikrotik_password', ''),
   
@@ -843,6 +842,17 @@ app.get('/mobile-customer', async (req, res) => {
             }
         }).length;
 
+        // Dapatkan SSID saat ini (opsional)
+        let currentSsid = '';
+        try {
+            const firstDeviceId = customerDevices[0]?.id || customerDevices[0]?._deviceId || (customerDevices[0] && String(customerDevices[0]));
+            if (firstDeviceId) {
+                const { getDevice } = require('./config/genieacs');
+                const full = await getDevice(firstDeviceId);
+                currentSsid = full?.InternetGatewayDevice?.LANDevice?.['1']?.WLANConfiguration?.['1']?.SSID?._value || '';
+            }
+        } catch (e) { /* ignore */ }
+
         // Data untuk mobile customer dashboard
         const customerData = {
             customer: {
@@ -855,6 +865,7 @@ app.get('/mobile-customer', async (req, res) => {
                 package_price: customer.package_price || 0,
                 status: customer.status || 'active',
                 serial_number: customer.serial_number || '',
+                ssid: currentSsid,
                 registration_date: customer.registration_date || customer.created_at
             },
             devices: {

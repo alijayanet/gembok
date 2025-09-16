@@ -374,36 +374,62 @@ const genieacsApi = {
             for (const [path, value] of Object.entries(parameters)) {
                 // Handle SSID update - gunakan paths yang spesifik untuk tipe ONU yang terdeteksi
                 if (path.includes('SSID')) {
+                    // Untuk generic ONU, batasi hanya path utama SSID 1 (2.4G) dan SSID 5 (5G)
+                    const ssid24gPaths = (onuType === 'generic')
+                        ? [
+                            'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID'
+                          ]
+                        : parameterPaths.ssid_2_4g;
+
+                    const ssid5gPaths = (onuType === 'generic')
+                        ? [
+                            'InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.SSID'
+                          ]
+                        : parameterPaths.ssid_5g;
+
                     // Tambahkan SSID 2.4GHz
-                    parameterPaths.ssid_2_4g.forEach(ssidPath => {
+                    ssid24gPaths.forEach(ssidPath => {
                         parameterValues.push([ssidPath, value, "xsd:string"]);
                     });
                     
                     // Tambahkan SSID 5GHz dengan suffix -5G
                     const ssid5G = `${value}-5G`;
-                    parameterPaths.ssid_5g.forEach(ssidPath => {
+                    ssid5gPaths.forEach(ssidPath => {
                         parameterValues.push([ssidPath, ssid5G, "xsd:string"]);
                     });
                     
                     console.log(`Added SSID parameters for ${onuType} ONU: 2.4G="${value}", 5G="${ssid5G}"`);
-                    console.log(`  - 2.4GHz paths: ${parameterPaths.ssid_2_4g.length} parameters`);
-                    console.log(`  - 5GHz paths: ${parameterPaths.ssid_5g.length} parameters`);
+                    console.log(`  - 2.4GHz paths: ${ssid24gPaths.length} parameters`);
+                    console.log(`  - 5GHz paths: ${ssid5gPaths.length} parameters`);
                 }
                 // Handle WiFi password update - gunakan paths yang spesifik untuk tipe ONU yang terdeteksi
                 else if (path.includes('Password') || path.includes('KeyPassphrase')) {
+                    // Untuk generic ONU, batasi hanya path utama password SSID 1 (2.4G) dan 5 (5G)
+                    const pass24gPaths = (onuType === 'generic')
+                        ? [
+                            'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.KeyPassphrase'
+                          ]
+                        : parameterPaths.password_2_4g;
+
+                    const pass5gPaths = (onuType === 'generic')
+                        ? [
+                            'InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.KeyPassphrase'
+                          ]
+                        : parameterPaths.password_5g;
+
                     // Tambahkan password 2.4GHz
-                    parameterPaths.password_2_4g.forEach(passPath => {
+                    pass24gPaths.forEach(passPath => {
                         parameterValues.push([passPath, value, "xsd:string"]);
                     });
                     
                     // Tambahkan password 5GHz (sama dengan 2.4GHz)
-                    parameterPaths.password_5g.forEach(passPath => {
+                    pass5gPaths.forEach(passPath => {
                         parameterValues.push([passPath, value, "xsd:string"]);
                     });
                     
                     console.log(`Added password parameters for ${onuType} ONU`);
-                    console.log(`  - 2.4GHz password paths: ${parameterPaths.password_2_4g.length} parameters`);
-                    console.log(`  - 5GHz password paths: ${parameterPaths.password_5g.length} parameters`);
+                    console.log(`  - 2.4GHz password paths: ${pass24gPaths.length} parameters`);
+                    console.log(`  - 5GHz password paths: ${pass5gPaths.length} parameters`);
                 }
                 // Handle other parameters
                 else {
