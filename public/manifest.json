@@ -3,6 +3,8 @@
   "short_name": "Gembok",
   "description": "Portal pelanggan Gembok untuk manajemen layanan ISP",
   "start_url": "/mobile-customer",
+  "scope": "/",
+  "id": "/gembok-mobile",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff",
