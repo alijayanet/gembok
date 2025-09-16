@@ -1,25 +1,17 @@
 {
-  "name": "Gembok Admin Mobile",
+  "name": "Gembok Mobile",
   "short_name": "Gembok",
-  "description": "Mobile admin interface for Gembok ISP Management System",
-  "start_url": "/admin/dashboard",
+  "description": "Portal pelanggan Gembok untuk manajemen layanan ISP",
+  "start_url": "/mobile-customer",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff",
   "orientation": "portrait-primary",
   "icons": [
-    {
-      "src": "/img/logo.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/img/logo.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "/img/logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/img/logo.png", "sizes": "256x256", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/img/logo.png", "sizes": "384x384", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/img/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
   "categories": ["business", "productivity", "utilities"],
   "screenshots": [
@@ -32,10 +24,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Dashboard",
+      "name": "Dashboard Pelanggan",
       "short_name": "Dashboard",
-      "description": "View system overview",
-      "url": "/admin/dashboard",
+      "description": "Buka beranda pelanggan",
+      "url": "/mobile-customer",
       "icons": [
         {
           "src": "/img/icon-dashboard.png",
@@ -44,10 +36,10 @@
       ]
     },
     {
-      "name": "Analytics",
-      "short_name": "Analytics",
-      "description": "View detailed analytics",
-      "url": "/admin/analytics",
+      "name": "Tagihan",
+      "short_name": "Tagihan",
+      "description": "Lihat informasi tagihan",
+      "url": "/customer/billing",
       "icons": [
         {
           "src": "/img/icon-analytics.png",
@@ -56,10 +48,10 @@
       ]
     },
     {
-      "name": "Trouble Reports",
-      "short_name": "Troubles",
-      "description": "Manage trouble reports",
-      "url": "/admin/trouble",
+      "name": "Laporan Gangguan",
+      "short_name": "Gangguan",
+      "description": "Buat laporan gangguan",
+      "url": "/customer/trouble/simple",
       "icons": [
         {
           "src": "/img/icon-trouble.png",

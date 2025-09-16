@@ -2,10 +2,9 @@
 const CACHE_NAME = 'gembok-v1.0.0';
 const urlsToCache = [
   '/',
-  '/admin/dashboard',
-  '/admin/analytics',
-  '/admin/trouble',
-  '/admin/backup',
+  '/mobile-customer',
+  '/customer/login',
+  '/customer/trouble/simple',
   '/css/style.css',
   '/css/responsive-admin.css',
   '/js/adminHotspotTable.js',
@@ -94,7 +93,7 @@ self.addEventListener('fetch', (event) => {
             console.error('Service Worker: Fetch failed', error);
             // Return offline page for navigation requests
             if (event.request.destination === 'document') {
-              return caches.match('/admin/dashboard');
+              return caches.match('/mobile-customer');
             }
           });
       })
@@ -150,14 +149,14 @@ self.addEventListener('notificationclick', (event) => {
 
   if (event.action === 'explore') {
     event.waitUntil(
-      clients.openWindow('/admin/dashboard')
+      clients.openWindow('/mobile-customer')
     );
   } else if (event.action === 'close') {
     // Just close the notification
   } else {
     // Default action - open dashboard
     event.waitUntil(
-      clients.openWindow('/admin/dashboard')
+      clients.openWindow('/mobile-customer')
     );
   }
 });
