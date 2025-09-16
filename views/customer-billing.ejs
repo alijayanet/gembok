@@ -228,7 +228,7 @@
         <img src="/img/<%= typeof settings !== 'undefined' && settings.logo_filename ? settings.logo_filename : 'logo.png' %>" alt="Logo" style="height: 40px; max-width: 80px; border-radius: 10px;">
         Detail Tagihan
       </span>
-      <a href="/customer/dashboard" class="btn btn-back">
+      <a href="/mobile-customer?customer_id=<%= (billingData.customer.id || billingData.customer.customer_id || billingData.customer.phone) %>" class="btn btn-back">
         <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
       </a>
     </div>

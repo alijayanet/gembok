@@ -394,6 +394,28 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-6">
+                        <a href="/customer/billing" class="text-decoration-none">
+                            <div class="card menu-card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-invoice-dollar fs-1 text-success mb-2"></i>
+                                    <h6>Tagihan</h6>
+                                    <small class="text-muted">Lihat detail tagihan</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="/customer/trouble/simple" class="text-decoration-none">
+                            <div class="card menu-card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-exclamation-triangle fs-1 text-danger mb-2"></i>
+                                    <h6>Lapor Gangguan</h6>
+                                    <small class="text-muted">Kirim laporan kendala</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -402,7 +424,7 @@
                 <h6 class="section-title"><i class="fas fa-wifi me-2"></i>Ganti Nama WiFi (SSID)</h6>
                 <form method="POST" action="/mobile-customer/change-ssid">
                     <div class="input-group">
-                        <input type="text" class="form-control" name="ssid" placeholder="Nama WiFi baru" required maxlength="32">
+                        <input type="text" class="form-control" name="ssid" placeholder="Nama WiFi baru" required maxlength="32" value="<%= (data && data.customer && data.customer.ssid) ? data.customer.ssid : '' %>">
                         <button class="btn btn-primary" type="submit">
                             <i class="fas fa-check me-1"></i>Simpan
                         </button>
