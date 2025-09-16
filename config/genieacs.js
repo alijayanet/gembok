@@ -941,6 +941,56 @@ function scheduleMonitoring() {
 // Jalankan penjadwalan monitoring
 scheduleMonitoring();
 
+// Wrapper untuk update SSID berdasarkan nomor telepon pelanggan (digunakan oleh mobile customer routes)
+async function updateSSID(phone, newSSID) {
+    try {
+        const device = await genieacsApi.findDeviceByPhoneNumber(phone);
+        if (!device || !device._id) {
+            return { success: false, error: 'Device tidak ditemukan' };
+        }
+
+        const result = await genieacsApi.setParameterValues(device._id, {
+            'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID': newSSID
+        });
+
+        return {
+            success: true,
+            processingTime: result.processingTime,
+            onuType: result.onuType,
+            mode: result.mode
+        };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Wrapper untuk update Password WiFi berdasarkan nomor telepon pelanggan (digunakan oleh mobile customer routes)
+async function updatePassword(phone, newPassword) {
+    try {
+        if (!newPassword || newPassword.length < 8) {
+            return { success: false, error: 'Password minimal 8 karakter' };
+        }
+
+        const device = await genieacsApi.findDeviceByPhoneNumber(phone);
+        if (!device || !device._id) {
+            return { success: false, error: 'Device tidak ditemukan' };
+        }
+
+        const result = await genieacsApi.setParameterValues(device._id, {
+            'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.KeyPassphrase': newPassword
+        });
+
+        return {
+            success: true,
+            processingTime: result.processingTime,
+            onuType: result.onuType,
+            mode: result.mode
+        };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 module.exports = {
     getDevices: genieacsApi.getDevices,
     getDevice: genieacsApi.getDevice,
@@ -952,5 +1002,7 @@ module.exports = {
     factoryReset: genieacsApi.factoryReset,
     getVirtualParameters: genieacsApi.getVirtualParameters,
     monitorRXPower,
-    monitorOfflineDevices
+    monitorOfflineDevices,
+    updateSSID,
+    updatePassword
 };
