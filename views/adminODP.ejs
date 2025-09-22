@@ -180,7 +180,10 @@ $(function(){
   function ensureMap() {
     if (map) { setTimeout(() => { map.invalidateSize(); }, 200); return; }
     map = L.map('mapPicker').setView(defaultCenter, defaultZoom);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { 
+      attribution: '© <a href="https://www.esri.com/">Esri</a> — Source: Esri, Maxar, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community',
+      maxZoom: 19 
+    }).addTo(map);
     // Centering logic mirip adminGenieacs (lebih dekat, nyaman menandai)
     if (Array.isArray(odpPoints) && odpPoints.length > 0) {
       const bounds = L.latLngBounds(odpPoints.map(p => L.latLng(p.lat, p.lng)));

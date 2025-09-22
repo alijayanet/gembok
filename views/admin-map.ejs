@@ -165,8 +165,9 @@
         }
 
         .status-offline {
-            background-color: #f44336;
-            box-shadow: 0 0 6px rgba(244, 67, 54, 0.5);
+            background-color: #d32f2f;
+            box-shadow: 0 0 8px rgba(211, 47, 47, 0.7);
+            border: 2px solid #ffffff;
         }
 
         /* Custom Leaflet */
@@ -254,24 +255,12 @@
             z-index: 999;
         }
 
-        /* Legend */
-        .map-legend {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 10px;
-            padding: 1rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            z-index: 1000;
-        }
 
         .legend-item {
             display: flex;
             align-items: center;
             margin-bottom: 0.5rem;
-            font-size: 12px;
+            font-size: 14px;
         }
 
         .legend-item:last-child {
@@ -290,14 +279,6 @@
                 min-height: 400px;
             }
 
-            .map-legend {
-                bottom: 10px;
-                right: 10px;
-                left: 10px;
-                width: auto;
-                font-size: 12px;
-                padding: 0.75rem;
-            }
             
             /* Mobile-specific stats card adjustments */
             .stats-card {
@@ -577,10 +558,6 @@
                 font-size: 1.25rem !important;
             }
             
-            .map-legend {
-                padding: 0.5rem;
-                font-size: 11px;
-            }
             
             .device-item {
                 font-size: 13px;
@@ -712,6 +689,227 @@
                                 </div>
                             </div>
 
+                            <!-- Layer Quick Switch -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">🗺️ Layer Peta</label>
+                                <div class="d-grid gap-2">
+                                    <button id="switchToSatellite" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-satellite me-1"></i>Satelit Esri
+                                    </button>
+                <button id="switchToGoogleSat" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-satellite-fill me-1"></i>Google Satelit
+                </button>
+                <button id="switchToGoogleHybrid" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-globe me-1"></i>Hybrid Google
+                </button>
+                <button id="switchToBingSat" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-satellite me-1"></i>Satelit Bing
+                </button>
+                <button id="switchToCartoDb" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-globe me-1"></i>CartoDB
+                </button>
+                <button id="switchToOSM" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-map me-1"></i>OpenStreetMap
+                </button>
+                <button id="switchToCartoDark" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-moon me-1"></i>CartoDB Dark
+                </button>
+                <button id="switchToCartoPositron" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-sun me-1"></i>CartoDB Positron
+                </button>
+                <button id="switchToCartoVoyager" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-compass me-1"></i>CartoDB Voyager
+                </button>
+                <button id="switchToCartoMatter" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-circle me-1"></i>CartoDB Matter
+                </button>
+                <button id="switchToCartoAntique" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-book me-1"></i>CartoDB Antique
+                </button>
+                <button id="switchToCartoEco" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-tree me-1"></i>CartoDB Eco
+                </button>
+                <button id="switchToCartoMidnight" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-moon-stars me-1"></i>CartoDB Midnight
+                </button>
+                <button id="switchToCartoFlatBlue" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-droplet me-1"></i>CartoDB Flat Blue
+                </button>
+                <button id="switchToCartoFlatPurple" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-palette me-1"></i>CartoDB Flat Purple
+                </button>
+                <button id="switchToCartoFlatGreen" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-flower1 me-1"></i>CartoDB Flat Green
+                </button>
+                <button id="switchToCartoFlatRed" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-heart me-1"></i>CartoDB Flat Red
+                </button>
+                <button id="switchToCartoFlatOrange" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-sun me-1"></i>CartoDB Flat Orange
+                </button>
+                <button id="switchToCartoFlatYellow" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-star me-1"></i>CartoDB Flat Yellow
+                </button>
+                <button id="switchToTopo" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-mountain me-1"></i>Topografi
+                </button>
+                <button id="switchToNormal" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-map me-1"></i>Normal
+                </button>
+                <button id="switchToOSM" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-map me-1"></i>OpenStreetMap
+                </button>
+                <button id="switchToCartoDark" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-moon me-1"></i>CartoDB Dark
+                </button>
+                <button id="switchToCartoPositron" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-sun me-1"></i>CartoDB Positron
+                </button>
+                <button id="switchToCartoVoyager" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-compass me-1"></i>CartoDB Voyager
+                </button>
+                <button id="switchToCartoMatter" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-circle me-1"></i>CartoDB Matter
+                </button>
+                <button id="switchToCartoAntique" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-book me-1"></i>CartoDB Antique
+                </button>
+                <button id="switchToCartoEco" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-tree me-1"></i>CartoDB Eco
+                </button>
+                <button id="switchToCartoMidnight" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-moon-stars me-1"></i>CartoDB Midnight
+                </button>
+                <button id="switchToCartoFlatBlue" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-droplet me-1"></i>CartoDB Flat Blue
+                </button>
+                <button id="switchToCartoFlatPurple" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-palette me-1"></i>CartoDB Flat Purple
+                </button>
+                <button id="switchToCartoFlatGreen" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-flower1 me-1"></i>CartoDB Flat Green
+                </button>
+                <button id="switchToCartoFlatRed" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-heart me-1"></i>CartoDB Flat Red
+                </button>
+                <button id="switchToCartoFlatOrange" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-sun me-1"></i>CartoDB Flat Orange
+                </button>
+                <button id="switchToCartoFlatYellow" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-star me-1"></i>CartoDB Flat Yellow
+                </button>
+                <button id="switchToTopo" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-mountain me-1"></i>Topografi
+                </button>
+                <button id="switchToNormal" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-map me-1"></i>Normal
+                </button>
+                <button id="switchToOSM" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-map me-1"></i>OpenStreetMap
+                </button>
+                <button id="switchToCartoDark" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-moon me-1"></i>CartoDB Dark
+                </button>
+                <button id="switchToCartoPositron" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-sun me-1"></i>CartoDB Positron
+                </button>
+                <button id="switchToCartoVoyager" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-compass me-1"></i>CartoDB Voyager
+                </button>
+                <button id="switchToCartoMatter" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-circle me-1"></i>CartoDB Matter
+                </button>
+                <button id="switchToCartoAntique" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-book me-1"></i>CartoDB Antique
+                </button>
+                <button id="switchToCartoEco" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-tree me-1"></i>CartoDB Eco
+                </button>
+                <button id="switchToCartoMidnight" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-moon-stars me-1"></i>CartoDB Midnight
+                </button>
+                <button id="switchToCartoFlatBlue" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-droplet me-1"></i>CartoDB Flat Blue
+                </button>
+                <button id="switchToCartoFlatPurple" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-palette me-1"></i>CartoDB Flat Purple
+                </button>
+                <button id="switchToCartoFlatGreen" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-flower1 me-1"></i>CartoDB Flat Green
+                </button>
+                <button id="switchToCartoFlatRed" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-heart me-1"></i>CartoDB Flat Red
+                </button>
+                <button id="switchToCartoFlatOrange" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-sun me-1"></i>CartoDB Flat Orange
+                </button>
+                <button id="switchToCartoFlatYellow" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-star me-1"></i>CartoDB Flat Yellow
+                </button>
+                <button id="switchToTopo" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-mountain me-1"></i>Topografi
+                </button>
+                <button id="switchToNormal" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-map me-1"></i>Normal
+                </button>
+                                    <button id="switchToStamenSat" class="btn btn-outline-warning btn-sm">
+                                        <i class="bi bi-globe me-1"></i>Stamen Satelit
+                                    </button>
+                                    <button id="switchToMapboxSat" class="btn btn-outline-info btn-sm">
+                                        <i class="bi bi-geo-alt me-1"></i>Mapbox Satelit
+                                    </button>
+                                    <button id="switchToOSM" class="btn btn-outline-dark btn-sm">
+                                        <i class="bi bi-map me-1"></i>OpenStreetMap
+                                    </button>
+                                    <button id="switchToCartoDark" class="btn btn-outline-dark btn-sm">
+                                        <i class="bi bi-moon me-1"></i>CartoDB Dark
+                                    </button>
+                                    <button id="switchToCartoPositron" class="btn btn-outline-light btn-sm">
+                                        <i class="bi bi-sun me-1"></i>CartoDB Positron
+                                    </button>
+                                    <button id="switchToCartoVoyager" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-compass me-1"></i>CartoDB Voyager
+                                    </button>
+                                    <button id="switchToCartoMatter" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-circle me-1"></i>CartoDB Matter
+                                    </button>
+                                    <button id="switchToCartoAntique" class="btn btn-outline-warning btn-sm">
+                                        <i class="bi bi-book me-1"></i>CartoDB Antique
+                                    </button>
+                                    <button id="switchToCartoEco" class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-tree me-1"></i>CartoDB Eco
+                                    </button>
+                                    <button id="switchToCartoMidnight" class="btn btn-outline-dark btn-sm">
+                                        <i class="bi bi-moon-stars me-1"></i>CartoDB Midnight
+                                    </button>
+                                    <button id="switchToCartoFlatBlue" class="btn btn-outline-info btn-sm">
+                                        <i class="bi bi-droplet me-1"></i>CartoDB Flat Blue
+                                    </button>
+                                    <button id="switchToCartoFlatPurple" class="btn btn-outline-warning btn-sm">
+                                        <i class="bi bi-palette me-1"></i>CartoDB Flat Purple
+                                    </button>
+                                    <button id="switchToCartoFlatGreen" class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-flower1 me-1"></i>CartoDB Flat Green
+                                    </button>
+                                    <button id="switchToCartoFlatRed" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-heart me-1"></i>CartoDB Flat Red
+                                    </button>
+                                    <button id="switchToCartoFlatOrange" class="btn btn-outline-warning btn-sm">
+                                        <i class="bi bi-sun me-1"></i>CartoDB Flat Orange
+                                    </button>
+                                    <button id="switchToCartoFlatYellow" class="btn btn-outline-warning btn-sm">
+                                        <i class="bi bi-star me-1"></i>CartoDB Flat Yellow
+                                    </button>
+                <button id="switchToNormal" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-map me-1"></i>Normal
+                </button>
+                <button id="switchToTopo" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-mountain me-1"></i>Topografi
+                </button>
+                                </div>
+                                <small class="text-muted">Atau gunakan layer control di pojok kanan atas</small>
+                            </div>
+
                             <!-- Search -->
                             <div class="mb-3">
                                 <label class="form-label fw-bold">🔍 Cari Perangkat</label>
@@ -788,30 +986,67 @@
                         </div>
                     </div>
 
-                    <!-- Legend -->
-                    <div class="map-legend">
-                        <h6 class="mb-3 fw-bold d-flex align-items-center">
-                            <i class="bi bi-info-circle me-2"></i>Legenda
-                        </h6>
-                        <div class="legend-item d-flex align-items-center mb-2">
-                            <span class="device-status status-online me-2"></span>
-                            <div>
-                                <div class="fw-bold small">Online</div>
-                                <small class="text-muted">Device aktif</small>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="mb-3 fw-bold d-flex align-items-center">
+                                <i class="bi bi-info-circle me-2"></i>Legenda
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="legend-item d-flex align-items-center mb-2">
+                                        <span class="device-status status-online me-2"></span>
+                                        <div>
+                                            <div class="fw-bold small">Online</div>
+                                            <small class="text-muted">Device aktif</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="legend-item d-flex align-items-center mb-2">
+                                        <span class="device-status status-offline me-2"></span>
+                                        <div>
+                                            <div class="fw-bold small">Offline</div>
+                                            <small class="text-muted">Device tidak aktif</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="legend-item d-flex align-items-center mb-2">
+                                        <span class="device-status me-2" style="width: 12px; height: 12px; background: linear-gradient(135deg, #6c757d, #495057); border-radius: 4px;"></span>
+                                        <div>
+                                            <div class="fw-bold small">Tanpa Lokasi</div>
+                                            <small class="text-muted">Belum diset lokasi</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="legend-item d-flex align-items-center mb-2">
-                            <span class="device-status status-offline me-2"></span>
-                            <div>
-                                <div class="fw-bold small">Offline</div>
-                                <small class="text-muted">Device tidak aktif</small>
+                            <hr class="my-3">
+                            <div class="legend-item d-flex align-items-center mb-2">
+                                <div class="me-2" style="width: 20px; height: 3px; background: #2196f3; border-radius: 2px;"></div>
+                                <div>
+                                    <div class="fw-bold small">Kabel ONU-ODP</div>
+                                    <small class="text-muted">Sambungan ke pelanggan</small>
+                                </div>
                             </div>
-                        </div>
-                        <div class="legend-item d-flex align-items-center">
-                            <span class="device-status me-2" style="width: 12px; height: 12px; background: linear-gradient(135deg, #6c757d, #495057); border-radius: 4px;"></span>
-                            <div>
-                                <div class="fw-bold small">Tanpa Lokasi</div>
-                                <small class="text-muted">Belum diset lokasi</small>
+                            <div class="legend-item d-flex align-items-center mb-3">
+                                <div class="me-2" style="width: 20px; height: 3px; background: #ff9800; border-radius: 2px;"></div>
+                                <div>
+                                    <div class="fw-bold small">Kabel ODP-ODP</div>
+                                    <small class="text-muted">Sambungan antar ODP</small>
+                                </div>
+                            </div>
+                            <hr class="my-3">
+                            <div class="legend-item">
+                                <div class="fw-bold small text-primary">
+                                    <i class="bi bi-layers me-1"></i>Layer Control
+                                </div>
+                                <small class="text-muted">Gunakan tombol di pojok kanan atas peta atau tombol quick switch di panel kiri untuk ganti layer peta</small>
                             </div>
                         </div>
                     </div>
@@ -844,6 +1079,8 @@
     let dashAnimId = null;
     let dotAnimId = null;
     let markOdpMode = false;
+    let baseLayers = {};
+    let layerControl = null;
 
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', function() {
@@ -867,11 +1104,186 @@
             scrollWheelZoom: true
         });
 
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Define base layers
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19
-        }).addTo(map);
+        });
+
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© <a href="https://www.esri.com/">Esri</a> — Source: Esri, Maxar, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community',
+            maxZoom: 19
+        });
+
+        const googleSatelliteLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            attribution: '© <a href="https://www.google.com/maps">Google</a>',
+            maxZoom: 20
+        });
+
+        const googleHybridLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            attribution: '© <a href="https://www.google.com/maps">Google</a>',
+            maxZoom: 20
+        });
+
+        const bingSatelliteLayer = L.tileLayer('https://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1', {
+            attribution: '© <a href="https://www.bing.com/maps">Microsoft Bing</a>',
+            subdomains: ['t0', 't1', 't2', 't3'],
+            maxZoom: 19
+        });
+
+        const cartoDbSatelliteLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const stamenSatelliteLayer = L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/satellite/{z}/{x}/{y}.jpg', {
+            attribution: '© <a href="https://stamen.com/">Stamen Design</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 18
+        });
+
+        const mapboxSatelliteLayer = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+            attribution: '© <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 19
+        });
+
+        const openStreetMapSatelliteLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        });
+
+        const cartoDbDarkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbPositronLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbVoyagerLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbMatterLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/matter/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbAntiqueLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/antique/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbEcoLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/eco/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbMidnightLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/midnight/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbFlatBlueLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/flat_blue/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbFlatPurpleLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/flat_purple/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbFlatGreenLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/flat_green/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbFlatRedLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/flat_red/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbFlatOrangeLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/flat_orange/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const cartoDbFlatYellowLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/flat_yellow/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://opentopomap.org/">OpenTopoMap</a> contributors',
+            maxZoom: 17
+        });
+
+        // Store base layers
+        baseLayers = {
+            "Peta Normal": osmLayer,
+            "Satelit Esri": satelliteLayer,
+            "Satelit Google": googleSatelliteLayer,
+            "Hybrid Google": googleHybridLayer,
+            "Satelit Bing": bingSatelliteLayer,
+            "CartoDB": cartoDbSatelliteLayer,
+            "Stamen Satelit": stamenSatelliteLayer,
+            "Mapbox Satelit": mapboxSatelliteLayer,
+            "OpenStreetMap": openStreetMapSatelliteLayer,
+            "CartoDB Dark": cartoDbDarkLayer,
+            "CartoDB Positron": cartoDbPositronLayer,
+            "CartoDB Voyager": cartoDbVoyagerLayer,
+            "CartoDB Matter": cartoDbMatterLayer,
+            "CartoDB Antique": cartoDbAntiqueLayer,
+            "CartoDB Eco": cartoDbEcoLayer,
+            "CartoDB Midnight": cartoDbMidnightLayer,
+            "CartoDB Flat Blue": cartoDbFlatBlueLayer,
+            "CartoDB Flat Purple": cartoDbFlatPurpleLayer,
+            "CartoDB Flat Green": cartoDbFlatGreenLayer,
+            "CartoDB Flat Red": cartoDbFlatRedLayer,
+            "CartoDB Flat Orange": cartoDbFlatOrangeLayer,
+            "CartoDB Flat Yellow": cartoDbFlatYellowLayer,
+            "Topografi": topoLayer
+        };
+
+        // Add default layer (Satelit Esri)
+        satelliteLayer.addTo(map);
+
+        // Add layer control
+        layerControl = L.control.layers(baseLayers).addTo(map);
+
+        // Load saved layer preference
+        const savedLayer = localStorage.getItem('mapLayerPreference');
+        if (savedLayer && baseLayers[savedLayer]) {
+            map.removeLayer(satelliteLayer);
+            baseLayers[savedLayer].addTo(map);
+            console.log(`🗺️ Loaded saved layer preference: ${savedLayer}`);
+        }
+
+        // Save layer preference when changed
+        map.on('baselayerchange', function(e) {
+            const layerName = Object.keys(baseLayers).find(key => baseLayers[key] === e.layer);
+            if (layerName) {
+                localStorage.setItem('mapLayerPreference', layerName);
+                console.log(`🗺️ Layer changed to: ${layerName}`);
+            }
+        });
 
         // Add scale control
         L.control.scale().addTo(map);
@@ -879,7 +1291,7 @@
         // Prepare layer groups
         odpLayerGroup = L.layerGroup().addTo(map);
         cableLayerGroup = L.layerGroup().addTo(map);
-        console.log('🗺️ Map initialized');
+        console.log('🗺️ Map initialized with layer control');
 
         // Handle map click for ODP marking
         map.on('click', async (e) => {
@@ -942,6 +1354,1072 @@
         // Refresh data button in control panel
         document.getElementById('refreshDataBtn').addEventListener('click', function() {
             loadMapData();
+        });
+
+        // Layer quick switch buttons
+        document.getElementById('switchToSatellite').addEventListener('click', function() {
+            if (baseLayers['Satelit Esri']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add satellite layer
+                baseLayers['Satelit Esri'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Satelit Esri');
+                console.log('🗺️ Switched to satellite layer');
+            }
+        });
+
+        document.getElementById('switchToGoogleSat').addEventListener('click', function() {
+            if (baseLayers['Satelit Google']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add Google satellite layer
+                baseLayers['Satelit Google'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Satelit Google');
+                console.log('🗺️ Switched to Google satellite layer');
+            }
+        });
+
+        document.getElementById('switchToGoogleHybrid').addEventListener('click', function() {
+            if (baseLayers['Hybrid Google']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add Google hybrid layer
+                baseLayers['Hybrid Google'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Hybrid Google');
+                console.log('🗺️ Switched to Google hybrid layer');
+            }
+        });
+
+        document.getElementById('switchToBingSat').addEventListener('click', function() {
+            if (baseLayers['Satelit Bing']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add Bing satellite layer
+                baseLayers['Satelit Bing'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Satelit Bing');
+                console.log('🗺️ Switched to Bing satellite layer');
+            }
+        });
+
+        document.getElementById('switchToCartoDb').addEventListener('click', function() {
+            if (baseLayers['CartoDB']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB layer
+                baseLayers['CartoDB'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB');
+                console.log('🗺️ Switched to CartoDB layer');
+            }
+        });
+
+        document.getElementById('switchToOSM').addEventListener('click', function() {
+            if (baseLayers['OpenStreetMap']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add OpenStreetMap layer
+                baseLayers['OpenStreetMap'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'OpenStreetMap');
+                console.log('🗺️ Switched to OpenStreetMap layer');
+            }
+        });
+
+        document.getElementById('switchToCartoDark').addEventListener('click', function() {
+            if (baseLayers['CartoDB Dark']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Dark layer
+                baseLayers['CartoDB Dark'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Dark');
+                console.log('🗺️ Switched to CartoDB Dark layer');
+            }
+        });
+
+        document.getElementById('switchToCartoPositron').addEventListener('click', function() {
+            if (baseLayers['CartoDB Positron']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Positron layer
+                baseLayers['CartoDB Positron'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Positron');
+                console.log('🗺️ Switched to CartoDB Positron layer');
+            }
+        });
+
+        document.getElementById('switchToCartoVoyager').addEventListener('click', function() {
+            if (baseLayers['CartoDB Voyager']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Voyager layer
+                baseLayers['CartoDB Voyager'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Voyager');
+                console.log('🗺️ Switched to CartoDB Voyager layer');
+            }
+        });
+
+        document.getElementById('switchToCartoMatter').addEventListener('click', function() {
+            if (baseLayers['CartoDB Matter']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Matter layer
+                baseLayers['CartoDB Matter'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Matter');
+                console.log('🗺️ Switched to CartoDB Matter layer');
+            }
+        });
+
+        document.getElementById('switchToCartoAntique').addEventListener('click', function() {
+            if (baseLayers['CartoDB Antique']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Antique layer
+                baseLayers['CartoDB Antique'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Antique');
+                console.log('🗺️ Switched to CartoDB Antique layer');
+            }
+        });
+
+        document.getElementById('switchToCartoEco').addEventListener('click', function() {
+            if (baseLayers['CartoDB Eco']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Eco layer
+                baseLayers['CartoDB Eco'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Eco');
+                console.log('🗺️ Switched to CartoDB Eco layer');
+            }
+        });
+
+        document.getElementById('switchToCartoMidnight').addEventListener('click', function() {
+            if (baseLayers['CartoDB Midnight']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Midnight layer
+                baseLayers['CartoDB Midnight'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Midnight');
+                console.log('🗺️ Switched to CartoDB Midnight layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatBlue').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Blue']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Blue layer
+                baseLayers['CartoDB Flat Blue'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Blue');
+                console.log('🗺️ Switched to CartoDB Flat Blue layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatPurple').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Purple']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Purple layer
+                baseLayers['CartoDB Flat Purple'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Purple');
+                console.log('🗺️ Switched to CartoDB Flat Purple layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatGreen').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Green']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Green layer
+                baseLayers['CartoDB Flat Green'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Green');
+                console.log('🗺️ Switched to CartoDB Flat Green layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatRed').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Red']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Red layer
+                baseLayers['CartoDB Flat Red'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Red');
+                console.log('🗺️ Switched to CartoDB Flat Red layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatOrange').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Orange']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Orange layer
+                baseLayers['CartoDB Flat Orange'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Orange');
+                console.log('🗺️ Switched to CartoDB Flat Orange layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatYellow').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Yellow']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Yellow layer
+                baseLayers['CartoDB Flat Yellow'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Yellow');
+                console.log('🗺️ Switched to CartoDB Flat Yellow layer');
+            }
+        });
+
+        document.getElementById('switchToTopo').addEventListener('click', function() {
+            if (baseLayers['Topografi']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add topo layer
+                baseLayers['Topografi'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Topografi');
+                console.log('🗺️ Switched to topo layer');
+            }
+        });
+
+        document.getElementById('switchToNormal').addEventListener('click', function() {
+            if (baseLayers['Peta Normal']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add normal layer
+                baseLayers['Peta Normal'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Peta Normal');
+                console.log('🗺️ Switched to normal layer');
+            }
+        });
+
+        document.getElementById('switchToOSM').addEventListener('click', function() {
+            if (baseLayers['OpenStreetMap']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add OpenStreetMap layer
+                baseLayers['OpenStreetMap'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'OpenStreetMap');
+                console.log('🗺️ Switched to OpenStreetMap layer');
+            }
+        });
+
+        document.getElementById('switchToCartoDark').addEventListener('click', function() {
+            if (baseLayers['CartoDB Dark']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Dark layer
+                baseLayers['CartoDB Dark'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Dark');
+                console.log('🗺️ Switched to CartoDB Dark layer');
+            }
+        });
+
+        document.getElementById('switchToCartoPositron').addEventListener('click', function() {
+            if (baseLayers['CartoDB Positron']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Positron layer
+                baseLayers['CartoDB Positron'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Positron');
+                console.log('🗺️ Switched to CartoDB Positron layer');
+            }
+        });
+
+        document.getElementById('switchToCartoVoyager').addEventListener('click', function() {
+            if (baseLayers['CartoDB Voyager']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Voyager layer
+                baseLayers['CartoDB Voyager'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Voyager');
+                console.log('🗺️ Switched to CartoDB Voyager layer');
+            }
+        });
+
+        document.getElementById('switchToCartoMatter').addEventListener('click', function() {
+            if (baseLayers['CartoDB Matter']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Matter layer
+                baseLayers['CartoDB Matter'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Matter');
+                console.log('🗺️ Switched to CartoDB Matter layer');
+            }
+        });
+
+        document.getElementById('switchToCartoAntique').addEventListener('click', function() {
+            if (baseLayers['CartoDB Antique']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Antique layer
+                baseLayers['CartoDB Antique'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Antique');
+                console.log('🗺️ Switched to CartoDB Antique layer');
+            }
+        });
+
+        document.getElementById('switchToCartoEco').addEventListener('click', function() {
+            if (baseLayers['CartoDB Eco']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Eco layer
+                baseLayers['CartoDB Eco'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Eco');
+                console.log('🗺️ Switched to CartoDB Eco layer');
+            }
+        });
+
+        document.getElementById('switchToCartoMidnight').addEventListener('click', function() {
+            if (baseLayers['CartoDB Midnight']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Midnight layer
+                baseLayers['CartoDB Midnight'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Midnight');
+                console.log('🗺️ Switched to CartoDB Midnight layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatBlue').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Blue']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Blue layer
+                baseLayers['CartoDB Flat Blue'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Blue');
+                console.log('🗺️ Switched to CartoDB Flat Blue layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatPurple').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Purple']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Purple layer
+                baseLayers['CartoDB Flat Purple'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Purple');
+                console.log('🗺️ Switched to CartoDB Flat Purple layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatGreen').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Green']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Green layer
+                baseLayers['CartoDB Flat Green'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Green');
+                console.log('🗺️ Switched to CartoDB Flat Green layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatRed').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Red']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Red layer
+                baseLayers['CartoDB Flat Red'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Red');
+                console.log('🗺️ Switched to CartoDB Flat Red layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatOrange').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Orange']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Orange layer
+                baseLayers['CartoDB Flat Orange'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Orange');
+                console.log('🗺️ Switched to CartoDB Flat Orange layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatYellow').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Yellow']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Yellow layer
+                baseLayers['CartoDB Flat Yellow'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Yellow');
+                console.log('🗺️ Switched to CartoDB Flat Yellow layer');
+            }
+        });
+
+        document.getElementById('switchToTopo').addEventListener('click', function() {
+            if (baseLayers['Topografi']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add topo layer
+                baseLayers['Topografi'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Topografi');
+                console.log('🗺️ Switched to topo layer');
+            }
+        });
+
+        document.getElementById('switchToNormal').addEventListener('click', function() {
+            if (baseLayers['Peta Normal']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add normal layer
+                baseLayers['Peta Normal'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Peta Normal');
+                console.log('🗺️ Switched to normal layer');
+            }
+        });
+
+        document.getElementById('switchToOSM').addEventListener('click', function() {
+            if (baseLayers['OpenStreetMap']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add OpenStreetMap layer
+                baseLayers['OpenStreetMap'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'OpenStreetMap');
+                console.log('🗺️ Switched to OpenStreetMap layer');
+            }
+        });
+
+        document.getElementById('switchToCartoDark').addEventListener('click', function() {
+            if (baseLayers['CartoDB Dark']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Dark layer
+                baseLayers['CartoDB Dark'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Dark');
+                console.log('🗺️ Switched to CartoDB Dark layer');
+            }
+        });
+
+        document.getElementById('switchToCartoPositron').addEventListener('click', function() {
+            if (baseLayers['CartoDB Positron']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Positron layer
+                baseLayers['CartoDB Positron'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Positron');
+                console.log('🗺️ Switched to CartoDB Positron layer');
+            }
+        });
+
+        document.getElementById('switchToCartoVoyager').addEventListener('click', function() {
+            if (baseLayers['CartoDB Voyager']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Voyager layer
+                baseLayers['CartoDB Voyager'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Voyager');
+                console.log('🗺️ Switched to CartoDB Voyager layer');
+            }
+        });
+
+        document.getElementById('switchToCartoMatter').addEventListener('click', function() {
+            if (baseLayers['CartoDB Matter']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Matter layer
+                baseLayers['CartoDB Matter'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Matter');
+                console.log('🗺️ Switched to CartoDB Matter layer');
+            }
+        });
+
+        document.getElementById('switchToCartoAntique').addEventListener('click', function() {
+            if (baseLayers['CartoDB Antique']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Antique layer
+                baseLayers['CartoDB Antique'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Antique');
+                console.log('🗺️ Switched to CartoDB Antique layer');
+            }
+        });
+
+        document.getElementById('switchToCartoEco').addEventListener('click', function() {
+            if (baseLayers['CartoDB Eco']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Eco layer
+                baseLayers['CartoDB Eco'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Eco');
+                console.log('🗺️ Switched to CartoDB Eco layer');
+            }
+        });
+
+        document.getElementById('switchToCartoMidnight').addEventListener('click', function() {
+            if (baseLayers['CartoDB Midnight']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Midnight layer
+                baseLayers['CartoDB Midnight'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Midnight');
+                console.log('🗺️ Switched to CartoDB Midnight layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatBlue').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Blue']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Blue layer
+                baseLayers['CartoDB Flat Blue'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Blue');
+                console.log('🗺️ Switched to CartoDB Flat Blue layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatPurple').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Purple']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Purple layer
+                baseLayers['CartoDB Flat Purple'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Purple');
+                console.log('🗺️ Switched to CartoDB Flat Purple layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatGreen').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Green']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Green layer
+                baseLayers['CartoDB Flat Green'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Green');
+                console.log('🗺️ Switched to CartoDB Flat Green layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatRed').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Red']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Red layer
+                baseLayers['CartoDB Flat Red'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Red');
+                console.log('🗺️ Switched to CartoDB Flat Red layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatOrange').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Orange']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Orange layer
+                baseLayers['CartoDB Flat Orange'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Orange');
+                console.log('🗺️ Switched to CartoDB Flat Orange layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatYellow').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Yellow']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Yellow layer
+                baseLayers['CartoDB Flat Yellow'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Yellow');
+                console.log('🗺️ Switched to CartoDB Flat Yellow layer');
+            }
+        });
+
+        document.getElementById('switchToTopo').addEventListener('click', function() {
+            if (baseLayers['Topografi']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add topo layer
+                baseLayers['Topografi'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Topografi');
+                console.log('🗺️ Switched to topo layer');
+            }
+        });
+
+        document.getElementById('switchToNormal').addEventListener('click', function() {
+            if (baseLayers['Peta Normal']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add normal layer
+                baseLayers['Peta Normal'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Peta Normal');
+                console.log('🗺️ Switched to normal layer');
+            }
+        });
+
+        document.getElementById('switchToStamenSat').addEventListener('click', function() {
+            if (baseLayers['Stamen Satelit']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add Stamen satellite layer
+                baseLayers['Stamen Satelit'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Stamen Satelit');
+                console.log('🗺️ Switched to Stamen satellite layer');
+            }
+        });
+
+        document.getElementById('switchToMapboxSat').addEventListener('click', function() {
+            if (baseLayers['Mapbox Satelit']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add Mapbox satellite layer
+                baseLayers['Mapbox Satelit'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Mapbox Satelit');
+                console.log('🗺️ Switched to Mapbox satellite layer');
+            }
+        });
+
+        document.getElementById('switchToOSM').addEventListener('click', function() {
+            if (baseLayers['OpenStreetMap']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add OpenStreetMap layer
+                baseLayers['OpenStreetMap'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'OpenStreetMap');
+                console.log('🗺️ Switched to OpenStreetMap layer');
+            }
+        });
+
+        document.getElementById('switchToCartoDark').addEventListener('click', function() {
+            if (baseLayers['CartoDB Dark']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Dark layer
+                baseLayers['CartoDB Dark'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Dark');
+                console.log('🗺️ Switched to CartoDB Dark layer');
+            }
+        });
+
+        document.getElementById('switchToCartoPositron').addEventListener('click', function() {
+            if (baseLayers['CartoDB Positron']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Positron layer
+                baseLayers['CartoDB Positron'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Positron');
+                console.log('🗺️ Switched to CartoDB Positron layer');
+            }
+        });
+
+        document.getElementById('switchToCartoVoyager').addEventListener('click', function() {
+            if (baseLayers['CartoDB Voyager']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Voyager layer
+                baseLayers['CartoDB Voyager'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Voyager');
+                console.log('🗺️ Switched to CartoDB Voyager layer');
+            }
+        });
+
+        document.getElementById('switchToCartoMatter').addEventListener('click', function() {
+            if (baseLayers['CartoDB Matter']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Matter layer
+                baseLayers['CartoDB Matter'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Matter');
+                console.log('🗺️ Switched to CartoDB Matter layer');
+            }
+        });
+
+        document.getElementById('switchToCartoAntique').addEventListener('click', function() {
+            if (baseLayers['CartoDB Antique']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Antique layer
+                baseLayers['CartoDB Antique'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Antique');
+                console.log('🗺️ Switched to CartoDB Antique layer');
+            }
+        });
+
+        document.getElementById('switchToCartoEco').addEventListener('click', function() {
+            if (baseLayers['CartoDB Eco']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Eco layer
+                baseLayers['CartoDB Eco'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Eco');
+                console.log('🗺️ Switched to CartoDB Eco layer');
+            }
+        });
+
+        document.getElementById('switchToCartoMidnight').addEventListener('click', function() {
+            if (baseLayers['CartoDB Midnight']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Midnight layer
+                baseLayers['CartoDB Midnight'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Midnight');
+                console.log('🗺️ Switched to CartoDB Midnight layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatBlue').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Blue']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Blue layer
+                baseLayers['CartoDB Flat Blue'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Blue');
+                console.log('🗺️ Switched to CartoDB Flat Blue layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatPurple').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Purple']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Purple layer
+                baseLayers['CartoDB Flat Purple'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Purple');
+                console.log('🗺️ Switched to CartoDB Flat Purple layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatGreen').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Green']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Green layer
+                baseLayers['CartoDB Flat Green'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Green');
+                console.log('🗺️ Switched to CartoDB Flat Green layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatRed').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Red']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Red layer
+                baseLayers['CartoDB Flat Red'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Red');
+                console.log('🗺️ Switched to CartoDB Flat Red layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatOrange').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Orange']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Orange layer
+                baseLayers['CartoDB Flat Orange'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Orange');
+                console.log('🗺️ Switched to CartoDB Flat Orange layer');
+            }
+        });
+
+        document.getElementById('switchToCartoFlatYellow').addEventListener('click', function() {
+            if (baseLayers['CartoDB Flat Yellow']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add CartoDB Flat Yellow layer
+                baseLayers['CartoDB Flat Yellow'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'CartoDB Flat Yellow');
+                console.log('🗺️ Switched to CartoDB Flat Yellow layer');
+            }
+        });
+
+        document.getElementById('switchToNormal').addEventListener('click', function() {
+            if (baseLayers['Peta Normal']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add normal layer
+                baseLayers['Peta Normal'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Peta Normal');
+                console.log('🗺️ Switched to normal layer');
+            }
+        });
+
+        document.getElementById('switchToTopo').addEventListener('click', function() {
+            if (baseLayers['Topografi']) {
+                // Remove current layer
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Add topo layer
+                baseLayers['Topografi'].addTo(map);
+                localStorage.setItem('mapLayerPreference', 'Topografi');
+                console.log('🗺️ Switched to topo layer');
+            }
         });
 
         // Toggle mark ODP mode
@@ -1348,7 +2826,7 @@
                 animateCable([
                     L.latLng(a.lat, a.lng),
                     L.latLng(b.lat, b.lng)
-                ]);
+                ], 'odp-odp');
             }
         });
     }
@@ -1367,18 +2845,28 @@
         return best;
     }
 
-    function animateCable(latlngs) {
+    function animateCable(latlngs, cableType = 'onu-odp') {
         if (!latlngs || latlngs.length < 2) return;
         // Hentikan animasi sebelumnya
         if (animateTimer) clearInterval(animateTimer);
         if (dashAnimId) cancelAnimationFrame(dashAnimId);
         if (dotAnimId) cancelAnimationFrame(dotAnimId);
 
-        const poly = L.polyline(latlngs, { color: '#2196f3', weight: 3, opacity: 0.9, dashArray: '8 12' });
+        // Tentukan warna berdasarkan jenis kabel
+        let cableColor, dotColor;
+        if (cableType === 'odp-odp') {
+            cableColor = '#ff9800'; // Orange untuk ODP ke ODP
+            dotColor = '#ff9800';
+        } else {
+            cableColor = '#2196f3'; // Blue untuk ONU ke ODP
+            dotColor = '#2196f3';
+        }
+
+        const poly = L.polyline(latlngs, { color: cableColor, weight: 3, opacity: 0.9, dashArray: '8 12' });
         cableLayerGroup.addLayer(poly);
 
         // Moving dot di atas jalur
-        const dot = L.circleMarker(latlngs[0], { radius: 5, color: '#2196f3', fillColor: '#2196f3', fillOpacity: 1, pane: 'markerPane' });
+        const dot = L.circleMarker(latlngs[0], { radius: 5, color: dotColor, fillColor: dotColor, fillOpacity: 1, pane: 'markerPane' });
         cableLayerGroup.addLayer(dot);
 
         // Animasi dash offset (efek aliran pada garis)
@@ -1457,7 +2945,7 @@
 
                     <div style="margin-bottom: 4px;">
                         <span class="device-status ${device.status.isOnline ? 'status-online' : 'status-offline'}"></span>
-                        <span style="color: ${device.status.statusText === 'Online' ? '#4caf50' : device.status.statusText === 'Idle' ? '#ff9800' : '#f44336'}; font-weight: 500;">
+                        <span style="color: ${device.status.statusText === 'Online' ? '#4caf50' : device.status.statusText === 'Idle' ? '#ff9800' : '#d32f2f'}; font-weight: 500;">
                             ${device.status.statusText || (device.status.isOnline ? 'Online' : 'Offline')}
                         </span>
                     </div>
