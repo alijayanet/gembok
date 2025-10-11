@@ -243,38 +243,12 @@
 
         /* Improved ODP Marker Styles */
         .odp-marker {
-            width: 20px;
-            height: 20px;
-            border-radius: 5px;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
             background: linear-gradient(135deg, #ff9800, #f57c00);
             border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.5);
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .odp-marker::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: white;
-            border-radius: 50%;
-        }
-
-        .odp-marker:hover {
-            transform: scale(1.1);
-            box-shadow: 0 3px 12px rgba(255, 152, 0, 0.7);
-        }
-
-        /* Enhanced ONU Marker Styles with Icons */
-        .onu-marker {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 6px rgba(255, 152, 0, 0.4);
             position: relative;
             display: flex;
             align-items: center;
@@ -282,62 +256,145 @@
             transition: all 0.3s ease;
         }
 
-        .onu-marker.online {
-            background: linear-gradient(135deg, #4CAF50, #2E7D32);
-        }
-
-        .onu-marker.offline {
-            background: linear-gradient(135deg, #F44336, #C62828);
-        }
-
-        .onu-marker::before {
+        .odp-marker::before {
             font-family: "bootstrap-icons";
-            font-size: 16px;
+            content: "\F4E4"; /* bi-hdd-network icon - perfect for ODP */
+            font-size: 14px;
             color: white;
-            font-weight: bold;
+            font-weight: normal;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .odp-marker:hover {
+            transform: scale(1.15);
+            box-shadow: 0 3px 10px rgba(255, 152, 0, 0.6);
+        }
+
+        /* ODP Marker Animation - subtle */
+        .odp-marker {
+            animation: odp-glow 4s ease-in-out infinite;
+        }
+
+        @keyframes odp-glow {
+            0%, 100% {
+                box-shadow: 0 2px 6px rgba(255, 152, 0, 0.4);
+            }
+            50% {
+                box-shadow: 0 2px 10px rgba(255, 152, 0, 0.6);
+            }
+        }
+
+        /* Enhanced ONU Marker Styles - Modern Pin Style */
+        .onu-marker {
+            width: 44px;
+            height: 54px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+        }
+
+        /* Pin background shape */
+        .onu-marker::after {
+            content: '';
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .onu-marker.online::after {
+            background: linear-gradient(135deg, #34A853 0%, #0F9D58 100%);
+        }
+
+        .onu-marker.offline::after {
+            background: linear-gradient(135deg, #EA4335 0%, #D33B2C 100%);
+        }
+
+        /* White circle in center for icon */
+        .onu-marker .icon-circle {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            top: 8px;
+            left: 8px;
             z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        .onu-marker.online::before {
-            content: "\f460"; /* bi-router icon */
+        .onu-marker .icon-circle::before {
+            font-family: "bootstrap-icons";
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1;
+            content: "\F619"; /* bi-router-fill icon */
         }
 
-        .onu-marker.offline::before {
-            content: "\f460"; /* bi-router icon */
-            opacity: 0.7;
+        .onu-marker.online .icon-circle::before {
+            color: #0F9D58;
+        }
+
+        .onu-marker.offline .icon-circle::before {
+            color: #D33B2C;
         }
 
         .onu-marker:hover {
             transform: scale(1.15);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            filter: drop-shadow(0 6px 15px rgba(0, 0, 0, 0.4));
             z-index: 1000;
         }
 
         .onu-marker.cluster {
-            background: linear-gradient(135deg, #2196F3, #0D47A1);
-        }
-
-        .onu-marker.cluster::before {
-            content: "\f44c"; /* bi-collection icon for clusters */
+            width: 50px;
+            height: 60px;
         }
 
         .onu-marker.cluster::after {
-            content: attr(data-count);
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #4285F4 0%, #1967D2 100%) !important;
+        }
+
+        .onu-marker.cluster .icon-circle {
+            width: 32px;
+            height: 32px;
+            top: 9px;
+            left: 9px;
+        }
+
+        .onu-marker.cluster .icon-circle::before {
+            color: #1967D2;
+            font-size: 20px;
+        }
+
+        .onu-marker.cluster .cluster-badge {
             position: absolute;
-            top: -10px;
-            right: -10px;
+            top: -8px;
+            right: -8px;
             background: #ff5722;
             color: white;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             font-size: 11px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             font-weight: bold;
-            z-index: 3;
+            z-index: 10;
+            border: 2px solid white;
         }
         
         /* Pulse animation for online devices */
@@ -355,6 +412,15 @@
             100% {
                 box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
             }
+        }
+
+        /* Cable styles for better visibility */
+        .odp-cable {
+            filter: drop-shadow(0 0 3px rgba(255, 107, 0, 0.8));
+        }
+
+        .onu-cable {
+            filter: drop-shadow(0 0 2px rgba(33, 150, 243, 0.6));
         }
         
         /* Popup Edit Section Styles */
@@ -3164,8 +3230,8 @@
             const icon = L.divIcon({
                 className: 'custom-marker',
                 html: `<div class="odp-marker" title="${odp.name}"></div>`,
-                iconSize: [20, 20],
-                iconAnchor: [10, 10]
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
             });
             const m = L.marker([odp.lat, odp.lng], { icon });
             const used = odp.used_ports || 0; const total = odp.total_ports || 8;
@@ -3225,21 +3291,39 @@
             if (dotAnimId) cancelAnimationFrame(dotAnimId);
         }
 
-        // Tentukan warna berdasarkan jenis kabel
-        let cableColor, dotColor;
+        // Tentukan warna dan style berdasarkan jenis kabel
+        let cableColor, dotColor, weight, dashArray;
         if (cableType === 'odp-odp') {
-            cableColor = '#ff9800'; // Orange untuk ODP ke ODP
-            dotColor = '#ff9800';
+            cableColor = '#FF6B00'; // Orange terang untuk ODP ke ODP
+            dotColor = '#FF6B00';
+            weight = 4; // Lebih tebal
+            dashArray = '10 8'; // Dash lebih panjang
         } else {
             cableColor = '#2196f3'; // Blue untuk ONU ke ODP
             dotColor = '#2196f3';
+            weight = 3;
+            dashArray = '8 12';
         }
 
-        const poly = L.polyline(latlngs, { color: cableColor, weight: 3, opacity: 0.9, dashArray: '8 12' });
+        const poly = L.polyline(latlngs, { 
+            color: cableColor, 
+            weight: weight, 
+            opacity: 1, // Full opacity
+            dashArray: dashArray,
+            className: cableType === 'odp-odp' ? 'odp-cable' : 'onu-cable'
+        });
         cableLayerGroup.addLayer(poly);
 
-        // Moving dot di atas jalur
-        const dot = L.circleMarker(latlngs[0], { radius: 5, color: dotColor, fillColor: dotColor, fillOpacity: 1, pane: 'markerPane' });
+        // Moving dot di atas jalur - lebih besar untuk ODP
+        const dotRadius = cableType === 'odp-odp' ? 6 : 5;
+        const dot = L.circleMarker(latlngs[0], { 
+            radius: dotRadius, 
+            color: dotColor, 
+            fillColor: dotColor, 
+            fillOpacity: 1, 
+            weight: 2,
+            pane: 'markerPane' 
+        });
         cableLayerGroup.addLayer(dot);
 
         // Animasi dash offset (efek aliran pada garis)
@@ -3302,13 +3386,13 @@
             markerClass += ' cluster';
         }
 
-        let markerHtml = `<div class="${markerClass}" ${deviceCount > 1 ? `data-count="${deviceCount}"` : ''}></div>`;
+        let markerHtml = `<div class="${markerClass}"><div class="icon-circle"></div>${deviceCount > 1 ? `<span class="cluster-badge">${deviceCount}</span>` : ''}</div>`;
 
         return L.divIcon({
             className: 'custom-marker',
             html: markerHtml,
-            iconSize: [32, 32],
-            iconAnchor: [16, 16]
+            iconSize: deviceCount > 1 ? [50, 60] : [44, 54],
+            iconAnchor: deviceCount > 1 ? [25, 60] : [22, 54]
         });
     }
 
@@ -3322,46 +3406,95 @@
             const ssid = device.wifi?.ssid || 'N/A';
             const rxPower = device.status.rxPower;
             const rxPowerColor = rxPower < -25 ? '#f44336' : rxPower < -20 ? '#ff9800' : '#4caf50';
+            
+            // Prepare tags info
+            const tags = device.tags || [];
+            const displayTags = tags.filter(tag => 
+                !tag.startsWith('location:') && 
+                !tag.startsWith('pppoe:') &&
+                !tag.match(/^\d{10,15}$/) // Exclude phone numbers
+            );
+            const tagsDisplay = displayTags.length > 0 
+                ? displayTags.map(tag => `<span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-right: 3px; display: inline-block; margin-bottom: 2px;">${tag}</span>`).join('')
+                : '<span style="color: #999;">Tidak ada tag</span>';
 
             content += `
-                <div style="padding: 8px; font-family: 'Segoe UI', sans-serif; font-size: 13px;" id="device-popup-${device.id}">
-                    <h6 style="margin: 0 0 6px 0; color: #667eea; font-weight: 600; font-size: 14px;">
+                <div style="padding: 8px; font-family: 'Segoe UI', sans-serif; font-size: 13px; max-width: 320px;" id="device-popup-${device.id}">
+                    <h6 style="margin: 0 0 8px 0; color: #667eea; font-weight: 600; font-size: 14px; border-bottom: 2px solid #667eea; padding-bottom: 4px;">
                         <i class="bi bi-router me-1"></i>${device.serialNumber}
-                        ${devices.length > 1 ? ` (${index + 1})` : ''}
+                        ${devices.length > 1 ? ` <span style="color: #999;">(${index + 1})</span>` : ''}
                     </h6>
 
-                    <div style="margin-bottom: 4px;">
+                    <div style="margin-bottom: 6px;">
                         <span class="device-status ${device.status.isOnline ? 'status-online' : 'status-offline'}"></span>
                         <span style="color: ${device.status.statusText === 'Online' ? '#4caf50' : device.status.statusText === 'Idle' ? '#ff9800' : '#d32f2f'}; font-weight: 500;">
                             ${device.status.statusText || (device.status.isOnline ? 'Online' : 'Offline')}
                         </span>
                     </div>
 
-                    <div style="margin-bottom: 4px;">
-                        <strong>PPPoE:</strong> ${device.pppoeUsername}
-                    </div>
+                    <div style="background: #f8f9fa; padding: 6px; border-radius: 4px; margin-bottom: 6px;">
+                        <div style="margin-bottom: 4px;">
+                            <strong style="color: #555;"><i class="bi bi-person-circle" style="color: #2196f3;"></i> PPPoE User:</strong><br>
+                            <span style="color: #333; font-family: monospace;">${device.pppoeUsername}</span>
+                        </div>
+                        
+                        <div style="margin-bottom: 4px;" id="pppoe-status-${device.id}">
+                            <strong style="color: #555;"><i class="bi bi-ethernet" style="color: #ff9800;"></i> PPPoE Status:</strong><br>
+                            <span style="color: #999; font-size: 11px;">Memuat...</span>
+                        </div>
 
-                    <div style="margin-bottom: 4px;">
-                        <strong>Pelanggan:</strong> ${device.customerPhone}
+                        <div style="margin-bottom: 4px;">
+                            <strong style="color: #555;"><i class="bi bi-telephone" style="color: #4caf50;"></i> Pelanggan:</strong><br>
+                            <span style="color: #333;">${device.customerPhone}</span>
+                        </div>
                     </div>
                     
-                    <div style="margin-bottom: 4px;">
-                        <strong>WiFi:</strong> ${ssid}
+                    <div style="margin-bottom: 6px;">
+                        <strong style="color: #555;"><i class="bi bi-wifi" style="color: #667eea;"></i> WiFi SSID:</strong><br>
+                        <span style="color: #333;">${ssid}</span>
+                    </div>
+
+                    <div style="background: #f0f4ff; padding: 6px; border-radius: 4px; margin-bottom: 6px; border-left: 3px solid #667eea;">
+                        <div style="margin-bottom: 4px;">
+                            <strong style="color: #555; font-size: 12px;"><i class="bi bi-people-fill" style="color: #2196f3;"></i> User WiFi 2.4GHz:</strong>
+                            <span style="color: #2196f3; font-weight: 700; background: #e3f2fd; padding: 2px 8px; border-radius: 3px; margin-left: 4px; font-size: 12px;">
+                                ${device.wifi?.connectedUsers24 || 0} perangkat
+                            </span>
+                        </div>
+                        <div>
+                            <strong style="color: #555; font-size: 12px;"><i class="bi bi-people-fill" style="color: #9c27b0;"></i> User WiFi 5GHz:</strong>
+                            <span style="color: #9c27b0; font-weight: 700; background: #f3e5f5; padding: 2px 8px; border-radius: 3px; margin-left: 4px; font-size: 12px;">
+                                ${device.wifi?.connectedUsers5 || 0} perangkat
+                            </span>
+                        </div>
+                        <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid #ddd;">
+                            <strong style="color: #555; font-size: 11px;">Total:</strong>
+                            <span style="color: #4caf50; font-weight: 700; font-size: 12px;">
+                                ${(parseInt(device.wifi?.connectedUsers24 || 0) + parseInt(device.wifi?.connectedUsers5 || 0))} perangkat
+                            </span>
+                        </div>
                     </div>
 
                     ${rxPower ? `
-                        <div style="margin-bottom: 8px;">
-                            <strong>Rx Power:</strong>
-                            <span style="color: ${rxPowerColor}">
+                        <div style="margin-bottom: 6px;">
+                            <strong style="color: #555;"><i class="bi bi-reception-4" style="color: ${rxPowerColor};"></i> Rx Power:</strong>
+                            <span style="color: ${rxPowerColor}; font-weight: 500;">
                                 ${rxPower} dBm
                             </span>
                         </div>
                     ` : ''}
+
+                    <div style="margin-bottom: 8px;">
+                        <strong style="color: #555;"><i class="bi bi-tags" style="color: #9c27b0;"></i> Tags:</strong><br>
+                        <div style="margin-top: 4px;">
+                            ${tagsDisplay}
+                        </div>
+                    </div>
                     
                     <!-- Edit SSID and Password Section -->
                     <div class="popup-edit-section">
                         <div>
-                            <label>Edit SSID:</label>
+                            <label><i class="bi bi-wifi"></i> Edit SSID:</label>
                             <div class="input-group">
                                 <input type="text" id="ssid-input-${device.id}" value="${ssid}" 
                                        placeholder="New SSID">
@@ -3372,7 +3505,7 @@
                         </div>
                         
                         <div>
-                            <label>Edit Password:</label>
+                            <label><i class="bi bi-key"></i> Edit Password:</label>
                             <div class="input-group">
                                 <input type="text" id="password-input-${device.id}" 
                                        placeholder="New Password">
@@ -3384,9 +3517,57 @@
                     </div>
                 </div>
             `;
+            
+            // Load PPPoE status asynchronously
+            setTimeout(() => loadPPPoEStatus(device.pppoeUsername, device.id), 100);
         });
 
         return content;
+    }
+
+    // Function to load PPPoE connection status
+    async function loadPPPoEStatus(pppoeUsername, deviceId) {
+        const statusElement = document.getElementById(`pppoe-status-${deviceId}`);
+        if (!statusElement) return;
+
+        try {
+            const response = await fetch(`/admin/mikrotik/pppoe-active`);
+            const data = await response.json();
+            
+            if (data.success && Array.isArray(data.activeUsers)) {
+                const pppoeUser = data.activeUsers.find(user => user.name === pppoeUsername);
+                
+                if (pppoeUser) {
+                    const uptime = pppoeUser.uptime || 'N/A';
+                    const address = pppoeUser.address || 'N/A';
+                    
+                    statusElement.innerHTML = `
+                        <strong style="color: #555;"><i class="bi bi-ethernet" style="color: #4caf50;"></i> PPPoE Status:</strong><br>
+                        <span style="color: #4caf50; font-weight: 500;">✓ Terkoneksi</span><br>
+                        <span style="font-size: 11px; color: #666;">
+                            <i class="bi bi-globe"></i> IP: <strong>${address}</strong><br>
+                            <i class="bi bi-clock"></i> Uptime: ${uptime}
+                        </span>
+                    `;
+                } else {
+                    statusElement.innerHTML = `
+                        <strong style="color: #555;"><i class="bi bi-ethernet" style="color: #f44336;"></i> PPPoE Status:</strong><br>
+                        <span style="color: #f44336;">✗ Tidak terkoneksi</span>
+                    `;
+                }
+            } else {
+                statusElement.innerHTML = `
+                    <strong style="color: #555;"><i class="bi bi-ethernet" style="color: #999;"></i> PPPoE Status:</strong><br>
+                    <span style="color: #999; font-size: 11px;">Data tidak tersedia</span>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading PPPoE status:', error);
+            statusElement.innerHTML = `
+                <strong style="color: #555;"><i class="bi bi-ethernet" style="color: #999;"></i> PPPoE Status:</strong><br>
+                <span style="color: #999; font-size: 11px;">Gagal memuat</span>
+            `;
+        }
     }
 
     function updateDeviceList(devices) {

@@ -81,6 +81,17 @@
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
+        /* Map modal styling */
+        .modal-xl {
+            max-width: 1200px;
+        }
+        #locationMap {
+            position: relative;
+            z-index: 1;
+        }
+        .leaflet-container {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
         /* Mobile responsive table styles */
         .table-responsive {
             overflow-x: auto;
@@ -1233,7 +1244,7 @@ $(document).ready(function(){
 
 <!-- Modal Set Location -->
 <div class="modal fade" id="mapLocationModal" tabindex="-1" aria-labelledby="mapLocationModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="mapLocationModalLabel">
@@ -1262,7 +1273,7 @@ $(document).ready(function(){
         <!-- Map Container -->
         <div class="mb-3">
           <label class="form-label"><strong>Klik di peta untuk set lokasi:</strong></label>
-          <div id="locationMap" style="height: 300px; border: 1px solid #ddd; border-radius: 8px;"></div>
+          <div id="locationMap" style="height: 500px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></div>
         </div>
 
         <!-- Pilih ODP untuk koneksi (opsional) -->
