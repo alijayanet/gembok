@@ -280,6 +280,34 @@ router.get('/mikrotik/user-stats', adminAuth, async (req, res) => {
   }
 });
 
+// GET: Get active PPPoE connections
+router.get('/mikrotik/pppoe-active', adminAuth, async (req, res) => {
+  try {
+    const { getActivePPPoEConnections } = require('../config/mikrotik');
+    const result = await getActivePPPoEConnections();
+    
+    if (result && result.success) {
+      res.json({ 
+        success: true, 
+        activeUsers: result.data || []
+      });
+    } else {
+      res.json({ 
+        success: false, 
+        message: result?.message || 'Gagal mendapatkan data PPPoE',
+        activeUsers: []
+      });
+    }
+  } catch (err) {
+    console.error('Error getting active PPPoE connections:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: err.message,
+      activeUsers: []
+    });
+  }
+});
+
 // POST: Restart Mikrotik
 router.post('/mikrotik/restart', adminAuth, async (req, res) => {
   try {

@@ -357,7 +357,9 @@ router.get('/map/data', adminAuth, async (req, res) => {
             },
             wifi: {
               ssid,
-              password: wifiPassword
+              password: wifiPassword,
+              connectedUsers24: device.InternetGatewayDevice?.LANDevice?.['1']?.WLANConfiguration?.['1']?.TotalAssociations?._value || 0,
+              connectedUsers5: device.InternetGatewayDevice?.LANDevice?.['1']?.WLANConfiguration?.['5']?.TotalAssociations?._value || 0
             },
             info: {
               manufacturer: device.InternetGatewayDevice?.DeviceInfo?.Manufacturer?._value || 'N/A',
