@@ -241,6 +241,172 @@
             font-size: 12px;
         }
 
+        /* Improved ODP Marker Styles */
+        .odp-marker {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.5);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .odp-marker::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .odp-marker:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 12px rgba(255, 152, 0, 0.7);
+        }
+
+        /* Enhanced ONU Marker Styles with Icons */
+        .onu-marker {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .onu-marker.online {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+        }
+
+        .onu-marker.offline {
+            background: linear-gradient(135deg, #F44336, #C62828);
+        }
+
+        .onu-marker::before {
+            font-family: "bootstrap-icons";
+            font-size: 16px;
+            color: white;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .onu-marker.online::before {
+            content: "\f460"; /* bi-router icon */
+        }
+
+        .onu-marker.offline::before {
+            content: "\f460"; /* bi-router icon */
+            opacity: 0.7;
+        }
+
+        .onu-marker:hover {
+            transform: scale(1.15);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+        }
+
+        .onu-marker.cluster {
+            background: linear-gradient(135deg, #2196F3, #0D47A1);
+        }
+
+        .onu-marker.cluster::before {
+            content: "\f44c"; /* bi-collection icon for clusters */
+        }
+
+        .onu-marker.cluster::after {
+            content: attr(data-count);
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ff5722;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            font-weight: bold;
+            z-index: 3;
+        }
+        
+        /* Pulse animation for online devices */
+        .onu-marker.online.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 25px rgba(76, 175, 80, 0.8);
+            }
+            100% {
+                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            }
+        }
+        
+        /* Popup Edit Section Styles */
+        .popup-edit-section {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .popup-edit-section label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .popup-edit-section input {
+            flex: 1;
+            padding: 4px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .popup-edit-section button {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            color: white;
+        }
+        
+        .popup-edit-section .ssid-button {
+            background-color: #007bff;
+        }
+        
+        .popup-edit-section .password-button {
+            background-color: #28a745;
+        }
+        
+        .popup-edit-section button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .popup-edit-section .input-group {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
         /* Loading Overlay */
         .loading-overlay {
             position: absolute;
@@ -645,12 +811,11 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
             <!-- Map and Controls Row -->
             <div class="row">
                         <!-- Control Panel -->
-                <div class="col-12 col-lg-4 mb-4">
+                <div class="col-12 col-lg-4 mb-4" id="controlPanelContainer" style="display: none;">
                     <div class="control-panel card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <div>
@@ -971,7 +1136,7 @@
                 </div>
 
                 <!-- Map Container -->
-                <div class="col-12 col-lg-8">
+                <div class="col-12" id="mapContainer">
                     <div class="map-container">
                         <div id="map"></div>
 
@@ -984,8 +1149,14 @@
                                 <div class="mt-2">Memuat peta monitoring...</div>
                             </div>
                         </div>
+                        
+                        <!-- Toggle Button for Control Panel -->
+                        <button id="showControlPanelBtn" class="btn btn-primary position-absolute" 
+                                style="top: 10px; left: 10px; z-index: 1000; display: none;"
+                                title="Show Control Panel">
+                            <i class="bi bi-sliders"></i>
+                        </button>
                     </div>
-
                 </div>
             </div>
 
@@ -1078,6 +1249,9 @@
     let animateTimer = null;
     let dashAnimId = null;
     let dotAnimId = null;
+    let odpAnimateTimer = null;
+    let odpDashAnimId = null;
+    let odpDotAnimId = null;
     let markOdpMode = false;
     let baseLayers = {};
     let layerControl = null;
@@ -2574,6 +2748,7 @@
         });
     }
 
+    // Updated loadMapData function with auto-focus capability
     async function loadMapData() {
         try {
             console.log('📍 Loading map data...');
@@ -2593,16 +2768,37 @@
 
                 console.log(`📍 Loaded ${data.devices.length} devices`);
 
-                // Focus map on registered ONU locations if this is the first load
+                // Focus map on registered ONU/ODP locations if this is the first load
                 const devicesWithLocation = data.devices.filter(device => 
                     device.hasLocation && device.location && 
                     (device.location.lat !== -2.5489 || device.location.lng !== 118.0149)
                 );
                 
-                if (devicesWithLocation.length > 0) {
-                    console.log(`🎯 Found ${devicesWithLocation.length} ONUs with registered locations`);
+                const allLocations = [];
+                
+                // Collect device locations
+                devicesWithLocation.forEach(device => {
+                    if (device.location) {
+                        allLocations.push([device.location.lat, device.location.lng]);
+                    }
+                });
+                
+                // Collect ODP locations
+                if (Array.isArray(allODPs)) {
+                    allODPs.forEach(odp => {
+                        if (odp.lat && odp.lng) {
+                            allLocations.push([odp.lat, odp.lng]);
+                        }
+                    });
+                }
+                
+                // Auto-focus map on data if locations exist
+                if (allLocations.length > 0) {
+                    console.log(`🎯 Found ${allLocations.length} locations with data, focusing map`);
+                    const bounds = L.latLngBounds(allLocations);
+                    map.fitBounds(bounds, { padding: [50, 50] });
                 } else {
-                    console.log('🗺️ No registered ONU locations found, using default view');
+                    console.log('🗺️ No registered locations found, using default view');
                 }
 
                 // Render ODPs if available
@@ -2729,8 +2925,8 @@
             const markerIcon = L.divIcon({
                 className: 'custom-marker',
                 html: `<div class="marker-no-location"></div>`,
-                iconSize: [16, 16],
-                iconAnchor: [8, 8]
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
             });
 
             const marker = L.marker([-2.5489, 118.0149], { // Default location
@@ -2747,40 +2943,201 @@
             markers.push(marker);
         });
 
-        // Fit map: hanya fokus jika ada lokasi nyata; jika tidak, biarkan center default (Jakarta)
-        if (markers.length > 0) {
-            const realLocationMarkers = [];
-            Object.keys(devicesByLocation).forEach(locationKey => {
-                const devicesAtLocation = devicesByLocation[locationKey];
-                const firstDevice = devicesAtLocation[0];
-                if (firstDevice.location.lat !== -2.5489 || firstDevice.location.lng !== 118.0149) {
-                    const m = markers.find(marker => 
-                        marker.getLatLng().lat === firstDevice.location.lat && 
-                        marker.getLatLng().lng === firstDevice.location.lng
-                    );
-                    if (m) realLocationMarkers.push(m);
-                }
-            });
-            if (realLocationMarkers.length > 0) {
-                const group = new L.featureGroup(realLocationMarkers);
-                map.fitBounds(group.getBounds().pad(0.15));
-                console.log(`📍 Map focused on ${realLocationMarkers.length} registered ONU locations`);
-            } else {
-                // Tidak mengubah view agar tetap default Jakarta saat pertama buka
-                console.log('📍 No real locations to focus; keeping default Jakarta view');
-            }
-        } else {
-            // Tidak ada marker; tetap di default Jakarta
-            map.setView([-6.2088, 106.8456], 10);
-            console.log('📍 No markers, using default Jakarta center');
-        }
-
-        console.log(`📍 Displayed ${markers.length} markers on map`);
+        // Auto refresh every 5 minutes
+        setInterval(() => {
+            loadMapData();
+        }, 5 * 60 * 1000);
         
-        // Log device location summary
-        const withLocation = Object.keys(devicesByLocation).length;
-        const withoutLocation = devicesWithoutLocation.length;
-        console.log(`📍 Location summary: ${withLocation} locations with devices, ${withoutLocation} devices without location`);
+        // Toggle control panel visibility
+        function toggleControlPanel() {
+            const controlPanel = document.getElementById('controlPanelContainer');
+            const mapContainer = document.getElementById('mapContainer');
+            const showButton = document.getElementById('showControlPanelBtn');
+            
+            if (controlPanel.style.display === 'none') {
+                // Show control panel
+                controlPanel.style.display = 'block';
+                mapContainer.className = 'col-12 col-lg-8';
+                showButton.style.display = 'none';
+            } else {
+                // Hide control panel
+                controlPanel.style.display = 'none';
+                mapContainer.className = 'col-12';
+                showButton.style.display = 'block';
+            }
+            
+            // Trigger map resize
+            if (map) {
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
+            }
+        }
+        
+        // Function to update SSID - Global scope
+        window.updateSSID = function(deviceId) {
+            const ssidInput = document.getElementById(`ssid-input-${deviceId}`);
+            const newSSID = ssidInput.value.trim();
+            
+            if (!newSSID) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'SSID Kosong',
+                    text: 'SSID tidak boleh kosong'
+                });
+                return;
+            }
+            
+            if (!confirm(`Apakah Anda yakin ingin mengubah SSID menjadi "${newSSID}"?`)) {
+                return;
+            }
+            
+            // Disable the button during processing
+            const button = ssidInput.nextElementSibling;
+            const originalText = button.textContent;
+            button.textContent = 'Memproses...';
+            button.disabled = true;
+            
+            // Send request to update SSID
+            fetch('/admin/map/update-wifi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    deviceId: deviceId,
+                    ssid: newSSID
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.results.ssid.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'SSID Berhasil Diubah!',
+                        text: data.results.ssid.message,
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    // Reload map data to reflect changes
+                    setTimeout(() => loadMapData(), 1000);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Mengubah SSID',
+                        text: data.results.ssid?.message || data.message || 'Terjadi kesalahan'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat mengubah SSID'
+                });
+            })
+            .finally(() => {
+                // Re-enable the button
+                button.textContent = originalText;
+                button.disabled = false;
+            });
+        }
+        
+        // Function to update password - Global scope
+        window.updatePassword = function(deviceId) {
+            const passwordInput = document.getElementById(`password-input-${deviceId}`);
+            const newPassword = passwordInput.value.trim();
+            
+            if (!newPassword) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Password Kosong',
+                    text: 'Password tidak boleh kosong'
+                });
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Password Terlalu Pendek',
+                    text: 'Password minimal 8 karakter'
+                });
+                return;
+            }
+            
+            if (!confirm(`Apakah Anda yakin ingin mengubah password WiFi?`)) {
+                return;
+            }
+            
+            // Disable the button during processing
+            const button = passwordInput.nextElementSibling;
+            const originalText = button.textContent;
+            button.textContent = 'Memproses...';
+            button.disabled = true;
+            
+            // Send request to update password
+            fetch('/admin/map/update-wifi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    deviceId: deviceId,
+                    password: newPassword
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.results.password.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Password Berhasil Diubah!',
+                        text: data.results.password.message,
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    // Clear the password input for security
+                    passwordInput.value = '';
+                    // Reload map data to reflect changes
+                    setTimeout(() => loadMapData(), 1000);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Mengubah Password',
+                        text: data.results.password?.message || data.message || 'Terjadi kesalahan'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat mengubah password'
+                });
+            })
+            .finally(() => {
+                // Re-enable the button
+                button.textContent = originalText;
+                button.disabled = false;
+            });
+        }
+        
+        // Setup toggle button event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButton = document.getElementById('toggleControlPanel');
+            const showButton = document.getElementById('showControlPanelBtn');
+            
+            if (toggleButton) {
+                toggleButton.addEventListener('click', toggleControlPanel);
+            }
+            
+            if (showButton) {
+                showButton.addEventListener('click', toggleControlPanel);
+            }
+        });
     }
 
     function renderPermanentCables() {
@@ -2806,9 +3163,9 @@
         allODPs.forEach(odp => {
             const icon = L.divIcon({
                 className: 'custom-marker',
-                html: `<div style="width:18px;height:18px;border-radius:4px;background:#ff9800;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.2)" title="${odp.name}"></div>`,
-                iconSize: [18, 18],
-                iconAnchor: [9, 9]
+                html: `<div class="odp-marker" title="${odp.name}"></div>`,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
             });
             const m = L.marker([odp.lat, odp.lng], { icon });
             const used = odp.used_ports || 0; const total = odp.total_ports || 8;
@@ -2818,15 +3175,25 @@
     }
 
     function renderOdpCables() {
-        if (!allOdpLinks || allOdpLinks.length === 0) return;
-        allOdpLinks.forEach(link => {
+        console.log('🔗 Rendering ODP cables...', allOdpLinks);
+        if (!allOdpLinks || allOdpLinks.length === 0) {
+            console.log('🔗 No ODP links to render');
+            return;
+        }
+        allOdpLinks.forEach((link, index) => {
+            console.log(`🔗 Processing ODP link ${index + 1}:`, link);
             const a = allODPs.find(o => o.id === link.fromOdpId);
             const b = allODPs.find(o => o.id === link.toOdpId);
+            console.log(`🔗 ODP A:`, a);
+            console.log(`🔗 ODP B:`, b);
             if (a && b) {
+                console.log(`🔗 Drawing cable from ODP ${a.name || a.id} to ODP ${b.name || b.id}`);
                 animateCable([
                     L.latLng(a.lat, a.lng),
                     L.latLng(b.lat, b.lng)
                 ], 'odp-odp');
+            } else {
+                console.log(`🔗 Cannot draw cable - missing ODP data`);
             }
         });
     }
@@ -2847,10 +3214,16 @@
 
     function animateCable(latlngs, cableType = 'onu-odp') {
         if (!latlngs || latlngs.length < 2) return;
-        // Hentikan animasi sebelumnya
-        if (animateTimer) clearInterval(animateTimer);
-        if (dashAnimId) cancelAnimationFrame(dashAnimId);
-        if (dotAnimId) cancelAnimationFrame(dotAnimId);
+        // Hentikan animasi sebelumnya berdasarkan jenis kabel
+        if (cableType === 'odp-odp') {
+            if (odpAnimateTimer) clearInterval(odpAnimateTimer);
+            if (odpDashAnimId) cancelAnimationFrame(odpDashAnimId);
+            if (odpDotAnimId) cancelAnimationFrame(odpDotAnimId);
+        } else {
+            if (animateTimer) clearInterval(animateTimer);
+            if (dashAnimId) cancelAnimationFrame(dashAnimId);
+            if (dotAnimId) cancelAnimationFrame(dotAnimId);
+        }
 
         // Tentukan warna berdasarkan jenis kabel
         let cableColor, dotColor;
@@ -2874,14 +3247,16 @@
             const path = poly._path; // SVGPathElement
             if (!path) {
                 // Elemen SVG mungkin belum siap; coba lagi segera
-                dashAnimId = requestAnimationFrame(startDashAnim);
+                const animId = cableType === 'odp-odp' ? 'odpDashAnimId' : 'dashAnimId';
+                window[animId] = requestAnimationFrame(startDashAnim);
                 return;
             }
             let offset = 0;
             const tick = () => {
                 offset = (offset + 2) % 1000;
                 path.style.strokeDashoffset = String(offset);
-                dashAnimId = requestAnimationFrame(tick);
+                const animId = cableType === 'odp-odp' ? 'odpDashAnimId' : 'dashAnimId';
+                window[animId] = requestAnimationFrame(tick);
             };
             tick();
         };
@@ -2900,33 +3275,40 @@
             const lat = from.lat + (to.lat - from.lat) * t;
             const lng = from.lng + (to.lng - from.lng) * t;
             dot.setLatLng([lat, lng]);
+            const animId = cableType === 'odp-odp' ? 'odpDotAnimId' : 'dotAnimId';
             if (t < 1) {
-                dotAnimId = requestAnimationFrame(moveTick);
+                window[animId] = requestAnimationFrame(moveTick);
             } else {
                 // ulangi
                 startTs = null;
-                dotAnimId = requestAnimationFrame(moveTick);
+                window[animId] = requestAnimationFrame(moveTick);
             }
         };
-        dotAnimId = requestAnimationFrame(moveTick);
+        const animId = cableType === 'odp-odp' ? 'odpDotAnimId' : 'dotAnimId';
+        window[animId] = requestAnimationFrame(moveTick);
     }
 
     function createCustomIcon(devices) {
         // Check if any device is online
         const hasOnlineDevice = devices.some(d => d.status.isOnline);
-
-        const iconClass = hasOnlineDevice ? 'marker-online' : 'marker-offline';
         const deviceCount = devices.length;
+
+        // Create improved ONU marker with icon
+        let markerClass = `onu-marker ${hasOnlineDevice ? 'online' : 'offline'}`;
+        if (hasOnlineDevice) {
+            markerClass += ' pulse'; // Add pulsing animation for online devices
+        }
+        if (deviceCount > 1) {
+            markerClass += ' cluster';
+        }
+
+        let markerHtml = `<div class="${markerClass}" ${deviceCount > 1 ? `data-count="${deviceCount}"` : ''}></div>`;
 
         return L.divIcon({
             className: 'custom-marker',
-            html: `
-                <div class="${iconClass}">
-                    ${deviceCount > 1 ? `<span style="position: absolute; top: -8px; right: -8px; background: #ff5722; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center;">${deviceCount}</span>` : ''}
-                </div>
-            `,
-            iconSize: deviceCount > 1 ? [28, 28] : [24, 24],
-            iconAnchor: deviceCount > 1 ? [14, 14] : [12, 12]
+            html: markerHtml,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
         });
     }
 
@@ -2936,8 +3318,13 @@
         devices.forEach((device, index) => {
             if (index > 0) content += '<hr style="margin: 8px 0;">';
 
+            // Prepare WiFi info
+            const ssid = device.wifi?.ssid || 'N/A';
+            const rxPower = device.status.rxPower;
+            const rxPowerColor = rxPower < -25 ? '#f44336' : rxPower < -20 ? '#ff9800' : '#4caf50';
+
             content += `
-                <div style="padding: 8px; font-family: 'Segoe UI', sans-serif; font-size: 13px;">
+                <div style="padding: 8px; font-family: 'Segoe UI', sans-serif; font-size: 13px;" id="device-popup-${device.id}">
                     <h6 style="margin: 0 0 6px 0; color: #667eea; font-weight: 600; font-size: 14px;">
                         <i class="bi bi-router me-1"></i>${device.serialNumber}
                         ${devices.length > 1 ? ` (${index + 1})` : ''}
@@ -2958,20 +3345,43 @@
                         <strong>Pelanggan:</strong> ${device.customerPhone}
                     </div>
                     
-                    ${device.wifi?.ssid ? `
-                        <div style="margin-bottom: 4px;">
-                            <strong>WiFi:</strong> ${device.wifi.ssid}
-                        </div>
-                    ` : ''}
+                    <div style="margin-bottom: 4px;">
+                        <strong>WiFi:</strong> ${ssid}
+                    </div>
 
-                    ${device.status.rxPower ? `
-                        <div style="margin-bottom: 4px;">
+                    ${rxPower ? `
+                        <div style="margin-bottom: 8px;">
                             <strong>Rx Power:</strong>
-                            <span style="color: ${device.status.rxPower < -25 ? '#f44336' : device.status.rxPower < -20 ? '#ff9800' : '#4caf50'}">
-                                ${device.status.rxPower} dBm
+                            <span style="color: ${rxPowerColor}">
+                                ${rxPower} dBm
                             </span>
                         </div>
                     ` : ''}
+                    
+                    <!-- Edit SSID and Password Section -->
+                    <div class="popup-edit-section">
+                        <div>
+                            <label>Edit SSID:</label>
+                            <div class="input-group">
+                                <input type="text" id="ssid-input-${device.id}" value="${ssid}" 
+                                       placeholder="New SSID">
+                                <button class="ssid-button" onclick="updateSSID('${device.id}')">
+                                    Simpan
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label>Edit Password:</label>
+                            <div class="input-group">
+                                <input type="text" id="password-input-${device.id}" 
+                                       placeholder="New Password">
+                                <button class="password-button" onclick="updatePassword('${device.id}')">
+                                    Simpan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
         });
@@ -3160,6 +3570,46 @@
     setInterval(() => {
         loadMapData();
     }, 5 * 60 * 1000);
+    
+    // Toggle control panel visibility
+    function toggleControlPanel() {
+        const controlPanel = document.getElementById('controlPanelContainer');
+        const mapContainer = document.getElementById('mapContainer');
+        const showButton = document.getElementById('showControlPanelBtn');
+        
+        if (controlPanel.style.display === 'none') {
+            // Show control panel
+            controlPanel.style.display = 'block';
+            mapContainer.className = 'col-12 col-lg-8';
+            showButton.style.display = 'none';
+        } else {
+            // Hide control panel
+            controlPanel.style.display = 'none';
+            mapContainer.className = 'col-12';
+            showButton.style.display = 'block';
+        }
+        
+        // Trigger map resize
+        if (map) {
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+        }
+    }
+    
+    // Setup toggle button event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleButton = document.getElementById('toggleControlPanel');
+        const showButton = document.getElementById('showControlPanelBtn');
+        
+        if (toggleButton) {
+            toggleButton.addEventListener('click', toggleControlPanel);
+        }
+        
+        if (showButton) {
+            showButton.addEventListener('click', toggleControlPanel);
+        }
+    });
 </script>
 </body>
 </html>
