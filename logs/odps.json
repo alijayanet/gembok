@@ -1,0 +1,72 @@
+[
+  {
+    "id": "ODC-01",
+    "name": "ODC-SERVER",
+    "lat": -6.252506832036887,
+    "lng": 107.92072657585918,
+    "total_ports": 8
+  },
+  {
+    "id": "ODP01",
+    "name": "ODP-PUSAT",
+    "lat": -6.252641979229611,
+    "lng": 107.92067828556341,
+    "total_ports": 8
+  },
+  {
+    "id": "ODP02",
+    "name": "ODP-TINIH",
+    "lat": -6.25155368812279,
+    "lng": 107.92041537173093,
+    "total_ports": 16
+  },
+  {
+    "id": "ODP03",
+    "name": "ODP-KAPRAN",
+    "lat": -6.2531594501869465,
+    "lng": 107.9210029036628,
+    "total_ports": 8
+  },
+  {
+    "id": "ODP04",
+    "name": "ODP-ERIK",
+    "lat": -6.253183456559118,
+    "lng": 107.92152336573943,
+    "total_ports": 8
+  },
+  {
+    "id": "ODP05",
+    "name": "ODP-SD",
+    "lat": -6.253146113313027,
+    "lng": 107.92259916621744,
+    "total_ports": 8
+  },
+  {
+    "id": "ODP06",
+    "name": "ODP-CODET",
+    "lat": -6.252983403423878,
+    "lng": 107.9231142627057,
+    "total_ports": 8
+  },
+  {
+    "id": "ODP07",
+    "name": "ODP-ATAM",
+    "lat": -6.253674253260054,
+    "lng": 107.92243819856486,
+    "total_ports": 8
+  },
+  {
+    "id": "ODP08",
+    "name": "ODP-COYIH",
+    "lat": -6.254378131055546,
+    "lng": 107.92255349902607,
+    "total_ports": 8
+  },
+  {
+    "id": "4",
+    "name": "ODP-MADRASAH",
+    "lat": -6.255074313778708,
+    "lng": 107.92273056344388,
+    "total_ports": 8
+  }
+]

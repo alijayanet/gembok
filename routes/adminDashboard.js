@@ -421,6 +421,77 @@ router.get('/map/data', adminAuth, async (req, res) => {
   }
 });
 
+// POST: Update SSID dan Password ONU
+router.post('/map/update-wifi', adminAuth, express.json(), async (req, res) => {
+  try {
+    const { deviceId, ssid, password } = req.body;
+    
+    if (!deviceId) {
+      return res.status(400).json({ success: false, message: 'Device ID diperlukan' });
+    }
+
+    console.log(`📡 Updating WiFi for device: ${deviceId}`);
+    console.log(`SSID: ${ssid}, Password: ${password ? '***' : 'not provided'}`);
+
+    const { setParameterValues } = require('../config/genieacs');
+    const results = {};
+
+    // Update SSID jika disediakan
+    if (ssid && ssid.trim()) {
+      try {
+        const ssidResult = await setParameterValues(deviceId, {
+          'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID': ssid.trim()
+        });
+        results.ssid = { success: true, message: 'SSID berhasil diupdate' };
+        
+        // Update SSID 5GHz juga (setParameterValues akan otomatis menambahkan suffix -5G)
+        try {
+          await setParameterValues(deviceId, {
+            'InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.SSID': ssid.trim()
+          });
+          results.ssid5g = { success: true, message: 'SSID 5GHz berhasil diupdate' };
+        } catch (e) {
+          console.log('5GHz SSID update failed, continuing...');
+        }
+      } catch (error) {
+        console.error('Error updating SSID:', error);
+        results.ssid = { success: false, message: error.message };
+      }
+    }
+
+    // Update Password jika disediakan
+    if (password && password.trim()) {
+      if (password.trim().length < 8) {
+        results.password = { success: false, message: 'Password minimal 8 karakter' };
+      } else {
+        try {
+          await setParameterValues(deviceId, {
+            'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.KeyPassphrase': password.trim(),
+            'InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.KeyPassphrase': password.trim()
+          });
+          results.password = { success: true, message: 'Password berhasil diupdate' };
+        } catch (error) {
+          console.error('Error updating password:', error);
+          results.password = { success: false, message: error.message };
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      results,
+      message: 'Update WiFi selesai diproses'
+    });
+
+  } catch (error) {
+    console.error('Error updating WiFi:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error: ' + error.message
+    });
+  }
+});
+
 module.exports = router;
 
 // POST: Tambah titik ODP (admin only)

@@ -68,5 +68,15 @@
     "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
     "lastUpdated": "2025-08-27T14:48:22.186Z",
     "updatedBy": "admin"
+  },
+  "D49E04-F460-RTEGCA95B2A0": {
+    "deviceId": "D49E04-F460-RTEGCA95B2A0",
+    "serial": "D49E04-F460-RTEGCA95B2A0",
+    "tag": "-",
+    "lat": -6.253584,
+    "lng": 107.923062,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-11T06:49:08.604Z",
+    "updatedBy": "admin"
   }
 }
