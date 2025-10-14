@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const pino = require('pino');
 const logger = require('./logger');
+const { getVersion: getWhatsAppWebVersion } = require('./whatsapp-version');
 
 // Import modul-modul yang sudah dibuat
 const WhatsAppCore = require('./whatsapp-core');
@@ -48,12 +49,17 @@ async function connectToWhatsApp() {
         const logLevel = getSetting('whatsapp_log_level', 'silent');
         const pinoLogger = pino({ level: logLevel });
         
+        // Dapatkan versi WhatsApp Web
+        const botName = 'ALIJAYA WhatsApp Bot';
+        const version = await getWhatsAppWebVersion(botName);
+        
         // Buat socket WhatsApp
         const sock = makeWASocket({
             auth: state,
             printQRInTerminal: true,
             logger: pinoLogger,
-            browser: ['ALIJAYA WhatsApp Bot', 'Chrome', '1.0.0']
+            browser: ['ALIJAYA WhatsApp Bot', 'Chrome', '1.0.0'],
+            version: version // Menambahkan versi spesifik
         });
         
         // Set socket ke semua modul

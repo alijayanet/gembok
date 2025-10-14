@@ -6,6 +6,7 @@ const axios = require('axios');
 const fs = require('fs');
 const pino = require('pino');
 const { logger } = require('./logger');
+const { getVersion: getWhatsAppWebVersion } = require('./whatsapp-version');
 const genieacsCommands = require('./genieacs-commands');
 
 const {
@@ -130,7 +131,13 @@ function formatWithHeaderFooter(message) {
     } catch (error) {
         console.error('Error formatting message with header/footer:', error);
         // Fallback ke format default jika ada error
-        return `📱 ALIJAYA DIGITAL NETWORK 📱\n\n${message}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPowered by Alijaya Digital Network`;
+        return `📱 ALIJAYA DIGITAL NETWORK 📱
+
+${message}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Powered by Alijaya Digital Network`;
     }
 }
 
@@ -326,6 +333,10 @@ async function connectToWhatsApp() {
         
         const { state, saveCreds } = authState;
         
+        // Dapatkan versi WhatsApp Web
+        const botName = 'ALIJAYA Genieacs Bot Mikrotik';
+        const version = await getWhatsAppWebVersion(botName);
+        
         sock = makeWASocket({
             auth: state,
             logger,
@@ -333,7 +344,8 @@ async function connectToWhatsApp() {
             connectTimeoutMs: 60000,
             qrTimeout: 40000,
             defaultQueryTimeoutMs: 30000, // Timeout untuk query
-            retryRequestDelayMs: 1000
+            retryRequestDelayMs: 1000,
+            version: version // Menambahkan versi spesifik
         });
         
 
