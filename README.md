@@ -116,6 +116,12 @@ localhost:3001/admin/login // ipserver:3001/admin/login
 - `company_header` - Header untuk pesan WhatsApp
 - `footer_info` - Footer untuk web portal
 
+### Konfigurasi Versi WhatsApp Web
+
+Aplikasi ini menggunakan versi WhatsApp Web yang dapat dikonfigurasi untuk memastikan kompatibilitas dan stabilitas koneksi. Secara default, aplikasi akan mencoba menggunakan versi terbaru WhatsApp Web yang tersedia, namun jika gagal akan menggunakan versi fallback yang telah ditentukan.
+
+Untuk informasi lebih lanjut tentang konfigurasi versi WhatsApp Web, lihat file [WHATSAPP_VERSION.md](WHATSAPP_VERSION.md).
+
 ### 4. Menjalankan Aplikasi
 
 **Development Mode:**
