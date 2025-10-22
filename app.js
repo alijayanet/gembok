@@ -9,8 +9,8 @@ const session = require('express-session');
 const { getSetting } = require('./config/settingsManager');
 const EventEmitter = require('events');
 
-// Import adminAuth untuk digunakan di berbagai endpoint
-const { adminAuth } = require('./routes/adminAuth');
+// Import adminAuth router and middleware
+const { router: adminAuthRouter, adminAuth } = require('./routes/adminAuth');
 
 // Inisialisasi aplikasi Express
 const app = express();
@@ -84,9 +84,6 @@ global.appEvents.on('settings:updated', (newSettings) => {
     }
 })();
 
-// Import route adminAuth
-const { router: adminAuthRouter } = require('./routes/adminAuth');
-
 // Middleware dasar dengan optimasi
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -107,17 +104,23 @@ app.use('/admin/setting', (req, res, next) => {
 });
 
 // Gunakan route adminAuth untuk /admin
-app.use('/admin', adminAuthRouter);
 
 // Import dan gunakan route adminDashboard
-const adminDashboardRouter = require('./routes/adminDashboard');
 const adminODPRouter = require('./routes/adminODP');
+const adminDashboardRouter = require('./routes/adminDashboard');
+const adminGenieacsRouter = require('./routes/adminGenieacs');
+const adminMikrotikRouter = require('./routes/adminMikrotik');
+const adminAnalyticsRouter = require('./routes/adminAnalytics');
+const adminBackupRouter = require('./routes/adminBackup');
+
+// Mount routes dalam urutan yang benar
+app.use('/admin', adminAuthRouter);
 app.use('/admin', adminODPRouter);
 app.use('/admin', adminDashboardRouter);
-
-// Import dan gunakan route adminGenieacs
-const adminGenieacsRouter = require('./routes/adminGenieacs');
 app.use('/admin', adminGenieacsRouter);
+app.use('/admin', adminMikrotikRouter);
+app.use('/admin', adminAnalyticsRouter);
+app.use('/admin', adminBackupRouter);
 
 // Test endpoint untuk memverifikasi mounting
 app.get('/admin/test-mount', (req, res) => {
@@ -365,10 +368,6 @@ app.get('/admin/genieacs/get-location', adminAuth, async (req, res) => {
   }
 });
 
-// Import dan gunakan route adminMikrotik
-const adminMikrotikRouter = require('./routes/adminMikrotik');
-app.use('/admin', adminMikrotikRouter);
-
 // Import dan gunakan route adminHotspot
 const adminHotspotRouter = require('./routes/adminHotspot');
 app.use('/admin/hotspot', adminHotspotRouter);
@@ -384,14 +383,6 @@ app.use('/admin/trouble', adminAuth, adminTroubleReportRouter);
 // Import dan gunakan route adminBilling
 const adminBillingRouter = require('./routes/adminBilling');
 app.use('/admin/billing', adminBillingRouter);
-
-// Import dan gunakan route adminAnalytics
-const adminAnalyticsRouter = require('./routes/adminAnalytics');
-app.use('/admin', adminAnalyticsRouter);
-
-// Import dan gunakan route adminBackup
-const adminBackupRouter = require('./routes/adminBackup');
-app.use('/admin', adminBackupRouter);
 
 // Import dan gunakan route testTroubleReport untuk debugging
 const testTroubleReportRouter = require('./routes/testTroubleReport');
