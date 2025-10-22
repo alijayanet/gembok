@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Jadwal Instalasi - Portal Teknisi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; }
+        
+        .technician-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 24px;
+        }
+        
+        .technician-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .installation-item {
+            border-left: 4px solid #dee2e6;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #fff;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .installation-item:hover {
+            border-left-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+        
+        .installation-item.scheduled { border-left-color: #ffc107; }
+        .installation-item.assigned { border-left-color: #17a2b8; }
+        .installation-item.in_progress { border-left-color: #007bff; }
+        .installation-item.completed { border-left-color: #28a745; }
+        .installation-item.cancelled { border-left-color: #dc3545; }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 767.98px) {
+            .main-content {
+                margin-top: 70px !important;
+                padding: 10px !important;
+                margin-left: 0 !important;
+            }
+            
+            .stats-card {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .stats-number {
+                font-size: 1.5rem;
+            }
+            
+            .installation-item {
+                padding: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Include Technician Responsive Sidebar -->
+        <%- include('../partials/technician-responsive-sidebar', { page: 'installations', settings: settings }) %>
+        
+        <main class="col-md-10 ms-sm-auto main-content">
+            <!-- Header -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-tools me-2"></i>Jadwal Instalasi
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshPage()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center">
+                        <div class="stats-number"><%= stats.total || 0 %></div>
+                        <div class="stats-label">Total Instalasi</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
+                        <div class="stats-number"><%= stats.scheduled || 0 %></div>
+                        <div class="stats-label">Terjadwal</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+                        <div class="stats-number"><%= stats.assigned || 0 %></div>
+                        <div class="stats-label">Ditugaskan</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
+                        <div class="stats-number"><%= stats.in_progress || 0 %></div>
+                        <div class="stats-label">Sedang Berlangsung</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">
+                        <div class="stats-number"><%= stats.completed || 0 %></div>
+                        <div class="stats-label">Selesai</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                        <div class="stats-number"><%= stats.cancelled || 0 %></div>
+                        <div class="stats-label">Dibatalkan</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="card technician-card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Cari Instalasi</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="<%= typeof search !== 'undefined' ? search : '' %>" 
+                                   placeholder="Nomor job, nama pelanggan, atau nomor telepon">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Semua Status</option>
+                                <option value="scheduled" <%= (typeof status !== 'undefined' && status === 'scheduled') ? 'selected' : '' %>>Terjadwal</option>
+                                <option value="assigned" <%= (typeof status !== 'undefined' && status === 'assigned') ? 'selected' : '' %>>Ditugaskan</option>
+                                <option value="in_progress" <%= (typeof status !== 'undefined' && status === 'in_progress') ? 'selected' : '' %>>Sedang Berlangsung</option>
+                                <option value="completed" <%= (typeof status !== 'undefined' && status === 'completed') ? 'selected' : '' %>>Selesai</option>
+                                <option value="cancelled" <%= (typeof status !== 'undefined' && status === 'cancelled') ? 'selected' : '' %>>Dibatalkan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-search me-2"></i>Cari
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <a href="/technician/installations" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Installation Jobs List -->
+            <div class="card technician-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-task me-2"></i>Daftar Instalasi
+                        <span class="badge bg-primary ms-2"><%= installationJobs.length %> instalasi</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <% if (installationJobs && installationJobs.length > 0) { %>
+                        <% installationJobs.forEach(job => { %>
+                            <div class="installation-item <%= job.status %>" data-job-id="<%= job.id %>">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3">
+                                        <h6 class="mb-1 job-number">
+                                            <i class="bi bi-tools me-2"></i><%= job.job_number || 'N/A' %>
+                                        </h6>
+                                        <small class="text-muted installation-date">
+                                            <i class="bi bi-calendar me-1"></i>
+                                            <%= job.installation_date ? new Date(job.installation_date).toLocaleDateString('id-ID') : 'TBD' %>
+                                        </small>
+                                        <% if (job.installation_time) { %>
+                                            <br><small class="text-muted installation-time">
+                                                <i class="bi bi-clock me-1"></i><%= job.installation_time %>
+                                            </small>
+                                        <% } %>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="mb-1 customer-name"><%= job.customer_name || 'N/A' %></h6>
+                                        <small class="text-muted customer-phone">
+                                            <i class="bi bi-telephone me-1"></i><%= job.customer_phone || 'N/A' %>
+                                        </small>
+                                        <% if (job.customer_address) { %>
+                                            <br><small class="text-muted customer-address">
+                                                <i class="bi bi-geo-alt me-1"></i><%= job.customer_address %>
+                                            </small>
+                                        <% } %>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <h6 class="mb-1 package-name"><%= job.package_name || 'N/A' %></h6>
+                                        <small class="text-muted package-price">
+                                            <i class="bi bi-currency-dollar me-1"></i>
+                                            <%= job.package_price ? new Intl.NumberFormat('id-ID').format(job.package_price) : 'N/A' %>
+                                        </small>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <span class="badge status-badge 
+                                            <%= job.status === 'scheduled' ? 'bg-warning' : '' %>
+                                            <%= job.status === 'assigned' ? 'bg-info' : '' %>
+                                            <%= job.status === 'in_progress' ? 'bg-primary' : '' %>
+                                            <%= job.status === 'completed' ? 'bg-success' : '' %>
+                                            <%= job.status === 'cancelled' ? 'bg-danger' : '' %>">
+                                            <%= job.status === 'scheduled' ? 'Terjadwal' : '' %>
+                                            <%= job.status === 'assigned' ? 'Ditugaskan' : '' %>
+                                            <%= job.status === 'in_progress' ? 'Sedang Berlangsung' : '' %>
+                                            <%= job.status === 'completed' ? 'Selesai' : '' %>
+                                            <%= job.status === 'cancelled' ? 'Dibatalkan' : '' %>
+                                        </span>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="viewJobDetails('<%= job.id %>')">
+                                                    <i class="bi bi-eye me-2"></i>Lihat Detail
+                                                </a></li>
+                                                <% if (job.status === 'scheduled' || job.status === 'assigned') { %>
+                                                    <li><a class="dropdown-item" href="#" onclick="startInstallation('<%= job.id %>')">
+                                                        <i class="bi bi-play-circle me-2"></i>Mulai Instalasi
+                                                    </a></li>
+                                                <% } %>
+                                                <% if (job.status === 'in_progress') { %>
+                                                    <li><a class="dropdown-item" href="#" onclick="completeInstallation('<%= job.id %>')">
+                                                        <i class="bi bi-check-circle me-2"></i>Selesai
+                                                    </a></li>
+                                                <% } %>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <% if (job.notes) { %>
+                                    <div class="mt-2">
+                                        <small class="text-muted job-notes">
+                                            <i class="bi bi-chat-text me-1"></i><strong>Catatan:</strong> <%= job.notes %>
+                                        </small>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (job.equipment_needed) { %>
+                                    <div class="mt-2">
+                                        <small class="text-muted equipment-needed">
+                                            <i class="bi bi-tools me-1"></i><strong>Peralatan:</strong> <%= job.equipment_needed %>
+                                        </small>
+                                    </div>
+                                <% } %>
+                            </div>
+                        <% }); %>
+                        
+                        <!-- Pagination -->
+                        <% if (pagination && pagination.totalPages > 1) { %>
+                            <nav aria-label="Installation pagination" class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    <% if (pagination.hasPrev) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=<%= pagination.currentPage - 1 %><%= search ? '&search=' + search : '' %><%= status ? '&status=' + status : '' %>">
+                                                <i class="bi bi-chevron-left"></i> Sebelumnya
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                                        <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                                            <a class="page-link" href="?page=<%= i %><%= search ? '&search=' + search : '' %><%= status ? '&status=' + status : '' %>"><%= i %></a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% if (pagination.hasNext) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=<%= pagination.currentPage + 1 %><%= search ? '&search=' + search : '' %><%= status ? '&status=' + status : '' %>">
+                                                Selanjutnya <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+                        <% } %>
+                    <% } else { %>
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3 text-muted">Tidak ada instalasi</h5>
+                            <p class="text-muted">
+                                <% if (search || status) { %>
+                                    Tidak ada instalasi yang sesuai dengan filter yang dipilih.
+                                    <a href="/technician/installations" class="text-decoration-none">Reset filter</a>
+                                <% } else { %>
+                                    Belum ada jadwal instalasi yang ditugaskan kepada Anda.
+                                <% } %>
+                            </p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function refreshPage() {
+        window.location.reload();
+    }
+    
+    let currentJobId = null;
+    let currentJobData = null;
+    
+    function viewJobDetails(jobId) {
+        currentJobId = jobId;
+        
+        // Get job data from the current page
+        const jobElement = document.querySelector(`[data-job-id="${jobId}"]`);
+        if (!jobElement) {
+            alert('Data job tidak ditemukan');
+            return;
+        }
+        
+        // Extract job data from DOM
+        currentJobData = {
+            id: jobId,
+            job_number: jobElement.querySelector('.job-number').textContent,
+            customer_name: jobElement.querySelector('.customer-name').textContent,
+            customer_phone: jobElement.querySelector('.customer-phone').textContent,
+            customer_address: jobElement.querySelector('.customer-address') ? jobElement.querySelector('.customer-address').textContent : 'N/A',
+            package_name: jobElement.querySelector('.package-name').textContent,
+            package_price: jobElement.querySelector('.package-price') ? jobElement.querySelector('.package-price').textContent : 'N/A',
+            installation_date: jobElement.querySelector('.installation-date') ? jobElement.querySelector('.installation-date').textContent : 'N/A',
+            installation_time: jobElement.querySelector('.installation-time') ? jobElement.querySelector('.installation-time').textContent : 'N/A',
+            status: jobElement.querySelector('.status-badge') ? jobElement.querySelector('.status-badge').textContent : 'N/A',
+            notes: jobElement.querySelector('.job-notes') ? jobElement.querySelector('.job-notes').textContent : 'Tidak ada catatan',
+            equipment_needed: jobElement.querySelector('.equipment-needed') ? jobElement.querySelector('.equipment-needed').textContent : 'Tidak ada peralatan khusus'
+        };
+        
+        // Populate modal content
+        populateJobDetailsModal(currentJobData);
+        
+        // Show/hide action buttons based on status
+        const startBtn = document.getElementById('startInstallationBtn');
+        const completeBtn = document.getElementById('completeInstallationBtn');
+        
+        if (currentJobData.status === 'Terjadwal' || currentJobData.status === 'Ditugaskan') {
+            startBtn.style.display = 'inline-block';
+            startBtn.onclick = function() { showStartInstallationModal(); };
+        } else {
+            startBtn.style.display = 'none';
+        }
+        
+        if (currentJobData.status === 'Sedang Berlangsung') {
+            completeBtn.style.display = 'inline-block';
+            completeBtn.onclick = function() { showCompleteInstallationModal(); };
+        } else {
+            completeBtn.style.display = 'none';
+        }
+        
+        // Show modal
+        new bootstrap.Modal(document.getElementById('jobDetailsModal')).show();
+    }
+    
+    function populateJobDetailsModal(jobData) {
+        const content = document.getElementById('jobDetailsContent');
+        
+        content.innerHTML = 
+            '<div class="row">' +
+                '<div class="col-md-6">' +
+                    '<div class="card mb-3">' +
+                        '<div class="card-header">' +
+                            '<h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informasi Job</h6>' +
+                        '</div>' +
+                        '<div class="card-body">' +
+                            '<p><strong>Nomor Job:</strong> ' + jobData.job_number + '</p>' +
+                            '<p><strong>Status:</strong> ' +
+                                '<span class="badge bg-primary">' + jobData.status + '</span>' +
+                            '</p>' +
+                            '<p><strong>Tanggal Instalasi:</strong> ' + jobData.installation_date + '</p>' +
+                            '<p><strong>Waktu Instalasi:</strong> ' + jobData.installation_time + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                    '<div class="card mb-3">' +
+                        '<div class="card-header">' +
+                            '<h6 class="mb-0"><i class="bi bi-person me-2"></i>Informasi Pelanggan</h6>' +
+                        '</div>' +
+                        '<div class="card-body">' +
+                            '<p><strong>Nama:</strong> ' + jobData.customer_name + '</p>' +
+                            '<p><strong>Telepon:</strong> ' + jobData.customer_phone + '</p>' +
+                            '<p><strong>Alamat:</strong> ' + jobData.customer_address + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            
+            '<div class="row">' +
+                '<div class="col-md-6">' +
+                    '<div class="card mb-3">' +
+                        '<div class="card-header">' +
+                            '<h6 class="mb-0"><i class="bi bi-box me-2"></i>Paket Internet</h6>' +
+                        '</div>' +
+                        '<div class="card-body">' +
+                            '<p><strong>Nama Paket:</strong> ' + jobData.package_name + '</p>' +
+                            '<p><strong>Harga:</strong> ' + jobData.package_price + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                    '<div class="card mb-3">' +
+                        '<div class="card-header">' +
+                            '<h6 class="mb-0"><i class="bi bi-tools me-2"></i>Detail Teknis</h6>' +
+                        '</div>' +
+                        '<div class="card-body">' +
+                            '<p><strong>Peralatan:</strong> ' + jobData.equipment_needed + '</p>' +
+                            '<p><strong>Catatan:</strong> ' + jobData.notes + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+    }
+    
+    function showStartInstallationModal() {
+        // Hide job details modal
+        bootstrap.Modal.getInstance(document.getElementById('jobDetailsModal')).hide();
+        
+        // Show start installation modal
+        new bootstrap.Modal(document.getElementById('startInstallationModal')).show();
+    }
+    
+    function showCompleteInstallationModal() {
+        // Hide job details modal
+        bootstrap.Modal.getInstance(document.getElementById('jobDetailsModal')).hide();
+        
+        // Show complete installation modal
+        new bootstrap.Modal(document.getElementById('completeInstallationModal')).show();
+    }
+    
+    function startInstallation(jobId) {
+        currentJobId = jobId;
+        showStartInstallationModal();
+    }
+    
+    function completeInstallation(jobId) {
+        currentJobId = jobId;
+        showCompleteInstallationModal();
+    }
+    
+    // Event listeners for modal buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        // Start installation confirmation
+        document.getElementById('confirmStartInstallation').addEventListener('click', function() {
+            if (currentJobId) {
+                updateInstallationStatus(currentJobId, 'in_progress');
+            }
+        });
+        
+        // Complete installation confirmation
+        document.getElementById('confirmCompleteInstallation').addEventListener('click', function() {
+            if (currentJobId) {
+                const completionNotes = document.getElementById('completionNotes').value;
+                updateInstallationStatus(currentJobId, 'completed', completionNotes);
+            }
+        });
+    });
+    
+    function updateInstallationStatus(jobId, newStatus, notes) {
+        if (!notes) notes = '';
+        
+        // Show loading state
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses...';
+        btn.disabled = true;
+        
+        // Prepare data for API call
+        const updateData = {
+            jobId: jobId,
+            status: newStatus,
+            notes: notes
+        };
+        
+        // Make actual API call to update installation status
+        fetch('/technician/installations/update-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updateData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                alert('Status instalasi berhasil diubah menjadi "' + getStatusText(newStatus) + '"');
+                
+                // Reset form and close modal
+                if (newStatus === 'completed') {
+                    document.getElementById('completionNotes').value = '';
+                    bootstrap.Modal.getInstance(document.getElementById('completeInstallationModal')).hide();
+                } else {
+                    bootstrap.Modal.getInstance(document.getElementById('startInstallationModal')).hide();
+                }
+                
+                // Refresh page to show updated status
+                refreshPage();
+            } else {
+                // Show error message
+                alert('Gagal mengupdate status: ' + (data.message || 'Terjadi kesalahan'));
+                
+                // Reset button state
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error updating installation status:', error);
+            alert('Terjadi kesalahan saat mengupdate status instalasi');
+            
+            // Reset button state
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+    
+    function getStatusText(status) {
+        const statusMap = {
+            'scheduled': 'Terjadwal',
+            'assigned': 'Ditugaskan',
+            'in_progress': 'Sedang Berlangsung',
+            'completed': 'Selesai',
+            'cancelled': 'Dibatalkan'
+        };
+        return statusMap[status] || status;
+    }
+    
+    // Auto-refresh every 5 minutes
+    setInterval(function() {
+        // Only refresh if user is not actively using the page
+        if (!document.hidden) {
+            refreshPage();
+        }
+    }, 5 * 60 * 1000);
+</script>
+
+<!-- Job Details Modal -->
+<div class="modal fade" id="jobDetailsModal" tabindex="-1" aria-labelledby="jobDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jobDetailsModalLabel">
+                    <i class="bi bi-info-circle me-2"></i>Detail Instalasi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="jobDetailsContent">
+                <!-- Content will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-primary" id="startInstallationBtn" style="display: none;">
+                    <i class="bi bi-play-circle me-2"></i>Mulai Instalasi
+                </button>
+                <button type="button" class="btn btn-success" id="completeInstallationBtn" style="display: none;">
+                    <i class="bi bi-check-circle me-2"></i>Selesai Instalasi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Start Installation Modal -->
+<div class="modal fade" id="startInstallationModal" tabindex="-1" aria-labelledby="startInstallationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="startInstallationModalLabel">
+                    <i class="bi bi-play-circle me-2"></i>Mulai Instalasi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin memulai instalasi ini?</p>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Status akan berubah menjadi "Sedang Berlangsung"</strong>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="confirmStartInstallation">
+                    <i class="bi bi-play-circle me-2"></i>Ya, Mulai Instalasi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complete Installation Modal -->
+<div class="modal fade" id="completeInstallationModal" tabindex="-1" aria-labelledby="completeInstallationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="completeInstallationModalLabel">
+                    <i class="bi bi-check-circle me-2"></i>Selesai Instalasi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah instalasi sudah selesai?</p>
+                <div class="form-group">
+                    <label for="completionNotes" class="form-label">Catatan Penyelesaian</label>
+                    <textarea class="form-control" id="completionNotes" rows="3" 
+                              placeholder="Catatan tambahan tentang instalasi yang telah selesai"></textarea>
+                </div>
+                <div class="alert alert-success mt-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Status akan berubah menjadi "Selesai"</strong>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-success" id="confirmCompleteInstallation">
+                    <i class="bi bi-check-circle me-2"></i>Ya, Selesai
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

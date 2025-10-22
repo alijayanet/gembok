@@ -1,0 +1,150 @@
+<style>
+.technician-sidebar-link {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+.technician-sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+    transform: translateX(5px);
+}
+
+.technician-sidebar-link.active {
+    background: #ffffff !important;
+    color: #333333 !important;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.technician-sidebar-link.active:hover {
+    background: #f8f9fa !important;
+    color: #333333 !important;
+    transform: translateX(5px);
+}
+
+.technician-sidebar-link.active i {
+    color: #667eea !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -250px;
+        width: 250px;
+        height: 100vh;
+        z-index: 1050;
+        transition: left 0.3s ease;
+        overflow-y: auto;
+    }
+    
+    .sidebar.show {
+        left: 0;
+    }
+    
+    .technician-sidebar-link {
+        font-size: 1rem;
+        padding: 12px 16px !important;
+    }
+    
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1049;
+        display: none;
+    }
+    
+    .sidebar-overlay.show {
+        display: block;
+    }
+}
+</style>
+
+<!-- Mobile sidebar toggle button -->
+<button class="btn btn-primary d-md-none position-fixed" style="top: 10px; left: 10px; z-index: 1051;" onclick="toggleSidebar()">
+    <i class="bi bi-list"></i>
+</button>
+
+<!-- Mobile overlay -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<nav class="col-md-2 sidebar" id="technicianSidebar" style="background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; min-height: 100vh; padding: 2rem;">
+    <h6 class="text-center mb-4 fw-bold">Portal Teknisi</h6>
+    
+    <a href="/technician/dashboard" class="d-block text-decoration-none p-3 mb-2 technician-sidebar-link <%= (typeof page !== 'undefined' && (page === 'dashboard' || page === 'monitoring')) ? 'active' : 'text-white' %>">
+        <i class="bi bi-house me-2"></i> Dashboard
+    </a>
+    <a href="/technician/customers" class="d-block text-decoration-none p-3 mb-2 technician-sidebar-link <%= (typeof page !== 'undefined' && page === 'customers') ? 'active' : 'text-white' %>">
+        <i class="bi bi-people me-2"></i> Pelanggan
+    </a>
+    <a href="/technician/installations" class="d-block text-decoration-none p-3 mb-2 technician-sidebar-link <%= (typeof page !== 'undefined' && page === 'installations') ? 'active' : 'text-white' %>">
+        <i class="bi bi-tools me-2"></i> Instalasi
+    </a>
+    <a href="/technician/troubletickets" class="d-block text-decoration-none p-3 mb-2 technician-sidebar-link <%= (typeof page !== 'undefined' && page === 'troubletickets') ? 'active' : 'text-white' %>">
+        <i class="bi bi-exclamation-triangle me-2"></i> Gangguan
+    </a>
+    <a href="/technician/monitoring" class="d-block text-decoration-none p-3 mb-2 technician-sidebar-link <%= (typeof page !== 'undefined' && page === 'monitoring') ? 'active' : 'text-white' %>">
+        <i class="bi bi-graph-up me-2"></i> Monitoring
+    </a>
+    <a href="/technician/mapping" class="d-block text-decoration-none p-3 mb-2 technician-sidebar-link <%= (typeof page !== 'undefined' && page === 'mapping') ? 'active' : 'text-white' %>">
+        <i class="bi bi-geo-alt me-2"></i> Mapping
+    </a>
+    
+    <% if (typeof technician !== 'undefined' && (technician.role === 'collector' || technician.role === 'field_officer')) { %>
+    <a href="/technician/payments" class="d-block text-decoration-none p-3 mb-2 technician-sidebar-link <%= (typeof page !== 'undefined' && page === 'payments') ? 'active' : 'text-white' %>">
+        <i class="bi bi-credit-card me-2"></i> Pembayaran
+    </a>
+    <% } %>
+    
+    <hr class="text-white my-4">
+    
+    <a href="/technician/logout" class="d-block text-white text-decoration-none p-3 technician-sidebar-link">
+        <i class="bi bi-box-arrow-right me-2"></i> Logout
+    </a>
+    
+    <% if (typeof technician !== 'undefined') { %>
+    <div class="mt-4 p-3 bg-white bg-opacity-10 rounded">
+        <small class="d-block text-white-50">Logged in as:</small>
+        <small class="d-block text-white fw-bold"><%= technician.name || technician.phone || 'Teknisi' %></small>
+        <small class="d-block text-white-50">Role: <%= technician.role || 'technician' %></small>
+    </div>
+    <% } %>
+</nav>
+
+<script>
+// Mobile sidebar toggle function
+function toggleSidebar() {
+    const sidebar = document.getElementById('technicianSidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('show');
+        overlay.classList.toggle('show');
+    }
+}
+
+// Close sidebar when clicking on main content (mobile)
+document.addEventListener('DOMContentLoaded', function() {
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('technicianSidebar');
+                const overlay = document.querySelector('.sidebar-overlay');
+                
+                if (sidebar && sidebar.classList.contains('show')) {
+                    sidebar.classList.remove('show');
+                    overlay.classList.remove('show');
+                }
+            }
+        });
+    }
+});
+</script>

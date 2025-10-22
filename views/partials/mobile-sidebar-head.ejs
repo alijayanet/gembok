@@ -1,0 +1,76 @@
+<!-- Mobile Sidebar Enhancement - Include this in admin pages -->
+<link rel="stylesheet" href="/css/mobile-sidebar.css">
+<script src="/js/mobile-sidebar.js" defer></script>
+
+<!-- Additional mobile-specific meta tags -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- Preload critical resources -->
+<link rel="preload" href="/css/mobile-sidebar.css" as="style">
+<link rel="preload" href="/js/mobile-sidebar.js" as="script">
+
+<!-- Critical CSS for mobile sidebar -->
+<style>
+/* Critical mobile sidebar styles - inline for performance */
+@media (max-width: 991.98px) {
+    .sidebar, #sidebar, #adminSidebar, #technicianSidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: -280px !important;
+        width: 280px !important;
+        height: 100vh !important;
+        z-index: 1050 !important;
+        transition: transform 0.3s ease !important;
+        overflow: hidden !important;
+        transform: translateX(-100%) !important;
+    }
+    
+    .sidebar.show, #sidebar.show, #adminSidebar.show, #technicianSidebar.show {
+        transform: translateX(0) !important;
+        left: 0 !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        margin-top: 60px !important;
+        width: 100% !important;
+    }
+    
+    .sidebar-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: rgba(0,0,0,0.5) !important;
+        z-index: 1049 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .sidebar-overlay.show {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+}
+
+/* Prevent body scroll when sidebar is open */
+body.sidebar-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    .sidebar a, #sidebar a, #adminSidebar a, #technicianSidebar a {
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+}
+</style>

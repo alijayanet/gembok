@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - <%= appSettings.companyHeader %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .payment-card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .success-icon { font-size: 4rem; color: #28a745; }
+        .pending-icon { font-size: 4rem; color: #ffc107; }
+        .error-icon { font-size: 4rem; color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card payment-card">
+                    <div class="card-body text-center p-5">
+                        <% if (status === 'success' || transaction_status === 'settlement') { %>
+                            <i class="bi bi-check-circle-fill success-icon mb-3"></i>
+                            <h3 class="text-success mb-3">Pembayaran Berhasil!</h3>
+                            <p class="text-muted mb-4">
+                                Pembayaran Anda telah berhasil diproses. 
+                                Terima kasih telah mempercayai layanan kami.
+                            </p>
+                        <% } else if (status === 'pending' || transaction_status === 'pending') { %>
+                            <i class="bi bi-clock-fill pending-icon mb-3"></i>
+                            <h3 class="text-warning mb-3">Pembayaran Pending</h3>
+                            <p class="text-muted mb-4">
+                                Pembayaran Anda sedang diproses. 
+                                Mohon tunggu beberapa saat untuk konfirmasi.
+                            </p>
+                        <% } else { %>
+                            <i class="bi bi-x-circle-fill error-icon mb-3"></i>
+                            <h3 class="text-danger mb-3">Pembayaran Gagal</h3>
+                            <p class="text-muted mb-4">
+                                Maaf, pembayaran Anda tidak dapat diproses. 
+                                Silakan coba lagi atau hubungi admin.
+                            </p>
+                        <% } %>
+
+                        <% if (order_id) { %>
+                            <div class="alert alert-info">
+                                <strong>Order ID:</strong> <%= order_id %>
+                            </div>
+                        <% } %>
+
+                        <div class="d-grid gap-2">
+                            <a href="/customer" class="btn btn-primary">
+                                <i class="bi bi-house"></i> Kembali ke Dashboard
+                            </a>
+                            <a href="/customer/billing/invoices" class="btn btn-outline-secondary">
+                                <i class="bi bi-receipt"></i> Lihat Tagihan
+                            </a>
+                        </div>
+
+                        <div class="mt-4">
+                            <small class="text-muted">
+                                <i class="bi bi-telephone"></i> <%= appSettings.contact_phone || '0812-3456-7890' %> | 
+                                <i class="bi bi-whatsapp"></i> <%= appSettings.contact_whatsapp || '081947215703' %>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

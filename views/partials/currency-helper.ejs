@@ -1,0 +1,59 @@
+<!-- Currency Helper Functions -->
+<script>
+// Format currency tanpa desimal (menghilangkan .00)
+function formatCurrency(amount) {
+    if (!amount && amount !== 0) return 'Rp 0';
+    
+    // Parse amount dan buat integer (hilangkan desimal)
+    const numAmount = Math.round(parseFloat(amount));
+    
+    // Format dengan separator ribuan tanpa desimal
+    return 'Rp ' + numAmount.toLocaleString('id-ID');
+}
+
+// Format currency untuk input dan display
+function formatCurrencyInput(amount) {
+    if (!amount && amount !== 0) return '0';
+    
+    // Parse amount dan buat integer (hilangkan desimal)
+    const numAmount = Math.round(parseFloat(amount));
+    
+    // Format dengan separator ribuan tanpa desimal
+    return numAmount.toLocaleString('id-ID');
+}
+
+// Parse currency dari string ke number
+function parseCurrency(currencyString) {
+    if (!currencyString) return 0;
+    
+    // Hapus "Rp " dan separator ribuan, lalu parse ke number
+    const cleanString = currencyString.replace(/[^\d]/g, '');
+    return parseInt(cleanString) || 0;
+}
+
+// Update semua elemen dengan class currency-format
+function updateAllCurrencyFormats() {
+    document.querySelectorAll('.currency-format').forEach(element => {
+        const amount = parseFloat(element.dataset.amount || element.textContent.replace(/[^\d]/g, ''));
+        if (!isNaN(amount)) {
+            element.textContent = formatCurrency(amount);
+        }
+    });
+}
+
+// Update semua elemen dengan class currency-input
+function updateAllCurrencyInputs() {
+    document.querySelectorAll('.currency-input').forEach(element => {
+        const amount = parseFloat(element.dataset.amount || element.value.replace(/[^\d]/g, ''));
+        if (!isNaN(amount)) {
+            element.value = formatCurrencyInput(amount);
+        }
+    });
+}
+
+// Auto-format saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    updateAllCurrencyFormats();
+    updateAllCurrencyInputs();
+});
+</script>
