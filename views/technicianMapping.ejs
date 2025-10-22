@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Mapping - <%= settings.company_header %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #06d6a0;
+            --warning-color: #ffd166;
+            --danger-color: #ef476f;
+            --info-color: #118ab2;
+            --light-bg: #f8f9fa;
+            --dark-text: #2d3436;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .map-container {
+            height: 70vh;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        #networkMap {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Technician-specific styles for ODP and Cable Network */
+        .technician-odp-marker {
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
+        .technician-cable-route {
+            stroke-width: 4;
+            stroke-opacity: 0.9;
+            fill: none;
+        }
+
+        .technician-cable-connected { 
+            stroke: #06d6a0; 
+            stroke-dasharray: 20, 8;
+            animation: technicianCableFlow 2.5s linear infinite;
+        }
+        
+        .technician-cable-disconnected { 
+            stroke: #ef476f; 
+            stroke-dasharray: 8, 15;
+            animation: technicianCableFlicker 1.8s ease-in-out infinite;
+        }
+        
+        .technician-cable-maintenance { 
+            stroke: #ffd166; 
+            stroke-dasharray: 12, 6; 
+            animation: technicianCableMaintenance 3.5s ease-in-out infinite;
+        }
+        
+        .technician-cable-damaged { 
+            stroke: #8e44ad; 
+            stroke-dasharray: 4, 10;
+            animation: technicianCableDamage 1.2s ease-in-out infinite;
+        }
+
+        /* Animasi untuk technician cable routes */
+        @keyframes technicianCableFlow {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 28; }
+        }
+
+        @keyframes technicianCableFlicker {
+            0%, 100% { stroke-opacity: 0.4; }
+            50% { stroke-opacity: 0.9; }
+        }
+
+        @keyframes technicianCableMaintenance {
+            0%, 100% { 
+                stroke-opacity: 0.7; 
+                stroke-width: 4;
+            }
+            50% { 
+                stroke-opacity: 1; 
+                stroke-width: 5;
+            }
+        }
+
+        @keyframes technicianCableDamage {
+            0%, 100% { 
+                stroke-opacity: 0.3; 
+                stroke-width: 3;
+            }
+            25%, 75% { 
+                stroke-opacity: 0.8; 
+                stroke-width: 4;
+            }
+            50% { 
+                stroke-opacity: 0.5; 
+                stroke-width: 5;
+            }
+        }
+
+        .technician-controls {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .technician-layer-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .technician-layer-control:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .technician-layer-control input[type="checkbox"] {
+            margin: 0;
+            transform: scale(1.2);
+        }
+
+        .technician-layer-control label {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            color: white;
+        }
+
+        .technician-popup {
+            min-width: 280px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .technician-popup h6 {
+            color: #667eea;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .technician-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .technician-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .technician-info-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .technician-info-value {
+            color: #333;
+            font-size: 13px;
+            text-align: right;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .technician-status-badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
+        .technician-legend {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .technician-legend-section {
+            margin-bottom: 1rem;
+        }
+
+        .technician-legend-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .technician-legend-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .technician-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .technician-legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .technician-legend-line {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .user-profile {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .map-controls {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .legend {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        /* Popup Cards Styles */
+        .popup-cards-container {
+            max-width: 350px;
+            min-width: 280px;
+        }
+
+        .popup-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .popup-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .card-header i {
+            font-size: 16px;
+        }
+
+        .card-title {
+            flex: 1;
+        }
+
+        .device-status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .device-status-badge.online {
+            background: rgba(40, 167, 69, 0.9);
+        }
+
+        .device-status-badge.offline {
+            background: rgba(220, 53, 69, 0.9);
+        }
+
+        .card-content {
+            padding: 15px;
+        }
+
+        /* Customer Card Styles */
+        .customer-card .customer-name {
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row .label {
+            font-weight: 500;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .info-row .value {
+            color: #333;
+            font-size: 13px;
+            text-align: right;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Device Card Styles */
+        .device-quick-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .info-item i {
+            font-size: 14px;
+            color: #007bff;
+        }
+
+        .device-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 2px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .device-details {
+            margin-top: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 12px;
+        }
+
+        .detail-item .label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .detail-item .value {
+            color: #333;
+            text-align: right;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Mobile responsive untuk popup cards */
+        @media (max-width: 768px) {
+            .popup-cards-container {
+                max-width: 320px;
+                min-width: 260px;
+            }
+
+            .card-header {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+
+            .card-content {
+                padding: 12px;
+            }
+
+            .device-quick-info {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .info-row .value {
+                max-width: 120px;
+            }
+
+            .detail-item .value {
+                max-width: 100px;
+            }
+        }
+
+        .customer-info-popup {
+            min-width: 200px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .status-active { background-color: var(--success-color); }
+        .status-suspended { background-color: var(--warning-color); }
+        .status-inactive { background-color: var(--danger-color); }
+
+        /* Popup sizing for better readability */
+        .tech-popup .leaflet-popup-content {
+            max-height: 380px;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .tech-popup .input-group-text {
+            min-width: 90px;
+        }
+        @media (max-width: 768px) {
+            .tech-popup .leaflet-popup-content-wrapper {
+                max-width: 92vw;
+            }
+            .tech-popup .leaflet-popup-content {
+                max-height: 65vh;
+            }
+        }
+
+        /* Mobile fullscreen overlay for focused view */
+        .tech-mobile-overlay {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            z-index: 3000;
+            display: none;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .tech-mobile-overlay .overlay-header {
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1;
+        }
+        .tech-mobile-overlay .overlay-body {
+            padding: 12px;
+        }
+        .tech-mobile-overlay .overlay-footer {
+            position: sticky;
+            bottom: 0;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            padding: 10px 12px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                z-index: 1050;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.show {
+                left: 0;
+            }
+
+            .map-container {
+                height: 50vh;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <%- include('partials/technician-responsive-sidebar', { page: 'mapping', technician: technician, settings: settings }) %>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+
+
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold">Network Mapping</h2>
+                        <p class="text-muted mb-0">Peta lokasi pelanggan dan status koneksi</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="refreshMap()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+                        </button>
+                        <button class="btn btn-primary" onclick="centerMap()">
+                            <i class="bi bi-geo-alt me-2"></i>Center Map
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="content-card">
+                    <h5 class="mb-3">
+                        <i class="bi bi-bar-chart me-2"></i>Statistik Mapping
+                    </h5>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number"><%= customers.length %></div>
+                            <div class="stat-label">Total Pelanggan</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number"><%= customers.filter(c => c.status === 'active').length %></div>
+                            <div class="stat-label">Aktif</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number"><%= customers.filter(c => c.status === 'suspended').length %></div>
+                            <div class="stat-label">Suspend</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number"><%= customers.filter(c => !c.latitude || !c.longitude).length %></div>
+                            <div class="stat-label">Belum di-mapping</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technician Network Controls -->
+                <div class="technician-controls">
+                    <h5 class="mb-3">
+                        <i class="bi bi-network-chart me-2"></i>Network Layers
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="technician-layer-control">
+                                <input type="checkbox" id="showODPs" checked onchange="toggleODPLayer()">
+                                <label for="showODPs">
+                                    <i class="bi bi-broadcast me-2"></i>ODP Points
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="technician-layer-control">
+                                <input type="checkbox" id="showCableRoutes" checked onchange="toggleCableLayer()">
+                                <label for="showCableRoutes">
+                                    <i class="bi bi-diagram-3 me-2"></i>Cable Routes
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="technician-layer-control">
+                                <input type="checkbox" id="showNetworkSegments" onchange="toggleNetworkSegmentLayer()">
+                                <label for="showNetworkSegments">
+                                    <i class="bi bi-diagram-2 me-2"></i>Network Segments
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Controls and Legend -->
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <div class="map-controls">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-search"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="searchCustomer" 
+                                               placeholder="Cari pelanggan...">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-select" id="filterStatus" onchange="filterByStatus()">
+                                        <option value="all">Semua Status</option>
+                                        <option value="active">Aktif</option>
+                                        <option value="suspended">Suspend</option>
+                                        <option value="inactive">Tidak Aktif</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="technician-legend">
+                            <h6 class="mb-3">
+                                <i class="bi bi-info-circle me-2"></i>Legenda
+                            </h6>
+                            
+                            <!-- Customer Legend -->
+                            <div class="technician-legend-section">
+                                <div class="technician-legend-title">Pelanggan</div>
+                                <div class="technician-legend-item">
+                                    <div class="technician-legend-color" style="background-color: #06d6a0;"></div>
+                                    <span>Aktif</span>
+                                </div>
+                                <div class="technician-legend-item">
+                                    <div class="technician-legend-color" style="background-color: #ef476f;"></div>
+                                    <span>Suspend</span>
+                                </div>
+                                <div class="technician-legend-item">
+                                    <div class="technician-legend-color" style="background-color: #ffd166;"></div>
+                                    <span>Tidak Aktif</span>
+                                </div>
+                            </div>
+
+                            <!-- ODP Legend -->
+                            <div class="technician-legend-section">
+                                <div class="technician-legend-title">ODP Points</div>
+                                <div class="technician-legend-item">
+                                    <div class="technician-legend-color" style="background-color: #06d6a0;"></div>
+                                    <span>Active (< 70%)</span>
+                                </div>
+                                <div class="technician-legend-item">
+                                    <div class="technician-legend-color" style="background-color: #ffd166;"></div>
+                                    <span>Warning (70-90%)</span>
+                                </div>
+                                <div class="technician-legend-item">
+                                    <div class="technician-legend-color" style="background-color: #ef476f;"></div>
+                                    <span>Critical (> 90%)</span>
+                                </div>
+                            </div>
+
+                            <!-- Cable Routes Legend -->
+                            <div class="technician-legend-section">
+                                <div class="technician-legend-title">Cable Routes</div>
+                                <div class="technician-legend-item">
+                                    <div class="technician-legend-line" style="background-color: #06d6a0;"></div>
+                                    <span>Connected</span>
+                                </div>
+                                <div class="technician-legend-item">
+                                    <div class="technician-legend-line" style="background-color: #ef476f;"></div>
+                                    <span>Disconnected</span>
+                                </div>
+                                <div class="technician-legend-item">
+                                    <div class="technician-legend-line" style="background-color: #ffd166; border-style: dashed;"></div>
+                                    <span>Maintenance</span>
+                                </div>
+                                <div class="technician-legend-item">
+                                    <div class="technician-legend-line" style="background-color: #8e44ad;"></div>
+                                    <span>Damaged</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Container -->
+                <div class="content-card">
+                    <div class="map-container">
+                        <div id="networkMap"></div>
+                    </div>
+                </div>
+
+                <!-- Customers Without Coordinates -->
+                <% if (customers.filter(c => !c.latitude || !c.longitude).length > 0) { %>
+                <div class="content-card">
+                    <h5 class="mb-3">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                        Pelanggan Belum di-mapping
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Nama</th>
+                                    <th>Telepon</th>
+                                    <th>Alamat</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% customers.filter(c => !c.latitude || !c.longitude).slice(0, 10).forEach(function(customer) { %>
+                                <tr>
+                                    <td><%= customer.name %></td>
+                                    <td><%= customer.phone %></td>
+                                    <td><%= customer.address || '-' %></td>
+                                    <td>
+                                        <span class="status-indicator status-<%= customer.status %>"></span>
+                                        <%= customer.status %>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <% if (customers.filter(c => !c.latitude || !c.longitude).length > 10) { %>
+                    <small class="text-muted">
+                        Dan <%= customers.filter(c => !c.latitude || !c.longitude).length - 10 %> pelanggan lainnya...
+                    </small>
+                    <% } %>
+                </div>
+                <% } %>
+            </main>
+        </div>
+    </div>
+
+    <!-- Mobile fullscreen overlay -->
+    <div id="techMobileOverlay" class="tech-mobile-overlay">
+        <div class="overlay-header">
+            <button class="btn btn-outline-secondary btn-sm" onclick="closeMobileOverlay()">
+                <i class="bi bi-arrow-left"></i> Kembali
+            </button>
+            <strong class="ms-2">Detail Perangkat</strong>
+        </div>
+        <div id="techMobileOverlayBody" class="overlay-body"></div>
+        <div class="overlay-footer d-grid">
+            <button class="btn btn-secondary" onclick="closeMobileOverlay()">Tutup</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map
+        let map;
+        let markers = [];
+        let customersData = <%- JSON.stringify(customers) %>;
+
+        // Initialize the map
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMap();
+
+            // Search functionality
+            const searchInput = document.getElementById('searchCustomer');
+            searchInput.addEventListener('input', function() {
+                searchCustomers(this.value);
+            });
+        });
+
+        function initializeMap() {
+            // Default center (Indonesia)
+            const defaultLat = -6.2088;
+            const defaultLng = 106.8456;
+            
+            // Initialize map
+            map = L.map('networkMap').setView([defaultLat, defaultLng], 13);
+
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add markers for customers with coordinates
+            addCustomerMarkers();
+
+            // Auto-fit bounds if there are markers
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+
+        function addCustomerMarkers() {
+            customersData.forEach(function(customer) {
+                if (customer.latitude && customer.longitude) {
+                    const lat = parseFloat(customer.latitude);
+                    const lng = parseFloat(customer.longitude);
+                    
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        // Choose marker color based on status
+                        let markerColor = '#06d6a0'; // active (green)
+                        if (customer.status === 'suspended') markerColor = '#ffd166'; // warning (yellow)
+                        if (customer.status === 'inactive') markerColor = '#ef476f'; // danger (red)
+
+                        // Create custom marker
+                        const marker = L.circleMarker([lat, lng], {
+                            radius: 8,
+                            fillColor: markerColor,
+                            color: '#fff',
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        }).addTo(map);
+
+                        // Initial popup (loading) dengan struktur 2-card
+                        const popupId = `popup_${customer.id || `${lat}_${lng}`}`;
+                        const loadingContent = `
+                            <div class="popup-cards-container" id="${popupId}">
+                                <!-- Card 1: Customer Info -->
+                                <div class="popup-card customer-card">
+                                    <div class="card-header">
+                                        <i class="bi bi-person"></i>
+                                        <span class="card-title">Informasi Pelanggan</span>
+                                    </div>
+                                    <div class="card-content">
+                                        <h6 class="customer-name">${customer.name}</h6>
+                                        <div class="info-row">
+                                            <span class="label">Username:</span>
+                                            <span class="value">${customer.username || '-'}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="label">Phone:</span>
+                                            <span class="value">${customer.phone}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="label">Package:</span>
+                                            <span class="value">${customer.package_name || '-'}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="label">Status:</span>
+                                            <span class="badge bg-success">${customer.status}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="label">Address:</span>
+                                            <span class="value">${customer.address || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card 2: Device Control (akan diupdate setelah load data) -->
+                                <div class="popup-card device-card">
+                                    <div class="card-header">
+                                        <i class="bi bi-cog"></i>
+                                        <span class="card-title">Kontrol Device</span>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="text-center text-muted">
+                                            <i class="bi bi-arrow-clockwise bi-spin me-2"></i>
+                                            Memuat info perangkat...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        marker.bindPopup(loadingContent, { className: 'tech-popup' });
+                        markers.push(marker);
+                        
+                        // Store customer data in marker for filtering
+                        marker.customerData = customer;
+
+                        // On popup open, fetch device summary and update content
+                        marker.on('popupopen', async () => {
+                            // Auto-pan and open with larger offset so the popup card is fully visible
+                            try {
+                                const target = L.latLng(lat, lng);
+                                // Pan slightly upwards to give space for the popup card
+                                const pixel = map.latLngToContainerPoint(target);
+                                const adjusted = map.containerPointToLatLng([pixel.x, Math.max(0, pixel.y - 140)]);
+                                map.panTo(adjusted, { animate: true });
+                            } catch(_) {}
+                            try {
+                                const res = await fetch(`/technician/api/mapping/devices?phone=${encodeURIComponent(customer.phone)}`, { headers: { 'Accept': 'application/json' } });
+                                const data = await res.json();
+                                const container = document.getElementById(popupId);
+                                if (!container) return;
+
+                                // Default values
+                                let deviceStatus = '-';
+                                let signal = '-';
+                                let users = '-';
+                                let model = '-';
+                                let pppoe = (customer.pppoe_username ? String(customer.pppoe_username) : '-')
+                                let lastSeen = '-';
+
+                                const primitive = (v) => {
+                                    if (v === null || v === undefined) return '-';
+                                    if (typeof v === 'object') {
+                                        if (v._value !== undefined && v._value !== null) return String(v._value);
+                                        if (Array.isArray(v)) return v.map(primitive).join(', ');
+                                        if (v.value !== undefined) return String(v.value);
+                                        if (v.name !== undefined) return String(v.name);
+                                        try { return String(v); } catch (_) { return '-'; }
+                                    }
+                                    return String(v);
+                                };
+
+                                if (data && data.success && data.data) {
+                                    const withC = Array.isArray(data.data.devicesWithCoords) ? data.data.devicesWithCoords : [];
+                                    const withoutC = Array.isArray(data.data.devicesWithoutCoords) ? data.data.devicesWithoutCoords : [];
+                                    let list = withC.concat(withoutC);
+
+                                    // Pilih device terbaik: PPPoE match > lainnya
+                                    const pppUser = (customer.pppoe_username || '').toString();
+                                    let d = list.find(x => x.pppoeUsername && primitive(x.pppoeUsername) === pppUser) || list[0];
+
+                                    if (d) {
+                                        model = primitive(d.model) || '-';
+                                        pppoe = primitive(d.pppoeUsername) || pppoe;
+                                        signal = primitive(d.rxPower) || '-';
+                                        users = primitive(d.userConnected !== undefined ? d.userConnected : (d.userKonek !== undefined ? d.userKonek : '-'));
+
+                                        // Hitung status/last seen bila memungkinkan
+                                        if (d.lastInform) {
+                                            try {
+                                                const last = new Date(d.lastInform).getTime();
+                                                const diffMin = Math.max(0, Math.floor((Date.now() - last) / 60000));
+                                                lastSeen = diffMin === 0 ? 'Just now' : `${diffMin} minutes ago`;
+                                                deviceStatus = diffMin <= 5 ? 'Online' : 'Offline';
+                                            } catch(_) {}
+                                        }
+                                        if (!deviceStatus || deviceStatus === '-') {
+                                            deviceStatus = d.status || '-';
+                                        }
+                                        // Extra fields
+                                        const uptime = formatUptime(primitive(d.uptime));
+                                        const pppoeIP = primitive(d.pppoeIP);
+                                        const ssid24 = primitive(d.ssid);
+                                        const ssid5g = primitive(d.ssid5g);
+                                        const pass5g = primitive(d.password5g);
+
+                                        // Append extra rows + edit form
+                                        const deviceId = primitive(d.id);
+                                        const ssid24Val = primitive(d.ssid) || '';
+                                        const pass24Val = primitive(d.password) || '';
+
+                                        const contentHtml = `
+                                            <div class="popup-cards-container">
+                                                <!-- Card 1: Customer Info -->
+                                                <div class="popup-card customer-card">
+                                                    <div class="card-header">
+                                                        <i class="bi bi-person"></i>
+                                                        <span class="card-title">Informasi Pelanggan</span>
+                                                    </div>
+                                                    <div class="card-content">
+                                                        <h6 class="customer-name">${customer.name}</h6>
+                                                        <div class="info-row">
+                                                            <span class="label">Username:</span>
+                                                            <span class="value">${customer.username || '-'}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label">Phone:</span>
+                                                            <span class="value">${customer.phone}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label">Package:</span>
+                                                            <span class="value">${customer.package_name || '-'}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label">Status:</span>
+                                                            <span class="badge bg-success">${customer.status}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label">Address:</span>
+                                                            <span class="value">${customer.address || 'N/A'}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Card 2: Device Control -->
+                                                <div class="popup-card device-card">
+                                                    <div class="card-header">
+                                                        <i class="bi bi-cog"></i>
+                                                        <span class="card-title">Kontrol Device</span>
+                                                        <span class="device-status-badge ${deviceStatus === 'Online' ? 'online' : 'offline'}">
+                                                            ${deviceStatus}
+                                                        </span>
+                                                    </div>
+                                                    <div class="card-content">
+                                                        <div class="device-quick-info">
+                                                            <div class="info-item">
+                                                                <i class="bi bi-signal-4"></i>
+                                                                <span>Signal: ${signal}</span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <i class="bi bi-wifi"></i>
+                                                                <span>SSID 2.4G: ${ssid24}</span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <i class="bi bi-people"></i>
+                                                                <span>${users} user</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="device-controls">
+                                                            <div class="control-group">
+                                                                <label class="control-label">SSID WiFi 2.4GHz</label>
+                                                                <div class="input-group input-group-sm">
+                                                                    <input type="text" class="form-control" id="ssidInput_${deviceId}" value="${ssid24Val}" placeholder="Nama WiFi">
+                                                                    <button class="btn btn-success btn-sm" onclick="updateDeviceSsid('${deviceId}')">
+                                                                        <i class="bi bi-save"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="control-group">
+                                                                <label class="control-label">Password WiFi 2.4GHz</label>
+                                                                <div class="input-group input-group-sm">
+                                                                    <input type="text" class="form-control" id="passInput_${deviceId}" value="${pass24Val}" placeholder="Minimal 8 karakter">
+                                                                    <button class="btn btn-primary btn-sm" onclick="updateDevicePass('${deviceId}')">
+                                                                        <i class="bi bi-save"></i>
+                                                                    </button>
+                                                                </div>
+                                                                <small class="text-muted" style="font-size: 10px;">Password 5GHz otomatis: sama dengan 2.4GHz</small>
+                                                            </div>
+
+                                                            <div class="control-buttons">
+                                                                <button class="btn btn-warning btn-sm" onclick="rebootDevice('${deviceId}')">
+                                                                    <i class="bi bi-power-off"></i> Restart
+                                                                </button>
+                                                                <button class="btn btn-info btn-sm" onclick="toggleDeviceDetails('${deviceId}')" id="detailsBtn_${deviceId}">
+                                                                    <i class="bi bi-info-circle"></i> Detail
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Hidden Device Details -->
+                                                        <div class="device-details" id="deviceDetails_${deviceId}" style="display: none;">
+                                                            <hr>
+                                                            <div class="detail-item">
+                                                                <span class="label">PPPoE Username:</span>
+                                                                <span class="value">${pppoe}</span>
+                                                            </div>
+                                                            <div class="detail-item">
+                                                                <span class="label">PPPoE IP:</span>
+                                                                <span class="value">${pppoeIP}</span>
+                                                            </div>
+                                                            <div class="detail-item">
+                                                                <span class="label">SSID 5GHz:</span>
+                                                                <span class="value">${ssid5g}</span>
+                                                            </div>
+                                                            <div class="detail-item">
+                                                                <span class="label">Password 5GHz:</span>
+                                                                <span class="value">${pass5g}</span>
+                                                            </div>
+                                                            <div class="detail-item">
+                                                                <span class="label">Uptime:</span>
+                                                                <span class="value">${uptime}</span>
+                                                            </div>
+                                                            <div class="detail-item">
+                                                                <span class="label">Last Seen:</span>
+                                                                <span class="value">${lastSeen}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                        container.innerHTML = contentHtml;
+                                        if (window.innerWidth <= 768) {
+                                            const overlay = document.getElementById('techMobileOverlay');
+                                            const body = document.getElementById('techMobileOverlayBody');
+                                            if (overlay && body) {
+                                                body.innerHTML = contentHtml;
+                                                overlay.style.display = 'block';
+                                            }
+                                        }
+                                        return; // done
+                                    }
+                                }
+
+                                const contentHtml = `
+                                    <div class="popup-cards-container">
+                                        <!-- Card 1: Customer Info -->
+                                        <div class="popup-card customer-card">
+                                            <div class="card-header">
+                                                <i class="bi bi-person"></i>
+                                                <span class="card-title">Informasi Pelanggan</span>
+                                            </div>
+                                            <div class="card-content">
+                                                <h6 class="customer-name">${customer.name}</h6>
+                                                <div class="info-row">
+                                                    <span class="label">Username:</span>
+                                                    <span class="value">${customer.username || '-'}</span>
+                                                </div>
+                                                <div class="info-row">
+                                                    <span class="label">Phone:</span>
+                                                    <span class="value">${customer.phone}</span>
+                                                </div>
+                                                <div class="info-row">
+                                                    <span class="label">Package:</span>
+                                                    <span class="value">${customer.package_name || '-'}</span>
+                                                </div>
+                                                <div class="info-row">
+                                                    <span class="label">Status:</span>
+                                                    <span class="badge bg-success">${customer.status}</span>
+                                                </div>
+                                                <div class="info-row">
+                                                    <span class="label">Address:</span>
+                                                    <span class="value">${customer.address || 'N/A'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Card 2: Device Info (No Device) -->
+                                        <div class="popup-card device-card">
+                                            <div class="card-header">
+                                                <i class="bi bi-cog"></i>
+                                                <span class="card-title">Kontrol Device</span>
+                                                <span class="device-status-badge offline">No Device</span>
+                                            </div>
+                                            <div class="card-content">
+                                                <div class="text-center text-muted">
+                                                    <i class="bi bi-wifi-off mb-2" style="font-size: 24px;"></i>
+                                                    <p class="mb-0">Tidak ada device yang terhubung</p>
+                                                    <small>Perangkat belum dikonfigurasi atau offline</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                container.innerHTML = contentHtml;
+                                if (window.innerWidth <= 768) {
+                                    const overlay = document.getElementById('techMobileOverlay');
+                                    const body = document.getElementById('techMobileOverlayBody');
+                                    if (overlay && body) {
+                                        body.innerHTML = contentHtml;
+                                        overlay.style.display = 'block';
+                                    }
+                                }
+                            } catch (e) {
+                                const container = document.getElementById(popupId);
+                                if (container) container.querySelector('.text-muted')?.replaceWith(document.createTextNode('Gagal memuat info perangkat'));
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        function refreshMap() {
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            
+            // Reload customer data (in real implementation, this would fetch from server)
+            addCustomerMarkers();
+            
+            // Show success message
+            alert('Peta berhasil di-refresh!');
+        }
+
+        function centerMap() {
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            } else {
+                // Center on default location
+                map.setView([-6.2088, 106.8456], 13);
+            }
+        }
+
+        function filterByStatus() {
+            const selectedStatus = document.getElementById('filterStatus').value;
+            
+            markers.forEach(marker => {
+                if (selectedStatus === 'all' || marker.customerData.status === selectedStatus) {
+                    marker.setStyle({ opacity: 1, fillOpacity: 0.8 });
+                } else {
+                    marker.setStyle({ opacity: 0.3, fillOpacity: 0.3 });
+                }
+            });
+        }
+
+        function searchCustomers(searchTerm) {
+            const term = searchTerm.toLowerCase();
+            
+            markers.forEach(marker => {
+                const customer = marker.customerData;
+                const matchesSearch = !term || 
+                    customer.name.toLowerCase().includes(term) ||
+                    customer.phone.includes(term) ||
+                    customer.username.toLowerCase().includes(term);
+                
+                if (matchesSearch) {
+                    marker.setStyle({ opacity: 1, fillOpacity: 0.8 });
+                } else {
+                    marker.setStyle({ opacity: 0.3, fillOpacity: 0.3 });
+                }
+            });
+        }
+
+        function formatUptime(value) {
+            const seconds = parseInt(value, 10);
+            if (!Number.isFinite(seconds) || seconds < 0) return String(value || '-');
+            if (seconds < 60) return `${seconds}s`;
+            const mins = Math.floor(seconds / 60);
+            if (mins < 60) return `${mins}m ${seconds % 60}s`;
+            const hours = Math.floor(mins / 60);
+            const remM = mins % 60;
+            if (hours < 24) return `${hours}h ${remM}m`;
+            const days = Math.floor(hours / 24);
+            const remH = hours % 24;
+            return `${days}d ${remH}h ${remM}m`;
+        }
+
+        async function updateDeviceSsid(deviceId) {
+            try {
+                const ssidEl = document.getElementById(`ssidInput_${deviceId}`);
+                if (!ssidEl) return alert('SSID tidak ditemukan');
+                const ssid24 = ssidEl.value.trim();
+                if (!ssid24) return alert('SSID 2.4G tidak boleh kosong');
+
+                // SSID 5G: otomatis {SSID}-5G
+                const ssid5 = `${ssid24}-5G`;
+
+                const resp = await fetch('/technician/genieacs/devices/' + encodeURIComponent(deviceId), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ssid: ssid24, ssid5g: ssid5 })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    if (window.innerWidth <= 768) closeMobileOverlay();
+                    alert('SSID berhasil diperbarui. Perangkat akan menerapkan perubahan dalam beberapa saat.');
+                } else {
+                    alert(data.message || 'Gagal memperbarui SSID');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        async function updateDevicePass(deviceId) {
+            try {
+                const passEl = document.getElementById(`passInput_${deviceId}`);
+                if (!passEl) return alert('Password input tidak ditemukan');
+                const pass = (passEl.value || '').trim();
+                if (!pass || pass.length < 8) return alert('Password minimal 8 karakter');
+                const resp = await fetch('/technician/genieacs/devices/' + encodeURIComponent(deviceId), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pass })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    if (window.innerWidth <= 768) closeMobileOverlay();
+                    alert('Password WiFi berhasil diperbarui.');
+                } else {
+                    alert(data.message || 'Gagal memperbarui password');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Toggle device details visibility
+        function toggleDeviceDetails(deviceId) {
+            const detailsContainer = document.getElementById(`deviceDetails_${deviceId}`);
+            const detailsBtn = document.getElementById(`detailsBtn_${deviceId}`);
+
+            if (detailsContainer.style.display === 'none') {
+                // Show device details
+                detailsContainer.style.display = 'block';
+                detailsBtn.innerHTML = '<i class="bi bi-info-circle"></i> Sembunyikan';
+                detailsBtn.classList.remove('btn-info');
+                detailsBtn.classList.add('btn-secondary');
+            } else {
+                // Hide device details
+                detailsContainer.style.display = 'none';
+                detailsBtn.innerHTML = '<i class="bi bi-info-circle"></i> Detail';
+                detailsBtn.classList.remove('btn-secondary');
+                detailsBtn.classList.add('btn-info');
+            }
+        }
+
+        // Reboot device function
+        async function rebootDevice(deviceId) {
+            if (!confirm('Apakah Anda yakin ingin me-restart device ini?')) {
+                return;
+            }
+
+            try {
+                alert('Mengirim perintah restart...');
+
+                const response = await fetch('/technician/genieacs/devices/' + encodeURIComponent(deviceId), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reboot: true })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Perintah restart berhasil dikirim!');
+                } else {
+                    alert(result.message || 'Gagal mengirim perintah restart');
+                }
+            } catch (error) {
+                console.error('Error rebooting device:', error);
+                alert('Error restarting device');
+            }
+        }
+
+        function closeMobileOverlay() {
+            const overlay = document.getElementById('techMobileOverlay');
+            const body = document.getElementById('techMobileOverlayBody');
+            if (overlay && body) {
+                body.innerHTML = '';
+                overlay.style.display = 'none';
+            }
+        }
+
+        // ===== TECHNICIAN ODP AND CABLE NETWORK FUNCTIONS =====
+        
+        let technicianODPLayer = null;
+        let technicianCableLayer = null;
+        let technicianNetworkSegmentLayer = null;
+        let technicianCableNetworkData = null;
+
+        // Load cable network data for technician
+        async function loadTechnicianCableNetworkData() {
+            try {
+                const response = await fetch('/technician/api/cable-network-data');
+                const result = await response.json();
+                
+                if (result.success) {
+                    technicianCableNetworkData = result.data;
+                    console.log('Technician cable network data loaded:', technicianCableNetworkData);
+                    
+                    // Load ODPs if checkbox is checked
+                    if (document.getElementById('showODPs').checked) {
+                        loadTechnicianODPs();
+                    }
+                    
+                    // Load cable routes if checkbox is checked
+                    if (document.getElementById('showCableRoutes').checked) {
+                        loadTechnicianCableRoutes();
+                    }
+                    
+                    // Load network segments if checkbox is checked
+                    if (document.getElementById('showNetworkSegments').checked) {
+                        loadTechnicianNetworkSegments();
+                    }
+                } else {
+                    console.error('Failed to load technician cable network data:', result.message);
+                }
+            } catch (error) {
+                console.error('Error loading technician cable network data:', error);
+            }
+        }
+
+        // Load ODP markers for technician
+        function loadTechnicianODPs() {
+            if (!technicianCableNetworkData || !technicianCableNetworkData.odps) return;
+            
+            // Clear existing ODP layer
+            if (technicianODPLayer) {
+                map.removeLayer(technicianODPLayer);
+            }
+            
+            technicianODPLayer = L.layerGroup();
+            
+            technicianCableNetworkData.odps.forEach(odp => {
+                const percentage = (odp.used_ports / odp.capacity) * 100;
+                
+                // Determine color based on capacity usage
+                let color = '#06d6a0'; // Green - < 70%
+                if (percentage >= 90) color = '#ef476f'; // Red - > 90%
+                else if (percentage >= 70) color = '#ffd166'; // Yellow - 70-90%
+                
+                // Create custom ODP icon for technician
+                const odpIcon = L.divIcon({
+                    className: 'technician-odp-custom-icon',
+                    html: `
+                        <div class="technician-odp-icon-container" style="
+                            width: 28px;
+                            height: 28px;
+                            background-color: ${color};
+                            border: 3px solid white;
+                            border-radius: 4px;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            position: relative;
+                        ">
+                            <div style="
+                                width: 10px;
+                                height: 10px;
+                                background-color: white;
+                                border-radius: 50%;
+                                position: relative;
+                            ">
+                                <div style="
+                                    position: absolute;
+                                    top: -3px;
+                                    left: 50%;
+                                    transform: translateX(-50%);
+                                    width: 5px;
+                                    height: 5px;
+                                    background-color: white;
+                                    border-radius: 50%;
+                                "></div>
+                                <div style="
+                                    position: absolute;
+                                    bottom: -3px;
+                                    left: 50%;
+                                    transform: translateX(-50%);
+                                    width: 5px;
+                                    height: 5px;
+                                    background-color: white;
+                                    border-radius: 50%;
+                                "></div>
+                            </div>
+                        </div>
+                    `,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                });
+
+                // Create ODP marker with custom icon
+                const marker = L.marker([odp.latitude, odp.longitude], {
+                    icon: odpIcon
+                });
+                
+                // Create popup content
+                const popupContent = `
+                    <div class="technician-popup">
+                        <h6><i class="bi bi-broadcast"></i> ${odp.name}</h6>
+                        <div class="technician-info-row">
+                            <span class="technician-info-label">Kode:</span>
+                            <span class="technician-info-value">${odp.code}</span>
+                        </div>
+                        <div class="technician-info-row">
+                            <span class="technician-info-label">Status:</span>
+                            <span class="technician-info-value">
+                                <span class="technician-status-badge badge bg-${odp.status === 'active' ? 'success' : 'warning'}">${odp.status}</span>
+                            </span>
+                        </div>
+                        <div class="technician-info-row">
+                            <span class="technician-info-label">Kapasitas:</span>
+                            <span class="technician-info-value">${odp.used_ports}/${odp.capacity} ports</span>
+                        </div>
+                        <div class="technician-info-row">
+                            <span class="technician-info-label">Pelanggan:</span>
+                            <span class="technician-info-value">${odp.connected_customers || 0}</span>
+                        </div>
+                        <div class="technician-info-row">
+                            <span class="technician-info-label">Aktif:</span>
+                            <span class="technician-info-value">${odp.active_connections || 0}</span>
+                        </div>
+                        <div class="mt-3 d-flex gap-2">
+                            <button class="btn btn-sm btn-primary" onclick="navigateToODP(${odp.latitude}, ${odp.longitude})">
+                                <i class="bi bi-geo-alt"></i> Navigate
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="copyCoordinates(${odp.latitude}, ${odp.longitude})">
+                                <i class="bi bi-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                technicianODPLayer.addLayer(marker);
+            });
+            
+            map.addLayer(technicianODPLayer);
+        }
+
+        // Load cable routes for technician
+        function loadTechnicianCableRoutes() {
+            if (!technicianCableNetworkData || !technicianCableNetworkData.cableRoutes) return;
+            
+            // Clear existing cable layer
+            if (technicianCableLayer) {
+                map.removeLayer(technicianCableLayer);
+            }
+            
+            technicianCableLayer = L.layerGroup();
+            
+            technicianCableNetworkData.cableRoutes.forEach(cable => {
+                if (cable.customer_latitude && cable.customer_longitude && 
+                    cable.odp_latitude && cable.odp_longitude) {
+                    
+                    // Determine color based on status
+                    let color = '#06d6a0'; // Green - connected
+                    let dashArray = null;
+                    
+                    switch(cable.status) {
+                        case 'connected':
+                            color = '#06d6a0';
+                            break;
+                        case 'disconnected':
+                            color = '#ef476f';
+                            break;
+                        case 'maintenance':
+                            color = '#ffd166';
+                            dashArray = '12, 6';
+                            break;
+                        case 'damaged':
+                            color = '#8e44ad';
+                            break;
+                    }
+                    
+                    // Create cable route polyline
+                    const polyline = L.polyline([
+                        [cable.odp_latitude, cable.odp_longitude],
+                        [cable.customer_latitude, cable.customer_longitude]
+                    ], {
+                        color: color,
+                        weight: 4,
+                        opacity: 0.9,
+                        dashArray: dashArray,
+                        className: `technician-cable-route technician-cable-${cable.status}`
+                    });
+                    
+                    // Create popup content
+                    const popupContent = `
+                        <div class="technician-popup">
+                            <h6><i class="bi bi-diagram-3"></i> Cable Route #${cable.id}</h6>
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">Customer:</span>
+                                <span class="technician-info-value">${cable.customer_name}</span>
+                            </div>
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">Phone:</span>
+                                <span class="technician-info-value">${cable.customer_phone}</span>
+                            </div>
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">ODP:</span>
+                                <span class="technician-info-value">${cable.odp_name}</span>
+                            </div>
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">Status:</span>
+                                <span class="technician-info-value">
+                                    <span class="technician-status-badge badge bg-${cable.status === 'connected' ? 'success' : cable.status === 'disconnected' ? 'danger' : 'warning'}">${cable.status}</span>
+                                </span>
+                            </div>
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">Length:</span>
+                                <span class="technician-info-value">${cable.cable_length ? (parseFloat(cable.cable_length) / 1000).toFixed(1) + ' km' : 'N/A'}</span>
+                            </div>
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">Port:</span>
+                                <span class="technician-info-value">${cable.port_number || 'N/A'}</span>
+                            </div>
+                            ${cable.notes ? `
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">Notes:</span>
+                                <span class="technician-info-value"><small>${cable.notes}</small></span>
+                            </div>
+                            ` : ''}
+                            <div class="mt-3 d-flex gap-2">
+                                <button class="btn btn-sm btn-primary" onclick="navigateToCustomer(${cable.customer_latitude}, ${cable.customer_longitude})">
+                                    <i class="bi bi-geo-alt"></i> To Customer
+                                </button>
+                                <button class="btn btn-sm btn-info" onclick="navigateToODP(${cable.odp_latitude}, ${cable.odp_longitude})">
+                                    <i class="bi bi-broadcast"></i> To ODP
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    technicianCableLayer.addLayer(polyline);
+                }
+            });
+            
+            map.addLayer(technicianCableLayer);
+        }
+
+        // Load network segments for technician
+        function loadTechnicianNetworkSegments() {
+            if (!technicianCableNetworkData || !technicianCableNetworkData.networkSegments) return;
+            
+            // Clear existing network segment layer
+            if (technicianNetworkSegmentLayer) {
+                map.removeLayer(technicianNetworkSegmentLayer);
+            }
+            
+            technicianNetworkSegmentLayer = L.layerGroup();
+            
+            technicianCableNetworkData.networkSegments.forEach(segment => {
+                if (segment.start_latitude && segment.start_longitude && 
+                    segment.end_latitude && segment.end_longitude) {
+                    
+                    // Determine color and weight based on segment type
+                    let color = '#667eea'; // Blue - default
+                    let weight = 4;
+                    
+                    switch(segment.segment_type) {
+                        case 'Backbone':
+                            color = '#8e44ad'; // Purple
+                            weight = 6;
+                            break;
+                        case 'Distribution':
+                            color = '#fd7e14'; // Orange
+                            weight = 5;
+                            break;
+                        case 'Access':
+                            color = '#20c997'; // Teal
+                            weight = 4;
+                            break;
+                    }
+                    
+                    // Create network segment polyline
+                    const polyline = L.polyline([
+                        [segment.start_latitude, segment.start_longitude],
+                        [segment.end_latitude, segment.end_longitude]
+                    ], {
+                        color: color,
+                        weight: weight,
+                        opacity: 0.8,
+                        dashArray: segment.status === 'maintenance' ? '15, 10' : null
+                    });
+                    
+                    // Create popup content
+                    const popupContent = `
+                        <div class="technician-popup">
+                            <h6><i class="bi bi-diagram-2"></i> ${segment.name}</h6>
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">Type:</span>
+                                <span class="technician-info-value">${segment.segment_type}</span>
+                            </div>
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">Status:</span>
+                                <span class="technician-info-value">
+                                    <span class="technician-status-badge badge bg-${segment.status === 'active' ? 'success' : 'warning'}">${segment.status}</span>
+                                </span>
+                            </div>
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">Length:</span>
+                                <span class="technician-info-value">${segment.cable_length ? (parseFloat(segment.cable_length) / 1000).toFixed(1) + ' km' : 'N/A'}</span>
+                            </div>
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">From:</span>
+                                <span class="technician-info-value">${segment.start_odp_name}</span>
+                            </div>
+                            <div class="technician-info-row">
+                                <span class="technician-info-label">To:</span>
+                                <span class="technician-info-value">${segment.end_odp_name || 'N/A'}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    technicianNetworkSegmentLayer.addLayer(polyline);
+                }
+            });
+            
+            map.addLayer(technicianNetworkSegmentLayer);
+        }
+
+        // Toggle functions for technician
+        function toggleODPLayer() {
+            const checkbox = document.getElementById('showODPs');
+            if (checkbox.checked) {
+                if (!technicianODPLayer) {
+                    loadTechnicianODPs();
+                } else {
+                    map.addLayer(technicianODPLayer);
+                }
+            } else {
+                if (technicianODPLayer) {
+                    map.removeLayer(technicianODPLayer);
+                }
+            }
+        }
+
+        function toggleCableLayer() {
+            const checkbox = document.getElementById('showCableRoutes');
+            if (checkbox.checked) {
+                if (!technicianCableLayer) {
+                    loadTechnicianCableRoutes();
+                } else {
+                    map.addLayer(technicianCableLayer);
+                }
+            } else {
+                if (technicianCableLayer) {
+                    map.removeLayer(technicianCableLayer);
+                }
+            }
+        }
+
+        function toggleNetworkSegmentLayer() {
+            const checkbox = document.getElementById('showNetworkSegments');
+            if (checkbox.checked) {
+                if (!technicianNetworkSegmentLayer) {
+                    loadTechnicianNetworkSegments();
+                } else {
+                    map.addLayer(technicianNetworkSegmentLayer);
+                }
+            } else {
+                if (technicianNetworkSegmentLayer) {
+                    map.removeLayer(technicianNetworkSegmentLayer);
+                }
+            }
+        }
+
+        // Navigation functions for technician
+        function navigateToODP(lat, lng) {
+            map.setView([lat, lng], 16);
+            alert(`Navigating to ODP at coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+        }
+
+        function navigateToCustomer(lat, lng) {
+            map.setView([lat, lng], 16);
+            alert(`Navigating to Customer at coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+        }
+
+        function copyCoordinates(lat, lng) {
+            const coords = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            navigator.clipboard.writeText(coords).then(() => {
+                alert('Koordinat berhasil disalin: ' + coords);
+            }).catch(() => {
+                alert('Gagal menyalin koordinat');
+            });
+        }
+
+        // Load cable network data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load cable network data after map initialization
+            setTimeout(loadTechnicianCableNetworkData, 2000);
+        });
+    </script>
+</body>
+</html>

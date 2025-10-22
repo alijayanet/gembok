@@ -173,7 +173,10 @@
 <script>
 $(function(){
   let map, pickMarker, currentLatInput, currentLngInput;
+  
+  // @ts-ignore
   const odpPoints = <%- JSON.stringify((odps||[]).map(o => ({ lat: o.lat, lng: o.lng }))) %>;
+  
   const mapModal = new bootstrap.Modal(document.getElementById('mapPickerModal'));
   const defaultCenter = [-6.2088, 106.8456];
   const defaultZoom = 13;
@@ -283,10 +286,30 @@ $(function(){
   // Tambah link ODP
   $('#linkOdpForm').on('submit', function(e){
     e.preventDefault();
-    const payload = $(this).serialize();
-    $.post('/admin/odp/link', payload)
-      .done(() => location.reload())
-      .fail(xhr => {
+    
+    // Logging untuk debugging
+    const formData = $(this).serialize();
+    console.log('Mengirim data koneksi ODP:', formData);
+    console.log('URL request:', '/admin/odp/link');
+    console.log('Method:', 'POST');
+    
+    $.ajax({
+      url: '/admin/odp/link',
+      method: 'POST',
+      data: formData,
+      xhrFields: {
+        withCredentials: true
+      },
+      success: function(response) {
+        console.log('Koneksi ODP berhasil ditambahkan:', response);
+        location.reload();
+      },
+      error: function(xhr) {
+        console.log('Gagal menambah koneksi ODP:', xhr);
+        console.log('Status:', xhr.status);
+        console.log('Status Text:', xhr.statusText);
+        console.log('Response Text:', xhr.responseText);
+        
         const j = xhr.responseJSON || {};
         const msg = j.message || 'Gagal menambah koneksi ODP';
         if (j.knownIds) {
@@ -294,7 +317,8 @@ $(function(){
         } else {
           alert(msg);
         }
-      });
+      }
+    });
   });
 
   // Hapus link ODP
@@ -302,9 +326,33 @@ $(function(){
     if (!confirm('Hapus koneksi ODP ini?')) return;
     const a = $(this).data('a');
     const b = $(this).data('b');
-    $.post('/admin/odp/link', { fromOdpId: a, toOdpId: b, action: 'delete' })
-      .done(() => location.reload())
-      .fail(xhr => alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menghapus koneksi ODP'));
+    
+    // Logging untuk debugging
+    console.log('Menghapus koneksi ODP:', { fromOdpId: a, toOdpId: b, action: 'delete' });
+    
+    $.ajax({
+      url: '/admin/odp/link',
+      method: 'POST',
+      data: { fromOdpId: a, toOdpId: b, action: 'delete' },
+      xhrFields: {
+        withCredentials: true
+      },
+      success: function(response) {
+        console.log('Koneksi ODP berhasil dihapus');
+        location.reload();
+      },
+      error: function(xhr) {
+        console.log('Gagal menghapus koneksi ODP:', xhr);
+        // Tampilkan pesan error yang lebih detail
+        let errorMessage = 'Gagal menghapus koneksi ODP';
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMessage = xhr.responseJSON.message;
+        } else if (xhr.statusText) {
+          errorMessage = 'Error: ' + xhr.statusText;
+        }
+        alert(errorMessage);
+      }
+    });
   });
 });
 </script>

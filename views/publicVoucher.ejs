@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - <%= settings.company_header || 'GEMBOK' %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2255a6;
+            --secondary-color: #f8f9fa;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .voucher-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: none;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .voucher-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+        }
+
+        .voucher-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e4d8c 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .voucher-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .voucher-duration {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .voucher-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .voucher-body {
+            padding: 25px;
+        }
+
+        .package-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+
+        .package-features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+
+        .package-features li:last-child {
+            border-bottom: none;
+        }
+
+        .package-features li i {
+            color: var(--success-color);
+            margin-right: 10px;
+            width: 16px;
+        }
+
+        .btn-purchase {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: none;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e4d8c 100%);
+        }
+
+        .btn-purchase:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(34, 85, 166, 0.3);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: var(--warning-color);
+            color: black;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e4d8c 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            border: none;
+            padding: 25px;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(34, 85, 166, 0.25);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .btn-modal {
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 15px;
+            }
+
+            .voucher-header {
+                padding: 20px 15px;
+            }
+
+            .voucher-price {
+                font-size: 2rem;
+            }
+
+            .voucher-body {
+                padding: 20px;
+            }
+
+            .modal-dialog {
+                margin: 15px;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .voucher-card {
+                margin-bottom: 15px;
+            }
+
+            .voucher-price {
+                font-size: 1.8rem;
+            }
+
+            .btn-purchase {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        /* Custom animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .voucher-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .voucher-card:nth-child(1) { animation-delay: 0.1s; }
+        .voucher-card:nth-child(2) { animation-delay: 0.2s; }
+        .voucher-card:nth-child(3) { animation-delay: 0.3s; }
+        .voucher-card:nth-child(4) { animation-delay: 0.4s; }
+        .voucher-card:nth-child(5) { animation-delay: 0.5s; }
+        .voucher-card:nth-child(6) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-10">
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <h1 class="display-4 fw-bold text-white mb-3">
+                            <i class="bi bi-wifi me-3"></i>
+                            <%= settings.company_header || 'GEMBOK' %> Hotspot
+                        </h1>
+                        <p class="lead text-white-50 mb-4">
+                            Pilih paket voucher WiFi yang sesuai dengan kebutuhan Anda
+                        </p>
+                    </div>
+
+                    <!-- Alert Messages -->
+                    <% if (error) { %>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Perhatian:</strong> <%= error %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <% if (error.includes('Voucher tidak ditemukan')) { %>
+                        <div class="alert alert-info mt-3" role="alert">
+                            <h6><i class="bi bi-info-circle-fill me-2"></i>Tips untuk Mengatasi:</h6>
+                            <ul class="mb-2">
+                                <li>Pastikan link pembayaran yang Anda gunakan benar</li>
+                                <li>Periksa apakah belum melewati batas waktu pembayaran (biasanya 24 jam)</li>
+                                <li>Jika masalah berlanjut, lakukan pembelian voucher baru</li>
+                                <li>Hubungi admin jika mengalami kesulitan teknis</li>
+                            </ul>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="window.location.reload()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Coba Lagi
+                            </button>
+                        </div>
+                        <% } %>
+                    <% } %>
+
+                    <% if (success) { %>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <%= success %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <% } %>
+
+                    <!-- Voucher Cards Grid -->
+                    <div class="row g-4">
+                        <% voucherPackages.forEach((pkg, index) => { %>
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="voucher-card">
+                                    <% if (pkg.id === '24jam') { %>
+                                        <div class="popular-badge">Terlaris</div>
+                                    <% } %>
+                                    <div class="voucher-header">
+                                        <div class="voucher-duration"><%= pkg.name %></div>
+                                        <div class="voucher-price">Rp <%= pkg.price.toLocaleString('id-ID') %></div>
+                                        <div class="voucher-description"><%= pkg.description %></div>
+                                    </div>
+                                    <div class="voucher-body">
+                                        <ul class="package-features">
+                                            <li><i class="bi bi-wifi"></i> Kecepatan penuh sesuai paket</li>
+                                            <li><i class="bi bi-clock"></i> Aktif <%= pkg.duration %></li>
+                                            <li><i class="bi bi-shield-check"></i> Keamanan terjamin</li>
+                                            <li><i class="bi bi-headset"></i> Support 24/7</li>
+                                        </ul>
+                                        <button class="btn btn-primary btn-purchase" onclick="selectPackage('<%= pkg.id %>', '<%= pkg.name %>', <%= pkg.price %>)">
+                                            <i class="bi bi-cart-plus me-2"></i>Beli Sekarang
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+
+                    <!-- Footer Info -->
+                    <div class="text-center mt-5">
+                        <p class="text-white-50 mb-2">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Butuh bantuan? Hubungi kami di <%= settings.contact_phone || '081947215703' %>
+                        </p>
+                        <p class="text-white-50 small">
+                            © 2025 <%= settings.company_header || 'GEMBOK' %> - Semua hak dilindungi
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pembelian -->
+    <div class="modal fade" id="purchaseModal" tabindex="-1" aria-labelledby="purchaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="purchaseModalLabel">
+                        <i class="bi bi-cart-plus me-2"></i>Beli Voucher WiFi
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="packageInfo" class="mb-4 p-3 bg-light rounded">
+                        <!-- Package info akan diisi oleh JavaScript -->
+                    </div>
+
+                    <form id="purchaseForm">
+                        <div class="mb-3">
+                            <label for="customerName" class="form-label">
+                                <i class="bi bi-person me-2"></i>Nama Lengkap
+                            </label>
+                            <input type="text" class="form-control" id="customerName" name="customerName" required
+                                   placeholder="Masukkan nama lengkap Anda">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="customerPhone" class="form-label">
+                                <i class="bi bi-phone me-2"></i>Nomor WhatsApp
+                            </label>
+                            <input type="tel" class="form-control" id="customerPhone" name="customerPhone" required
+                                   placeholder="628xxxxxxxxxx" pattern="^[0-9]{10,15}$">
+                            <div class="form-text">Voucher akan dikirim ke nomor WhatsApp ini</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">
+                                <i class="bi bi-dash-circle me-2"></i>Jumlah Voucher
+                            </label>
+                            <select class="form-control" id="quantity" name="quantity">
+                                <option value="1">1 Voucher</option>
+                                <option value="2">2 Voucher</option>
+                                <option value="3">3 Voucher</option>
+                                <option value="5">5 Voucher</option>
+                                <option value="10">10 Voucher</option>
+                            </select>
+                        </div>
+
+                        <!-- Payment Method Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="bi bi-credit-card me-2"></i>Metode Pembayaran
+                            </label>
+                            <div id="payment-methods-container">
+                                <div class="text-center py-3">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading payment methods...</span>
+                                    </div>
+                                    <p class="mt-2 mb-0">Memuat metode pembayaran...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="packageId" name="packageId">
+                        <input type="hidden" id="selectedGateway" name="selectedGateway">
+                        <input type="hidden" id="selectedMethod" name="selectedMethod">
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-modal" id="submitBtn" disabled>
+                                <span class="spinner-border spinner-border-sm me-2 d-none" role="status"></span>
+                                <i class="bi bi-credit-card me-2"></i>Bayar Sekarang
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-modal" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-2"></i>Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let selectedPackage = null;
+
+        function selectPackage(packageId, packageName, price) {
+            selectedPackage = { id: packageId, name: packageName, price: price };
+
+            // Update modal info
+            document.getElementById('packageInfo').innerHTML = `
+                <div class="text-center">
+                    <h5 class="mb-2">${packageName}</h5>
+                    <h3 class="text-primary mb-0">Rp ${price.toLocaleString('id-ID')}</h3>
+                </div>
+            `;
+
+            document.getElementById('packageId').value = packageId;
+
+            // Load payment methods
+            loadPaymentMethods();
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('purchaseModal'));
+            modal.show();
+        }
+
+        // Load payment methods (same as invoice detail)
+        async function loadPaymentMethods() {
+            try {
+                const response = await fetch('/voucher/api/payment-methods');
+                const result = await response.json();
+
+                if (result.success) {
+                    displayPaymentMethods(result.methods);
+                } else {
+                    showPaymentMethodsError(result.message || 'Gagal memuat metode pembayaran');
+                }
+            } catch (error) {
+                console.error('Error loading payment methods:', error);
+                showPaymentMethodsError('Terjadi kesalahan saat memuat metode pembayaran');
+            }
+        }
+
+        function displayPaymentMethods(methods) {
+            const container = document.getElementById('payment-methods-container');
+            let html = '<div class="row g-2">';
+
+            methods.forEach(method => {
+                // Check if amount meets minimum requirement
+                const packageAmount = selectedPackage ? selectedPackage.price : 0;
+                const isDisabled = method.minimum_amount && packageAmount < method.minimum_amount;
+                const disabledClass = isDisabled ? 'disabled' : '';
+                const disabledTitle = isDisabled ? `Minimal pembayaran: Rp ${method.minimum_amount?.toLocaleString('id-ID')}` : '';
+
+                html += `
+                    <div class="col-6">
+                        <button class="btn btn-outline-${method.color} w-100 payment-method ${disabledClass}" 
+                                data-gateway="${method.gateway}" 
+                                data-method="${method.method}"
+                                ${isDisabled ? 'disabled' : ''}
+                                title="${disabledTitle}">
+                            <i class="${method.icon}"></i><br>
+                            <small>${method.name}</small>
+                            <br><small class="text-muted">Fee: ${method.fee_customer || 'Gratis'}</small>
+                            ${isDisabled ? `<br><small class="text-danger">Min: Rp ${method.minimum_amount?.toLocaleString('id-ID')}</small>` : ''}
+                        </button>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Bind event listeners to new buttons
+            bindPaymentMethodEvents();
+        }
+
+        function showPaymentMethodsError(message) {
+            const container = document.getElementById('payment-methods-container');
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle"></i>
+                    ${message}
+                </div>
+                <button class="btn btn-outline-primary w-100" onclick="loadPaymentMethods()">
+                    <i class="bi bi-arrow-clockwise"></i> Coba Lagi
+                </button>
+            `;
+        }
+
+        // Handle payment method selection
+        function bindPaymentMethodEvents() {
+            document.querySelectorAll('.payment-method').forEach(button => {
+                button.addEventListener('click', function() {
+                    if (this.disabled) return;
+
+                    // Remove active class from all buttons
+                    document.querySelectorAll('.payment-method').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+
+                    // Add active class to selected button
+                    this.classList.add('active');
+
+                    // Store selected payment method
+                    const gateway = this.dataset.gateway;
+                    const method = this.dataset.method;
+
+                    document.getElementById('selectedGateway').value = gateway;
+                    document.getElementById('selectedMethod').value = method;
+
+                    // Enable submit button
+                    document.getElementById('submitBtn').disabled = false;
+                });
+            });
+        }
+
+        document.getElementById('purchaseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const spinner = submitBtn.querySelector('.spinner-border');
+            const btnText = submitBtn.querySelector('span:not(.spinner-border)');
+
+            // Show loading
+            spinner.classList.remove('d-none');
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData(this);
+
+                const response = await fetch('/voucher/purchase', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        packageId: formData.get('packageId'),
+                        customerName: formData.get('customerName'),
+                        customerPhone: formData.get('customerPhone'),
+                        quantity: formData.get('quantity'),
+                        gateway: formData.get('selectedGateway'),
+                        method: formData.get('selectedMethod')
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Simpan data pembelian ke localStorage untuk tracking
+                    const purchaseData = {
+                        packageId: formData.get('packageId'),
+                        packageName: selectedPackage.name,
+                        customerName: formData.get('customerName'),
+                        customerPhone: formData.get('customerPhone'),
+                        quantity: formData.get('quantity'),
+                        purchaseId: result.data.purchaseId,
+                        timestamp: new Date().toISOString(),
+                        status: 'Menunggu Pembayaran'
+                    };
+                    localStorage.setItem('lastVoucherPurchase', JSON.stringify(purchaseData));
+
+                    // Open payment gateway in new window (same as invoice monthly)
+                    window.open(result.data.paymentUrl, '_blank');
+                } else {
+                    throw new Error(result.message || 'Gagal memproses pembelian');
+                }
+
+            } catch (error) {
+                console.error('Purchase error:', error);
+                let errorMessage = 'Terjadi kesalahan: ' + error.message;
+
+                if (error.message.includes('Voucher tidak ditemukan')) {
+                    errorMessage = 'Voucher tidak dapat ditemukan. Silakan coba pembelian baru atau hubungi admin.';
+                }
+
+                alert(errorMessage);
+            } finally {
+                // Hide loading
+                spinner.classList.add('d-none');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Format phone number input
+        document.getElementById('customerPhone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.startsWith('0')) {
+                value = '62' + value.slice(1);
+            }
+            if (!value.startsWith('62')) {
+                value = '62' + value;
+            }
+            e.target.value = value;
+        });
+
+        // Auto-hide alerts after 5 seconds
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Sistem - <%= settings.company_header %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #06d6a0;
+            --warning-color: #ffd166;
+            --danger-color: #ef476f;
+            --info-color: #118ab2;
+            --light-bg: #f8f9fa;
+            --dark-text: #2d3436;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 1rem 1.5rem;
+            margin: 0.2rem 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .monitoring-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .metric-icon.success { background: var(--success-color); }
+        .metric-icon.warning { background: var(--warning-color); }
+        .metric-icon.danger { background: var(--danger-color); }
+        .metric-icon.info { background: var(--info-color); }
+        .metric-icon.primary { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+
+        .status-online {
+            background: rgba(6, 214, 160, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-offline {
+            background: rgba(239, 71, 111, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-warning {
+            background: rgba(255, 209, 102, 0.1);
+            color: var(--warning-color);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .user-profile {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .service-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.3s ease;
+        }
+
+        .service-item:hover {
+            background: #f8f9fa;
+        }
+
+        .service-item:last-child {
+            border-bottom: none;
+        }
+
+        .service-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .service-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .alert-custom {
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-info {
+            background: rgba(17, 138, 178, 0.1);
+            color: var(--info-color);
+            border-left: 4px solid var(--info-color);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                z-index: 1050;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.show {
+                left: 0;
+            }
+
+            .monitoring-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse" id="sidebarMenu">
+                <div class="position-sticky pt-3">
+                    <!-- User Profile -->
+                    <div class="user-profile">
+                        <div class="user-avatar">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h6 class="text-white mb-1"><%= technician.name %></h6>
+                        <small class="text-white-50">
+                            <i class="bi bi-tools me-1"></i><%= technician.role %>
+                        </small>
+                    </div>
+
+                    <!-- Navigation Menu -->
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/technician/dashboard">
+                                <i class="bi bi-speedometer2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/technician/monitoring">
+                                <i class="bi bi-activity"></i>Monitoring
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/technician/customers">
+                                <i class="bi bi-people"></i>Pelanggan
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/technician/mapping">
+                                <i class="bi bi-geo-alt"></i>Mapping
+                            </a>
+                        </li>
+                        <% if (technician.role === 'collector' || technician.role === 'field_officer') { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/technician/payments">
+                                <i class="bi bi-credit-card"></i>Pembayaran
+                            </a>
+                        </li>
+                        <% } %>
+                        <li class="nav-item mt-3">
+                            <a class="nav-link" href="/technician/logout">
+                                <i class="bi bi-box-arrow-right"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Mobile Menu Button -->
+                <div class="d-md-none mb-3">
+                    <button class="navbar-toggler btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                        <i class="bi bi-list"></i>
+                    </button>
+                </div>
+
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold">Monitoring Sistem</h2>
+                        <p class="text-muted mb-0">Monitor status jaringan dan sistem secara real-time</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="refreshData()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+                        </button>
+                        <span class="status-indicator status-online">
+                            <i class="bi bi-circle-fill me-1"></i>System Online
+                        </span>
+                    </div>
+                </div>
+
+                <!-- System Status Alert -->
+                <div class="alert-custom alert-info">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill me-3" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong>Status Sistem:</strong> Semua layanan berjalan normal. 
+                            Last updated: <span id="lastUpdate"><%= new Date().toLocaleString('id-ID') %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monitoring Metrics -->
+                <div class="monitoring-grid">
+                    <!-- Network Status -->
+                    <div class="metric-card">
+                        <div class="metric-icon success">
+                            <i class="bi bi-wifi"></i>
+                        </div>
+                        <div class="metric-value text-success" id="networkStatus">Online</div>
+                        <div class="metric-label">Status Jaringan</div>
+                        <small class="text-muted">Uptime: <span id="networkUptime">99.9%</span></small>
+                    </div>
+
+                    <!-- Active Connections -->
+                    <div class="metric-card">
+                        <div class="metric-icon primary">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div class="metric-value text-primary" id="activeConnections">
+                            <%= monitoringData.active_connections || '0' %>
+                        </div>
+                        <div class="metric-label">Koneksi Aktif</div>
+                        <small class="text-muted">PPPoE Sessions</small>
+                    </div>
+
+                    <!-- Total Bandwidth -->
+                    <div class="metric-card">
+                        <div class="metric-icon info">
+                            <i class="bi bi-speedometer2"></i>
+                        </div>
+                        <div class="metric-value text-info" id="totalBandwidth">
+                            <%= monitoringData.total_bandwidth || '0 Mbps' %>
+                        </div>
+                        <div class="metric-label">Total Bandwidth</div>
+                        <small class="text-muted">Usage Real-time</small>
+                    </div>
+
+                    <!-- System Load -->
+                    <div class="metric-card">
+                        <div class="metric-icon warning">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <div class="metric-value text-warning" id="systemLoad">Normal</div>
+                        <div class="metric-label">System Load</div>
+                        <small class="text-muted">CPU & Memory</small>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row">
+                    <!-- Network Traffic Chart -->
+                    <div class="col-md-8">
+                        <div class="content-card">
+                            <h5 class="mb-3">
+                                <i class="bi bi-graph-up me-2"></i>Network Traffic
+                            </h5>
+                            <div class="chart-container">
+                                <canvas id="trafficChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Services -->
+                    <div class="col-md-4">
+                        <div class="content-card">
+                            <h5 class="mb-3">
+                                <i class="bi bi-gear-fill me-2"></i>Service Status
+                            </h5>
+                            <ul class="service-list">
+                                <li class="service-item">
+                                    <div class="service-info">
+                                        <div class="service-icon success">
+                                            <i class="bi bi-chat-dots"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">WhatsApp Bot</h6>
+                                            <small class="text-muted">Gateway Service</small>
+                                        </div>
+                                    </div>
+                                    <span class="status-indicator status-online">Online</span>
+                                </li>
+                                <li class="service-item">
+                                    <div class="service-info">
+                                        <div class="service-icon success">
+                                            <i class="bi bi-router"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">Mikrotik</h6>
+                                            <small class="text-muted">Router Service</small>
+                                        </div>
+                                    </div>
+                                    <span class="status-indicator status-online">Connected</span>
+                                </li>
+                                <li class="service-item">
+                                    <div class="service-info">
+                                        <div class="service-icon success">
+                                            <i class="bi bi-hdd-network"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">GenieACS</h6>
+                                            <small class="text-muted">Device Management</small>
+                                        </div>
+                                    </div>
+                                    <span class="status-indicator status-online">Active</span>
+                                </li>
+                                <li class="service-item">
+                                    <div class="service-info">
+                                        <div class="service-icon success">
+                                            <i class="bi bi-database"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">Database</h6>
+                                            <small class="text-muted">SQLite Database</small>
+                                        </div>
+                                    </div>
+                                    <span class="status-indicator status-online">Ready</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="content-card">
+                    <h5 class="mb-3">
+                        <i class="bi bi-clock-history me-2"></i>Recent System Events
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Waktu</th>
+                                    <th>Event</th>
+                                    <th>Service</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentEvents">
+                                <tr>
+                                    <td><%= new Date().toLocaleTimeString('id-ID') %></td>
+                                    <td>System monitoring accessed</td>
+                                    <td>Technician Portal</td>
+                                    <td><span class="status-indicator status-online">Success</span></td>
+                                </tr>
+                                <tr>
+                                    <td><%= new Date(Date.now() - 5*60000).toLocaleTimeString('id-ID') %></td>
+                                    <td>WhatsApp bot health check</td>
+                                    <td>WhatsApp Gateway</td>
+                                    <td><span class="status-indicator status-online">OK</span></td>
+                                </tr>
+                                <tr>
+                                    <td><%= new Date(Date.now() - 10*60000).toLocaleTimeString('id-ID') %></td>
+                                    <td>Database backup completed</td>
+                                    <td>Database</td>
+                                    <td><span class="status-indicator status-online">Success</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let trafficChart;
+
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.querySelector('.navbar-toggler');
+            const sidebar = document.getElementById('sidebarMenu');
+            
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                });
+            }
+
+            // Initialize charts
+            initializeTrafficChart();
+
+            // Start real-time updates
+            startRealTimeUpdates();
+        });
+
+        function initializeTrafficChart() {
+            const ctx = document.getElementById('trafficChart').getContext('2d');
+            
+            // Generate sample data for the last 24 hours
+            const labels = [];
+            const downloadData = [];
+            const uploadData = [];
+            
+            for (let i = 23; i >= 0; i--) {
+                const time = new Date(Date.now() - i * 60 * 60 * 1000);
+                labels.push(time.getHours() + ':00');
+                downloadData.push(Math.random() * 100 + 20); // Sample download data
+                uploadData.push(Math.random() * 50 + 10);    // Sample upload data
+            }
+
+            trafficChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Download (Mbps)',
+                        data: downloadData,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Upload (Mbps)',
+                        data: uploadData,
+                        borderColor: '#06d6a0',
+                        backgroundColor: 'rgba(6, 214, 160, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' Mbps';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function refreshData() {
+            // Update last update time
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString('id-ID');
+            
+            // Simulate data refresh
+            updateMetrics();
+            updateChart();
+            addRecentEvent('Data refresh completed', 'Monitoring System', 'Success');
+            
+            // Show success message
+            showToast('Data berhasil di-refresh!', 'success');
+        }
+
+        function updateMetrics() {
+            // Simulate random updates to metrics
+            const activeConnections = Math.floor(Math.random() * 50) + 150;
+            const bandwidth = (Math.random() * 500 + 100).toFixed(1) + ' Mbps';
+            
+            document.getElementById('activeConnections').textContent = activeConnections;
+            document.getElementById('totalBandwidth').textContent = bandwidth;
+        }
+
+        function updateChart() {
+            if (!trafficChart) return;
+            
+            // Add new data point and remove old one
+            const now = new Date();
+            const timeLabel = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
+            
+            trafficChart.data.labels.push(timeLabel);
+            trafficChart.data.labels.shift();
+            
+            trafficChart.data.datasets[0].data.push(Math.random() * 100 + 20);
+            trafficChart.data.datasets[0].data.shift();
+            
+            trafficChart.data.datasets[1].data.push(Math.random() * 50 + 10);
+            trafficChart.data.datasets[1].data.shift();
+            
+            trafficChart.update('none');
+        }
+
+        function addRecentEvent(event, service, status) {
+            const tbody = document.getElementById('recentEvents');
+            const newRow = tbody.insertRow(0);
+            
+            const statusClass = status === 'Success' ? 'status-online' : 
+                              status === 'Warning' ? 'status-warning' : 'status-offline';
+            
+            newRow.innerHTML = `
+                <td>${new Date().toLocaleTimeString('id-ID')}</td>
+                <td>${event}</td>
+                <td>${service}</td>
+                <td><span class="status-indicator ${statusClass}">${status}</span></td>
+            `;
+            
+            // Keep only last 10 rows
+            while (tbody.rows.length > 10) {
+                tbody.deleteRow(-1);
+            }
+        }
+
+        function startRealTimeUpdates() {
+            // Update metrics every 30 seconds
+            setInterval(function() {
+                updateMetrics();
+            }, 30000);
+            
+            // Update chart every 5 minutes
+            setInterval(function() {
+                updateChart();
+            }, 300000);
+            
+            // Update timestamp every minute
+            setInterval(function() {
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString('id-ID');
+            }, 60000);
+        }
+
+        function showToast(message, type) {
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 1060; min-width: 300px;';
+            toast.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

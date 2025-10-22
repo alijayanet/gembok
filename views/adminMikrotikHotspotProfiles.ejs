@@ -47,13 +47,35 @@
             padding: 0.25rem 0.5rem;
             font-size: 0.875rem;
         }
+        /* Fix table width to fill container */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+        .table {
+            width: 100% !important;
+            table-layout: fixed;
+        }
+        .table th, .table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* Set specific column widths */
+        .table th:nth-child(1), .table td:nth-child(1) { width: 5%; } /* No */
+        .table th:nth-child(2), .table td:nth-child(2) { width: 20%; } /* Nama Profile */
+        .table th:nth-child(3), .table td:nth-child(3) { width: 15%; } /* Rate Limit */
+        .table th:nth-child(4), .table td:nth-child(4) { width: 15%; } /* Session Timeout */
+        .table th:nth-child(5), .table td:nth-child(5) { width: 15%; } /* Idle Timeout */
+        .table th:nth-child(6), .table td:nth-child(6) { width: 10%; } /* Status */
+        .table th:nth-child(7), .table td:nth-child(7) { width: 20%; } /* Aksi */
         /* Mobile responsive table styles */
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
         @media (max-width: 768px) {
-            .table td, .table th {
+            .table th, .table td {
                 white-space: nowrap;
                 min-width: 120px;
             }
@@ -184,23 +206,25 @@
             <!-- Tabel Profile -->
             <div class="card">
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="profileTable">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>No</th>
-                                    <th>Nama Profile</th>
-                                    <th>Rate Limit</th>
-                                    <th>Session Timeout</th>
-                                    <th>Idle Timeout</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="profileTableBody">
-                                <!-- Data akan diisi via JavaScript -->
-                            </tbody>
-                        </table>
+                    <div class="table-wrapper">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="profileTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nama Profile</th>
+                                        <th>Rate Limit</th>
+                                        <th>Session Timeout</th>
+                                        <th>Idle Timeout</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="profileTableBody">
+                                    <!-- Data akan diisi via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

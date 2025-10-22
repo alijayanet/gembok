@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Pelanggan - <%= settings.company_header %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #06d6a0;
+            --warning-color: #ffd166;
+            --danger-color: #ef476f;
+            --info-color: #118ab2;
+            --light-bg: #f8f9fa;
+            --dark-text: #2d3436;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .table thead th {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.01);
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .status-suspended {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .status-inactive {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box .form-control {
+            padding-left: 3rem;
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+        }
+
+        .search-box .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .user-profile {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                z-index: 1050;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.show {
+                left: 0;
+            }
+        }
+        /* Ensure map modal and Leaflet layers are on top */
+        .modal { z-index: 2000; }
+        .modal-backdrop { z-index: 1990; }
+        #map,
+        .leaflet-pane,
+        .leaflet-top,
+        .leaflet-bottom { z-index: 2100 !important; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <%- include('partials/technician-responsive-sidebar', { page: 'customers', technician: technician, settings: settings }) %>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+
+
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold">Kelola Pelanggan</h2>
+                        <p class="text-muted mb-0">Tambah dan kelola data pelanggan</p>
+                    </div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                        <i class="bi bi-person-plus me-2"></i>Tambah Pelanggan
+                    </button>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="content-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="search-box">
+                                <i class="bi bi-search search-icon"></i>
+                                <input type="text" class="form-control" placeholder="Cari nama, nomor telepon, atau username..." 
+                                       value="<%= search || '' %>" id="searchInput">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-end">
+                                <small class="text-muted align-self-center">
+                                    Menampilkan <%= customers.length %> dari <%= pagination.totalCustomers %> pelanggan
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customers Table -->
+                <div class="content-card">
+                    <% if (customers.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nama</th>
+                                    <th>Username</th>
+                                    <th>Telepon</th>
+                                    <th>Paket</th>
+                                    <th>Status</th>
+                                    <th>Bergabung</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% customers.forEach(function(customer) { %>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                                <i class="bi bi-person text-white"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0"><%= customer.name %></h6>
+                                                <% if (customer.email) { %>
+                                                <small class="text-muted"><%= customer.email %></small>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <code><%= customer.username %></code>
+                                        <% if (customer.pppoe_username) { %>
+                                        <br><small class="text-muted">PPPoE: <%= customer.pppoe_username %></small>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <a href="tel:<%= customer.phone %>" class="text-decoration-none">
+                                            <i class="bi bi-phone me-1"></i><%= customer.phone %>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <% if (customer.package_name) { %>
+                                        <span class="badge bg-info"><%= customer.package_name %></span>
+                                        <% if (customer.package_speed) { %>
+                                        <br><small class="text-muted"><%= customer.package_speed %></small>
+                                        <% } %>
+                                        <% } else { %>
+                                        <span class="text-muted">-</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-<%= customer.status %>">
+                                            <%= customer.status === 'active' ? 'Aktif' : customer.status === 'suspended' ? 'Suspend' : 'Tidak Aktif' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <%= new Date(customer.join_date).toLocaleDateString('id-ID') %>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" title="Lihat Detail" 
+                                                    data-action="view" data-customer-id="<%= customer.id %>">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-secondary" title="Edit" 
+                                                    data-action="edit" data-customer-id="<%= customer.id %>">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" title="Hapus" 
+                                                    data-action="delete" data-customer-id="<%= customer.id %>" 
+                                                    data-customer-name="<%- customer.name %>">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <% if (pagination.totalPages > 1) { %>
+                    <nav aria-label="Customer pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <% if (pagination.hasPrev) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<%= pagination.currentPage - 1 %>&search=<%- (search || '').replace(/&/g, '%26').replace(/=/g, '%3D').replace(/\+/g, '%2B') %>">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            <% } %>
+                            
+                            <% for (let i = Math.max(1, pagination.currentPage - 2); i <= Math.min(pagination.totalPages, pagination.currentPage + 2); i++) { %>
+                            <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %>&search=<%- (search || '').replace(/&/g, '%26').replace(/=/g, '%3D').replace(/\+/g, '%2B') %>"><%= i %></a>
+                            </li>
+                            <% } %>
+                            
+                            <% if (pagination.hasNext) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<%= pagination.currentPage + 1 %>&search=<%- (search || '').replace(/&/g, '%26').replace(/=/g, '%3D').replace(/\+/g, '%2B') %>">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            <% } %>
+                        </ul>
+                    </nav>
+                    <% } %>
+
+                    <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="bi bi-people" style="font-size: 4rem; color: #ddd;"></i>
+                        <h5 class="mt-3 mb-2">Belum ada pelanggan</h5>
+                        <p class="text-muted">
+                            <% if (search) { %>
+                            Tidak ada pelanggan yang ditemukan dengan kata kunci "<%= search %>"
+                            <% } else { %>
+                            Tambahkan pelanggan pertama Anda
+                            <% } %>
+                        </p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                            <i class="bi bi-person-plus me-2"></i>Tambah Pelanggan
+                        </button>
+                    </div>
+                    <% } %>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Map Picker Modal -->
+    <div class="modal fade" id="mapPickerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pilih Lokasi dari Peta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="map" style="height: 400px; width: 100%; border: 1px solid #ddd;"></div>
+                    <div class="mt-3">
+                        <strong>Koordinat:</strong>
+                        <span id="pickedLat">-</span>, <span id="pickedLng">-</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="applyMapLocation()">Gunakan Lokasi Ini</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Customer Modal -->
+    <div class="modal fade" id="editCustomerModal" tabindex="-1" aria-labelledby="editCustomerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCustomerModalLabel">
+                        <i class="bi bi-pencil-square me-2"></i>Edit Pelanggan
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editCustomerForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="editCustomerId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editCustomerName" class="form-label">Nama Lengkap *</label>
+                                <input type="text" class="form-control" id="editCustomerName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editCustomerPhone" class="form-label">Nomor Telepon *</label>
+                                <input type="tel" class="form-control" id="editCustomerPhone" required>
+                                <small class="text-muted">Gunakan format 62xxxxxxxxxx</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editCustomerUsername" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="editCustomerUsername" disabled>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editCustomerEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="editCustomerEmail">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCustomerAddress" class="form-label">Alamat</label>
+                            <textarea class="form-control" id="editCustomerAddress" rows="2"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editLatitude" class="form-label">Latitude</label>
+                                <input type="number" step="0.00000001" class="form-control" id="editLatitude" placeholder="-6.2088">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editLongitude" class="form-label">Longitude</label>
+                                <input type="number" step="0.00000001" class="form-control" id="editLongitude" placeholder="106.8456">
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex mb-3">
+                            <button type="button" class="btn btn-success" onclick="getCurrentLocation()">
+                                <i class="bi bi-geo-alt me-1"></i> Ambil Lokasi GPS
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" onclick="openMapPicker()">
+                                <i class="bi bi-map me-1"></i> Pilih dari Peta
+                            </button>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editCustomerPPPoE" class="form-label">Username PPPoE</label>
+                                <input type="text" class="form-control" id="editCustomerPPPoE">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editCustomerProfile" class="form-label">PPPoE Profile</label>
+                                <input type="text" class="form-control" id="editCustomerProfile" value="default">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCustomerODP" class="form-label">ODP (Optical Distribution Point)</label>
+                            <select class="form-select" id="editCustomerODP" name="odp_id">
+                                <option value="">Pilih ODP (Opsional)</option>
+                                <% if (odps && odps.length > 0) { %>
+                                    <% odps.forEach(function(odp) { %>
+                                        <option value="<%= odp.id %>" data-capacity="<%= odp.capacity %>" data-used="<%= odp.used_ports %>">
+                                            <% if (odp.parent_name) { %>
+                                                └─ <%= odp.name %> (<%= odp.code %>) - <%= odp.used_ports %>/<%= odp.capacity %> ports
+                                            <% } else { %>
+                                                <%= odp.name %> (<%= odp.code %>) - <%= odp.used_ports %>/<%= odp.capacity %> ports
+                                            <% } %>
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                            <small class="form-text text-muted">Pilih ODP tempat pelanggan akan disambungkan (opsional). Sub ODP ditandai dengan └─</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCustomerModalLabel">
+                        <i class="bi bi-person-plus me-2"></i>Tambah Pelanggan Baru
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="addCustomerForm">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="customerName" class="form-label">Nama Lengkap *</label>
+                                <input type="text" class="form-control" id="customerName" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="customerPhone" class="form-label">Nomor Telepon *</label>
+                                <input type="tel" class="form-control" id="customerPhone" name="phone" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="customerUsername" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="customerUsername" name="username" 
+                                       placeholder="Auto-generate jika kosong">
+                                <small class="text-muted">Kosongkan untuk auto-generate dari nama</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="customerEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="customerEmail" name="email">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="customerAddress" class="form-label">Alamat</label>
+                            <textarea class="form-control" id="customerAddress" name="address" rows="2"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="latitude" class="form-label">Latitude</label>
+                                <input type="number" step="0.00000001" class="form-control" id="latitude" name="latitude" placeholder="-6.2088">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="longitude" class="form-label">Longitude</label>
+                                <input type="number" step="0.00000001" class="form-control" id="longitude" name="longitude" placeholder="106.8456">
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex mb-3">
+                            <button type="button" class="btn btn-success" onclick="getCurrentLocation()">
+                                <i class="bi bi-geo-alt me-1"></i> Ambil Lokasi GPS
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" onclick="openMapPicker()">
+                                <i class="bi bi-map me-1"></i> Pilih dari Peta
+                            </button>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="customerPackage" class="form-label">Paket Internet *</label>
+                                <select class="form-select" id="customerPackage" name="package_id" required>
+                                    <option value="">Pilih Paket</option>
+                                    <% packages.forEach(function(pkg) { %>
+                                    <option value="<%= pkg.id %>"><%= pkg.name %> - <%= pkg.speed %></option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="customerPPPoE" class="form-label">Username PPPoE</label>
+                                <input type="text" class="form-control" id="customerPPPoE" name="pppoe_username" placeholder="Jika kosong, gunakan username pelanggan">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="customerODP" class="form-label">ODP (Optical Distribution Point)</label>
+                            <select class="form-select" id="customerODP" name="odp_id">
+                                <option value="">Pilih ODP (Opsional)</option>
+                                <% if (odps && odps.length > 0) { %>
+                                    <% odps.forEach(function(odp) { %>
+                                        <option value="<%= odp.id %>" data-capacity="<%= odp.capacity %>" data-used="<%= odp.used_ports %>">
+                                            <% if (odp.parent_name) { %>
+                                                └─ <%= odp.name %> (<%= odp.code %>) - <%= odp.used_ports %>/<%= odp.capacity %> ports
+                                            <% } else { %>
+                                                <%= odp.name %> (<%= odp.code %>) - <%= odp.used_ports %>/<%= odp.capacity %> ports
+                                            <% } %>
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                            <small class="form-text text-muted">Pilih ODP tempat pelanggan akan disambungkan (opsional). Sub ODP ditandai dengan └─</small>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="customerProfile" class="form-label">PPPoE Profile (dari MikroTik)</label>
+                                <select class="form-select" id="customerProfile" name="pppoe_profile">
+                                    <option value="default">default</option>
+                                </select>
+                                <small class="text-muted">Daftar diambil langsung dari MikroTik</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Buat PPPoE di MikroTik sekarang?</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="true" id="createPPPoENow" name="create_pppoe_now">
+                                    <label class="form-check-label" for="createPPPoENow">
+                                        Buat secret PPPoE (username = password)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Simpan Pelanggan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        const searchValue = this.value;
+                        const currentPage = new URLSearchParams(window.location.search).get('page') || 1;
+                        window.location.href = `?search=${encodeURIComponent(searchValue)}&page=1`;
+                    }, 500);
+                });
+            }
+
+            // Form submission
+            const addCustomerForm = document.getElementById('addCustomerForm');
+            if (addCustomerForm) {
+                addCustomerForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    const data = Object.fromEntries(formData.entries());
+                    // Checkbox boolean
+                    data.create_pppoe_now = document.getElementById('createPPPoENow').checked ? 'true' : 'false';
+                    
+                    try {
+                        const response = await fetch('/technician/customers/add', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            alert('Pelanggan berhasil ditambahkan!');
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + result.message);
+                        }
+                    } catch (error) {
+                        alert('Terjadi kesalahan: ' + error.message);
+                    }
+                });
+            }
+
+            // Load PPPoE Profiles from Mikrotik
+            fetch('/technician/api/mikrotik/pppoe-profiles')
+                .then(r => r.json())
+                .then(res => {
+                    if (!res.success) return;
+                    const sel = document.getElementById('customerProfile');
+                    if (sel) {
+                        const current = sel.value;
+                        res.profiles.forEach(p => {
+                            if (p.name === 'default') return; // sudah ada
+                            const opt = document.createElement('option');
+                            opt.value = p.name;
+                            opt.textContent = p.name;
+                            sel.appendChild(opt);
+                        });
+                        sel.value = current;
+                    }
+                })
+                .catch(() => {});
+
+            // Setup edit form submission
+            const editCustomerForm = document.getElementById('editCustomerForm');
+            if (editCustomerForm) {
+                editCustomerForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const id = document.getElementById('editCustomerId').value;
+                    const body = {
+                        name: document.getElementById('editCustomerName').value.trim(),
+                        phone: document.getElementById('editCustomerPhone').value.trim(),
+                        email: document.getElementById('editCustomerEmail').value.trim() || null,
+                        address: document.getElementById('editCustomerAddress').value.trim() || null,
+                        latitude: document.getElementById('editLatitude').value.trim() || null,
+                        longitude: document.getElementById('editLongitude').value.trim() || null,
+                        odp_id: document.getElementById('editCustomerODP').value || null,
+                        pppoe_username: document.getElementById('editCustomerPPPoE').value.trim() || null,
+                        pppoe_profile: document.getElementById('editCustomerProfile').value.trim() || 'default'
+                    };
+
+                    if (!body.name || !body.phone) {
+                        alert('Nama dan Telepon wajib diisi');
+                        return;
+                    }
+
+                    try {
+                        const up = await fetch(`/technician/customers/${id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify(body)
+                        });
+                        const upd = await up.json();
+                        if (upd.success) {
+                            const modalEl = document.getElementById('editCustomerModal');
+                            const modal = bootstrap.Modal.getInstance(modalEl);
+                            modal?.hide();
+                            alert('Pelanggan berhasil diperbarui');
+                            window.location.reload();
+                        } else {
+                            alert(upd.message || 'Gagal memperbarui pelanggan');
+                        }
+                    } catch (e) {
+                        alert('Error: ' + e.message);
+                    }
+                });
+            }
+
+            // Handle action buttons with event delegation
+            document.addEventListener('click', function(e) {
+                const button = e.target.closest('button[data-action]');
+                if (!button) return;
+
+                const action = button.getAttribute('data-action');
+                const customerId = button.getAttribute('data-customer-id');
+                const customerName = button.getAttribute('data-customer-name');
+
+                if (action === 'view' && customerId) {
+                    viewCustomer(parseInt(customerId));
+                } else if (action === 'edit' && customerId) {
+                    editCustomer(parseInt(customerId));
+                } else if (action === 'delete' && customerId && customerName) {
+                    deleteCustomer(parseInt(customerId), customerName);
+                }
+            });
+        });
+
+        // Map/GPS helpers
+        function openMapPicker() {
+            const addEl = document.getElementById('addCustomerModal');
+            const editEl = document.getElementById('editCustomerModal');
+            const isEditOpen = editEl && editEl.classList.contains('show');
+            const isAddOpen = addEl && addEl.classList.contains('show');
+            if (isEditOpen) (bootstrap.Modal.getInstance(editEl) || new bootstrap.Modal(editEl)).hide();
+            if (isAddOpen) (bootstrap.Modal.getInstance(addEl) || new bootstrap.Modal(addEl)).hide();
+
+            const mapEl = document.getElementById('mapPickerModal');
+            const mapModal = new bootstrap.Modal(mapEl, { backdrop: true, focus: true });
+            mapModal.show();
+
+            function onHidden() {
+                delete window.__mapAppliedOnce;
+                if (isEditOpen && editEl) (bootstrap.Modal.getInstance(editEl) || new bootstrap.Modal(editEl)).show();
+                if (isAddOpen && addEl) (bootstrap.Modal.getInstance(addEl) || new bootstrap.Modal(addEl)).show();
+                mapEl.removeEventListener('hidden.bs.modal', onHidden);
+            }
+            mapEl.addEventListener('hidden.bs.modal', onHidden);
+
+            setTimeout(() => {
+                initMapPicker();
+                if (window.__leafletMapInstance) window.__leafletMapInstance.invalidateSize();
+            }, 150);
+        }
+
+        function initMapPicker() {
+            if (window.__leafletMapInited) return;
+            const defaultLat = -6.2088, defaultLng = 106.8456;
+            const map = L.map('map').setView([defaultLat, defaultLng], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+            let marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+            document.getElementById('pickedLat').textContent = defaultLat.toFixed(8);
+            document.getElementById('pickedLng').textContent = defaultLng.toFixed(8);
+            function update(lat, lng) {
+                document.getElementById('pickedLat').textContent = lat.toFixed(8);
+                document.getElementById('pickedLng').textContent = lng.toFixed(8);
+            }
+            map.on('click', (e) => { marker.setLatLng(e.latlng); update(e.latlng.lat, e.latlng.lng); });
+            marker.on('dragend', (e) => { const p = e.target.getLatLng(); update(p.lat, p.lng); });
+            window.__leafletMapInited = true;
+            window.__leafletMapInstance = map;
+        }
+
+        function applyMapLocation() {
+            const lat = document.getElementById('pickedLat').textContent;
+            const lng = document.getElementById('pickedLng').textContent;
+            if (lat && lng && lat !== '-' && lng !== '-') {
+                const latInput = document.getElementById('latitude');
+                const lngInput = document.getElementById('longitude');
+                if (latInput) latInput.value = lat;
+                if (lngInput) lngInput.value = lng;
+                const editLat = document.getElementById('editLatitude');
+                const editLng = document.getElementById('editLongitude');
+                if (editLat) editLat.value = lat;
+                if (editLng) editLng.value = lng;
+                window.__mapAppliedOnce = true;
+                const mapInst = bootstrap.Modal.getInstance(document.getElementById('mapPickerModal'));
+                mapInst?.hide();
+                // Setelah hide, listener onHidden akan menampilkan kembali modal tambah pelanggan
+            }
+        }
+
+        function getCurrentLocation() {
+            if (!navigator.geolocation) {
+                alert('Geolocation tidak didukung browser');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition((pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                const latInput = document.getElementById('latitude');
+                const lngInput = document.getElementById('longitude');
+                if (latInput) latInput.value = lat.toFixed(8);
+                if (lngInput) lngInput.value = lng.toFixed(8);
+                const editLat = document.getElementById('editLatitude');
+                const editLng = document.getElementById('editLongitude');
+                if (editLat) editLat.value = lat.toFixed(8);
+                if (editLng) editLng.value = lng.toFixed(8);
+                alert('Lokasi GPS berhasil diambil');
+            }, (err) => {
+                alert('Gagal mengambil GPS: ' + err.message);
+            }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
+        }
+        async function viewCustomer(id) {
+            try {
+                const res = await fetch(`/technician/customers/${id}`);
+                const data = await res.json();
+                if (!data.success) return alert(data.message || 'Gagal mengambil data');
+                const c = data.customer;
+                alert(`Nama: ${c.name}\nPhone: ${c.phone}\nUsername: ${c.username || '-'}\nPaket: ${c.package_name || c.package_id || '-'}\nStatus: ${c.status}`);
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        async function editCustomer(id) {
+            try {
+                const res = await fetch(`/technician/customers/${id}`);
+                const data = await res.json();
+                if (!data.success) return alert(data.message || 'Gagal mengambil data');
+                const c = data.customer;
+
+                document.getElementById('editCustomerId').value = c.id;
+                document.getElementById('editCustomerName').value = c.name || '';
+                document.getElementById('editCustomerPhone').value = c.phone || '';
+                document.getElementById('editCustomerUsername').value = c.username || '';
+                document.getElementById('editCustomerEmail').value = c.email || '';
+                document.getElementById('editCustomerAddress').value = c.address || '';
+                document.getElementById('editLatitude').value = c.latitude || '';
+                document.getElementById('editLongitude').value = c.longitude || '';
+                document.getElementById('editCustomerODP').value = c.odp_id || '';
+                document.getElementById('editCustomerPPPoE').value = c.pppoe_username || '';
+                document.getElementById('editCustomerProfile').value = c.pppoe_profile || 'default';
+
+                const modal = new bootstrap.Modal(document.getElementById('editCustomerModal'));
+                modal.show();
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        async function deleteCustomer(id, name) {
+            if (!confirm(`Hapus pelanggan "${name}"? Tindakan ini tidak bisa dibatalkan.`)) return;
+            try {
+                const res = await fetch(`/technician/customers/${id}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Pelanggan berhasil dihapus');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Gagal menghapus pelanggan');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+    </script>
+</body>
+</html>

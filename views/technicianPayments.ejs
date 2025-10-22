@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran - <%= settings.company_header %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #06d6a0;
+            --warning-color: #ffd166;
+            --danger-color: #ef476f;
+            --info-color: #118ab2;
+            --light-bg: #f8f9fa;
+            --dark-text: #2d3436;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.primary { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); }
+        .stat-icon.success { background: var(--success-color); }
+        .stat-icon.warning { background: var(--warning-color); }
+        .stat-icon.danger { background: var(--danger-color); }
+
+        .user-profile {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .table thead th {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: rgba(255, 209, 102, 0.2);
+            color: var(--warning-color);
+        }
+
+        .status-verified {
+            background: rgba(6, 214, 160, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-rejected {
+            background: rgba(239, 71, 111, 0.2);
+            color: var(--danger-color);
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .payment-method-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .payment-method-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .invoice-search {
+            position: relative;
+        }
+
+        .invoice-search .form-control {
+            padding-left: 3rem;
+        }
+
+        .invoice-search .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                z-index: 1050;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.show {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <%- include('partials/technician-responsive-sidebar', { page: 'payments', technician: technician, settings: settings }) %>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+
+
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold">Kelola Pembayaran</h2>
+                        <p class="text-muted mb-0">Catat dan monitor pembayaran dari pelanggan</p>
+                    </div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">
+                        <i class="bi bi-plus-circle me-2"></i>Catat Pembayaran
+                    </button>
+                </div>
+
+                <!-- Payment Statistics -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon primary">
+                                <i class="bi bi-cash-stack"></i>
+                            </div>
+                            <h3 class="mb-1"><%= paymentStats.total_payments || 0 %></h3>
+                            <p class="text-muted mb-0">Total Pembayaran</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card success">
+                            <div class="stat-icon success">
+                                <i class="bi bi-currency-dollar"></i>
+                            </div>
+                            <h3 class="mb-1">Rp <%= (paymentStats.total_amount || 0).toLocaleString('id-ID') %></h3>
+                            <p class="text-muted mb-0">Total Nominal</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card warning">
+                            <div class="stat-icon warning">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+                            <h3 class="mb-1"><%= paymentStats.pending_count || 0 %></h3>
+                            <p class="text-muted mb-0">Pending Verifikasi</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card success">
+                            <div class="stat-icon success">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <h3 class="mb-1"><%= paymentStats.verified_count || 0 %></h3>
+                            <p class="text-muted mb-0">Terverifikasi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter and Search -->
+                <div class="content-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <select class="form-select" id="statusFilter" onchange="filterPayments()">
+                                <option value="all" <%= statusFilter === 'all' ? 'selected' : '' %>>Semua Status</option>
+                                <option value="pending" <%= statusFilter === 'pending' ? 'selected' : '' %>>Pending</option>
+                                <option value="verified" <%= statusFilter === 'verified' ? 'selected' : '' %>>Terverifikasi</option>
+                                <option value="rejected" <%= statusFilter === 'rejected' ? 'selected' : '' %>>Ditolak</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="d-flex justify-content-end">
+                                <small class="text-muted align-self-center">
+                                    Menampilkan <%= payments.length %> dari <%= pagination.totalPayments %> pembayaran
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments Table -->
+                <div class="content-card">
+                    <% if (payments.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Invoice</th>
+                                    <th>Pelanggan</th>
+                                    <th>Jumlah</th>
+                                    <th>Metode</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% payments.forEach(function(payment) { %>
+                                <tr>
+                                    <td>
+                                        <%= new Date(payment.collected_at).toLocaleDateString('id-ID') %><br>
+                                        <small class="text-muted"><%= new Date(payment.collected_at).toLocaleTimeString('id-ID') %></small>
+                                    </td>
+                                    <td>
+                                        <code><%= payment.invoice_number %></code><br>
+                                        <small class="text-muted">Rp <%= payment.invoice_amount.toLocaleString('id-ID') %></small>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <h6 class="mb-0"><%= payment.customer_name %></h6>
+                                            <small class="text-muted"><%= payment.customer_phone %></small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>Rp <%= payment.amount.toLocaleString('id-ID') %></strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-cash me-1"></i><%= payment.payment_method %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-<%= payment.status %>">
+                                            <%= payment.status === 'pending' ? 'Pending' : 
+                                                payment.status === 'verified' ? 'Terverifikasi' : 'Ditolak' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" title="Lihat Detail" 
+                                                    onclick="viewPayment(<%= payment.id %>)">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <% if (payment.status === 'pending') { %>
+                                            <button class="btn btn-outline-secondary" title="Edit" 
+                                                    onclick="editPayment(<%= payment.id %>)">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <% if (pagination.totalPages > 1) { %>
+                    <nav aria-label="Payment pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <% if (pagination.hasPrev) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<%= pagination.currentPage - 1 %>&status=<%- statusFilter || '' %>">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            <% } %>
+                            
+                            <% for (let i = Math.max(1, pagination.currentPage - 2); i <= Math.min(pagination.totalPages, pagination.currentPage + 2); i++) { %>
+                            <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %>&status=<%- statusFilter || '' %>"><%= i %></a>
+                            </li>
+                            <% } %>
+                            
+                            <% if (pagination.hasNext) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<%= pagination.currentPage + 1 %>&status=<%- statusFilter || '' %>">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            <% } %>
+                        </ul>
+                    </nav>
+                    <% } %>
+
+                    <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="bi bi-credit-card" style="font-size: 4rem; color: #ddd;"></i>
+                        <h5 class="mt-3 mb-2">Belum ada pembayaran</h5>
+                        <p class="text-muted">Mulai catat pembayaran dari pelanggan</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">
+                            <i class="bi bi-plus-circle me-2"></i>Catat Pembayaran
+                        </button>
+                    </div>
+                    <% } %>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Record Payment Modal -->
+    <div class="modal fade" id="recordPaymentModal" tabindex="-1" aria-labelledby="recordPaymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="recordPaymentModalLabel">
+                        <i class="bi bi-plus-circle me-2"></i>Catat Pembayaran
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="recordPaymentForm">
+                    <div class="modal-body">
+                        <!-- Invoice Search -->
+                        <div class="mb-3">
+                            <label for="invoiceSearch" class="form-label">Cari Invoice *</label>
+                            <div class="invoice-search">
+                                <i class="bi bi-search search-icon"></i>
+                                <input type="text" class="form-control" id="invoiceSearch" 
+                                       placeholder="Masukkan nomor invoice atau nama pelanggan"
+                                       oninput="searchInvoice(this.value)">
+                            </div>
+                            <div id="invoiceResults" class="mt-2"></div>
+                        </div>
+
+                        <!-- Selected Invoice Info -->
+                        <div id="selectedInvoiceInfo" class="alert alert-info d-none">
+                            <h6>Invoice Terpilih:</h6>
+                            <div id="invoiceDetails"></div>
+                        </div>
+
+                        <input type="hidden" id="selectedInvoiceId" name="invoice_id">
+
+                        <!-- Payment Amount -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="paymentAmount" class="form-label">Jumlah Pembayaran *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" class="form-control" id="paymentAmount" name="amount" 
+                                           min="0" step="1000" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="referenceNumber" class="form-label">Nomor Referensi</label>
+                                <input type="text" class="form-control" id="referenceNumber" name="reference_number"
+                                       placeholder="Opsional">
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="mb-3">
+                            <label class="form-label">Metode Pembayaran *</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="payment-method-card" onclick="selectPaymentMethod('cash')">
+                                        <input type="radio" name="payment_method" value="cash" id="method_cash" required>
+                                        <label for="method_cash" class="d-flex align-items-center">
+                                            <i class="bi bi-cash-stack me-3" style="font-size: 1.5rem; color: var(--success-color);"></i>
+                                            <div>
+                                                <h6 class="mb-0">Tunai</h6>
+                                                <small class="text-muted">Pembayaran cash langsung</small>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="payment-method-card" onclick="selectPaymentMethod('transfer')">
+                                        <input type="radio" name="payment_method" value="transfer" id="method_transfer" required>
+                                        <label for="method_transfer" class="d-flex align-items-center">
+                                            <i class="bi bi-bank me-3" style="font-size: 1.5rem; color: var(--info-color);"></i>
+                                            <div>
+                                                <h6 class="mb-0">Transfer Bank</h6>
+                                                <small class="text-muted">Transfer ke rekening</small>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-3">
+                            <label for="paymentNotes" class="form-label">Catatan</label>
+                            <textarea class="form-control" id="paymentNotes" name="notes" rows="3"
+                                      placeholder="Catatan tambahan (opsional)"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Catat Pembayaran
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const recordPaymentForm = document.getElementById('recordPaymentForm');
+            recordPaymentForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                
+                if (!data.invoice_id) {
+                    alert('Silakan pilih invoice terlebih dahulu');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/technician/payments/record', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Pembayaran berhasil dicatat!');
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Terjadi kesalahan: ' + error.message);
+                }
+            });
+        });
+
+        function filterPayments() {
+            const status = document.getElementById('statusFilter').value;
+            window.location.href = `?status=${status}`;
+        }
+
+        function selectPaymentMethod(method) {
+            // Remove previous selections
+            document.querySelectorAll('.payment-method-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Select current method
+            const selectedCard = document.querySelector(`input[value="${method}"]`).closest('.payment-method-card');
+            selectedCard.classList.add('selected');
+        }
+
+        async function searchInvoice(query) {
+            if (query.length < 3) {
+                document.getElementById('invoiceResults').innerHTML = '';
+                return;
+            }
+
+            // Simulate invoice search (in real implementation, this would be an API call)
+            const mockInvoices = [
+                {
+                    id: 1,
+                    invoice_number: 'INV-2024-001',
+                    customer_name: 'John Doe',
+                    amount: 150000,
+                    due_date: '2024-01-15'
+                },
+                {
+                    id: 2,
+                    invoice_number: 'INV-2024-002',
+                    customer_name: 'Jane Smith',
+                    amount: 200000,
+                    due_date: '2024-01-20'
+                }
+            ];
+
+            const filteredInvoices = mockInvoices.filter(inv => 
+                inv.invoice_number.toLowerCase().includes(query.toLowerCase()) ||
+                inv.customer_name.toLowerCase().includes(query.toLowerCase())
+            );
+
+            let resultsHtml = '';
+            filteredInvoices.forEach(invoice => {
+                resultsHtml += `
+                    <div class="border rounded p-3 mb-2 cursor-pointer" onclick="selectInvoice(${invoice.id}, '${invoice.invoice_number}', '${invoice.customer_name}', ${invoice.amount})">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>${invoice.invoice_number}</strong><br>
+                                <small class="text-muted">${invoice.customer_name}</small>
+                            </div>
+                            <div class="text-end">
+                                <strong>Rp ${invoice.amount.toLocaleString('id-ID')}</strong><br>
+                                <small class="text-muted">Jatuh tempo: ${invoice.due_date}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('invoiceResults').innerHTML = resultsHtml;
+        }
+
+        function selectInvoice(id, number, customerName, amount) {
+            document.getElementById('selectedInvoiceId').value = id;
+            document.getElementById('paymentAmount').value = amount;
+            
+            document.getElementById('invoiceDetails').innerHTML = `
+                <strong>${number}</strong> - ${customerName}<br>
+                <small>Jumlah tagihan: Rp ${amount.toLocaleString('id-ID')}</small>
+            `;
+            
+            document.getElementById('selectedInvoiceInfo').classList.remove('d-none');
+            document.getElementById('invoiceResults').innerHTML = '';
+            document.getElementById('invoiceSearch').value = `${number} - ${customerName}`;
+        }
+
+        function viewPayment(id) {
+            // TODO: Implement payment detail view
+            alert('Fitur lihat detail akan segera tersedia');
+        }
+
+        function editPayment(id) {
+            // TODO: Implement payment edit
+            alert('Fitur edit akan segera tersedia');
+        }
+    </script>
+</body>
+</html>

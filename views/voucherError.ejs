@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voucher Tidak Ditemukan - <%= settings.company_header || 'GEMBOK-BILL' %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2255a6;
+            --secondary-color: #f8f9fa;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .error-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: none;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: var(--danger-color);
+            margin-bottom: 20px;
+        }
+
+        .btn-custom {
+            background: linear-gradient(135deg, var(--primary-color), #6c5ce7);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-card">
+            <div class="error-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+
+            <h1 class="h3 mb-3">Voucher Tidak Ditemukan</h1>
+
+            <p class="text-muted mb-4">
+                Maaf, voucher yang Anda cari tidak dapat ditemukan dalam sistem kami.
+            </p>
+
+            <div class="alert alert-info text-start mb-4">
+                <h6><i class="bi bi-info-circle-fill me-2"></i>Mungkin disebabkan oleh:</h6>
+                <ul class="mb-3">
+                    <li><strong>ID voucher yang tidak valid</strong> - Pastikan link yang Anda gunakan benar</li>
+                    <li><strong>Voucher sudah expired</strong> - Voucher biasanya aktif 24 jam setelah pembelian</li>
+                    <li><strong>Link pembayaran kadaluarsa</strong> - Link pembayaran memiliki batas waktu</li>
+                    <li><strong>Data sudah diproses</strong> - Voucher mungkin sudah digunakan atau dikirim</li>
+                    <li><strong>Masalah teknis sementara</strong> - Coba beberapa saat lagi</li>
+                </ul>
+
+                <div class="border-top pt-3">
+                    <h6><i class="bi bi-lightbulb-fill me-2"></i>Solusi yang bisa dicoba:</h6>
+                    <ul class="mb-0">
+                        <li>Periksa kembali email atau WhatsApp untuk link yang benar</li>
+                        <li>Jika baru saja membayar, tunggu 1-2 menit lalu coba lagi</li>
+                        <li>Hubungi admin jika mengalami kesulitan berulang</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="d-grid gap-3">
+                <a href="/voucher" class="btn-custom">
+                    <i class="bi bi-cart-plus me-2"></i>Beli Voucher Baru
+                </a>
+
+                <a href="/" class="btn btn-outline-secondary">
+                    <i class="bi bi-house me-2"></i>Kembali ke Beranda
+                </a>
+            </div>
+
+            <% if (typeof voucherStats !== 'undefined' && voucherStats && (voucherStats.total_today > 0)) { %>
+            <div class="alert alert-light border mt-4">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="h5 mb-1 text-primary"><%= voucherStats.total_today %></div>
+                        <small class="text-muted">Total Pesanan<br>Hari Ini</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="h5 mb-1 text-success"><%= voucherStats.completed_today %></div>
+                        <small class="text-muted">Berhasil<br>Dikirim</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="h5 mb-1 text-warning"><%= voucherStats.pending_today %></div>
+                        <small class="text-muted">Menunggu<br>Pembayaran</small>
+                    </div>
+                </div>
+            </div>
+
+            <% if (typeof recentVouchers !== 'undefined' && recentVouchers && recentVouchers.length > 0) { %>
+            <div class="alert alert-success mt-3">
+                <h6><i class="bi bi-check-circle-fill me-2"></i>Voucher Terbaru Hari Ini:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Paket</th>
+                                <th>Pelanggan</th>
+                                <th>Waktu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% recentVouchers.forEach(voucher => { %>
+                            <tr>
+                                <td><small><%= voucher.voucher_package %>k x<%= voucher.voucher_quantity %></small></td>
+                                <td><small><%= voucher.customer_name || voucher.customer_name %></small></td>
+                                <td><small><%= new Date(voucher.created_at).toLocaleString('id-ID') %></small></td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+                <small class="text-muted mt-2 d-block">
+                    Sistem voucher berjalan dengan baik! Jika voucher Anda tidak muncul, kemungkinan masih dalam proses.
+                </small>
+            </div>
+            <% } %>
+            <% } %>
+
+            <div class="mt-4 pt-4 border-top">
+                <div class="row text-center">
+                    <div class="col-md-6 mb-3">
+                        <h6><i class="bi bi-whatsapp text-success me-2"></i>WhatsApp Support</h6>
+                        <a href="https://wa.me/6281947215703" class="btn btn-success btn-sm" target="_blank">
+                            <i class="bi bi-whatsapp me-1"></i>Chat Admin
+                        </a>
+                        <div class="small text-muted mt-1">081-9472-15703</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6><i class="bi bi-clock text-info me-2"></i>Jam Operasional</h6>
+                        <div class="small text-muted">Senin - Minggu<br>08:00 - 22:00 WIB</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Cek apakah ada data voucher di localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const lastPurchase = localStorage.getItem('lastVoucherPurchase');
+            if (lastPurchase) {
+                try {
+                    const purchaseData = JSON.parse(lastPurchase);
+                    const purchaseTime = new Date(purchaseData.timestamp);
+                    const now = new Date();
+                    const diffHours = (now - purchaseTime) / (1000 * 60 * 60);
+
+                    // Jika pembelian dalam 24 jam terakhir, tampilkan info
+                    if (diffHours < 24) {
+                        const infoAlert = document.createElement('div');
+                        infoAlert.className = 'alert alert-warning mt-3';
+                        infoAlert.innerHTML = `
+                            <h6><i class="bi bi-info-circle-fill me-2"></i>Data Pembelian Terakhir Ditemukan:</h6>
+                            <p class="mb-2">
+                                <strong>Paket:</strong> ${purchaseData.packageName}<br>
+                                <strong>Waktu:</strong> ${purchaseTime.toLocaleString('id-ID')}<br>
+                                <strong>Status:</strong> ${purchaseData.status || 'Menunggu Pembayaran'}
+                            </p>
+                            <small class="text-muted">
+                                Jika Anda baru saja melakukan pembayaran, tunggu 1-2 menit lalu refresh halaman ini.
+                            </small>
+                        `;
+
+                        document.querySelector('.error-card').insertBefore(infoAlert, document.querySelector('.error-card .alert-info'));
+                    }
+                } catch (e) {
+                    console.log('Error parsing last purchase data:', e);
+                }
+            }
+        });
+
+        // Fungsi untuk refresh halaman
+        function refreshPage() {
+            window.location.reload();
+        }
+
+        // Auto-refresh setiap 30 detik jika user baru saja membeli
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('from_payment')) {
+            let countdown = 30;
+            const countdownElement = document.createElement('div');
+            countdownElement.className = 'alert alert-primary mt-3';
+            countdownElement.innerHTML = `
+                <i class="bi bi-arrow-clockwise me-2"></i>
+                Mencari voucher Anda... Halaman akan refresh otomatis dalam <strong>${countdown}</strong> detik.
+                <button onclick="refreshPage()" class="btn btn-sm btn-primary ms-2">Refresh Sekarang</button>
+            `;
+
+            document.querySelector('.error-card').insertBefore(countdownElement, document.querySelector('.error-card .d-grid'));
+
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownElement.querySelector('strong').textContent = countdown;
+
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    refreshPage();
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Teknisi - <%= settings.company_header || '' %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; }
+        
+        /* Mobile responsive fixes */
+        @media (max-width: 767.98px) {
+            .main-content {
+                margin-top: 70px !important; /* Extra space for mobile navbar */
+                padding: 10px !important;
+                margin-left: 0 !important;
+                z-index: 1;
+            }
+            .card {
+                z-index: 1;
+            }
+            /* Pastikan cards tidak overlap dengan mobile navbar */
+            .row.mb-4:first-of-type {
+                margin-top: 10px;
+            }
+        }
+        
+        /* Comprehensive Mobile Responsive Design */
+        @media (max-width: 767.98px) {
+            /* Welcome section mobile optimization */
+            .technician-welcome {
+                padding: 1.25rem;
+                margin-bottom: 1.5rem;
+                border-radius: 10px;
+            }
+            
+            .technician-welcome h2 {
+                font-size: 1.3rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .technician-welcome p {
+                font-size: 0.9rem;
+            }
+            
+            .technician-welcome .col-md-4 {
+                text-align: left !important;
+                margin-top: 1rem;
+            }
+            
+            /* Stats cards mobile layout */
+            .row.mb-4 .col-md-3 {
+                margin-bottom: 1rem;
+            }
+            
+            .technician-card {
+                margin-bottom: 1rem;
+            }
+            
+            .technician-card .card-body {
+                padding: 1rem 0.75rem;
+                text-align: center;
+            }
+            
+            .technician-card .fs-2 {
+                font-size: 1.25rem !important;
+            }
+            
+            .technician-card .fs-3 {
+                font-size: 1.4rem !important;
+            }
+            
+            .technician-card .fw-bold {
+                font-size: 0.85rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            /* Card headers */
+            .card-header h5 {
+                font-size: 1rem;
+                margin-bottom: 0;
+            }
+            
+            .card-body {
+                padding: 0.75rem;
+            }
+            
+            /* Tasks and activities mobile layout */
+            .col-md-8, .col-md-4 {
+                margin-bottom: 1.5rem;
+            }
+            
+            /* Task items */
+            .py-2 {
+                padding: 0.75rem 0 !important;
+            }
+            
+            .border-bottom {
+                border-bottom: 1px solid #e9ecef !important;
+            }
+            
+            /* Activity items */
+            .d-flex.align-items-start {
+                padding: 0.75rem 0;
+            }
+            
+            .bg-primary.bg-opacity-10 {
+                padding: 0.5rem;
+                margin-right: 0.75rem;
+            }
+            
+            /* Quick access menu mobile grid */
+            .row .col-md-2 {
+                margin-bottom: 1rem;
+            }
+            
+            .col-6 {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            
+            .text-center.p-3 {
+                padding: 1rem !important;
+            }
+            
+            .fs-1 {
+                font-size: 1.5rem !important;
+            }
+            
+            .hover-shadow h6 {
+                font-size: 0.8rem;
+                margin-bottom: 0;
+            }
+            
+            /* Touch-friendly interactions */
+            .hover-shadow {
+                min-height: 80px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            /* Button improvements */
+            .btn {
+                min-height: 38px;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .btn-sm {
+                min-height: 32px;
+                padding: 0.25rem 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            /* Badge improvements */
+            .badge {
+                font-size: 0.75rem;
+                padding: 0.35em 0.65em;
+            }
+            
+            /* Time display mobile */
+            #currentTime {
+                font-size: 0.8rem;
+            }
+            
+            /* Icon improvements */
+            .bi-person-circle {
+                font-size: 1.5rem !important;
+            }
+            
+            /* Card hover effects disabled on mobile */
+            .technician-card:hover {
+                transform: none;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            }
+            
+            /* Spacing improvements */
+            .mb-2 {
+                margin-bottom: 0.75rem !important;
+            }
+            
+            .mb-3 {
+                margin-bottom: 1rem !important;
+            }
+            
+            .mb-4 {
+                margin-bottom: 1.5rem !important;
+            }
+            
+            .me-2 {
+                margin-right: 0.5rem !important;
+            }
+            
+            .me-3 {
+                margin-right: 0.75rem !important;
+            }
+            
+            /* Text size adjustments */
+            .small {
+                font-size: 0.8rem !important;
+            }
+            
+            .fw-bold {
+                font-weight: 600 !important;
+            }
+            
+            /* Container padding */
+            .container-fluid {
+                padding-left: 0;
+                padding-right: 0;
+            }
+            
+            .row {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            
+            /* Ensure proper scrolling */
+            .main-content {
+                overflow-x: hidden;
+            }
+        }
+        
+        /* Medium screens (tablets) */
+        @media (min-width: 768px) and (max-width: 991.98px) {
+            .main-content {
+                padding: 1.25rem;
+            }
+            
+            .technician-welcome {
+                padding: 1.5rem;
+            }
+            
+            .technician-card .card-body {
+                padding: 1.25rem;
+            }
+            
+            .fs-3 {
+                font-size: 1.5rem !important;
+            }
+            
+            .hover-shadow {
+                min-height: 100px;
+            }
+        }
+        
+        /* Ensure proper layering */
+        .main-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Technician specific styling */
+        .technician-welcome {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .technician-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 24px;
+        }
+        
+        .technician-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Include Technician Responsive Sidebar -->
+        <%- include('partials/technician-responsive-sidebar', { page: 'dashboard', settings: settings }) %>
+        
+        <main class="col-md-10 ms-sm-auto main-content">
+            <!-- Welcome Section for Technician -->
+            <div class="technician-welcome mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2"><i class="bi bi-person-gear me-2"></i>Selamat Datang, <%= technician.name || technician.phone || '' %></h2>
+                        <p class="mb-0 opacity-75">Portal Teknisi <%= settings.company_header || '' %> - Role: <%= technician.role || '' %></p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="d-flex align-items-center justify-content-md-end justify-content-start">
+                            <div class="me-3">
+                                <small class="d-block opacity-75">Login Time</small>
+                                <span id="currentTime"></span>
+                            </div>
+                            <div class="bg-white bg-opacity-20 rounded-circle p-3">
+                                <i class="bi bi-person-circle fs-2"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CUSTOMER STATS CARDS -->
+            <div class="row mb-4">
+              <div class="col-md-3 mb-3">
+                <div class="card text-bg-primary technician-card">
+                  <div class="card-body text-center">
+                    <i class="bi bi-people fs-2 mb-2"></i>
+                    <div class="fw-bold">Total Pelanggan</div>
+                    <div class="fs-3" id="total-customers"><%= stats.active_customers || 0 %></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 mb-3">
+                <div class="card text-bg-success technician-card">
+                  <div class="card-body text-center">
+                    <i class="bi bi-person-check fs-2 mb-2"></i>
+                    <div class="fw-bold">Pelanggan Aktif</div>
+                    <div class="fs-3" id="active-customers"><%= stats.active_customers || 0 %></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 mb-3">
+                <div class="card text-bg-warning technician-card">
+                  <div class="card-body text-center">
+                    <i class="bi bi-person-exclamation fs-2 mb-2"></i>
+                    <div class="fw-bold">Pelanggan Suspend</div>
+                    <div class="fs-3" id="suspended-customers"><%= stats.suspended_customers || 0 %></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 mb-3">
+                <div class="card text-bg-info technician-card">
+                  <div class="card-body text-center">
+                    <i class="bi bi-receipt fs-2 mb-2"></i>
+                    <div class="fw-bold">Tagihan Belum Bayar</div>
+                    <div class="fs-3" id="unpaid-invoices"><%= stats.unpaid_invoices || 0 %></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- TASK & ACTIVITY SECTION -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <!-- Pending Tasks -->
+                    <div class="card technician-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-list-task me-2"></i>Tugas Pending</h5>
+                        </div>
+                        <div class="card-body">
+                            <% if (pendingTasks && pendingTasks.length > 0) { %>
+                                <% pendingTasks.forEach(task => { %>
+                                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                        <div>
+                                            <h6 class="mb-1"><%= task.title || '' %></h6>
+                                            <small class="text-muted">Klik untuk melihat detail</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge bg-danger me-2"><%= task.count || 0 %></span>
+                                            <a href="<%= task.url || '#' %>" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="text-center py-4">
+                                    <i class="bi bi-check-circle text-success fs-1"></i>
+                                    <p class="mt-2 mb-0">Tidak ada tugas pending saat ini</p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <!-- Recent Activities -->
+                    <div class="card technician-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Aktivitas Terbaru</h5>
+                        </div>
+                        <div class="card-body">
+                            <% if (recentActivities && recentActivities.length > 0) { %>
+                                <% recentActivities.slice(0, 5).forEach(activity => { %>
+                                    <div class="d-flex align-items-start py-2 border-bottom">
+                                        <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                            <i class="bi bi-activity text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <small class="fw-bold"><%= activity.action || '' %></small>
+                                            <p class="mb-1 text-muted small"><%= activity.description || '' %></p>
+                                            <small class="text-muted"><%= activity.created_at ? new Date(activity.created_at).toLocaleString('id-ID') : '' %></small>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="text-center py-4">
+                                    <i class="bi bi-journal-x text-muted fs-1"></i>
+                                    <p class="mt-2 mb-0 text-muted">Belum ada aktivitas</p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- QUICK ACCESS MENU -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card technician-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-grid-3x3-gap me-2"></i>Menu Cepat</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-2 col-6 mb-3">
+                                    <a href="/technician/customers" class="text-decoration-none">
+                                        <div class="text-center p-3 border rounded-3 h-100 hover-shadow">
+                                            <i class="bi bi-people fs-1 text-primary mb-2"></i>
+                                            <h6 class="mb-0">Kelola Pelanggan</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-md-2 col-6 mb-3">
+                                    <a href="/technician/installations" class="text-decoration-none">
+                                        <div class="text-center p-3 border rounded-3 h-100 hover-shadow">
+                                            <i class="bi bi-tools fs-1 text-success mb-2"></i>
+                                            <h6 class="mb-0">Instalasi</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-md-2 col-6 mb-3">
+                                    <a href="/technician/troubletickets" class="text-decoration-none">
+                                        <div class="text-center p-3 border rounded-3 h-100 hover-shadow">
+                                            <i class="bi bi-exclamation-triangle fs-1 text-warning mb-2"></i>
+                                            <h6 class="mb-0">Laporan Gangguan</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-md-2 col-6 mb-3">
+                                    <a href="/technician/monitoring" class="text-decoration-none">
+                                        <div class="text-center p-3 border rounded-3 h-100 hover-shadow">
+                                            <i class="bi bi-graph-up fs-1 text-info mb-2"></i>
+                                            <h6 class="mb-0">Monitoring</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-md-2 col-6 mb-3">
+                                    <a href="/technician/mapping" class="text-decoration-none">
+                                        <div class="text-center p-3 border rounded-3 h-100 hover-shadow">
+                                            <i class="bi bi-geo-alt fs-1 text-secondary mb-2"></i>
+                                            <h6 class="mb-0">Mapping</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                                <% if (technician.role === 'collector' || technician.role === 'field_officer') { %>
+                                <div class="col-md-2 col-6 mb-3">
+                                    <a href="/technician/payments" class="text-decoration-none">
+                                        <div class="text-center p-3 border rounded-3 h-100 hover-shadow">
+                                            <i class="bi bi-credit-card fs-1 text-danger mb-2"></i>
+                                            <h6 class="mb-0">Pembayaran</h6>
+                                        </div>
+                                    </a>
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+    </div>
+</div>
+
+<script>
+    // Update current time
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('currentTime').textContent = now.toLocaleTimeString('id-ID');
+    }
+    
+    // Initialize time and update every second
+    updateTime();
+    setInterval(updateTime, 1000);
+    
+    // Add hover effect for quick access cards
+    document.addEventListener('DOMContentLoaded', function() {
+        const hoverCards = document.querySelectorAll('.hover-shadow');
+        hoverCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 16px rgba(0,0,0,0.15)';
+                this.style.transition = 'all 0.3s ease';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '';
+            });
+        });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+        }
+
+        .navbar-toggler {
+            border: none;
+            padding: 0.5rem;
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .welcome-card {
+                padding: 1.5rem;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                z-index: 1050;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.show {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse" id="sidebarMenu">
+                <div class="position-sticky pt-3">
+                    <!-- User Profile -->
+                    <div class="user-profile">
+                        <div class="user-avatar">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h6 class="text-white mb-1"><%= technician.name %></h6>
+                        <small class="text-white-50">
+                            <i class="bi bi-tools me-1"></i><%= technician.role %>
+                        </small>
+                    </div>
+
+                    <!-- Navigation Menu -->
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/technician/dashboard">
+                                <i class="bi bi-speedometer2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/technician/monitoring">
+                                <i class="bi bi-activity"></i>Monitoring
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/technician/customers">
+                                <i class="bi bi-people"></i>Pelanggan
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/technician/mapping">
+                                <i class="bi bi-geo-alt"></i>Mapping
+                            </a>
+                        </li>
+                        <% if (technician.role === 'collector' || technician.role === 'field_officer') { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/technician/payments">
+                                <i class="bi bi-credit-card"></i>Pembayaran
+                            </a>
+                        </li>
+                        <% } %>
+                        <li class="nav-item mt-3">
+                            <a class="nav-link" href="/technician/logout">
+                                <i class="bi bi-box-arrow-right"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Mobile Menu Button -->
+                <div class="d-md-none">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                        <i class="bi bi-list"></i>
+                    </button>
+                </div>
+
+                <!-- Welcome Card -->
+                <div class="welcome-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-2">Selamat Datang, <%= technician.name %>!</h2>
+                            <p class="mb-0">
+                                <i class="bi bi-calendar-event me-2"></i>
+                                <%= new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+                            </p>
+                            <% if (technician.area_coverage) { %>
+                            <p class="mb-0 mt-1">
+                                <i class="bi bi-geo-alt me-2"></i>Area: <%= technician.area_coverage %>
+                            </p>
+                            <% } %>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <i class="bi bi-tools" style="font-size: 4rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card primary">
+                            <div class="stat-icon primary">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                            <h3 class="mb-1"><%= stats.active_customers || 0 %></h3>
+                            <p class="text-muted mb-0">Pelanggan Aktif</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card warning">
+                            <div class="stat-icon warning">
+                                <i class="bi bi-pause-circle-fill"></i>
+                            </div>
+                            <h3 class="mb-1"><%= stats.suspended_customers || 0 %></h3>
+                            <p class="text-muted mb-0">Pelanggan Suspend</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card danger">
+                            <div class="stat-icon danger">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </div>
+                            <h3 class="mb-1"><%= stats.unpaid_invoices || 0 %></h3>
+                            <p class="text-muted mb-0">Tagihan Belum Bayar</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card success">
+                            <div class="stat-icon success">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <h3 class="mb-1"><%= stats.paid_invoices || 0 %></h3>
+                            <p class="text-muted mb-0">Tagihan Lunas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="mb-3">Aksi Cepat</h5>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/technician/customers" class="quick-action-btn">
+                            <i class="bi bi-person-plus" style="font-size: 2rem; color: var(--primary-color);"></i>
+                            <h6 class="mt-2 mb-0">Tambah Pelanggan</h6>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/technician/monitoring" class="quick-action-btn">
+                            <i class="bi bi-activity" style="font-size: 2rem; color: var(--info-color);"></i>
+                            <h6 class="mt-2 mb-0">Cek Monitoring</h6>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/technician/mapping" class="quick-action-btn">
+                            <i class="bi bi-geo-alt" style="font-size: 2rem; color: var(--success-color);"></i>
+                            <h6 class="mt-2 mb-0">Lihat Mapping</h6>
+                        </a>
+                    </div>
+                    <% if (technician.role === 'collector' || technician.role === 'field_officer') { %>
+                    <div class="col-md-3">
+                        <a href="/technician/payments" class="quick-action-btn">
+                            <i class="bi bi-credit-card" style="font-size: 2rem; color: var(--warning-color);"></i>
+                            <h6 class="mt-2 mb-0">Catat Pembayaran</h6>
+                        </a>
+                    </div>
+                    <% } %>
+                </div>
+
+                <!-- Content Row -->
+                <div class="row">
+                    <!-- Recent Activities -->
+                    <div class="col-md-8">
+                        <div class="activity-card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-clock-history me-2"></i>Aktivitas Terbaru
+                                </h6>
+                            </div>
+                            <% if (recentActivities && recentActivities.length > 0) { %>
+                                <% recentActivities.forEach(function(activity) { %>
+                                <div class="activity-item">
+                                    <div class="d-flex align-items-start">
+                                        <div class="activity-icon bg-primary text-white">
+                                            <i class="bi bi-<%= activity.activity_type === 'login' ? 'box-arrow-in-right' : activity.activity_type === 'customer_add' ? 'person-plus' : activity.activity_type === 'payment_record' ? 'credit-card' : 'activity' %>"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1"><%= activity.description %></p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock me-1"></i>
+                                                <%= new Date(activity.created_at).toLocaleString('id-ID') %>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="activity-item text-center">
+                                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ddd;"></i>
+                                    <p class="text-muted mt-2 mb-0">Belum ada aktivitas</p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Pending Tasks -->
+                    <div class="col-md-4">
+                        <div class="task-card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-list-task me-2"></i>Tugas Pending
+                                </h6>
+                            </div>
+                            <% if (pendingTasks && pendingTasks.length > 0) { %>
+                                <% pendingTasks.forEach(function(task) { %>
+                                <div class="task-item">
+                                    <div class="flex-grow-1">
+                                        <a href="<%= task.url %>" class="text-decoration-none">
+                                            <h6 class="mb-1"><%= task.title %></h6>
+                                        </a>
+                                    </div>
+                                    <% if (task.count > 0) { %>
+                                    <span class="badge-count"><%= task.count %></span>
+                                    <% } %>
+                                </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="task-item text-center">
+                                    <i class="bi bi-check-circle" style="font-size: 3rem; color: var(--success-color);"></i>
+                                    <p class="text-muted mt-2 mb-0">Semua tugas selesai!</p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.querySelector('.navbar-toggler');
+            const sidebar = document.getElementById('sidebarMenu');
+            
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                });
+                
+                // Close sidebar when clicking outside on mobile
+                document.addEventListener('click', function(e) {
+                    if (window.innerWidth < 768) {
+                        if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                            sidebar.classList.remove('show');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

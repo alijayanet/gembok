@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voucher Berhasil - <%= company_header %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        .voucher-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .voucher-code {
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .instruction-card {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .print-btn {
+            background: #28a745;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .print-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        .whatsapp-btn {
+            background: #25d366;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .whatsapp-btn:hover {
+            background: #1da851;
+            transform: translateY(-2px);
+        }
+        .success-animation {
+            animation: bounceIn 0.8s ease-out;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Success Header -->
+                <div class="text-center mb-4 success-animation">
+                    <div class="display-1 text-success mb-3">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <h1 class="text-success fw-bold">Pembayaran Berhasil!</h1>
+                    <p class="lead text-muted">Voucher WiFi Anda telah berhasil dibuat</p>
+                </div>
+
+                <!-- Voucher Details -->
+                <div class="voucher-card p-4 mb-4 success-animation">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="mb-3">
+                                <i class="bi bi-wifi me-2"></i>
+                                <%= voucherData.packageName %>
+                            </h3>
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-white-50">Durasi</small>
+                                    <div class="fw-bold"><%= voucherData.duration %></div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-white-50">Harga</small>
+                                    <div class="fw-bold">Rp <%= voucherData.price.toLocaleString('id-ID') %></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="qr-container">
+                                <div id="qrcode"></div>
+                                <small class="text-muted mt-2 d-block">Scan untuk akses WiFi</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voucher Codes -->
+                <div class="card mb-4 success-animation">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-key me-2"></i>
+                            Kode Voucher Anda
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <% if (voucherData.vouchers && voucherData.vouchers.length > 0) { %>
+                            <% voucherData.vouchers.forEach((voucher, index) => { %>
+                                <div class="voucher-code text-center mb-3">
+                                    <div class="text-muted small">Voucher <%= index + 1 %></div>
+                                    <div class="h4 mb-0"><%= voucher.username %></div>
+                                    <div class="text-muted small">Password: <%= voucher.password %></div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Kode voucher sedang diproses, silakan refresh halaman ini
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div class="instruction-card success-animation">
+                    <h5 class="text-success mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Cara Menggunakan Voucher
+                    </h5>
+                    <ol class="mb-0">
+                        <li>Hubungkan perangkat Anda ke jaringan WiFi <strong><%= voucherData.wifiName || 'Hotspot' %></strong></li>
+                        <li>Buka browser dan masukkan alamat: <code><%= voucherData.hotspotUrl || 'http://192.168.1.1' %></code></li>
+                        <li>Masukkan kode voucher yang tertera di atas</li>
+                        <li>Klik "Login" dan nikmati akses internet</li>
+                    </ol>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center mb-4 success-animation">
+                    <button class="btn print-btn me-3" onclick="printVoucher()">
+                        <i class="bi bi-printer me-2"></i>Print Voucher
+                    </button>
+                    <button class="btn whatsapp-btn me-3" onclick="sendToWhatsApp()">
+                        <i class="bi bi-whatsapp me-2"></i>Kirim ke WhatsApp
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="refreshVoucher()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+                    </button>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="card success-animation">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">
+                            <i class="bi bi-shield-check me-2"></i>
+                            Informasi Penting
+                        </h6>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Voucher berlaku selama <strong><%= voucherData.duration %></strong>
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Kode voucher telah dikirim ke WhatsApp Anda
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Simpan halaman ini untuk referensi di kemudian hari
+                            </li>
+                            <li class="mb-0">
+                                <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                Jika ada masalah, hubungi admin: <strong><%= adminContact %></strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center mt-5">
+                    <p class="text-muted">
+                        <i class="bi bi-clock me-2"></i>
+                        Dibuat pada: <%= new Date().toLocaleString('id-ID') %>
+                    </p>
+                    <a href="/voucher" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali ke Halaman Voucher
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Generate QR Code
+        function generateQRCode() {
+            const qrContainer = document.getElementById('qrcode');
+            if (qrContainer && window.QRCode) {
+                // Generate QR code with voucher info
+                const qrData = {
+                    type: 'wifi_voucher',
+                    package: '<%= voucherData.packageName %>',
+                    duration: '<%= voucherData.duration %>',
+                    vouchers: <%= JSON.stringify(voucherData.vouchers || []) %>,
+                    timestamp: new Date().toISOString()
+                };
+                
+                QRCode.toCanvas(qrContainer, JSON.stringify(qrData), {
+                    width: 200,
+                    height: 200,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                }, function (error) {
+                    if (error) console.error('QR Code generation error:', error);
+                });
+            }
+        }
+
+        // Print voucher
+        function printVoucher() {
+            window.print();
+        }
+
+        // Send to WhatsApp
+        function sendToWhatsApp() {
+            const phone = '<%= voucherData.customerPhone %>';
+            if (phone) {
+                const message = encodeURIComponent(
+                    `Halo! Berikut adalah kode voucher WiFi Anda:\n\n` +
+                    `Paket: <%= voucherData.packageName %>\n` +
+                    `Durasi: <%= voucherData.duration %>\n\n` +
+                    `<%= voucherData.vouchers ? voucherData.vouchers.map(v => `Voucher: ${v.username}\nPassword: ${v.password}`).join('\n\n') : 'Kode voucher sedang diproses' %>\n\n` +
+                    `Terima kasih telah menggunakan layanan kami!`
+                );
+                window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+            } else {
+                alert('Nomor WhatsApp tidak tersedia');
+            }
+        }
+
+        // Refresh voucher data
+        function refreshVoucher() {
+            window.location.reload();
+        }
+
+        // Auto-refresh if no vouchers
+        function checkVoucherStatus() {
+            const voucherCount = document.querySelectorAll('.voucher-code').length;
+            if (voucherCount === 0) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 5000); // Refresh every 5 seconds if no vouchers
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            generateQRCode();
+            checkVoucherStatus();
+        });
+    </script>
+</body>
+</html>

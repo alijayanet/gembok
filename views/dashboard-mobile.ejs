@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard Mobile | Portal ISP</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <style>
+    :root{--primary:#4361ee;--secondary:#3f37c9;--accent:#4895ef;--danger:#f72585;--bg:#f8f9fa;--text:#212529;--radius:16px}
+    body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}
+    .navbar{background:#fff!important;border-bottom:1px solid rgba(0,0,0,.06)}
+    .navbar-brand img{height:36px;border-radius:8px}
+    .container-compact{padding:14px 12px 22px}
+    .cardx{border:none;border-radius:var(--radius);background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.06);margin-bottom:14px;overflow:hidden;transition:transform .15s ease, box-shadow .2s ease}
+    .cardx:active{transform:scale(.99)}
+    .cardx.tap{cursor:pointer}
+    .cardx .hd{padding:14px 14px 0;font-weight:700;font-size:15px;color:var(--text);display:flex;align-items:center;gap:8px}
+    .cardx .bd{padding:12px 14px 14px}
+    .badge-soft{border-radius:999px;padding:6px 10px;font-size:12px;font-weight:600}
+    .badge-online{background:rgba(25,135,84,.12);color:#198754}
+    .badge-offline{background:rgba(108,117,125,.15);color:#495057}
+    .btn-chip{border-radius:999px;padding:10px 14px;font-weight:600;border:0;display:inline-flex;align-items:center;gap:8px}
+    .btn-ssid{background:linear-gradient(135deg,#4895ef,#3f37c9);color:#fff}
+    .btn-pass{background:linear-gradient(135deg,#7209b7,#560bad);color:#fff}
+    .btn-restart{background:linear-gradient(135deg,#f72585,#b5179e);color:#fff;width:100%}
+    .inpx{border-radius:12px;padding:11px 12px;border:1px solid rgba(0,0,0,.08)}
+    .kv{display:grid;grid-template-columns:1fr auto;gap:6px 10px;font-size:13px}
+    .kv .k{color:#6c757d}
+    .kv .v{font-weight:700;color:var(--text)}
+    .divider{height:1px;background:rgba(0,0,0,.06);margin:10px 0}
+    .listy{display:flex;flex-direction:column;gap:10px}
+    .listy .rowx{display:grid;grid-template-columns:1fr;gap:6px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid rgba(0,0,0,.06)}
+    .price{color:#0d6efd;font-weight:800}
+    .footerx{text-align:center;color:#6c757d;font-size:12px;padding:16px 0 30px}
+    @media (min-width:576px){.container-compact{max-width:540px;margin:0 auto}}
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-light">
+    <div class="container d-flex align-items-center">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/customer/dashboard/mobile">
+        <img id="logoImage" src="/img/<%= settings.logo_filename || 'logo.png' %>" alt="Logo">
+        <span class="fw-bold" style="color:var(--primary)">Portal Pelanggan</span>
+      </a>
+      <div class="d-flex align-items-center gap-2">
+        <a href="/customer/billing/dashboard" class="btn btn-outline-primary btn-sm"><i class="bi bi-receipt"></i></a>
+        <a href="/customer/trouble/report" class="btn btn-outline-warning btn-sm"><i class="bi bi-exclamation-triangle"></i></a>
+        <a href="/customer/logout" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i></a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-compact">
+    <% if (typeof notif !== 'undefined' && notif) { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert" id="notif-alert">
+        <i class="bi bi-check-circle me-2"></i><%= notif %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      <script>setTimeout(()=>{document.getElementById('notif-alert')?.classList.remove('show')},2500)</script>
+    <% } %>
+
+    <% if (typeof billingData !== 'undefined' && billingData && billingData.customer) { %>
+      <div class="cardx animate__animated animate__fadeInUp tap" onclick="window.location.href='/customer/billing/dashboard'">
+        <div class="hd"><i class="bi bi-receipt"></i> Informasi Tagihan</div>
+        <div class="bd">
+          <div class="kv">
+            <div class="k">Nama</div><div class="v"><%= billingData.customer.name %></div>
+            <div class="k">Username</div><div class="v"><%= billingData.customer.username %></div>
+            <div class="k">Paket</div>
+            <div class="v">
+              <% if (billingData.customer.package_name) { %>
+                <span class="badge-soft" style="background:rgba(13,110,253,.12);color:#0d6efd">
+                  <%= billingData.customer.package_name %> - Rp <%= parseFloat(billingData.customer.package_price).toLocaleString('id-ID') %>
+                </span>
+              <% } else { %><span class="text-muted">Belum ada paket</span><% } %>
+            </div>
+            <div class="k">Status</div>
+            <div class="v">
+              <% if (billingData.customer.payment_status === 'paid') { %>
+                <span class="badge-soft" style="background:rgba(25,135,84,.12);color:#198754">Lunas</span>
+              <% } else if (billingData.customer.payment_status === 'unpaid') { %>
+                <span class="badge-soft" style="background:rgba(255,193,7,.15);color:#b58100">Belum Lunas</span>
+              <% } else if (billingData.customer.payment_status === 'overdue') { %>
+                <span class="badge-soft" style="background:rgba(220,53,69,.12);color:#dc3545">Terlambat</span>
+              <% } else { %>
+                <span class="badge-soft" style="background:rgba(108,117,125,.15);color:#6c757d">Belum Ada Tagihan</span>
+              <% } %>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="kv">
+            <div class="k">Total Tagihan</div><div class="v"><%= billingData.invoices.length %></div>
+            <div class="k">Lunas</div><div class="v"><%= billingData.invoices.filter(inv => inv.status === 'paid').length %></div>
+            <div class="k">Belum Lunas</div><div class="v"><%= billingData.invoices.filter(inv => inv.status === 'unpaid').length %></div>
+            <div class="k">Total Belum Lunas</div>
+            <div class="v price">Rp <%= billingData.invoices.filter(inv => inv.status === 'unpaid').reduce((s,i)=>s+parseFloat(i.amount),0).toLocaleString('id-ID') %></div>
+          </div>
+          <div class="mt-2 d-flex gap-2">
+            <a href="/customer/billing/dashboard" class="btn btn-primary btn-sm flex-fill"><i class="bi bi-eye me-1"></i> Detail</a>
+            <% if (billingData.invoices.filter(inv => inv.status === 'unpaid').length > 0) { %>
+              <button class="btn btn-success btn-sm flex-fill" data-bs-toggle="modal" data-bs-target="#quickPayModal"><i class="bi bi-credit-card me-1"></i> Bayar</button>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="cardx animate__animated animate__fadeInUp">
+        <div class="hd"><i class="bi bi-receipt"></i> Informasi Tagihan</div>
+        <div class="bd">
+          <div class="alert alert-info mb-0"><i class="bi bi-info-circle me-2"></i> Data tagihan belum tersedia. Silakan hubungi admin.</div>
+        </div>
+      </div>
+    <% } %>
+
+    <div class="cardx animate__animated animate__fadeInUp">
+      <div class="hd"><i class="bi bi-router"></i> Informasi Perangkat</div>
+      <div class="bd">
+        <div class="kv">
+          <div class="k">Status Perangkat</div>
+          <div class="v">
+            <% if (customer.status === 'Online') { %>
+              <span class="badge-online badge-soft"><i class="bi bi-check-circle-fill me-1"></i> Online</span>
+            <% } else { %>
+              <span class="badge-offline badge-soft"><i class="bi bi-x-circle-fill me-1"></i> <%= customer.status %></span>
+            <% } %>
+          </div>
+          <div class="k">SSID</div><div class="v" id="currentSsid"><%= customer.ssid %></div>
+          <div class="k">Software</div><div class="v"><%= customer.softwareVersion %></div>
+          <div class="k">Last Inform</div><div class="v"><%= customer.lastInform %></div>
+          <div class="k">RX Power</div><div class="v"><%= customer.rxPower %></div>
+          <div class="k">PPPoE IP</div><div class="v"><%= typeof customer.pppoeIP === 'object' 
+            ? (customer.pppoeIP._value || customer.pppoeIP.address || customer.pppoeIP.ip || JSON.stringify(customer.pppoeIP)) 
+            : customer.pppoeIP %></div>
+          <div class="k">PPPoE User</div><div class="v"><%= customer.pppoeUsername %></div>
+          <div class="k">User Terhubung</div><div class="v"><%= customer.totalAssociations %></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cardx animate__animated animate__fadeInUp">
+      <div class="hd"><i class="bi bi-gear-fill"></i> Pengaturan Perangkat</div>
+      <div class="bd">
+        <% if (customer.status !== 'Unknown' && customer.status !== 'Error' && customer.ssid !== '-') { %>
+          <div class="mb-3">
+            <label for="newSsid" class="form-label small text-muted">Ganti Nama WiFi (SSID)</label>
+            <div class="d-flex gap-2">
+              <input type="text" class="form-control inpx" id="newSsid" placeholder="Nama WiFi baru" maxlength="32">
+              <button class="btn btn-chip btn-ssid" id="changeSsidBtn"><i class="bi bi-check-lg"></i> SSID</button>
+            </div>
+            <small class="text-muted d-block mt-1">SSID 3-32 karakter. WiFi 5GHz otomatis "NamaWiFi-5G".</small>
+          </div>
+
+          <div class="mb-3">
+            <label for="newPassword" class="form-label small text-muted">Ganti Password WiFi</label>
+            <div class="d-flex gap-2">
+              <input type="text" class="form-control inpx" id="newPassword" placeholder="Password baru" maxlength="63">
+              <button class="btn btn-chip btn-pass" id="changePasswordBtn"><i class="bi bi-check-lg"></i> Password</button>
+            </div>
+            <small class="text-muted d-block mt-1">Password 8-63 karakter.</small>
+          </div>
+
+          <button class="btn btn-restart" id="restartDeviceBtn"><i class="bi bi-arrow-clockwise me-1"></i> Restart Perangkat</button>
+        <% } else { %>
+          <div class="alert alert-warning mb-1"><i class="bi bi-exclamation-triangle me-1"></i> Perangkat tidak terdeteksi/tidak terhubung.</div>
+          <small class="text-muted">Fitur pengaturan WiFi aktif saat perangkat online.</small>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="cardx animate__animated animate__fadeInUp">
+      <div class="hd"><i class="bi bi-devices"></i> Perangkat Terhubung</div>
+      <div class="bd">
+        <% if (connectedUsers && connectedUsers.length > 0) { %>
+          <div class="listy">
+            <% connectedUsers.forEach(function(user){ %>
+              <div class="rowx tap">
+                <div class="fw-semibold"><%= user.hostname %></div>
+                <div class="d-flex justify-content-between small">
+                  <div>IP: <%= user.ip %></div>
+                  <div>MAC: <%= user.mac %></div>
+                </div>
+                <div class="d-flex justify-content-between small text-muted">
+                  <div>IF: <%= user.iface %></div>
+                  <div><i class="bi bi-clock-history me-1"></i><%= user.waktu %></div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="alert alert-warning mb-0"><i class="bi bi-exclamation-triangle me-1"></i> Tidak ada perangkat yang sedang terhubung.</div>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <i class="bi bi-info-circle me-2"></i>
+      Kendala? Hubungi admin:
+      <a href="https://wa.me/<%= customer.adminNumberWA || '6281947215703' %>" target="_blank" class="alert-link">
+        <i class="bi bi-whatsapp me-1"></i><%= customer.adminNumber || '081947215703' %>
+      </a>
+    </div>
+
+    <% if (typeof billingData !== 'undefined' && billingData && billingData.invoices) { %>
+    <div class="modal fade" id="quickPayModal" tabindex="-1" aria-labelledby="quickPayModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title" id="quickPayModalLabel">Bayar Tagihan</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="list-group">
+              <% billingData.invoices.filter(inv => inv.status === 'unpaid').forEach(function(invoice){ %>
+                <label class="list-group-item d-flex justify-content-between align-items-center">
+                  <div class="form-check">
+                    <input class="form-check-input me-2" type="radio" name="selectedInvoice"
+                           value="<%= invoice.id %>"
+                           data-invoice-number="<%= invoice.invoice_number %>"
+                           data-amount="<%= invoice.amount %>">
+                    <span class="fw-semibold"><%= invoice.invoice_number %></span><br>
+                    <small class="text-muted">Jatuh tempo: <%= new Date(invoice.due_date).toLocaleDateString('id-ID') %></small>
+                  </div>
+                  <span class="badge bg-primary">Rp <%= parseFloat(invoice.amount).toLocaleString('id-ID') %></span>
+                </label>
+              <% }) %>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button class="btn btn-success" id="proceedPayBtn" disabled><i class="bi bi-credit-card me-1"></i>Lanjut Bayar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+    <div class="modal fade" id="restartModal" tabindex="-1" aria-labelledby="restartModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title" id="restartModalLabel">Konfirmasi Restart</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning mb-2"><i class="bi bi-exclamation-triangle"></i> Koneksi internet akan terputus sementara (1-2 menit).</div>
+            <div class="small text-muted">Semua perangkat yang terhubung akan terputus sementara.</div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button class="btn btn-danger" id="confirmRestart"><i class="bi bi-arrow-clockwise"></i> Ya, Restart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footerx">&copy; <%= new Date().getFullYear() %> <%= customer.companyHeader || 'ALIJAYA DIGITAL NETWORK' %></footer>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    function showToast(type, title, message, duration = 4000) {
+      const toastId = 'toast-' + Date.now();
+      const icon = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : 'bi-info-circle';
+      const bg = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-primary';
+      const html = `
+        <div id="${toastId}" class="toast align-items-center text-white ${bg} border-0"
+             role="alert" aria-live="assertive" aria-atomic="true"
+             style="position: fixed; top: 14px; right: 14px; z-index: 9999; min-width: 280px;">
+          <div class="d-flex">
+            <div class="toast-body"><i class="bi ${icon} me-2"></i><strong>${title}</strong><br><small>${message}</small></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        </div>`;
+      document.body.insertAdjacentHTML('beforeend', html);
+      const el = document.getElementById(toastId);
+      const t = new bootstrap.Toast(el, { delay: duration });
+      t.show();
+      el.addEventListener('hidden.bs.toast', () => el.remove());
+    }
+
+    const restartModal = new bootstrap.Modal(document.getElementById('restartModal'));
+    $('#restartDeviceBtn').on('click', () => restartModal.show());
+
+    $('input[name="selectedInvoice"]').on('change', function() {
+      $('#proceedPayBtn').prop('disabled', false);
+    });
+    $('#proceedPayBtn').on('click', function() {
+      const selected = $('input[name="selectedInvoice"]:checked');
+      if (!selected.length) { showToast('error','Error','Pilih tagihan terlebih dahulu'); return; }
+      const invoiceId = selected.val();
+      window.location.href = '/customer/billing/invoices/' + invoiceId;
+    });
+
+    $('#changeSsidBtn').on('click', function(e){
+      e.preventDefault();
+      const ssid = $('#newSsid').val().trim();
+      if (!ssid || ssid.length < 3 || ssid.length > 32) { showToast('error','Error','SSID harus 3-32 karakter'); return; }
+      const $btn = $(this), orig = $btn.html(); $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Memproses');
+      $.post('/customer/api/change-ssid', { ssid }).done(res=>{
+        if (res.success) {
+          showToast('success','Berhasil','SSID sedang diupdate');
+          $('#newSsid').val('');
+          $('#currentSsid').text(res.newSSID || ssid);
+        } else { showToast('error','Error', res.message || 'Gagal mengubah SSID'); }
+      }).fail(err=>{ showToast('error','Error', err.responseJSON?.message || 'Gagal mengubah SSID'); })
+      .always(()=> $btn.prop('disabled', false).html(orig));
+    });
+
+    $('#changePasswordBtn').on('click', function(e){
+      e.preventDefault();
+      const password = $('#newPassword').val().trim();
+      if (!password || password.length < 8 || password.length > 63) { showToast('error','Error','Password 8-63 karakter'); return; }
+      const $btn = $(this), orig = $btn.html(); $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Memproses');
+      $.post('/customer/api/change-password', { password }).done(res=>{
+        if (res.success) { showToast('success','Berhasil','Password sedang diupdate'); $('#newPassword').val(''); }
+        else { showToast('error','Error', res.message || 'Gagal mengubah password'); }
+      }).fail(err=>{ showToast('error','Error', err.responseJSON?.message || 'Gagal mengubah password'); })
+      .always(()=> $btn.prop('disabled', false).html(orig));
+    });
+
+    $('#confirmRestart').on('click', function(){
+      const notif = $(`
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true"
+             style="position:fixed;top:14px;right:14px;z-index:1080;min-width:280px;">
+          <div class="toast-header bg-primary text-white">
+            <i class="bi bi-arrow-clockwise me-2"></i><strong class="me-auto">Restart Perangkat</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+          </div>
+          <div class="toast-body d-flex align-items-center">
+            <span class="spinner-border spinner-border-sm me-2"></span> Sedang memproses perintah restart...
+          </div>
+        </div>
+      `);
+      $('body').append(notif);
+      restartModal.hide();
+      $.post('/customer/restart-device', function(response){
+        notif.find('.toast-header').removeClass('bg-primary').addClass('bg-success')
+             .find('i').removeClass('bi-arrow-clockwise').addClass('bi-check-circle');
+        notif.find('.toast-body').html('<i class="bi bi-check-circle-fill me-2"></i>' + response.message);
+        setTimeout(()=>notif.fadeOut('slow', ()=>notif.remove()), 4000);
+      }).fail(function(error){
+        notif.find('.toast-header').removeClass('bg-primary').addClass('bg-danger')
+             .find('i').removeClass('bi-arrow-clockwise').addClass('bi-exclamation-triangle');
+        notif.find('.toast-body').html('<i class="bi bi-exclamation-triangle-fill me-2"></i>Gagal me-restart: ' + (error.responseJSON ? error.responseJSON.message : 'Terjadi kesalahan'));
+        setTimeout(()=>notif.fadeOut('slow', ()=>notif.remove()), 5000);
+      });
+    });
+
+    function refreshLogo(){
+      const logo=document.getElementById('logoImage');
+      if(logo){const src=logo.src.split('?')[0];logo.src=src+'?v='+Date.now();}
+    }
+    setInterval(refreshLogo,5000);
+    document.addEventListener('DOMContentLoaded',refreshLogo);
+  </script>
+</body>
+</html>
+
+
