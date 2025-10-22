@@ -1,24 +1,4 @@
 {
-  "test-device-001": {
-    "deviceId": "test-device-001",
-    "serial": "TEST001",
-    "tag": "081234567890",
-    "lat": -6.2088,
-    "lng": 106.8456,
-    "address": "Jl. Sudirman No. 123, Jakarta Pusat",
-    "lastUpdated": "2025-08-27T19:45:00.000Z",
-    "updatedBy": "admin"
-  },
-  "test-device-002": {
-    "deviceId": "test-device-002",
-    "serial": "TEST002",
-    "tag": "081234567891",
-    "lat": -6.2188,
-    "lng": 106.8556,
-    "address": "Jl. Thamrin No. 456, Jakarta Pusat",
-    "lastUpdated": "2025-08-27T19:45:00.000Z",
-    "updatedBy": "admin"
-  },
   "C0FD84-F663NV3A-ZTEGCB8BB94C": {
     "deviceId": "C0FD84-F663NV3A-ZTEGCB8BB94C",
     "serial": "C0FD84-F663NV3A-ZTEGCB8BB94C",
@@ -73,10 +53,260 @@
     "deviceId": "D49E04-F460-RTEGCA95B2A0",
     "serial": "D49E04-F460-RTEGCA95B2A0",
     "tag": "-",
-    "lat": -6.253584,
-    "lng": 107.923062,
+    "lat": -6.266873,
+    "lng": 107.931441,
+    "address": "Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:11:15.982Z",
+    "updatedBy": "admin"
+  },
+  "78C1A7-F460-ZICGC7B53D01": {
+    "deviceId": "78C1A7-F460-ZICGC7B53D01",
+    "serial": "78C1A7-F460-ZICGC7B53D01",
+    "tag": "-",
+    "lat": -6.253718,
+    "lng": 107.922928,
     "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
-    "lastUpdated": "2025-10-11T06:49:08.604Z",
+    "lastUpdated": "2025-10-12T13:16:51.318Z",
+    "updatedBy": "admin"
+  },
+  "D49E09-F663NV3a-RTEEQFLH0B83110": {
+    "deviceId": "D49E09-F663NV3a-RTEEQFLH0B83110",
+    "serial": "D49E09-F663NV3a-RTEEQFLH0B83110",
+    "tag": "-",
+    "lat": -6.254928,
+    "lng": 107.922655,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-11T09:47:49.161Z",
+    "updatedBy": "admin"
+  },
+  "1C25E1-GM220%2DS-CIOT17AE5FE0": {
+    "deviceId": "1C25E1-GM220%2DS-CIOT17AE5FE0",
+    "serial": "1C25E1-GM220%2DS-CIOT17AE5FE0",
+    "tag": "-",
+    "lat": -6.254214,
+    "lng": 107.922247,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-11T09:48:38.056Z",
+    "updatedBy": "admin"
+  },
+  "442295-GM220%2DS-CIOT1392ECB0": {
+    "deviceId": "442295-GM220%2DS-CIOT1392ECB0",
+    "serial": "442295-GM220%2DS-CIOT1392ECB0",
+    "tag": "-",
+    "lat": -6.25368,
+    "lng": 107.922865,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:18:26.765Z",
+    "updatedBy": "admin"
+  },
+  "D49E04-F460-RTEGCA955A7E": {
+    "deviceId": "D49E04-F460-RTEGCA955A7E",
+    "serial": "D49E04-F460-RTEGCA955A7E",
+    "tag": "-",
+    "lat": -6.256571,
+    "lng": 107.92169,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:18:39.725Z",
+    "updatedBy": "admin"
+  },
+  "24D3F2-ZXHN%20F477-01FFFFFFFF011FFF2324D3F260963909": {
+    "deviceId": "24D3F2-ZXHN%20F477-01FFFFFFFF011FFF2324D3F260963909",
+    "serial": "24D3F2-ZXHN%20F477-01FFFFFFFF011FFF2324D3F260963909",
+    "tag": "-",
+    "lat": -6.252683,
+    "lng": 107.920344,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:14:25.441Z",
+    "updatedBy": "admin"
+  },
+  "B4DEDF-ZXHN%20F477-01FFFFFFFF011FFF23B4DEDFBFCB0705": {
+    "deviceId": "B4DEDF-ZXHN%20F477-01FFFFFFFF011FFF23B4DEDFBFCB0705",
+    "serial": "B4DEDF-ZXHN%20F477-01FFFFFFFF011FFF23B4DEDFBFCB0705",
+    "tag": "-",
+    "lat": -6.253003,
+    "lng": 107.920703,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:19:34.244Z",
+    "updatedBy": "admin"
+  },
+  "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7D31C1A5": {
+    "deviceId": "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7D31C1A5",
+    "serial": "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7D31C1A5",
+    "tag": "-",
+    "lat": -6.253019,
+    "lng": 107.921245,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:19:48.997Z",
+    "updatedBy": "admin"
+  },
+  "94FF61-F650-ZICG26301432": {
+    "deviceId": "94FF61-F650-ZICG26301432",
+    "serial": "94FF61-F650-ZICG26301432",
+    "tag": "-",
+    "lat": -6.251116,
+    "lng": 107.920307,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:18:12.937Z",
+    "updatedBy": "admin"
+  },
+  "E447B3-F663NV3A-ZTEGCC6548C6": {
+    "deviceId": "E447B3-F663NV3A-ZTEGCC6548C6",
+    "serial": "E447B3-F663NV3A-ZTEGCC6548C6",
+    "tag": "-",
+    "lat": -6.253446,
+    "lng": 107.921798,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:15:57.294Z",
+    "updatedBy": "admin"
+  },
+  "F4E4AD-F460-ZICGC95401FA": {
+    "deviceId": "F4E4AD-F460-ZICGC95401FA",
+    "serial": "F4E4AD-F460-ZICGC95401FA",
+    "tag": "-",
+    "lat": -6.251286,
+    "lng": 107.920274,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:16:13.053Z",
+    "updatedBy": "admin"
+  },
+  "94BF80-ZXHN%20F477V2-01FFFFFFFF011FFF2394BF807B8FED71": {
+    "deviceId": "94BF80-ZXHN%20F477V2-01FFFFFFFF011FFF2394BF807B8FED71",
+    "serial": "94BF80-ZXHN%20F477V2-01FFFFFFFF011FFF2394BF807B8FED71",
+    "tag": "-",
+    "lat": -6.250668,
+    "lng": 107.920221,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:16:32.218Z",
+    "updatedBy": "admin"
+  },
+  "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7DD61C9F": {
+    "deviceId": "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7DD61C9F",
+    "serial": "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7DD61C9F",
+    "tag": "083109909888",
+    "lat": -6.257504,
+    "lng": 107.921809,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-11T13:22:01.501Z",
+    "updatedBy": "admin"
+  },
+  "90869B-ZXHN%20F477-01FFFFFFFF011FFF2390869BAC8D92FD": {
+    "deviceId": "90869B-ZXHN%20F477-01FFFFFFFF011FFF2390869BAC8D92FD",
+    "serial": "90869B-ZXHN%20F477-01FFFFFFFF011FFF2390869BAC8D92FD",
+    "tag": "-",
+    "lat": -6.256507,
+    "lng": 107.921728,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-11T13:22:34.243Z",
+    "updatedBy": "admin"
+  },
+  "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7B1D5917": {
+    "deviceId": "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7B1D5917",
+    "serial": "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7B1D5917",
+    "tag": "-",
+    "lat": -6.255429,
+    "lng": 107.922318,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-11T13:23:07.230Z",
+    "updatedBy": "admin"
+  },
+  "1C25E1-GM220%2DS-CIOT127AB360": {
+    "deviceId": "1C25E1-GM220%2DS-CIOT127AB360",
+    "serial": "1C25E1-GM220%2DS-CIOT127AB360",
+    "tag": "-",
+    "lat": -6.252123,
+    "lng": 107.923407,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-11T13:24:51.050Z",
+    "updatedBy": "admin"
+  },
+  "24D3F2-ZXHN%20F477-01FFFFFFFF011FFF2324D3F22C059679": {
+    "deviceId": "24D3F2-ZXHN%20F477-01FFFFFFFF011FFF2324D3F22C059679",
+    "serial": "24D3F2-ZXHN%20F477-01FFFFFFFF011FFF2324D3F22C059679",
+    "tag": "-",
+    "lat": -6.253707,
+    "lng": 107.923026,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-11T13:25:23.925Z",
+    "updatedBy": "admin"
+  },
+  "C0FD84-F663NV3A-ZTEGCB8CD551": {
+    "deviceId": "C0FD84-F663NV3A-ZTEGCB8CD551",
+    "serial": "C0FD84-F663NV3A-ZTEGCB8CD551",
+    "tag": "-",
+    "lat": -6.261732,
+    "lng": 107.932465,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:12:15.204Z",
+    "updatedBy": "admin"
+  },
+  "00259E-HG8245H5-485754432DCFD99F": {
+    "deviceId": "00259E-HG8245H5-485754432DCFD99F",
+    "serial": "00259E-HG8245H5-485754432DCFD99F",
+    "tag": "-",
+    "lat": -6.258218,
+    "lng": 107.930912,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:13:13.618Z",
+    "updatedBy": "admin"
+  },
+  "14ADCA-GM220%2DS-ZICG12B8F2E7": {
+    "deviceId": "14ADCA-GM220%2DS-ZICG12B8F2E7",
+    "serial": "14ADCA-GM220%2DS-ZICG12B8F2E7",
+    "tag": "-",
+    "lat": -6.257477,
+    "lng": 107.925201,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:14:10.687Z",
+    "updatedBy": "admin"
+  },
+  "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7B0C3A65": {
+    "deviceId": "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7B0C3A65",
+    "serial": "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA7B0C3A65",
+    "tag": "-",
+    "lat": -6.251585,
+    "lng": 107.922469,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:15:42.768Z",
+    "updatedBy": "admin"
+  },
+  "FC8E5B-GM220%2DS-CIOTXA57DC48": {
+    "deviceId": "FC8E5B-GM220%2DS-CIOTXA57DC48",
+    "serial": "FC8E5B-GM220%2DS-CIOTXA57DC48",
+    "tag": "087820851414",
+    "lat": -6.250998,
+    "lng": 107.921463,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:17:22.760Z",
+    "updatedBy": "admin"
+  },
+  "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA782CCBB7": {
+    "deviceId": "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA782CCBB7",
+    "serial": "F4B5AA-ZXHN%20F477-01FFFFFFFF011FFF23F4B5AA782CCBB7",
+    "tag": "-",
+    "lat": -6.250785,
+    "lng": 107.920269,
+    "address": "Ujunggebang, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:17:56.632Z",
+    "updatedBy": "admin"
+  },
+  "FCF29F-GM220%2DS-CIOT167C9CC0": {
+    "deviceId": "FCF29F-GM220%2DS-CIOT167C9CC0",
+    "serial": "FCF29F-GM220%2DS-CIOT167C9CC0",
+    "tag": "-",
+    "lat": -6.254326,
+    "lng": 107.92255,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-12T13:19:18.303Z",
+    "updatedBy": "admin"
+  },
+  "44FB5A-F663NV3A-ZTEGCB7552E1": {
+    "deviceId": "44FB5A-F663NV3A-ZTEGCB7552E1",
+    "serial": "44FB5A-F663NV3A-ZTEGCB7552E1",
+    "tag": "-",
+    "lat": -6.256144,
+    "lng": 107.922399,
+    "address": "Patimban, Subang, Jawa Barat, Jawa, Indonesia",
+    "lastUpdated": "2025-10-20T12:16:12.523Z",
     "updatedBy": "admin"
   }
 }

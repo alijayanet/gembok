@@ -1,46 +1,10 @@
 [
   {
     "fromOdpId": "ODP-001",
+    "toOdpId": "ODP-002"
+  },
+  {
+    "fromOdpId": "ODP-001",
     "toOdpId": "ODP-003"
-  },
-  {
-    "fromOdpId": "ODP-003",
-    "toOdpId": "ODP-005"
-  },
-  {
-    "fromOdpId": "ODC-01",
-    "toOdpId": "ODP01"
-  },
-  {
-    "fromOdpId": "ODP01",
-    "toOdpId": "ODP03"
-  },
-  {
-    "fromOdpId": "ODP01",
-    "toOdpId": "ODP02"
-  },
-  {
-    "fromOdpId": "ODP03",
-    "toOdpId": "ODP04"
-  },
-  {
-    "fromOdpId": "ODP04",
-    "toOdpId": "ODP05"
-  },
-  {
-    "fromOdpId": "ODP05",
-    "toOdpId": "ODP06"
-  },
-  {
-    "fromOdpId": "ODP05",
-    "toOdpId": "ODP07"
-  },
-  {
-    "fromOdpId": "ODP07",
-    "toOdpId": "ODP08"
-  },
-  {
-    "fromOdpId": "ODP08",
-    "toOdpId": "4"
   }
 ]

@@ -1,12 +1,13 @@
 const { Boom } = require('@hapi/boom');
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
+const { getSettingsWithCache } = require('./settingsManager');
+const loggerModule = require('./logger');
+const WHATSAPP_WEB_VERSION = require('./whatsapp-version');
 const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
 const pino = require('pino');
-const { logger } = require('./logger');
-const { getVersion: getWhatsAppWebVersion } = require('./whatsapp-version');
 const genieacsCommands = require('./genieacs-commands');
 
 const {
@@ -131,13 +132,7 @@ function formatWithHeaderFooter(message) {
     } catch (error) {
         console.error('Error formatting message with header/footer:', error);
         // Fallback ke format default jika ada error
-        return `📱 ALIJAYA DIGITAL NETWORK 📱
-
-${message}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Powered by Alijaya Digital Network`;
+        return `📱 ALIJAYA DIGITAL NETWORK 📱\n\n${message}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPowered by Alijaya Digital Network`;
     }
 }
 
@@ -320,7 +315,7 @@ async function connectToWhatsApp() {
         
         // Gunakan logger dengan level yang dapat dikonfigurasi
         const logLevel = getSetting('whatsapp_log_level', 'silent');
-        const logger = pino({ level: logLevel });
+        const whatsappLogger = pino({ level: logLevel });
         
         // Buat socket dengan konfigurasi yang lebih baik dan penanganan error
         let authState;
@@ -333,19 +328,18 @@ async function connectToWhatsApp() {
         
         const { state, saveCreds } = authState;
         
-        // Dapatkan versi WhatsApp Web
-        const botName = 'ALIJAYA Genieacs Bot Mikrotik';
-        const version = await getWhatsAppWebVersion(botName);
+        // Dapatkan versi WhatsApp yang akan digunakan
+        const whatsappVersion = WHATSAPP_WEB_VERSION.FALLBACK_VERSION;
         
         sock = makeWASocket({
             auth: state,
-            logger,
+            logger: whatsappLogger,
             browser: ['ALIJAYA Genieacs Bot Mikrotik', 'Chrome', '1.0.0'],
             connectTimeoutMs: 60000,
             qrTimeout: 40000,
             defaultQueryTimeoutMs: 30000, // Timeout untuk query
             retryRequestDelayMs: 1000,
-            version: version // Menambahkan versi spesifik
+            version: whatsappVersion
         });
         
 

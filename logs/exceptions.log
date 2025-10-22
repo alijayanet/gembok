@@ -345,3 +345,181 @@ Require stack:
     at Module._compile (node:internal/modules/cjs/loader:1562:14)
     at Object..js (node:internal/modules/cjs/loader:1699:10)
     at Module.load (node:internal/modules/cjs/loader:1313:32)
+2025-10-13 00:49:25 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (/home/alijaya/gembok/node_modules/node-routeros/dist/connector/Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+2025-10-14 00:49:08 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (/home/alijaya/gembok/node_modules/node-routeros/dist/connector/Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+2025-10-16 00:47:26 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (/home/alijaya/gembok/node_modules/node-routeros/dist/connector/Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+2025-10-16 14:48:54 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (/home/alijaya/gembok/node_modules/node-routeros/dist/connector/Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+2025-10-16 14:53:15 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (/home/alijaya/gembok/node_modules/node-routeros/dist/connector/Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+2025-10-16 19:40:45 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (/home/alijaya/gembok/node_modules/node-routeros/dist/connector/Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+2025-10-17 00:47:14 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (/home/alijaya/gembok/node_modules/node-routeros/dist/connector/Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+2025-10-19 00:41:46 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (/home/alijaya/gembok/node_modules/node-routeros/dist/connector/Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+2025-10-19 09:27:30 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (/home/alijaya/gembok/node_modules/node-routeros/dist/connector/Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+2025-10-20 11:04:30 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (/home/alijaya/gembok/node_modules/node-routeros/dist/connector/Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+2025-10-20 11:36:57 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (/home/alijaya/gembok/node_modules/node-routeros/dist/connector/Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
+2025-10-21 07:26:07 error: uncaughtException: Identifier 'logger' has already been declared
+E:\gembok-update\config\whatsapp.js:11
+const { logger } = require('./logger');
+        ^
+
+SyntaxError: Identifier 'logger' has already been declared
+    at wrapSafe (node:internal/modules/cjs/loader:1512:18)
+    at Module._compile (node:internal/modules/cjs/loader:1534:20)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (E:\gembok-update\app.js:5:18)
+2025-10-21 07:29:17 error: uncaughtException: Identifier 'getSetting' has already been declared
+E:\gembok-update\config\whatsapp.js:43
+const { getSetting } = require('./settingsManager');
+        ^
+
+SyntaxError: Identifier 'getSetting' has already been declared
+    at wrapSafe (node:internal/modules/cjs/loader:1512:18)
+    at Module._compile (node:internal/modules/cjs/loader:1534:20)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (E:\gembok-update\app.js:5:18)
+2025-10-21 07:29:57 error: uncaughtException: Identifier 'getSetting' has already been declared
+E:\gembok-update\config\whatsapp.js:42
+const { getSetting } = require('./settingsManager');
+        ^
+
+SyntaxError: Identifier 'getSetting' has already been declared
+    at wrapSafe (node:internal/modules/cjs/loader:1512:18)
+    at Module._compile (node:internal/modules/cjs/loader:1534:20)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (E:\gembok-update\app.js:5:18)
+2025-10-21 08:09:21 error: uncaughtException: Timed out after 10 seconds
+RosException: Timed out after 10 seconds
+    at Connector.onTimeout (E:\gembok-update\node_modules\node-routeros\dist\connector\Connector.js:188:30)
+    at Object.onceWrapper (node:events:638:28)
+    at Socket.emit (node:events:524:28)
+    at Socket._onTimeout (node:net:609:8)
+    at listOnTimeout (node:internal/timers:594:17)
+    at process.processTimers (node:internal/timers:529:7)
+2025-10-21 08:55:10 error: uncaughtException: adminMikrotikRouter is not defined
+ReferenceError: adminMikrotikRouter is not defined
+    at Object.<anonymous> (E:\gembok-update\app.js:121:19)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49
+2025-10-21 09:16:26 error: uncaughtException: router is not defined
+ReferenceError: router is not defined
+    at Object.<anonymous> (E:\gembok-update\routes\adminAuth.js:18:1)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1335:12)
+    at require (node:internal/modules/helpers:136:16)
+    at Object.<anonymous> (E:\gembok-update\app.js:13:23)
+2025-10-21 09:18:08 error: uncaughtException: adminAuth is not defined
+ReferenceError: adminAuth is not defined
+    at Object.<anonymous> (E:\gembok-update\app.js:204:43)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+    at Object..js (node:internal/modules/cjs/loader:1699:10)
+    at Module.load (node:internal/modules/cjs/loader:1313:32)
+    at Function._load (node:internal/modules/cjs/loader:1123:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49
