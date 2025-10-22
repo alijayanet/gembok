@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Generator - Mikrotik Isolation Script</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="bi bi-shield-lock"></i> Test Generator - Mikrotik Isolation Script</h4>
+                        <p class="mb-0 text-muted">Test generator script isolir Mikrotik tanpa authentication</p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Generator Form -->
+                        <div class="mb-4">
+                            <h5>Generator Script Isolir Mikrotik</h5>
+                            <p class="text-muted small">Generate script Mikrotik untuk sistem isolir pelanggan IP statik.</p>
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold" for="isolationMethod">Metode Isolir</label>
+                                    <select class="form-select form-select-sm" id="isolationMethod">
+                                        <option value="address_list">Address List (Recommended)</option>
+                                        <option value="dhcp_block">DHCP Block</option>
+                                        <option value="bandwidth_limit">Bandwidth Limit</option>
+                                        <option value="firewall_rule">Firewall Rule</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold" for="bandwidthLimit">Bandwidth Limit</label>
+                                    <input type="text" class="form-control form-control-sm" id="bandwidthLimit" placeholder="1k/1k" value="1k/1k">
+                                </div>
+                            </div>
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold" for="networkRange">Network Range</label>
+                                    <input type="text" class="form-control form-control-sm" id="networkRange" placeholder="192.168.1.0/24" value="192.168.1.0/24">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold" for="dnsServers">DNS Servers</label>
+                                    <input type="text" class="form-control form-control-sm" id="dnsServers" placeholder="8.8.8.8,8.8.4.4" value="8.8.8.8,8.8.4.4">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <button class="btn btn-primary btn-sm" type="button" id="generateIsolationScript">
+                                    <i class="bi bi-gear"></i> Generate Script
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm ms-2" type="button" id="previewIsolationScript">
+                                    <i class="bi bi-eye"></i> Preview
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Script Output -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Script Mikrotik</label>
+                            <div class="input-group">
+                                <textarea class="form-control form-control-sm" id="isolationScriptResult" rows="15" readonly style="font-family: 'Courier New', monospace; font-size: 12px;"></textarea>
+                                <button class="btn btn-outline-secondary btn-sm" type="button" id="copyIsolationScriptBtn" title="Salin ke clipboard">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Status -->
+                        <div id="status" class="alert alert-info small" style="display: none;">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Cara menggunakan:</strong> 
+                            1. Klik "Generate Script" → 2. Copy script → 3. Paste di terminal Mikrotik → 4. Jalankan script
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Preview -->
+    <div class="modal fade" id="scriptPreviewModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-code-square"></i> Preview Script Mikrotik
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info small mb-3">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Cara menggunakan:</strong> 
+                        1. Copy script di bawah → 2. Paste di terminal Mikrotik → 3. Jalankan script
+                    </div>
+                    <pre class="bg-light p-3 rounded" style="max-height: 500px; overflow-y: auto; font-size: 12px; font-family: 'Courier New', monospace;"><code id="previewScriptContent"></code></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="copyPreviewScriptBtn">
+                        <i class="bi bi-clipboard"></i> Copy Script
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Generate script
+            $('#generateIsolationScript').on('click', function() {
+                const method = $('#isolationMethod').val();
+                const bandwidthLimit = $('#bandwidthLimit').val();
+                const networkRange = $('#networkRange').val();
+                const dnsServers = $('#dnsServers').val();
+                
+                if (!networkRange) {
+                    showNotification('warning', 'Masukkan network range terlebih dahulu');
+                    return;
+                }
+                
+                $('#generateIsolationScript').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Generating...');
+                
+                // Test endpoint tanpa authentication
+                $.ajax({
+                    url: '/admin/settings/test-generate-isolation-script',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        method: method,
+                        bandwidthLimit: bandwidthLimit,
+                        networkRange: networkRange,
+                        dnsServers: dnsServers
+                    }),
+                    success: function(response) {
+                        if (response.success) {
+                            $('#isolationScriptResult').val(response.script);
+                            $('#status').show();
+                            showNotification('success', 'Script berhasil di-generate!');
+                        } else {
+                            showNotification('danger', 'Gagal generate script: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error generating script:', error);
+                        console.error('Response:', xhr.responseText);
+                        showNotification('danger', 'Error: ' + error + ' (Status: ' + xhr.status + ')');
+                    },
+                    complete: function() {
+                        $('#generateIsolationScript').prop('disabled', false).html('<i class="bi bi-gear"></i> Generate Script');
+                    }
+                });
+            });
+
+            // Preview script
+            $('#previewIsolationScript').on('click', function() {
+                const script = $('#isolationScriptResult').val();
+                if (!script) {
+                    showNotification('warning', 'Generate script terlebih dahulu');
+                    return;
+                }
+                
+                $('#previewScriptContent').text(script);
+                new bootstrap.Modal(document.getElementById('scriptPreviewModal')).show();
+            });
+
+            // Copy script
+            $('#copyIsolationScriptBtn').on('click', function() {
+                const copyText = document.getElementById("isolationScriptResult");
+                copyText.select();
+                copyText.setSelectionRange(0, 99999);
+                document.execCommand("copy");
+                showNotification('success', 'Script tersalin ke clipboard!');
+            });
+
+            // Copy from modal
+            $('#copyPreviewScriptBtn').on('click', function() {
+                const script = $('#previewScriptContent').text();
+                navigator.clipboard.writeText(script).then(function() {
+                    showNotification('success', 'Script tersalin ke clipboard!');
+                    $('#scriptPreviewModal').modal('hide');
+                }).catch(function(err) {
+                    console.error('Error copying script:', err);
+                    showNotification('danger', 'Gagal menyalin script!');
+                });
+            });
+
+            // Notification function
+            function showNotification(type, message) {
+                const notif = $('<div>')
+                    .addClass('alert alert-' + type + ' alert-dismissible fade show position-fixed top-0 end-0 m-3')
+                    .css('z-index', '1055')
+                    .html(`
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `);
+                
+                $('body').append(notif);
+                
+                setTimeout(() => {
+                    notif.alert('close');
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+:root { --brand:#0B1437; --brand-2:#1B2B6B; --text:#EAF0FF; --muted:#93A1C6; }
+body { background: #0B1437; color: var(--text); }
+.container { max-width: 560px; margin: 0 auto; padding-bottom: 84px; }
+.card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; backdrop-filter: blur(8px); }
+.btn { display:inline-flex; align-items:center; gap:8px; background:#2C4DF7; color:#fff; padding:10px 14px; border-radius:10px; border:none; text-decoration:none; }
+.badge { background:#1E2A5A; padding:4px 8px; border-radius: 999px; color:#8FB0FF; font-size:12px; }
+.bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(11,20,55,0.96), rgba(15,28,79,0.96)); border-top: 1px solid rgba(255,255,255,0.08); height: 64px; display: grid; grid-template-columns: repeat(5,1fr); z-index: 1000; }
+.nav-item { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color: var(--muted); text-decoration:none; font-size: 12px; }
+.nav-item.active { color: #fff; }
+.install-banner { position: fixed; right: 16px; bottom: 80px; display:none; z-index: 999; }
+@media (min-width: 768px) { .bottom-nav { display: none; } }
+

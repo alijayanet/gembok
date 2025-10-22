@@ -1,0 +1,116 @@
+/* Dark Theme (not pitch black) for Gembok Bill UI - non-breaking, UI-only */
+/* Palette: slate/blue-gray inspired */
+:root {
+  --bg-0: #0f172a;  /* slate-900 */
+  --bg-1: #111827;  /* gray-900 */
+  --bg-2: #0b1220;  /* custom deep navy */
+  --panel: #1f2937; /* gray-800 */
+  --panel-2: #1e293b; /* slate-800 */
+  --muted: #94a3b8; /* slate-400 */
+  --text: #e5e7eb;  /* gray-200 */
+  --text-2: #cbd5e1;/* slate-300 */
+  --border: #263244;/* custom slate border */
+  --primary: #60a5fa;/* blue-400 */
+  --primary-2: #3b82f6;/* blue-500 */
+  --success: #22c55e;/* green-500 */
+  --warning: #f59e0b;/* amber-500 */
+  --danger: #ef4444; /* red-500 */
+}
+
+/* Base */
+html, body {
+  background: radial-gradient(1200px 800px at 10% 10%, var(--bg-2) 0%, var(--bg-0) 50%, var(--bg-1) 100%) !important;
+  color: var(--text) !important;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6, p, small, span, label, strong { color: var(--text) }
+.text-muted, .muted, .form-text, .small, small { color: var(--muted) !important }
+
+/* Navbar */
+.navbar, .navbar.navbar-light, .navbar.navbar-dark {
+  background: rgba(17, 24, 39, 0.9) !important;
+  border-bottom: 1px solid var(--border) !important;
+  backdrop-filter: blur(8px);
+}
+.navbar .navbar-brand, .navbar a, .navbar .nav-link { color: var(--text) !important }
+
+/* Cards */
+.card { background-color: var(--panel-2) !important; color: var(--text) !important; border: 1px solid var(--border) !important; box-shadow: none !important; }
+.card-header { background-color: var(--panel) !important; border-bottom: 1px solid var(--border) !important; color: var(--text) !important }
+.card-footer { background-color: var(--panel) !important; border-top: 1px solid var(--border) !important }
+
+/* Tables */
+.table { color: var(--text) !important }
+.table thead th { color: var(--text-2) !important; border-bottom: 1px solid var(--border) !important }
+.table tbody td { border-top: 1px solid var(--border) !important }
+.table-hover tbody tr:hover { background-color: rgba(148, 163, 184, 0.08) !important }
+
+/* Forms */
+.form-control, .form-select, .form-check-input {
+  background-color: #0f172a !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+.form-control::placeholder { color: #60708b !important }
+.form-control:focus, .form-select:focus {
+  outline: none; box-shadow: 0 0 0 .2rem rgba(59, 130, 246, .25) !important; border-color: var(--primary-2) !important;
+}
+.input-group-text { background-color: var(--panel) !important; color: var(--text-2) !important; border-color: var(--border) !important }
+
+/* Buttons */
+.btn { border-radius: .6rem }
+.btn-primary { background-color: var(--primary-2) !important; border-color: var(--primary-2) !important }
+.btn-outline-primary { color: var(--primary) !important; border-color: var(--primary) !important }
+.btn-outline-primary:hover { background-color: rgba(96,165,250,.15) !important }
+.btn-success { background-color: var(--success) !important; border-color: var(--success) !important }
+.btn-outline-success { color: var(--success) !important; border-color: var(--success) !important }
+.btn-outline-success:hover { background-color: rgba(34,197,94,.12) !important }
+.btn-outline-danger { color: var(--danger) !important; border-color: var(--danger) !important }
+.btn-outline-danger:hover { background-color: rgba(239,68,68,.12) !important }
+
+/* Badges */
+.badge.bg-warning { background-color: var(--warning) !important; color: #111827 !important }
+.badge.bg-danger { background-color: var(--danger) !important }
+.badge.bg-success { background-color: var(--success) !important }
+.badge.bg-primary { background-color: var(--primary-2) !important }
+
+/* Alerts */
+.alert { border: 1px solid var(--border) !important; color: var(--text) !important }
+.alert-info { background-color: rgba(59, 130, 246, 0.12) !important; border-color: rgba(59, 130, 246, 0.35) !important }
+.alert-warning { background-color: rgba(245, 158, 11, 0.12) !important; border-color: rgba(245, 158, 11, 0.35) !important; color: #fde68a !important }
+.alert-danger { background-color: rgba(239, 68, 68, 0.12) !important; border-color: rgba(239, 68, 68, 0.35) !important }
+
+/* Modal */
+.modal-content { background-color: var(--panel-2) !important; color: var(--text) !important; border: 1px solid var(--border) !important }
+.modal-header, .modal-footer { background-color: var(--panel) !important; border-color: var(--border) !important }
+.btn-close { filter: invert(1) grayscale(100%) }
+
+/* Dropdowns */
+.dropdown-menu { background-color: var(--panel-2) !important; color: var(--text) !important; border-color: var(--border) !important }
+.dropdown-item { color: var(--text) !important }
+.dropdown-item:hover { background-color: rgba(148, 163, 184, 0.08) !important }
+
+/* DataTables (if used) */
+.dataTables_wrapper .dataTables_filter input { background: #0f172a !important; color: var(--text) !important; border-color: var(--border) !important }
+.dataTables_wrapper .dataTables_length select { background: #0f172a !important; color: var(--text) !important; border-color: var(--border) !important }
+.dataTables_wrapper .dataTables_paginate .page-item .page-link { background: #0f172a !important; color: var(--text) !important; border-color: var(--border) !important }
+.dataTables_wrapper .dataTables_paginate .page-item.active .page-link { background: var(--primary-2) !important; border-color: var(--primary-2) !important }
+
+/* Tables: status text colors */
+.text-danger { color: #fca5a5 !important }
+.text-primary { color: var(--primary) !important }
+
+/* Sticky header shadow */
+.main-content .border-bottom { border-color: var(--border) !important }
+
+/* Custom elements used in pages */
+.customer-info { background: linear-gradient(135deg, #0b1220, #0f172a) !important; color: var(--text) !important; border: 1px solid var(--border) !important }
+.invoice-card { border-left-color: var(--primary-2) !important }
+
+/* Tables inside cards that had bg-white */
+.card-header.bg-white { background-color: var(--panel) !important; color: var(--text) !important }
+
+/* Tooltips/Popovers (if any) */
+.tooltip-inner { background-color: var(--panel) !important; color: var(--text) !important }
+.popover { background-color: var(--panel-2) !important; color: var(--text) !important; border-color: var(--border) !important }

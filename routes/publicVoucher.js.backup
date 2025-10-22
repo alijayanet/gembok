@@ -1,0 +1,2606 @@
+const express = require('express');
+const router = express.Router();
+const { getHotspotProfiles } = require('../config/mikrotik');
+const { getSettingsWithCache } = require('../config/settingsManager');
+const billingManager = require('../config/billing');
+const logger = require('../config/logger');
+
+// Helper function untuk format pesan voucher WhatsApp
+function formatVoucherMessage(vouchers, purchase) {
+    let message = `🛒 *VOUCHER HOTSPOT BERHASIL DIBELI*\n\n`;
+    message += `👤 Nama: ${purchase.customer_name}\n`;
+    message += `📱 No HP: ${purchase.customer_phone}\n`;
+    message += `💰 Total: Rp ${purchase.amount.toLocaleString('id-ID')}\n\n`;
+
+    message += `🎫 *DETAIL VOUCHER:*\n\n`;
+
+    vouchers.forEach((voucher, index) => {
+        message += `${index + 1}. *${voucher.username}*\n`;
+        message += `   Password: ${voucher.password}\n`;
+        message += `   Profile: ${voucher.profile}\n\n`;
+    });
+
+    message += `🌐 *CARA PENGGUNAAN:*\n`;
+    message += `1. Hubungkan ke WiFi hotspot\n`;
+    message += `2. Buka browser ke http://192.168.88.1\n`;
+    message += `3. Masukkan Username & Password di atas\n`;
+    message += `4. Klik Login\n\n`;
+
+    message += `⏰ *MASA AKTIF:* Sesuai paket yang dipilih\n\n`;
+    message += `📞 *BANTUAN:* Hubungi admin jika ada kendala\n\n`;
+    message += `Terima kasih telah menggunakan layanan kami! 🚀`;
+
+    return message;
+}
+
+// Helper function untuk format pesan voucher dengan link success page
+function formatVoucherMessageWithSuccessPage(vouchers, purchase, successUrl) {
+    let message = `🛒 *VOUCHER HOTSPOT BERHASIL DIBELI*\n\n`;
+    message += `👤 Nama: ${purchase.customer_name}\n`;
+    message += `📱 No HP: ${purchase.customer_phone}\n`;
+    message += `💰 Total: Rp ${purchase.amount.toLocaleString('id-ID')}\n\n`;
+
+    message += `🎫 *DETAIL VOUCHER:*\n\n`;
+
+    vouchers.forEach((voucher, index) => {
+        message += `${index + 1}. *${voucher.username}*\n`;
+        message += `   Password: ${voucher.password}\n`;
+        message += `   Profile: ${voucher.profile}\n\n`;
+    });
+
+    message += `🌐 *LIHAT DETAIL LENGKAP:*\n`;
+    message += `${successUrl}\n\n`;
+
+    message += `🌐 *CARA PENGGUNAAN:*\n`;
+    message += `1. Hubungkan ke WiFi hotspot\n`;
+    message += `2. Buka browser ke http://192.168.88.1\n`;
+    message += `3. Masukkan Username & Password di atas\n`;
+    message += `4. Klik Login\n\n`;
+
+    message += `⏰ *MASA AKTIF:* Sesuai paket yang dipilih\n\n`;
+
+    message += `📞 *BANTUAN:* Hubungi admin jika ada kendala\n\n`;
+    message += `Terima kasih telah menggunakan layanan kami! 🚀`;
+
+    return message;
+}
+
+// GET: API untuk payment methods (sama dengan invoice)
+router.get('/api/payment-methods', async (req, res) => {
+    try {
+        const PaymentGatewayManager = require('../config/paymentGateway');
+        const paymentGateway = new PaymentGatewayManager();
+        
+        const methods = await paymentGateway.getAvailablePaymentMethods();
+        
+        res.json({
+            success: true,
+            methods: methods
+        });
+    } catch (error) {
+        console.error('Error getting payment methods:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error getting payment methods',
+            error: error.message
+        });
+    }
+});
+
+// GET: Halaman success voucher
+router.get('/success/:purchaseId', async (req, res) => {
+    try {
+        const { purchaseId } = req.params;
+        
+        // Ambil data purchase dari database
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+        
+        const purchase = await new Promise((resolve, reject) => {
+            db.get(
+                'SELECT * FROM voucher_purchases WHERE id = ?',
+                [purchaseId],
+                (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                }
+            );
+        });
+        
+        if (!purchase) {
+            db.close();
+            return res.status(404).render('error', {
+                title: 'Voucher Tidak Ditemukan',
+                message: 'Voucher yang Anda cari tidak ditemukan atau sudah tidak berlaku.',
+                error: { status: 404 }
+            });
+        }
+        
+        // Parse voucher data
+        let vouchers = [];
+        try {
+            const voucherData = JSON.parse(purchase.voucher_data || '[]');
+            vouchers = Array.isArray(voucherData) ? voucherData : [];
+        } catch (e) {
+            console.error('Error parsing voucher data:', e);
+        }
+        
+        // Ambil settings untuk informasi tambahan
+        const settings = getSettingsWithCache();
+        const company_header = settings.company_header || 'Voucher Hotspot';
+        const adminContact = settings['admins.0'] || '-';
+        
+        // Data untuk ditampilkan
+        const voucherData = {
+            purchaseId: purchase.id,
+            packageName: purchase.description || 'Voucher Hotspot',
+            duration: getDurationFromPackage(purchase.voucher_package),
+            price: purchase.amount,
+            vouchers: vouchers,
+            customerPhone: purchase.customer_phone,
+            customerName: purchase.customer_name,
+            wifiName: settings.wifi_name || 'Hotspot',
+            hotspotUrl: settings.hotspot_url || 'http://192.168.1.1',
+            status: purchase.status
+        };
+        
+        db.close();
+        
+        res.render('voucherSuccess', {
+            voucherData: voucherData,
+            company_header: company_header,
+            adminContact: adminContact
+        });
+        
+    } catch (error) {
+        console.error('Error loading voucher success page:', error);
+        res.status(500).render('error', {
+            title: 'Error',
+            message: 'Terjadi kesalahan saat memuat halaman voucher.',
+            error: { status: 500 }
+        });
+    }
+});
+
+// Helper function untuk mendapatkan durasi dari package ID
+function getDurationFromPackage(packageId) {
+    const durationMap = {
+        '3k': '1 hari',
+        '5k': '2 hari', 
+        '10k': '5 hari',
+        '15k': '8 hari',
+        '25k': '15 hari',
+        '50k': '30 hari'
+    };
+    return durationMap[packageId] || 'Tidak diketahui';
+}
+
+// Helper function untuk mengambil setting voucher online
+async function getVoucherOnlineSettings() {
+    const sqlite3 = require('sqlite3').verbose();
+    const db = new sqlite3.Database('./data/billing.db');
+
+    return new Promise((resolve, reject) => {
+        // Coba ambil dari tabel voucher_online_settings jika ada
+        db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='voucher_online_settings'", (err, row) => {
+            if (err) {
+                console.error('Error checking voucher_online_settings table:', err);
+                resolve({}); // Return empty object jika error
+                return;
+            }
+
+            if (row) {
+                // Tabel ada, ambil data
+                db.all('SELECT * FROM voucher_online_settings', (err, rows) => {
+                    if (err) {
+                        console.error('Error getting voucher online settings:', err);
+                        resolve({});
+                        return;
+                    }
+
+                    const settings = {};
+                    rows.forEach(row => {
+                        settings[row.package_id] = {
+                            profile: row.profile,
+                            enabled: row.enabled === 1
+                        };
+                    });
+
+                    db.close();
+                    resolve(settings);
+                });
+            } else {
+                // Tabel belum ada, buat default settings
+                console.log('voucher_online_settings table not found, using default settings');
+                db.close();
+                resolve({
+                    '3k': { profile: '3k', enabled: true },
+                    '5k': { profile: '5k', enabled: true },
+                    '10k': { profile: '10k', enabled: true },
+                    '15k': { profile: '15k', enabled: true },
+                    '25k': { profile: '25k', enabled: true },
+                    '50k': { profile: '50k', enabled: true }
+                });
+            }
+        });
+    });
+}
+
+// GET: Halaman voucher publik
+router.get('/', async (req, res) => {
+    try {
+        // Ambil profile hotspot
+        const profilesResult = await getHotspotProfiles();
+        let profiles = [];
+        if (profilesResult.success && Array.isArray(profilesResult.data)) {
+            profiles = profilesResult.data;
+        }
+
+        // Ambil settings
+        const settings = getSettingsWithCache();
+
+        // Ambil settings voucher online dari database
+        const voucherSettings = await getVoucherOnlineSettings();
+
+        // Data paket voucher berdasarkan setting online
+        const allPackages = [
+            {
+                id: '3k',
+                name: '3rb - 1 Hari',
+                duration: '1 hari',
+                price: 3000,
+                profile: voucherSettings['3k']?.profile || '3k',
+                description: 'Akses WiFi 1 hari penuh',
+                color: 'primary',
+                enabled: voucherSettings['3k']?.enabled !== false
+            },
+            {
+                id: '5k',
+                name: '5rb - 2 Hari',
+                duration: '2 hari',
+                price: 5000,
+                profile: voucherSettings['5k']?.profile || '5k',
+                description: 'Akses WiFi 2 hari penuh',
+                color: 'success',
+                enabled: voucherSettings['5k']?.enabled !== false
+            },
+            {
+                id: '10k',
+                name: '10rb - 5 Hari',
+                duration: '5 hari',
+                price: 10000,
+                profile: voucherSettings['10k']?.profile || '10k',
+                description: 'Akses WiFi 5 hari penuh',
+                color: 'info',
+                enabled: voucherSettings['10k']?.enabled !== false
+            },
+            {
+                id: '15k',
+                name: '15rb - 8 Hari',
+                duration: '8 hari',
+                price: 15000,
+                profile: voucherSettings['15k']?.profile || '15k',
+                description: 'Akses WiFi 8 hari penuh',
+                color: 'warning',
+                enabled: voucherSettings['15k']?.enabled !== false
+            },
+            {
+                id: '25k',
+                name: '25rb - 15 Hari',
+                duration: '15 hari',
+                price: 25000,
+                profile: voucherSettings['25k']?.profile || '25k',
+                description: 'Akses WiFi 15 hari penuh',
+                color: 'danger',
+                enabled: voucherSettings['25k']?.enabled !== false
+            },
+            {
+                id: '50k',
+                name: '50rb - 30 Hari',
+                duration: '30 hari',
+                price: 50000,
+                profile: voucherSettings['50k']?.profile || '50k',
+                description: 'Akses WiFi 30 hari penuh',
+                color: 'secondary',
+                enabled: voucherSettings['50k']?.enabled !== false
+            }
+        ];
+
+        // Filter hanya paket yang enabled
+        const voucherPackages = allPackages.filter(pkg => pkg.enabled);
+
+        res.render('publicVoucher', {
+            title: 'Beli Voucher Hotspot',
+            voucherPackages,
+            profiles,
+            settings,
+            error: req.query.error,
+            success: req.query.success
+        });
+
+    } catch (error) {
+        console.error('Error rendering public voucher page:', error);
+        res.render('publicVoucher', {
+            title: 'Beli Voucher Hotspot',
+            voucherPackages: [],
+            profiles: [],
+            settings: {},
+            error: 'Gagal memuat halaman voucher: ' + error.message,
+            success: null
+        });
+    }
+});
+
+// POST: Proses pembelian voucher
+router.post('/purchase', async (req, res) => {
+    try {
+        const { packageId, customerPhone, customerName, quantity = 1, gateway = 'tripay', method = 'BRIVA' } = req.body;
+
+        if (!packageId || !customerPhone || !customerName) {
+            return res.status(400).json({
+                success: false,
+                message: 'Data tidak lengkap'
+            });
+        }
+
+        // Ambil settings voucher online dari database
+        const voucherSettings = await getVoucherOnlineSettings();
+
+        // Data paket voucher berdasarkan setting online
+        const allPackages = [
+            {
+                id: '3k',
+                name: '3rb - 1 Hari',
+                duration: '1 hari',
+                price: 3000,
+                profile: voucherSettings['3k']?.profile || '3k',
+                description: 'Akses WiFi 1 hari penuh',
+                color: 'primary',
+                enabled: voucherSettings['3k']?.enabled !== false
+            },
+            {
+                id: '5k',
+                name: '5rb - 2 Hari',
+                duration: '2 hari',
+                price: 5000,
+                profile: voucherSettings['5k']?.profile || '5k',
+                description: 'Akses WiFi 2 hari penuh',
+                color: 'success',
+                enabled: voucherSettings['5k']?.enabled !== false
+            },
+            {
+                id: '10k',
+                name: '10rb - 5 Hari',
+                duration: '5 hari',
+                price: 10000,
+                profile: voucherSettings['10k']?.profile || '10k',
+                description: 'Akses WiFi 5 hari penuh',
+                color: 'info',
+                enabled: voucherSettings['10k']?.enabled !== false
+            },
+            {
+                id: '15k',
+                name: '15rb - 8 Hari',
+                duration: '8 hari',
+                price: 15000,
+                profile: voucherSettings['15k']?.profile || '15k',
+                description: 'Akses WiFi 8 hari penuh',
+                color: 'warning',
+                enabled: voucherSettings['15k']?.enabled !== false
+            },
+            {
+                id: '25k',
+                name: '25rb - 15 Hari',
+                duration: '15 hari',
+                price: 25000,
+                profile: voucherSettings['25k']?.profile || '25k',
+                description: 'Akses WiFi 15 hari penuh',
+                color: 'danger',
+                enabled: voucherSettings['25k']?.enabled !== false
+            },
+            {
+                id: '50k',
+                name: '50rb - 30 Hari',
+                duration: '30 hari',
+                price: 50000,
+                profile: voucherSettings['50k']?.profile || '50k',
+                description: 'Akses WiFi 30 hari penuh',
+                color: 'secondary',
+                enabled: voucherSettings['50k']?.enabled !== false
+            }
+        ];
+
+        // Filter hanya paket yang enabled
+        const voucherPackages = allPackages.filter(pkg => pkg.enabled);
+        const selectedPackage = voucherPackages.find(pkg => pkg.id === packageId);
+        if (!selectedPackage) {
+            return res.status(400).json({
+                success: false,
+                message: 'Paket voucher tidak ditemukan'
+            });
+        }
+
+        const totalAmount = selectedPackage.price * parseInt(quantity);
+
+        // 1. Simpan data purchase tanpa generate voucher dulu
+        // Voucher akan di-generate setelah payment success untuk menghindari voucher terbuang
+        console.log('Saving voucher purchase for package:', packageId, 'quantity:', quantity);
+        
+        // 2. Simpan data voucher ke tabel voucher_purchases (tanpa voucher_data dulu)
+        const voucherDataString = JSON.stringify([]); // Kosong dulu, akan diisi setelah payment success
+        console.log('Voucher purchase data to save (vouchers will be generated after payment success)');
+
+        const voucherPurchase = await saveVoucherPurchase({
+            invoice_id: null, // akan diupdate setelah invoice dibuat
+            customer_name: customerName,
+            customer_phone: customerPhone,
+            amount: totalAmount,
+            description: `Voucher Hotspot ${selectedPackage.name} x${quantity}`,
+            voucher_package: packageId,
+            voucher_quantity: parseInt(quantity),
+            voucher_profile: selectedPackage.profile,
+            voucher_data: voucherDataString, // Simpan voucher yang sudah di-generate
+            status: 'pending'
+        });
+
+        console.log('Saved voucher purchase with ID:', voucherPurchase.id);
+        console.log('Voucher purchase saved, vouchers will be generated after payment success');
+
+        try {
+            // 3. Buat invoice secara manual untuk menghindari constraint issues
+            const sqlite3 = require('sqlite3').verbose();
+            const db = new sqlite3.Database('./data/billing.db');
+
+            const invoiceId = `INV-VCR-${Date.now()}-${voucherPurchase.id}`;
+            const dueDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+            // Insert invoice secara manual dengan package_id yang sesuai dengan voucher package
+            let invoiceDbId;
+            await new Promise((resolve, reject) => {
+                const sql = `INSERT INTO invoices (customer_id, invoice_number, amount, status, created_at, due_date, notes, package_id, package_name)
+                           VALUES (?, ?, ?, 'pending', datetime('now'), ?, ?, ?, ?)`;
+                db.run(sql, [19, invoiceId, totalAmount, dueDate, `Voucher Hotspot ${selectedPackage.name} x${quantity}`, 1, selectedPackage.name], function(err) {
+                    if (err) reject(err);
+                    else {
+                        invoiceDbId = this.lastID;
+                        resolve(this.lastID);
+                    }
+                });
+            });
+
+            // Update voucher purchase dengan invoice_id
+            await new Promise((resolve, reject) => {
+                db.run('UPDATE voucher_purchases SET invoice_id = ? WHERE id = ?', [invoiceId, voucherPurchase.id], function(err) {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+
+            console.log('Invoice created manually:', invoiceId, 'DB ID:', invoiceDbId);
+            db.close();
+
+            // 4. Buat payment gateway transaction menggunakan Tripay
+            console.log('Creating payment for invoice DB ID:', invoiceDbId);
+
+            // Gunakan method yang sama dengan invoice bulanan, tapi dengan paymentType voucher
+            const paymentResult = await billingManager.createOnlinePaymentWithMethod(invoiceDbId, gateway, method, 'voucher');
+            console.log('Payment result:', paymentResult);
+
+            if (!paymentResult || !paymentResult.payment_url) {
+                throw new Error('Gagal membuat payment URL');
+            }
+
+            res.json({
+                success: true,
+                message: 'Pembelian voucher berhasil dibuat',
+                data: {
+                    purchaseId: voucherPurchase.id,
+                    invoiceId: invoiceId,
+                    paymentUrl: paymentResult.payment_url,
+                    amount: totalAmount,
+                    package: selectedPackage,
+                    note: 'Voucher akan di-generate setelah pembayaran berhasil'
+                }
+            });
+        } catch (paymentError) {
+            console.error('Payment creation error:', paymentError);
+            // Jika payment gagal, update status voucher menjadi failed
+            try {
+                const sqlite3 = require('sqlite3').verbose();
+                const db = new sqlite3.Database('./data/billing.db');
+                await new Promise((resolve, reject) => {
+                    db.run('UPDATE voucher_purchases SET status = ? WHERE id = ?', ['failed', voucherPurchase.id], function(err) {
+                        if (err) reject(err);
+                        else resolve();
+                    });
+                });
+                db.close();
+            } catch (updateError) {
+                console.error('Failed to update voucher status:', updateError);
+            }
+
+            throw paymentError;
+        }
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Gagal memproses pembelian voucher: ' + error.message
+        });
+    }
+});
+
+// Helper function untuk mengambil setting voucher online
+async function getVoucherOnlineSettings() {
+    const sqlite3 = require('sqlite3').verbose();
+    const db = new sqlite3.Database('./data/billing.db');
+
+    return new Promise((resolve, reject) => {
+        // Coba ambil dari tabel voucher_online_settings jika ada
+        db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='voucher_online_settings'", (err, row) => {
+            if (err) {
+                console.error('Error checking voucher_online_settings table:', err);
+                resolve({}); // Return empty object jika error
+                return;
+            }
+
+            if (row) {
+                // Tabel ada, ambil data
+                db.all('SELECT * FROM voucher_online_settings', (err, rows) => {
+                    if (err) {
+                        console.error('Error getting voucher online settings:', err);
+                        resolve({});
+                        return;
+                    }
+
+                    const settings = {};
+                    rows.forEach(row => {
+                        settings[row.package_id] = {
+                            profile: row.profile,
+                            enabled: row.enabled === 1
+                        };
+                    });
+
+                    db.close();
+                    resolve(settings);
+                });
+            } else {
+                // Tabel belum ada, buat default settings
+                console.log('voucher_online_settings table not found, using default settings');
+                db.close();
+                resolve({
+                    '3k': { profile: '3k', enabled: true },
+                    '5k': { profile: '5k', enabled: true },
+                    '10k': { profile: '10k', enabled: true },
+                    '15k': { profile: '15k', enabled: true },
+                    '25k': { profile: '25k', enabled: true },
+                    '50k': { profile: '50k', enabled: true }
+                });
+            }
+        });
+    });
+}
+
+// Route test sederhana
+router.get('/test', (req, res) => {
+    res.json({ success: true, message: 'Test route works' });
+});
+
+// GET: Halaman error voucher tidak ditemukan
+router.get('/error', async (req, res) => {
+    try {
+        // Hitung voucher yang berhasil dibuat dalam 24 jam terakhir
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const twentyFourHoursAgo = new Date();
+        twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+        const stats = await new Promise((resolve, reject) => {
+            db.get(`
+                SELECT
+                    COUNT(*) as total_today,
+                    COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_today,
+                    COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_today
+                FROM voucher_purchases
+                WHERE created_at >= ?
+            `, [twentyFourHoursAgo.toISOString()], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        // Ambil beberapa voucher yang berhasil dikirim hari ini
+        const recentVouchers = await new Promise((resolve, reject) => {
+            db.all(`
+                SELECT vp.*, c.name as customer_name
+                FROM voucher_purchases vp
+                LEFT JOIN customers c ON vp.customer_name = c.name
+                WHERE vp.created_at >= ? AND vp.status = 'completed'
+                ORDER BY vp.created_at DESC
+                LIMIT 5
+            `, [twentyFourHoursAgo.toISOString()], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+                db.close();
+            });
+        });
+
+        res.render('voucherError', {
+            title: 'Voucher Tidak Ditemukan',
+            settings: getSettingsWithCache(),
+            voucherStats: stats,
+            recentVouchers: recentVouchers
+        });
+    } catch (error) {
+        console.error('Error getting voucher stats:', error);
+        res.render('voucherError', {
+            title: 'Voucher Tidak Ditemukan',
+            settings: getSettingsWithCache(),
+            voucherStats: null,
+            recentVouchers: []
+        });
+    }
+});
+
+// POST: Test payment success untuk development
+router.post('/test-payment-success/:purchaseId', async (req, res) => {
+    try {
+        const { purchaseId } = req.params;
+
+        // Cari purchase berdasarkan ID
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const purchase = await new Promise((resolve, reject) => {
+            db.get('SELECT * FROM voucher_purchases WHERE id = ?', [purchaseId], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        if (!purchase) {
+            db.close();
+            return res.status(404).json({ success: false, message: 'Purchase tidak ditemukan' });
+        }
+
+        // Ambil voucher yang sudah di-generate
+        let generatedVouchers = [];
+        if (purchase.voucher_data) {
+            try {
+                generatedVouchers = JSON.parse(purchase.voucher_data);
+            } catch (e) {
+                console.error('Error parsing voucher data:', e);
+            }
+        }
+
+        if (generatedVouchers.length > 0) {
+            // Update status purchase menjadi completed
+            await new Promise((resolve, reject) => {
+                db.run(
+                    'UPDATE voucher_purchases SET status = ?, completed_at = datetime(\'now\') WHERE id = ?',
+                    ['completed', purchaseId],
+                    function(err) {
+                        if (err) reject(err);
+                    }
+                );
+            });
+
+            // Kirim voucher ke WhatsApp
+            if (purchase.customer_phone) {
+                try {
+                    const { sendMessage } = require('../config/sendMessage');
+                    const voucherText = formatVoucherMessage(generatedVouchers, purchase);
+                    await sendMessage(purchase.customer_phone, voucherText);
+                    console.log('Test: Voucher sent to WhatsApp:', purchase.customer_phone);
+                } catch (whatsappError) {
+                    console.error('Test: Error sending voucher via WhatsApp:', whatsappError);
+                }
+            }
+
+            db.close();
+
+            res.json({
+                success: true,
+                message: 'Test payment success completed',
+                voucherCount: generatedVouchers.length,
+                vouchers: generatedVouchers
+            });
+        } else {
+            db.close();
+            res.status(400).json({ success: false, message: 'Tidak ada voucher yang sudah di-generate' });
+        }
+
+    } catch (error) {
+        console.error('Test payment error:', error);
+        res.status(500).json({ success: false, message: 'Test payment gagal: ' + error.message });
+    }
+});
+
+// POST: Cleanup expired vouchers
+router.post('/cleanup-expired', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        // Hapus voucher purchases yang sudah lebih dari 24 jam dan belum dibayar
+        const oneDayAgo = new Date();
+        oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+
+        // 1. Cari voucher purchases yang expired
+        const expiredPurchases = await new Promise((resolve, reject) => {
+            db.all(
+                'SELECT * FROM voucher_purchases WHERE status = ? AND created_at < ?',
+                ['pending', oneDayAgo.toISOString()],
+                (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows);
+                }
+            );
+        });
+
+        let totalDeleted = 0;
+        let mikrotikDeleted = 0;
+
+        // 2. Hapus voucher dari Mikrotik untuk setiap purchase yang expired
+        for (const purchase of expiredPurchases) {
+            if (purchase.voucher_data) {
+                try {
+                    const vouchers = JSON.parse(purchase.voucher_data);
+                    for (const voucher of vouchers) {
+                        // Hapus voucher dari Mikrotik
+                        const result = await deleteHotspotUser(voucher.username);
+                        if (result.success) {
+                            mikrotikDeleted++;
+                            console.log(`Deleted expired voucher from Mikrotik: ${voucher.username}`);
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Error parsing voucher data for purchase ${purchase.id}:`, e);
+                }
+            }
+        }
+
+        // 3. Hapus dari database
+        const dbResult = await new Promise((resolve, reject) => {
+            db.run(
+                'DELETE FROM voucher_purchases WHERE status = ? AND created_at < ?',
+                ['pending', oneDayAgo.toISOString()],
+                function(err) {
+                    if (err) reject(err);
+                    else resolve({ changes: this.changes });
+                }
+            );
+        });
+
+        totalDeleted = dbResult.changes;
+
+        db.close();
+
+        console.log(`Cleanup completed: ${totalDeleted} expired purchases removed, ${mikrotikDeleted} vouchers deleted from Mikrotik`);
+
+        res.json({
+            success: true,
+            message: `Berhasil membersihkan ${totalDeleted} voucher expired dari database dan ${mikrotikDeleted} voucher dari Mikrotik`,
+            details: {
+                database_deleted: totalDeleted,
+                mikrotik_deleted: mikrotikDeleted,
+                cleanup_time: new Date().toISOString()
+            }
+        });
+
+    } catch (error) {
+        console.error('Cleanup error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal membersihkan voucher expired: ' + error.message
+        });
+    }
+});
+
+// Fungsi helper untuk menghapus user hotspot dari Mikrotik
+async function deleteHotspotUser(username) {
+    try {
+        // Import fungsi delete dari mikrotik.js
+        const { deleteHotspotUser: deleteMikrotikUser } = require('../config/mikrotik');
+
+        console.log(`Deleting voucher from Mikrotik: ${username}`);
+        const result = await deleteMikrotikUser(username);
+
+        if (result && result.success) {
+            console.log(`Successfully deleted voucher: ${username}`);
+            return { success: true, username: username };
+        } else {
+            console.error(`Failed to delete voucher: ${username}`);
+            return { success: false, username: username, error: result?.message };
+        }
+
+    } catch (error) {
+        console.error(`Error deleting voucher ${username}:`, error);
+        return { success: false, username: username, error: error.message };
+    }
+}
+
+// Fungsi helper untuk generate voucher hotspot dengan retry mechanism
+async function generateHotspotVouchersWithRetry({ profile, count, packageId, customerName, customerPhone }, maxRetries = 3) {
+    let lastError;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            console.log(`Attempt ${attempt}/${maxRetries} to generate vouchers for profile ${profile}`);
+            
+            const result = await generateHotspotVouchers({ profile, count, packageId, customerName, customerPhone });
+            
+            if (result && result.length > 0) {
+                console.log(`Successfully generated ${result.length} vouchers on attempt ${attempt}`);
+                return result;
+            } else {
+                throw new Error('No vouchers generated');
+            }
+            
+        } catch (error) {
+            lastError = error;
+            console.error(`Attempt ${attempt} failed:`, error.message);
+            
+            if (attempt < maxRetries) {
+                const delay = 1000 * attempt; // Exponential backoff
+                console.log(`Retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+    
+    throw new Error(`Failed to generate vouchers after ${maxRetries} attempts. Last error: ${lastError.message}`);
+}
+
+// Fungsi helper untuk generate voucher hotspot
+async function generateHotspotVouchers({ profile, count, packageId, customerName, customerPhone }) {
+    try {
+        // Import fungsi generateHotspotVouchers dari mikrotik.js
+        const { generateHotspotVouchers: generateMikrotikVouchers } = require('../config/mikrotik');
+
+        // Generate voucher menggunakan Mikrotik
+        const prefix = 'vcr-';
+        const server = 'all';
+        const validUntil = '';
+        const price = '';
+
+        console.log(`Generating ${count} vouchers for profile ${profile} via Mikrotik`);
+        const result = await generateMikrotikVouchers(count, prefix, profile, server, validUntil, price);
+
+        if (!result.success) {
+            throw new Error(result.message || 'Gagal generate voucher di Mikrotik');
+        }
+
+        console.log(`Successfully generated ${result.vouchers.length} vouchers via Mikrotik`);
+        return result.vouchers;
+
+    } catch (error) {
+        console.error('Error generating hotspot vouchers:', error);
+        throw new Error('Gagal generate voucher hotspot: ' + error.message);
+    }
+}
+
+// Fungsi helper untuk cleanup voucher yang gagal
+async function cleanupFailedVoucher(purchaseId) {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+        
+        const purchase = await new Promise((resolve, reject) => {
+            db.get('SELECT * FROM voucher_purchases WHERE id = ?', [purchaseId], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+        
+        if (purchase && purchase.voucher_data) {
+            const vouchers = JSON.parse(purchase.voucher_data);
+            const { deleteHotspotUser } = require('../config/mikrotik');
+            
+            for (const voucher of vouchers) {
+                try {
+                    await deleteHotspotUser(voucher.username);
+                    console.log(`Cleaned up voucher: ${voucher.username}`);
+                } catch (error) {
+                    console.error(`Failed to cleanup voucher ${voucher.username}:`, error.message);
+                }
+            }
+        }
+        
+        db.close();
+    } catch (error) {
+        console.error('Error cleaning up failed voucher:', error);
+    }
+}
+
+// Fungsi helper untuk mengirim voucher dengan retry mechanism
+async function sendVoucherWithRetry(phone, message, maxRetries = 3) {
+    const { sendMessage } = require('../config/sendMessage');
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            console.log(`Attempt ${attempt}/${maxRetries} to send voucher to ${phone}`);
+            
+            const result = await sendMessage(phone, message);
+            
+            if (result) {
+                console.log(`Voucher sent successfully to ${phone} on attempt ${attempt}`);
+                return true;
+            } else {
+                throw new Error('Send message returned false');
+            }
+            
+        } catch (error) {
+            console.error(`Attempt ${attempt} failed to send to ${phone}:`, error.message);
+            
+            if (attempt < maxRetries) {
+                const delay = 2000 * attempt; // 2s, 4s, 6s
+                console.log(`Retrying WhatsApp delivery in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+    
+    console.error(`Failed to send voucher to ${phone} after ${maxRetries} attempts`);
+    return false;
+}
+
+// Fungsi helper untuk log delivery status
+async function logVoucherDelivery(purchaseId, phone, status, error = null) {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+        
+        await new Promise((resolve, reject) => {
+            const sql = `
+                INSERT INTO voucher_delivery_logs 
+                (purchase_id, phone, status, error_message, created_at) 
+                VALUES (?, ?, ?, ?, datetime('now'))
+            `;
+            db.run(sql, [purchaseId, phone, status, error], function(err) {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+        
+        db.close();
+        console.log(`Delivery log saved: ${phone} - ${status}`);
+    } catch (error) {
+        console.error('Error logging voucher delivery:', error);
+    }
+}
+
+// Fungsi helper untuk menyimpan voucher purchase
+async function saveVoucherPurchase(data) {
+    const sqlite3 = require('sqlite3').verbose();
+    const db = new sqlite3.Database('./data/billing.db');
+
+    return new Promise((resolve, reject) => {
+        const sql = `
+            INSERT INTO voucher_purchases (
+                invoice_id, customer_name, customer_phone, amount, description, type,
+                voucher_package, voucher_quantity, voucher_profile, voucher_data, status,
+                payment_gateway, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        `;
+
+        const values = [
+            data.invoice_id,
+            data.customer_name,
+            data.customer_phone,
+            data.amount,
+            data.description || '',
+            data.type || 'voucher',
+            data.voucher_package,
+            data.voucher_quantity,
+            data.voucher_profile,
+            data.voucher_data || null, // Tambahkan voucher_data
+            data.status || 'pending',
+            data.payment_gateway || null
+        ];
+
+        db.run(sql, values, function(err) {
+            if (err) {
+                console.error('Error saving voucher purchase:', err);
+                reject(err);
+            } else {
+                resolve({
+                    id: this.lastID,
+                    ...data
+                });
+            }
+        });
+
+        db.close();
+    });
+}
+
+// GET: Status pembayaran voucher
+router.get('/status/:purchaseId', async (req, res) => {
+    try {
+        const { purchaseId } = req.params;
+
+        // Query voucher purchase dari database
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const purchase = await new Promise((resolve, reject) => {
+            db.get('SELECT * FROM voucher_purchases WHERE id = ?', [purchaseId], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+                db.close();
+            });
+        });
+
+        if (!purchase) {
+            console.log(`Purchase dengan ID ${purchaseId} tidak ditemukan di database`);
+            return res.status(404).json({
+                success: false,
+                message: 'Voucher tidak ditemukan',
+                details: `Purchase dengan ID ${purchaseId} tidak ditemukan. Kemungkinan sudah expired atau ID tidak valid.`,
+                suggestions: [
+                    'Periksa kembali ID purchase yang benar',
+                    'Pastikan belum melewati batas waktu pembayaran',
+                    'Coba lakukan pembelian voucher baru jika diperlukan'
+                ]
+            });
+        }
+
+        res.json({
+            success: true,
+            purchase: purchase
+        });
+
+    } catch (error) {
+        console.error('Error checking voucher status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal memeriksa status voucher'
+        });
+    }
+});
+
+// Function untuk handle voucher webhook (bisa dipanggil dari universal webhook)
+async function handleVoucherWebhook(body, headers) {
+    try {
+        console.log('Received voucher payment webhook:', body);
+
+        // Gunakan PaymentGatewayManager untuk konsistensi
+        const PaymentGatewayManager = require('../config/paymentGateway');
+        const paymentGateway = new PaymentGatewayManager();
+        
+        // Tentukan gateway berdasarkan payload
+        let gateway = 'tripay'; // Default ke tripay
+        if (body.transaction_status) {
+            gateway = 'midtrans';
+        } else if (body.status === 'PAID' || body.status === 'EXPIRED' || body.status === 'FAILED') {
+            gateway = 'tripay';
+        } else if (body.status === 'settled' || body.status === 'expired' || body.status === 'failed') {
+            gateway = 'xendit';
+        }
+
+        console.log(`Processing webhook with gateway: ${gateway}`);
+
+        // Process webhook menggunakan PaymentGatewayManager
+        const webhookResult = await paymentGateway.handleWebhook({ body, headers }, gateway);
+        console.log('Webhook result:', webhookResult);
+
+        const { order_id, status, amount, payment_type } = webhookResult;
+
+        if (!order_id) {
+            console.log('No order_id found in webhook payload');
+            return {
+                success: false,
+                message: 'Order ID tidak ditemukan dalam webhook payload'
+            };
+        }
+
+        // Cari purchase berdasarkan order_id
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        let purchase;
+        try {
+            // Coba cari berdasarkan invoice_id terlebih dahulu
+            const invoiceId = order_id.replace('INV-', '');
+            purchase = await new Promise((resolve, reject) => {
+                db.get('SELECT * FROM voucher_purchases WHERE invoice_id = ?', [invoiceId], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                });
+            });
+        } catch (error) {
+            console.error('Error finding purchase by invoice_id:', error);
+            // Fallback: cari berdasarkan order_id langsung
+            purchase = await new Promise((resolve, reject) => {
+                db.get('SELECT * FROM voucher_purchases WHERE invoice_id = ?', [order_id], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                });
+            });
+        }
+
+        if (!purchase) {
+            console.log(`Purchase dengan order_id ${order_id} tidak ditemukan di database`);
+            return {
+                success: false,
+                message: 'Voucher tidak ditemukan',
+                details: `Purchase dengan order_id ${order_id} tidak ditemukan. Kemungkinan sudah expired atau order_id tidak valid.`,
+                suggestions: [
+                    'Periksa kembali link pembayaran yang benar',
+                    'Pastikan pembayaran dilakukan dalam batas waktu yang ditentukan',
+                    'Hubungi admin jika mengalami kesulitan'
+                ]
+            };
+        }
+
+        // Cek status pembayaran menggunakan status yang sudah dinormalisasi
+        if (status === 'success' || status === 'settlement' || status === 'capture') {
+            console.log('Payment successful for purchase ID:', purchase.id);
+
+            // Generate voucher SETELAH payment success untuk menghindari voucher terbuang
+            let generatedVouchers = [];
+            try {
+                console.log('Generating vouchers after payment success...');
+                generatedVouchers = await generateHotspotVouchersWithRetry({
+                    profile: purchase.voucher_profile,
+                    count: purchase.voucher_quantity,
+                    packageId: purchase.voucher_package,
+                    customerName: purchase.customer_name,
+                    customerPhone: purchase.customer_phone
+                });
+
+                if (generatedVouchers && generatedVouchers.length > 0) {
+                    console.log('Vouchers generated successfully:', generatedVouchers.length);
+                } else {
+                    console.log('No vouchers generated');
+                }
+            } catch (voucherError) {
+                console.error('Error generating vouchers:', voucherError);
+                // Log error tapi jangan gagalkan webhook
+            }
+
+            // Update status purchase menjadi completed
+            await new Promise((resolve, reject) => {
+                const updateSql = `UPDATE voucher_purchases 
+                                 SET status = 'completed', 
+                                     voucher_data = ?, 
+                                     updated_at = datetime('now')
+                                 WHERE id = ?`;
+                db.run(updateSql, [JSON.stringify(generatedVouchers), purchase.id], (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+
+            // Kirim voucher via WhatsApp jika ada nomor HP
+            if (purchase.customer_phone) {
+                try {
+                    const { sendMessage } = require('../config/sendMessage');
+                    const successUrl = `${process.env.APP_BASE_URL || 'https://alijaya.gantiwifi.online'}/voucher/success/${purchase.id}`;
+                    const voucherText = formatVoucherMessageWithSuccessPage(generatedVouchers, purchase, successUrl);
+                    const deliveryResult = await sendVoucherWithRetry(purchase.customer_phone, voucherText);
+                    
+                    // Log delivery result
+                    await logVoucherDelivery(purchase.id, purchase.customer_phone, deliveryResult.success, deliveryResult.message);
+                    
+                    if (deliveryResult.success) {
+                        console.log('Voucher sent successfully via WhatsApp');
+                    } else {
+                        console.log('Failed to send voucher via WhatsApp:', deliveryResult.message);
+                    }
+                } catch (whatsappError) {
+                    console.error('Error sending voucher via WhatsApp:', whatsappError);
+                    await logVoucherDelivery(purchase.id, purchase.customer_phone, false, whatsappError.message);
+                }
+            }
+
+            db.close();
+            return {
+                success: true,
+                message: 'Voucher berhasil dibuat dan dikirim',
+                purchase_id: purchase.id,
+                vouchers_generated: generatedVouchers.length,
+                whatsapp_sent: purchase.customer_phone ? true : false
+            };
+
+        } else if (status === 'failed' || status === 'expired' || status === 'cancelled') {
+            console.log('Payment failed/expired for purchase ID:', purchase.id);
+            
+            // Update status menjadi failed
+            await new Promise((resolve, reject) => {
+                db.run('UPDATE voucher_purchases SET status = ?, updated_at = datetime(\'now\') WHERE id = ?', 
+                       [status, purchase.id], (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+
+            db.close();
+            return {
+                success: false,
+                message: `Pembayaran ${status}`,
+                purchase_id: purchase.id
+            };
+
+        } else {
+            console.log('Payment status unknown:', status);
+            db.close();
+            return {
+                success: false,
+                message: 'Status pembayaran tidak dikenali',
+                status: status,
+                purchase_id: purchase.id
+            };
+        }
+
+    } catch (error) {
+        console.error('Voucher webhook error:', error);
+        return {
+            success: false,
+            message: 'Error processing voucher webhook: ' + error.message
+        };
+    }
+}
+
+// Webhook handler untuk voucher payment success
+router.post('/payment-webhook', async (req, res) => {
+    try {
+        const result = await handleVoucherWebhook(req.body, req.headers);
+        res.status(result.success ? 200 : 400).json(result);
+    } catch (error) {
+        console.error('Voucher webhook route error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error: ' + error.message
+        });
+    }
+});
+
+        // Extract data dari hasil webhook yang sudah dinormalisasi
+        const { order_id, status, amount, payment_type } = webhookResult;
+
+        // Cari voucher purchase berdasarkan invoice_id atau order_id
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        let purchase;
+        if (order_id && order_id.includes('INV-')) {
+            // Jika order_id mengandung INV-, cari berdasarkan invoice_id
+            // Handle format INV-VCR-timestamp-id
+            const invoiceId = order_id;
+            purchase = await new Promise((resolve, reject) => {
+                db.get('SELECT * FROM voucher_purchases WHERE invoice_id = ?', [invoiceId], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                });
+            });
+        }
+
+        if (!purchase) {
+            console.log(`Purchase dengan order_id ${order_id} tidak ditemukan di database`);
+            return res.status(404).json({
+                success: false,
+                message: 'Voucher tidak ditemukan',
+                details: `Purchase dengan order_id ${order_id} tidak ditemukan. Kemungkinan sudah expired atau order_id tidak valid.`,
+                suggestions: [
+                    'Periksa kembali link pembayaran yang benar',
+                    'Pastikan pembayaran dilakukan dalam batas waktu yang ditentukan',
+                    'Hubungi admin jika mengalami kesulitan'
+                ]
+            });
+        }
+
+        // Cek status pembayaran menggunakan status yang sudah dinormalisasi
+        if (status === 'success' || status === 'settlement' || status === 'capture') {
+            console.log('Payment successful for purchase ID:', purchase.id);
+
+            // Generate voucher SETELAH payment success untuk menghindari voucher terbuang
+            let generatedVouchers = [];
+            try {
+                console.log('Generating vouchers after payment success...');
+                generatedVouchers = await generateHotspotVouchersWithRetry({
+                    profile: purchase.voucher_profile,
+                    count: purchase.voucher_quantity,
+                    packageId: purchase.voucher_package,
+                    customerName: purchase.customer_name,
+                    customerPhone: purchase.customer_phone
+                });
+                console.log('Successfully generated vouchers after payment:', generatedVouchers.length);
+            } catch (voucherError) {
+                console.error('Error generating vouchers after payment:', voucherError);
+                // Jika gagal generate voucher, update status menjadi failed
+                await new Promise((resolve, reject) => {
+                    db.run('UPDATE voucher_purchases SET status = ? WHERE id = ?', ['voucher_generation_failed', purchase.id], function(err) {
+                        if (err) reject(err);
+                        else resolve();
+                    });
+                });
+                
+                res.status(500).json({
+                    success: false,
+                    message: 'Gagal generate voucher setelah pembayaran',
+                    error: voucherError.message
+                });
+                db.close();
+                return;
+            }
+
+            if (generatedVouchers.length > 0) {
+                // Update status purchase
+                await new Promise((resolve, reject) => {
+                    const sql = `
+                        UPDATE voucher_purchases
+                        SET status = 'completed', completed_at = datetime('now'),
+                            payment_gateway = ?, payment_transaction_id = ?
+                        WHERE id = ?
+                    `;
+                    db.run(sql, [
+                        payment_type,
+                        order_id,
+                        purchase.id
+                    ], function(err) {
+                        if (err) reject(err);
+                    });
+                });
+
+               // Kirim voucher ke WhatsApp customer jika nomor tersedia
+               if (purchase.customer_phone) {
+                   try {
+                       const { sendMessage } = require('../config/sendMessage');
+                       const successUrl = `${req.protocol}://${req.get('host')}/voucher/success/${purchase.id}`;
+                       const voucherText = formatVoucherMessageWithSuccessPage(generatedVouchers, purchase, successUrl);
+                       
+                       // Kirim dengan retry mechanism
+                       const deliveryResult = await sendVoucherWithRetry(purchase.customer_phone, voucherText);
+                       
+                       if (deliveryResult) {
+                           console.log('Vouchers sent to WhatsApp successfully:', purchase.customer_phone);
+                           // Log delivery success
+                           await logVoucherDelivery(purchase.id, purchase.customer_phone, 'sent', null);
+                       } else {
+                           console.error('Failed to send vouchers to WhatsApp:', purchase.customer_phone);
+                           // Log delivery failure
+                           await logVoucherDelivery(purchase.id, purchase.customer_phone, 'failed', 'WhatsApp delivery failed');
+                       }
+                   } catch (whatsappError) {
+                       console.error('Error sending voucher via WhatsApp:', whatsappError);
+                       // Log delivery error
+                       await logVoucherDelivery(purchase.id, purchase.customer_phone, 'error', whatsappError.message);
+                       // Jangan fail proses karena WhatsApp error
+                   }
+               }
+
+                console.log('Voucher delivery completed for purchase ID:', purchase.id);
+                res.json({
+                    success: true,
+                    message: 'Voucher berhasil dikirim',
+                    voucherCount: generatedVouchers.length
+                });
+            } else {
+                console.error('No vouchers generated for purchase:', purchase.id);
+                // Update status menjadi voucher_generation_failed
+                await new Promise((resolve, reject) => {
+                    db.run('UPDATE voucher_purchases SET status = ? WHERE id = ?', ['voucher_generation_failed', purchase.id], function(err) {
+                        if (err) reject(err);
+                        else resolve();
+                    });
+                });
+                
+                res.status(500).json({
+                    success: false,
+                    message: 'Gagal generate voucher setelah pembayaran',
+                    error: 'Tidak ada voucher yang berhasil di-generate'
+                });
+                db.close();
+                return;
+            }
+        } else if (status === 'pending') {
+            // Payment pending - update status saja
+            await new Promise((resolve, reject) => {
+                const sql = `UPDATE voucher_purchases SET payment_gateway = ?, payment_transaction_id = ? WHERE id = ?`;
+                db.run(sql, [payment_type, order_id, purchase.id], function(err) {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+
+            res.json({
+                success: true,
+                message: 'Payment pending',
+                status: 'pending',
+                order_id: order_id
+            });
+        } else if (status === 'failed' || status === 'cancel' || status === 'expire' || status === 'failure') {
+            // Payment failed - update status dan cleanup jika ada voucher
+            await new Promise((resolve, reject) => {
+                const sql = `UPDATE voucher_purchases SET status = 'failed', payment_gateway = ?, payment_transaction_id = ? WHERE id = ?`;
+                db.run(sql, [payment_type, order_id, purchase.id], function(err) {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+
+            // Cleanup voucher jika ada yang sudah dibuat
+            if (purchase.voucher_data) {
+                try {
+                    await cleanupFailedVoucher(purchase.id);
+                    console.log('Cleaned up vouchers for failed payment:', purchase.id);
+                } catch (cleanupError) {
+                    console.error('Error cleaning up vouchers for failed payment:', cleanupError);
+                }
+            }
+
+            res.json({
+                success: false,
+                message: 'Payment failed',
+                status: status,
+                order_id: order_id
+            });
+        } else {
+            // Status tidak dikenali - log untuk debugging
+            console.log('Unknown payment status received:', status);
+            res.json({
+                success: true,
+                message: 'Payment status received',
+                status: status,
+                order_id: order_id
+            });
+        }
+
+        db.close();
+
+    } catch (error) {
+        console.error('Error processing voucher payment webhook:', error);
+        
+        // Log error details untuk debugging
+        console.error('Webhook error details:', {
+            error: error.message,
+            stack: error.stack,
+            body: req.body,
+            headers: req.headers
+        });
+
+        // Tentukan response berdasarkan jenis error
+        let errorMessage = 'Gagal memproses webhook voucher';
+        let statusCode = 500;
+
+        if (error.message.includes('Invalid signature')) {
+            errorMessage = 'Invalid webhook signature';
+            statusCode = 401;
+        } else if (error.message.includes('not found')) {
+            errorMessage = 'Voucher purchase tidak ditemukan';
+            statusCode = 404;
+        } else if (error.message.includes('database')) {
+            errorMessage = 'Database error saat memproses webhook';
+            statusCode = 500;
+        }
+
+        res.status(statusCode).json({
+            success: false,
+            message: errorMessage,
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// GET: API untuk monitoring voucher payments (untuk debugging)
+router.get('/api/payments', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const { status, limit = 50, offset = 0 } = req.query;
+        
+        let sql = `
+            SELECT id, invoice_id, customer_name, customer_phone, amount, 
+                   voucher_package, status, payment_gateway, payment_transaction_id,
+                   created_at, completed_at
+            FROM voucher_purchases 
+        `;
+        
+        const params = [];
+        if (status) {
+            sql += ' WHERE status = ?';
+            params.push(status);
+        }
+        
+        sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), parseInt(offset));
+
+        const payments = await new Promise((resolve, reject) => {
+            db.all(sql, params, (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Hitung total
+        let countSql = 'SELECT COUNT(*) as total FROM voucher_purchases';
+        const countParams = [];
+        if (status) {
+            countSql += ' WHERE status = ?';
+            countParams.push(status);
+        }
+
+        const totalResult = await new Promise((resolve, reject) => {
+            db.get(countSql, countParams, (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        db.close();
+
+        res.json({
+            success: true,
+            data: payments,
+            pagination: {
+                total: totalResult.total,
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                hasMore: (parseInt(offset) + parseInt(limit)) < totalResult.total
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching voucher payments:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal mengambil data pembayaran voucher',
+            error: error.message
+        });
+    }
+});
+
+// GET: API untuk monitoring delivery status
+router.get('/api/delivery-status', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const { purchase_id, status, limit = 50, offset = 0 } = req.query;
+        
+        let sql = `
+            SELECT vdl.*, vp.customer_name, vp.customer_phone, vp.voucher_package
+            FROM voucher_delivery_logs vdl
+            LEFT JOIN voucher_purchases vp ON vdl.purchase_id = vp.id
+        `;
+        
+        const params = [];
+        const conditions = [];
+        
+        if (purchase_id) {
+            conditions.push('vdl.purchase_id = ?');
+            params.push(purchase_id);
+        }
+        
+        if (status) {
+            conditions.push('vdl.status = ?');
+            params.push(status);
+        }
+        
+        if (conditions.length > 0) {
+            sql += ' WHERE ' + conditions.join(' AND ');
+        }
+        
+        sql += ' ORDER BY vdl.created_at DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), parseInt(offset));
+
+        const deliveries = await new Promise((resolve, reject) => {
+            db.all(sql, params, (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Hitung total
+        let countSql = 'SELECT COUNT(*) as total FROM voucher_delivery_logs vdl';
+        const countParams = [];
+        if (conditions.length > 0) {
+            countSql += ' WHERE ' + conditions.join(' AND ');
+            countParams.push(...params.slice(0, -2)); // Exclude limit and offset
+        }
+
+        const totalResult = await new Promise((resolve, reject) => {
+            db.get(countSql, countParams, (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        db.close();
+
+        res.json({
+            success: true,
+            data: deliveries,
+            pagination: {
+                total: totalResult.total,
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                hasMore: (parseInt(offset) + parseInt(limit)) < totalResult.total
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching delivery status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal mengambil data delivery status',
+            error: error.message
+        });
+    }
+});
+
+// POST: Retry delivery voucher
+router.post('/api/retry-delivery/:purchaseId', async (req, res) => {
+    try {
+        const { purchaseId } = req.params;
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        // Get purchase data
+        const purchase = await new Promise((resolve, reject) => {
+            db.get('SELECT * FROM voucher_purchases WHERE id = ?', [purchaseId], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        if (!purchase) {
+            db.close();
+            return res.status(404).json({
+                success: false,
+                message: 'Purchase tidak ditemukan'
+            });
+        }
+
+        if (purchase.status !== 'completed') {
+            db.close();
+            return res.status(400).json({
+                success: false,
+                message: 'Purchase belum completed, tidak bisa retry delivery'
+            });
+        }
+
+        // Get voucher data
+        let generatedVouchers = [];
+        if (purchase.voucher_data) {
+            try {
+                generatedVouchers = JSON.parse(purchase.voucher_data);
+            } catch (e) {
+                console.error('Error parsing voucher data:', e);
+            }
+        }
+
+        if (generatedVouchers.length === 0) {
+            db.close();
+            return res.status(400).json({
+                success: false,
+                message: 'Tidak ada voucher data untuk dikirim'
+            });
+        }
+
+        // Retry delivery
+        try {
+            const { sendMessage } = require('../config/sendMessage');
+            const voucherText = formatVoucherMessage(generatedVouchers, purchase);
+            
+            const deliveryResult = await sendVoucherWithRetry(purchase.customer_phone, voucherText);
+            
+            if (deliveryResult) {
+                await logVoucherDelivery(purchase.id, purchase.customer_phone, 'sent', null);
+                res.json({
+                    success: true,
+                    message: 'Voucher berhasil dikirim ulang'
+                });
+            } else {
+                await logVoucherDelivery(purchase.id, purchase.customer_phone, 'failed', 'Retry delivery failed');
+                res.status(500).json({
+                    success: false,
+                    message: 'Gagal mengirim ulang voucher'
+                });
+            }
+        } catch (error) {
+            await logVoucherDelivery(purchase.id, purchase.customer_phone, 'error', error.message);
+            res.status(500).json({
+                success: false,
+                message: 'Error retry delivery: ' + error.message
+            });
+        }
+
+        db.close();
+
+    } catch (error) {
+        console.error('Error retrying delivery:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal retry delivery',
+            error: error.message
+        });
+    }
+});
+
+// POST: Cleanup failed vouchers
+router.post('/api/cleanup-failed/:purchaseId', async (req, res) => {
+    try {
+        const { purchaseId } = req.params;
+        
+        await cleanupFailedVoucher(purchaseId);
+        
+        res.json({
+            success: true,
+            message: 'Cleanup voucher berhasil dilakukan'
+        });
+
+    } catch (error) {
+        console.error('Error cleaning up failed voucher:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal cleanup voucher',
+            error: error.message
+        });
+    }
+});
+
+// POST: Regenerate voucher untuk purchase yang gagal
+router.post('/api/regenerate-voucher/:purchaseId', async (req, res) => {
+    try {
+        const { purchaseId } = req.params;
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        // Get purchase data
+        const purchase = await new Promise((resolve, reject) => {
+            db.get('SELECT * FROM voucher_purchases WHERE id = ?', [purchaseId], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        if (!purchase) {
+            db.close();
+            return res.status(404).json({
+                success: false,
+                message: 'Purchase tidak ditemukan'
+            });
+        }
+
+        if (purchase.status !== 'voucher_generation_failed') {
+            db.close();
+            return res.status(400).json({
+                success: false,
+                message: 'Purchase tidak dalam status voucher_generation_failed'
+            });
+        }
+
+        // Regenerate voucher
+        try {
+            const generatedVouchers = await generateHotspotVouchersWithRetry({
+                profile: purchase.voucher_profile,
+                count: purchase.voucher_quantity,
+                packageId: purchase.voucher_package,
+                customerName: purchase.customer_name,
+                customerPhone: purchase.customer_phone
+            });
+
+            // Update voucher_data dan status
+            await new Promise((resolve, reject) => {
+                const sql = `
+                    UPDATE voucher_purchases 
+                    SET voucher_data = ?, status = 'completed', completed_at = datetime('now')
+                    WHERE id = ?
+                `;
+                db.run(sql, [JSON.stringify(generatedVouchers), purchase.id], function(err) {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+
+            // Kirim ke WhatsApp
+            if (purchase.customer_phone) {
+                try {
+                    const { sendMessage } = require('../config/sendMessage');
+                    const voucherText = formatVoucherMessage(generatedVouchers, purchase);
+                    
+                    const deliveryResult = await sendVoucherWithRetry(purchase.customer_phone, voucherText);
+                    await logVoucherDelivery(purchase.id, purchase.customer_phone, deliveryResult ? 'sent' : 'failed', null);
+                } catch (whatsappError) {
+                    console.error('Error sending regenerated voucher:', whatsappError);
+                    await logVoucherDelivery(purchase.id, purchase.customer_phone, 'error', whatsappError.message);
+                }
+            }
+
+            db.close();
+
+            res.json({
+                success: true,
+                message: 'Voucher berhasil di-regenerate dan dikirim',
+                voucherCount: generatedVouchers.length
+            });
+
+        } catch (error) {
+            console.error('Error regenerating voucher:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Gagal regenerate voucher',
+                error: error.message
+            });
+        }
+
+    } catch (error) {
+        console.error('Error in regenerate voucher:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal regenerate voucher',
+            error: error.message
+        });
+    }
+});
+
+// GET: Dashboard monitoring voucher
+router.get('/api/dashboard', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        // Get statistics
+        const stats = await new Promise((resolve, reject) => {
+            const sql = `
+                SELECT 
+                    COUNT(*) as total_purchases,
+                    SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+                    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                    SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+                    SUM(CASE WHEN status = 'voucher_generation_failed' THEN 1 ELSE 0 END) as voucher_failed,
+                    SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END) as total_revenue
+                FROM voucher_purchases
+            `;
+            db.get(sql, [], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        // Get recent purchases
+        const recentPurchases = await new Promise((resolve, reject) => {
+            const sql = `
+                SELECT id, customer_name, customer_phone, amount, voucher_package, 
+                       status, created_at, completed_at
+                FROM voucher_purchases 
+                ORDER BY created_at DESC 
+                LIMIT 10
+            `;
+            db.all(sql, [], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Get delivery statistics
+        const deliveryStats = await new Promise((resolve, reject) => {
+            const sql = `
+                SELECT 
+                    status,
+                    COUNT(*) as count
+                FROM voucher_delivery_logs 
+                WHERE created_at >= datetime('now', '-7 days')
+                GROUP BY status
+            `;
+            db.all(sql, [], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        db.close();
+
+        res.json({
+            success: true,
+            data: {
+                statistics: stats,
+                recentPurchases: recentPurchases,
+                deliveryStats: deliveryStats
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal mengambil data dashboard',
+            error: error.message
+        });
+    }
+});
+
+// POST: Manual cleanup expired vouchers
+router.post('/api/cleanup-expired', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        // Get failed purchases older than 24 hours
+        const expiredPurchases = await new Promise((resolve, reject) => {
+            const sql = `
+                SELECT id, voucher_data 
+                FROM voucher_purchases 
+                WHERE status IN ('failed', 'voucher_generation_failed') 
+                AND created_at < datetime('now', '-24 hours')
+            `;
+            db.all(sql, [], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        let cleanedCount = 0;
+        const { deleteHotspotUser } = require('../config/mikrotik');
+
+        for (const purchase of expiredPurchases) {
+            if (purchase.voucher_data) {
+                try {
+                    const vouchers = JSON.parse(purchase.voucher_data);
+                    for (const voucher of vouchers) {
+                        try {
+                            await deleteHotspotUser(voucher.username);
+                            cleanedCount++;
+                        } catch (error) {
+                            console.error(`Failed to cleanup voucher ${voucher.username}:`, error.message);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error parsing voucher data for purchase ${purchase.id}:`, error);
+                }
+            }
+        }
+
+        db.close();
+
+        res.json({
+            success: true,
+            message: `Cleanup completed. ${cleanedCount} vouchers cleaned up.`,
+            cleanedCount: cleanedCount
+        });
+
+    } catch (error) {
+        console.error('Error cleaning up expired vouchers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal cleanup expired vouchers',
+            error: error.message
+        });
+    }
+});
+
+// GET: API untuk monitoring voucher yang gagal generate
+router.get('/api/failed-vouchers', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const { limit = 50, offset = 0 } = req.query;
+        
+        const sql = `
+            SELECT id, customer_name, customer_phone, amount, voucher_package, 
+                   status, created_at, completed_at, payment_gateway
+            FROM voucher_purchases 
+            WHERE status = 'voucher_generation_failed'
+            ORDER BY created_at DESC 
+            LIMIT ? OFFSET ?
+        `;
+
+        const failedVouchers = await new Promise((resolve, reject) => {
+            db.all(sql, [parseInt(limit), parseInt(offset)], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Hitung total
+        const totalResult = await new Promise((resolve, reject) => {
+            db.get('SELECT COUNT(*) as total FROM voucher_purchases WHERE status = ?', ['voucher_generation_failed'], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        db.close();
+
+        res.json({
+            success: true,
+            data: failedVouchers,
+            pagination: {
+                total: totalResult.total,
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                hasMore: (parseInt(offset) + parseInt(limit)) < totalResult.total
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching failed vouchers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal mengambil data voucher yang gagal',
+            error: error.message
+        });
+    }
+});
+
+// POST: Bulk regenerate voucher untuk multiple purchases
+router.post('/api/bulk-regenerate', async (req, res) => {
+    try {
+        const { purchaseIds } = req.body;
+        
+        if (!purchaseIds || !Array.isArray(purchaseIds) || purchaseIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Purchase IDs tidak valid'
+            });
+        }
+
+        const results = [];
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const purchaseId of purchaseIds) {
+            try {
+                const sqlite3 = require('sqlite3').verbose();
+                const db = new sqlite3.Database('./data/billing.db');
+
+                // Get purchase data
+                const purchase = await new Promise((resolve, reject) => {
+                    db.get('SELECT * FROM voucher_purchases WHERE id = ?', [purchaseId], (err, row) => {
+                        if (err) reject(err);
+                        else resolve(row);
+                    });
+                });
+
+                if (!purchase) {
+                    results.push({ purchaseId, success: false, error: 'Purchase tidak ditemukan' });
+                    errorCount++;
+                    db.close();
+                    continue;
+                }
+
+                if (purchase.status !== 'voucher_generation_failed') {
+                    results.push({ purchaseId, success: false, error: 'Status bukan voucher_generation_failed' });
+                    errorCount++;
+                    db.close();
+                    continue;
+                }
+
+                // Regenerate voucher
+                const generatedVouchers = await generateHotspotVouchersWithRetry({
+                    profile: purchase.voucher_profile,
+                    count: purchase.voucher_quantity,
+                    packageId: purchase.voucher_package,
+                    customerName: purchase.customer_name,
+                    customerPhone: purchase.customer_phone
+                });
+
+                // Update voucher_data dan status
+                await new Promise((resolve, reject) => {
+                    const sql = `
+                        UPDATE voucher_purchases 
+                        SET voucher_data = ?, status = 'completed', completed_at = datetime('now')
+                        WHERE id = ?
+                    `;
+                    db.run(sql, [JSON.stringify(generatedVouchers), purchase.id], function(err) {
+                        if (err) reject(err);
+                        else resolve();
+                    });
+                });
+
+                // Kirim ke WhatsApp
+                if (purchase.customer_phone) {
+                    try {
+                        const { sendMessage } = require('../config/sendMessage');
+                        const voucherText = formatVoucherMessage(generatedVouchers, purchase);
+                        
+                        const deliveryResult = await sendVoucherWithRetry(purchase.customer_phone, voucherText);
+                        await logVoucherDelivery(purchase.id, purchase.customer_phone, deliveryResult ? 'sent' : 'failed', null);
+                    } catch (whatsappError) {
+                        console.error('Error sending regenerated voucher:', whatsappError);
+                        await logVoucherDelivery(purchase.id, purchase.customer_phone, 'error', whatsappError.message);
+                    }
+                }
+
+                results.push({ 
+                    purchaseId, 
+                    success: true, 
+                    voucherCount: generatedVouchers.length 
+                });
+                successCount++;
+                db.close();
+
+            } catch (error) {
+                console.error(`Error regenerating voucher for purchase ${purchaseId}:`, error);
+                results.push({ 
+                    purchaseId, 
+                    success: false, 
+                    error: error.message 
+                });
+                errorCount++;
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Bulk regenerate completed. ${successCount} berhasil, ${errorCount} gagal`,
+            results: results,
+            summary: {
+                total: purchaseIds.length,
+                success: successCount,
+                error: errorCount
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in bulk regenerate:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal bulk regenerate voucher',
+            error: error.message
+        });
+    }
+});
+
+// GET: API untuk monitoring voucher yang gagal generate
+router.get('/api/failed-vouchers', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const { limit = 50, offset = 0 } = req.query;
+        
+        const sql = `
+            SELECT id, customer_name, customer_phone, amount, voucher_package, 
+                   status, created_at, completed_at, payment_gateway
+            FROM voucher_purchases 
+            WHERE status = 'voucher_generation_failed'
+            ORDER BY created_at DESC 
+            LIMIT ? OFFSET ?
+        `;
+
+        const failedVouchers = await new Promise((resolve, reject) => {
+            db.all(sql, [parseInt(limit), parseInt(offset)], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Hitung total
+        const totalResult = await new Promise((resolve, reject) => {
+            db.get('SELECT COUNT(*) as total FROM voucher_purchases WHERE status = ?', ['voucher_generation_failed'], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        db.close();
+
+        res.json({
+            success: true,
+            data: failedVouchers,
+            pagination: {
+                total: totalResult.total,
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                hasMore: (parseInt(offset) + parseInt(limit)) < totalResult.total
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching failed vouchers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal mengambil data voucher yang gagal',
+            error: error.message
+        });
+    }
+});
+
+// GET: API untuk monitoring voucher yang gagal generate
+router.get('/api/failed-vouchers', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const { limit = 50, offset = 0 } = req.query;
+        
+        const sql = `
+            SELECT id, customer_name, customer_phone, amount, voucher_package, 
+                   status, created_at, completed_at, payment_gateway
+            FROM voucher_purchases 
+            WHERE status = 'voucher_generation_failed'
+            ORDER BY created_at DESC 
+            LIMIT ? OFFSET ?
+        `;
+
+        const failedVouchers = await new Promise((resolve, reject) => {
+            db.all(sql, [parseInt(limit), parseInt(offset)], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Hitung total
+        const totalResult = await new Promise((resolve, reject) => {
+            db.get('SELECT COUNT(*) as total FROM voucher_purchases WHERE status = ?', ['voucher_generation_failed'], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        db.close();
+
+        res.json({
+            success: true,
+            data: failedVouchers,
+            pagination: {
+                total: totalResult.total,
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                hasMore: (parseInt(offset) + parseInt(limit)) < totalResult.total
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching failed vouchers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal mengambil data voucher yang gagal',
+            error: error.message
+        });
+    }
+});
+
+// GET: API untuk monitoring voucher yang gagal generate
+router.get('/api/failed-vouchers', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const { limit = 50, offset = 0 } = req.query;
+        
+        const sql = `
+            SELECT id, customer_name, customer_phone, amount, voucher_package, 
+                   status, created_at, completed_at, payment_gateway
+            FROM voucher_purchases 
+            WHERE status = 'voucher_generation_failed'
+            ORDER BY created_at DESC 
+            LIMIT ? OFFSET ?
+        `;
+
+        const failedVouchers = await new Promise((resolve, reject) => {
+            db.all(sql, [parseInt(limit), parseInt(offset)], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Hitung total
+        const totalResult = await new Promise((resolve, reject) => {
+            db.get('SELECT COUNT(*) as total FROM voucher_purchases WHERE status = ?', ['voucher_generation_failed'], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        db.close();
+
+        res.json({
+            success: true,
+            data: failedVouchers,
+            pagination: {
+                total: totalResult.total,
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                hasMore: (parseInt(offset) + parseInt(limit)) < totalResult.total
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching failed vouchers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal mengambil data voucher yang gagal',
+            error: error.message
+        });
+    }
+});
+
+// GET: API untuk monitoring voucher yang gagal generate
+router.get('/api/failed-vouchers', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const { limit = 50, offset = 0 } = req.query;
+        
+        const sql = `
+            SELECT id, customer_name, customer_phone, amount, voucher_package, 
+                   status, created_at, completed_at, payment_gateway
+            FROM voucher_purchases 
+            WHERE status = 'voucher_generation_failed'
+            ORDER BY created_at DESC 
+            LIMIT ? OFFSET ?
+        `;
+
+        const failedVouchers = await new Promise((resolve, reject) => {
+            db.all(sql, [parseInt(limit), parseInt(offset)], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Hitung total
+        const totalResult = await new Promise((resolve, reject) => {
+            db.get('SELECT COUNT(*) as total FROM voucher_purchases WHERE status = ?', ['voucher_generation_failed'], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        db.close();
+
+        res.json({
+            success: true,
+            data: failedVouchers,
+            pagination: {
+                total: totalResult.total,
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                hasMore: (parseInt(offset) + parseInt(limit)) < totalResult.total
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching failed vouchers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal mengambil data voucher yang gagal',
+            error: error.message
+        });
+    }
+});
+
+// GET: API untuk monitoring voucher yang gagal generate
+router.get('/api/failed-vouchers', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const { limit = 50, offset = 0 } = req.query;
+        
+        const sql = `
+            SELECT id, customer_name, customer_phone, amount, voucher_package, 
+                   status, created_at, completed_at, payment_gateway
+            FROM voucher_purchases 
+            WHERE status = 'voucher_generation_failed'
+            ORDER BY created_at DESC 
+            LIMIT ? OFFSET ?
+        `;
+
+        const failedVouchers = await new Promise((resolve, reject) => {
+            db.all(sql, [parseInt(limit), parseInt(offset)], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Hitung total
+        const totalResult = await new Promise((resolve, reject) => {
+            db.get('SELECT COUNT(*) as total FROM voucher_purchases WHERE status = ?', ['voucher_generation_failed'], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        db.close();
+
+        res.json({
+            success: true,
+            data: failedVouchers,
+            pagination: {
+                total: totalResult.total,
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                hasMore: (parseInt(offset) + parseInt(limit)) < totalResult.total
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching failed vouchers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal mengambil data voucher yang gagal',
+            error: error.message
+        });
+    }
+});
+
+// GET: API untuk monitoring voucher yang gagal generate
+router.get('/api/failed-vouchers', async (req, res) => {
+    try {
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        const { limit = 50, offset = 0 } = req.query;
+        
+        const sql = `
+            SELECT id, customer_name, customer_phone, amount, voucher_package, 
+                   status, created_at, completed_at, payment_gateway
+            FROM voucher_purchases 
+            WHERE status = 'voucher_generation_failed'
+            ORDER BY created_at DESC 
+            LIMIT ? OFFSET ?
+        `;
+
+        const failedVouchers = await new Promise((resolve, reject) => {
+            db.all(sql, [parseInt(limit), parseInt(offset)], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Hitung total
+        const totalResult = await new Promise((resolve, reject) => {
+            db.get('SELECT COUNT(*) as total FROM voucher_purchases WHERE status = ?', ['voucher_generation_failed'], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        db.close();
+
+        res.json({
+            success: true,
+            data: failedVouchers,
+            pagination: {
+                total: totalResult.total,
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                hasMore: (parseInt(offset) + parseInt(limit)) < totalResult.total
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching failed vouchers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Gagal mengambil data voucher yang gagal',
+            error: error.message
+        });
+    }
+});
+
+// GET: Halaman success voucher
+router.get('/success', async (req, res) => {
+    try {
+        const { order_id } = req.query;
+
+        if (!order_id) {
+            return res.redirect('/voucher?error=Order ID tidak ditemukan');
+        }
+
+        // Cari voucher purchase berdasarkan order_id
+        const sqlite3 = require('sqlite3').verbose();
+        const db = new sqlite3.Database('./data/billing.db');
+
+        let purchase;
+        if (order_id.includes('INV-')) {
+            // Cari berdasarkan invoice_id
+            const invoiceId = order_id.replace('INV-', '');
+            purchase = await new Promise((resolve, reject) => {
+                db.get('SELECT * FROM voucher_purchases WHERE invoice_id = ?', [invoiceId], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                });
+            });
+        } else if (order_id.includes('TEST-')) {
+            // Cari berdasarkan ID untuk test purchases
+            const purchaseId = order_id.replace('TEST-', '');
+            purchase = await new Promise((resolve, reject) => {
+                db.get('SELECT * FROM voucher_purchases WHERE id = ?', [purchaseId], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                });
+            });
+        } else {
+            // Cari berdasarkan payment_transaction_id
+            purchase = await new Promise((resolve, reject) => {
+                db.get('SELECT * FROM voucher_purchases WHERE payment_transaction_id = ?', [order_id], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                });
+            });
+        }
+
+        if (!purchase) {
+            db.close();
+            console.log(`Purchase dengan order_id ${order_id} tidak ditemukan untuk halaman success - REDIRECTING TO ERROR PAGE`);
+            return res.redirect('/voucher/error?from_payment=true');
+        }
+
+        console.log(`Purchase ditemukan: ID ${purchase.id}, Status: ${purchase.status}`);
+
+        // Parse voucher data jika ada
+        let vouchers = [];
+        if (purchase.voucher_data) {
+            try {
+                vouchers = JSON.parse(purchase.voucher_data);
+            } catch (e) {
+                console.error('Error parsing voucher data:', e);
+            }
+        }
+
+        const settings = getSettingsWithCache();
+        const company_header = settings.company_header || 'Voucher Hotspot';
+        const adminContact = settings['admins.0'] || '-';
+        
+        // Data untuk ditampilkan
+        const voucherData = {
+            purchaseId: purchase.id,
+            packageName: purchase.description || 'Voucher Hotspot',
+            duration: getDurationFromPackage(purchase.voucher_package),
+            price: purchase.amount,
+            vouchers: vouchers,
+            customerPhone: purchase.customer_phone,
+            customerName: purchase.customer_name,
+            wifiName: settings.wifi_name || 'Hotspot',
+            hotspotUrl: settings.hotspot_url || 'http://192.168.1.1',
+            status: purchase.status
+        };
+
+        res.render('voucherSuccess', {
+            voucherData: voucherData,
+            company_header: company_header,
+            adminContact: adminContact
+        });
+
+        db.close();
+
+    } catch (error) {
+        console.error('Error rendering voucher success page:', error);
+        res.redirect('/voucher/error');
+    }
+});
+
+// GET: Halaman finish/payment result dari payment gateway
+router.get('/finish', async (req, res) => {
+    try {
+        const { order_id, status_code, transaction_status, payment_type, gross_amount } = req.query;
+
+        const settings = getSettingsWithCache();
+
+        res.render('voucherFinish', {
+            title: 'Pembayaran Voucher',
+            order_id,
+            status_code,
+            transaction_status,
+            payment_type,
+            gross_amount,
+            settings
+        });
+
+    } catch (error) {
+        console.error('Error rendering voucher finish page:', error);
+        res.redirect('/voucher?error=Gagal memuat halaman hasil pembayaran');
+    }
+});
+
+// Export functions for testing
+module.exports = {
+    router,
+    generateHotspotVouchersWithRetry,
+    generateHotspotVouchers,
+    sendVoucherWithRetry,
+    logVoucherDelivery,
+    saveVoucherPurchase,
+    cleanupFailedVoucher
+};

@@ -1,0 +1,245 @@
+/* Mobile Sidebar - Enhanced Scrolling & Responsiveness */
+
+/* Global Mobile Sidebar Styles */
+@media (max-width: 991.98px) {
+    /* Sidebar Container */
+    .sidebar,
+    #sidebar,
+    #adminSidebar,
+    #technicianSidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: -280px !important;
+        width: 280px !important;
+        height: 100vh !important;
+        z-index: 1050 !important;
+        transition: transform 0.3s ease !important;
+        box-shadow: 2px 0 15px rgba(0,0,0,0.3) !important;
+        overflow: hidden !important;
+        transform: translateX(-100%) !important;
+    }
+    
+    /* Show sidebar */
+    .sidebar.show,
+    #sidebar.show,
+    #adminSidebar.show,
+    #technicianSidebar.show {
+        transform: translateX(0) !important;
+        left: 0 !important;
+    }
+    
+    /* Enable scrolling for sidebar content */
+    .sidebar,
+    #sidebar,
+    #adminSidebar,
+    #technicianSidebar {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: thin !important;
+        scrollbar-color: rgba(255,255,255,0.4) transparent !important;
+    }
+    
+    /* Custom scrollbar for webkit browsers */
+    .sidebar::-webkit-scrollbar,
+    #sidebar::-webkit-scrollbar,
+    #adminSidebar::-webkit-scrollbar,
+    #technicianSidebar::-webkit-scrollbar {
+        width: 8px !important;
+    }
+    
+    .sidebar::-webkit-scrollbar-track,
+    #sidebar::-webkit-scrollbar-track,
+    #adminSidebar::-webkit-scrollbar-track,
+    #technicianSidebar::-webkit-scrollbar-track {
+        background: transparent !important;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb,
+    #sidebar::-webkit-scrollbar-thumb,
+    #adminSidebar::-webkit-scrollbar-thumb,
+    #technicianSidebar::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.4) !important;
+        border-radius: 4px !important;
+        border: 2px solid transparent !important;
+        background-clip: content-box !important;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb:hover,
+    #sidebar::-webkit-scrollbar-thumb:hover,
+    #adminSidebar::-webkit-scrollbar-thumb:hover,
+    #technicianSidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255,255,255,0.6) !important;
+        background-clip: content-box !important;
+    }
+    
+    /* Ensure sidebar content is properly structured */
+    .sidebar > *,
+    #sidebar > *,
+    #adminSidebar > *,
+    #technicianSidebar > * {
+        flex-shrink: 0 !important;
+    }
+    
+    /* Version info panel positioning */
+    .sidebar .version-info-panel,
+    #sidebar .version-info-panel,
+    #adminSidebar .version-info-panel,
+    #technicianSidebar .version-info-panel {
+        margin-top: auto !important;
+        flex-shrink: 0 !important;
+        position: sticky !important;
+        bottom: 0 !important;
+        background: inherit !important;
+        z-index: 10 !important;
+    }
+    
+    /* Position sticky for sidebar headers */
+    .sidebar .sidebar-header,
+    #sidebar .sidebar-header,
+    #adminSidebar .sidebar-header,
+    #technicianSidebar .sidebar-header,
+    #sidebar .position-sticky {
+        position: sticky !important;
+        top: 0 !important;
+        background: inherit !important;
+        z-index: 10 !important;
+        padding: 15px 0 !important;
+        margin-top: 0 !important;
+    }
+    
+    /* Main content adjustments */
+    .main-content {
+        margin-left: 0 !important;
+        margin-top: 60px !important; /* Space for mobile navbar */
+        padding: 15px !important;
+        width: 100% !important;
+    }
+    
+    /* Mobile navbar positioning */
+    .mobile-navbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 1001 !important;
+        background: inherit !important;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 575.98px) {
+    .sidebar,
+    #sidebar,
+    #adminSidebar,
+    #technicianSidebar {
+        width: 260px !important;
+        left: -260px !important;
+    }
+    
+    .main-content {
+        padding: 10px !important;
+    }
+    
+    /* Adjust font sizes for very small screens */
+    .sidebar a,
+    #sidebar a,
+    #adminSidebar a,
+    #technicianSidebar a {
+        font-size: 0.9rem !important;
+        padding: 10px 15px !important;
+    }
+    
+    .sidebar .sidebar-header h6,
+    #sidebar .sidebar-header h6,
+    #adminSidebar .sidebar-header h6,
+    #technicianSidebar .sidebar-header h6 {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* Medium devices */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .sidebar,
+    #sidebar,
+    #adminSidebar,
+    #technicianSidebar {
+        width: 280px !important;
+        left: -280px !important;
+    }
+}
+
+/* Large devices and up */
+@media (min-width: 992px) {
+    .sidebar,
+    #sidebar,
+    #adminSidebar,
+    #technicianSidebar {
+        position: relative !important;
+        left: 0 !important;
+        transform: none !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+    
+    .main-content {
+        margin-left: inherit !important;
+        margin-top: 0 !important;
+    }
+}
+
+/* Sidebar overlay */
+.sidebar-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    z-index: 1049 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+.sidebar-overlay.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Touch improvements for mobile */
+@media (hover: none) and (pointer: coarse) {
+    .sidebar a:hover,
+    #sidebar a:hover,
+    #adminSidebar a:hover,
+    #technicianSidebar a:hover {
+        transform: none !important;
+    }
+    
+    /* Increase touch targets */
+    .sidebar a,
+    #sidebar a,
+    #adminSidebar a,
+    #technicianSidebar a {
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+}
+
+/* Prevent body scroll when sidebar is open */
+body.sidebar-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+}
+
+/* Animation improvements */
+.sidebar,
+#sidebar,
+#adminSidebar,
+#technicianSidebar {
+    will-change: transform !important;
+    backface-visibility: hidden !important;
+    transform-style: preserve-3d !important;
+}
