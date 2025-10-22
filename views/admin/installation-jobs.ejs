@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Manajemen Jadwal Instalasi - Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        .installation-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 24px;
+        }
+        
+        .installation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .installation-item {
+            border-left: 4px solid #dee2e6;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #fff;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .installation-item:hover {
+            border-left-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+        
+        .installation-item.scheduled { border-left-color: #ffc107; }
+        .installation-item.assigned { border-left-color: #17a2b8; }
+        .installation-item.in_progress { border-left-color: #007bff; }
+        .installation-item.completed { border-left-color: #28a745; }
+        .installation-item.cancelled { border-left-color: #dc3545; }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .quick-actions {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .quick-action-btn {
+            margin: 0.5rem;
+            min-width: 150px;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Include Admin Responsive Sidebar -->
+        <%- include('../partials/admin-responsive-sidebar', { page: 'installations', settings: settings, versionInfo: versionInfo, versionBadge: versionBadge }) %>
+        
+        <main class="col-md-10 ms-sm-auto main-content">
+            <!-- Header -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-tools me-2"></i>Manajemen Jadwal Instalasi
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="/admin/installations/create" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Tambah Job Baru
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary" onclick="refreshPage()">
+                            <i class="bi bi-arrow-clockwise"></i> Segarkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+                <!-- Bulk Actions Toolbar -->
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div>
+                            <input type="checkbox" id="selectAllJobs" class="form-check-input me-2">
+                            <label for="selectAllJobs" class="form-check-label">Pilih semua</label>
+                        </div>
+                    </div>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Bulk actions">
+                        <button class="btn btn-outline-danger" id="bulkDeleteJobs" disabled>Hapus Terpilih</button>
+                    </div>
+                </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h5 class="mb-3">
+                    <i class="bi bi-lightning me-2"></i>Aksi Cepat
+                </h5>
+                <div class="d-flex flex-wrap">
+                    <a href="/admin/installations/create" class="btn btn-primary quick-action-btn">
+                        <i class="bi bi-plus-circle me-2"></i>Instalasi Baru
+                    </a>
+                    <a href="/admin/installations?status=scheduled" class="btn btn-warning quick-action-btn">
+                        <i class="bi bi-calendar me-2"></i>Lihat Terjadwal
+                    </a>
+                    <a href="/admin/installations?status=in_progress" class="btn btn-info quick-action-btn">
+                        <i class="bi bi-play-circle me-2"></i>Sedang Proses
+                    </a>
+                    <a href="/admin/installations?status=completed" class="btn btn-success quick-action-btn">
+                        <i class="bi bi-check-circle me-2"></i>Selesai
+                    </a>
+                    <a href="/admin/installations?status=cancelled" class="btn btn-danger quick-action-btn">
+                        <i class="bi bi-x-circle me-2"></i>Dibatalkan
+                    </a>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center">
+                        <div class="stats-number"><%= typeof stats !== 'undefined' && stats.total ? stats.total : 0 %></div>
+                        <div class="stats-label">Total Job</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
+                        <div class="stats-number"><%= typeof stats !== 'undefined' && stats.scheduled ? stats.scheduled : 0 %></div>
+                        <div class="stats-label">Terjadwal</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+                        <div class="stats-number"><%= typeof stats !== 'undefined' && stats.assigned ? stats.assigned : 0 %></div>
+                        <div class="stats-label">Ditugaskan</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
+                        <div class="stats-number"><%= typeof stats !== 'undefined' && stats.in_progress ? stats.in_progress : 0 %></div>
+                        <div class="stats-label">Sedang Proses</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">
+                        <div class="stats-number"><%= typeof stats !== 'undefined' && stats.completed ? stats.completed : 0 %></div>
+                        <div class="stats-label">Selesai</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="stats-card text-center" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                        <div class="stats-number"><%= typeof stats !== 'undefined' && stats.cancelled ? stats.cancelled : 0 %></div>
+                        <div class="stats-label">Dibatalkan</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="card installation-card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Cari Job</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="<%= typeof search !== 'undefined' ? search : '' %>" 
+                                   placeholder="Nomor job, nama pelanggan, atau nomor HP">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Semua Status</option>
+                                <option value="scheduled" <%= (typeof status !== 'undefined' && status === 'scheduled') ? 'selected' : '' %>>Terjadwal</option>
+                                <option value="assigned" <%= (typeof status !== 'undefined' && status === 'assigned') ? 'selected' : '' %>>Ditugaskan</option>
+                                <option value="in_progress" <%= (typeof status !== 'undefined' && status === 'in_progress') ? 'selected' : '' %>>Sedang Proses</option>
+                                <option value="completed" <%= (typeof status !== 'undefined' && status === 'completed') ? 'selected' : '' %>>Selesai</option>
+                                <option value="cancelled" <%= (typeof status !== 'undefined' && status === 'cancelled') ? 'selected' : '' %>>Dibatalkan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="technician" class="form-label">Teknisi</label>
+                            <select class="form-select" id="technician" name="technician">
+                                <option value="">Semua Teknisi</option>
+                                <% if (typeof technicians !== 'undefined' && technicians.length > 0) { %>
+                                    <% technicians.forEach(tech => { %>
+                                        <option value="<%= tech.id %>" <%= (typeof selectedTechnician !== 'undefined' && selectedTechnician == tech.id) ? 'selected' : '' %>>
+                                            <%= tech.name %> (<%= tech.phone %>)
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search me-2"></i>Cari
+                            </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Installation Jobs List -->
+            <div class="card installation-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-task me-2"></i>Daftar Job Instalasi
+                        <span class="badge bg-primary ms-2"><%= typeof installationJobs !== 'undefined' && installationJobs ? installationJobs.length : 0 %> job</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <% if (typeof installationJobs !== 'undefined' && installationJobs && installationJobs.length > 0) { %>
+                        <% installationJobs.forEach(job => { %>
+                            <div class="installation-item <%= job.status %>" data-job-id="<%= job.id %>">
+                                <div class="row align-items-center">
+                                    <div class="col-md-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input job-checkbox" type="checkbox" value="<%= job.id %>" 
+                                                   onchange="onJobSelectionChange()" 
+                                                   <%= job.status === 'completed' ? 'disabled' : '' %>>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                         <h6 class="mb-1">
+                                             <i class="bi bi-tools me-2"></i><span class="job-number"><%= job.job_number || 'N/A' %></span>
+                                         </h6>
+                                         <small class="text-muted">
+                                             <i class="bi bi-calendar me-1"></i>
+                                             <span class="installation-date"><%= job.installation_date ? new Date(job.installation_date).toLocaleDateString('id-ID') : 'TBD' %></span>
+                                         </small>
+                                         <% if (job.installation_time) { %>
+                                             <br><small class="text-muted">
+                                                 <i class="bi bi-clock me-1"></i><span class="installation-time"><%= job.installation_time %></span>
+                                             </small>
+                                         <% } %>
+                                     </div>
+                                     <div class="col-md-3">
+                                         <h6 class="mb-1 customer-name"><%= job.customer_name || 'N/A' %></h6>
+                                         <small class="text-muted">
+                                             <i class="bi bi-telephone me-1"></i><span class="customer-phone"><%= job.customer_phone || 'N/A' %></span>
+                                         </small>
+                                         <% if (job.customer_address) { %>
+                                             <br><small class="text-muted">
+                                                 <i class="bi bi-geo-alt me-1"></i><span class="customer-address"><%= job.customer_address %></span>
+                                             </small>
+                                         <% } %>
+                                     </div>
+                                     <div class="col-md-2">
+                                         <h6 class="mb-1 package-name"><%= job.package_name || 'N/A' %></h6>
+                                         <small class="text-muted">
+                                             <i class="bi bi-currency-dollar me-1"></i>
+                                             Paket Internet
+                                         </small>
+                                     </div>
+                                    <div class="col-md-2">
+                                        <h6 class="mb-1">
+                                            <i class="bi bi-person me-1"></i><%= job.technician_name || 'Unassigned' %>
+                                        </h6>
+                                        <small class="text-muted">
+                                            <i class="bi bi-tag me-1"></i>Teknisi
+                                        </small>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <span class="badge status-badge 
+                                            <%= job.status === 'scheduled' ? 'bg-warning' : '' %>
+                                            <%= job.status === 'assigned' ? 'bg-info' : '' %>
+                                            <%= job.status === 'in_progress' ? 'bg-primary' : '' %>
+                                            <%= job.status === 'completed' ? 'bg-success' : '' %>
+                                            <%= job.status === 'cancelled' ? 'bg-danger' : '' %>">
+                                            <%= job.status === 'scheduled' ? 'Terjadwal' : '' %>
+                                            <%= job.status === 'assigned' ? 'Ditugaskan' : '' %>
+                                            <%= job.status === 'in_progress' ? 'Sedang Proses' : '' %>
+                                            <%= job.status === 'completed' ? 'Selesai' : '' %>
+                                            <%= job.status === 'cancelled' ? 'Dibatalkan' : '' %>
+                                        </span>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                                                                 <li><a class="dropdown-item" href="/admin/installations/edit/<%= job.id %>">
+                                                     <i class="bi bi-pencil me-2"></i>Edit
+                                                 </a></li>
+                                                 <li><a class="dropdown-item" href="/admin/installations/view/<%= job.id %>">
+                                                     <i class="bi bi-eye me-2"></i>Lihat Detail
+                                                 </a></li>
+                                                 <% if (job.status === 'scheduled') { %>
+                                                     <li><a class="dropdown-item" href="#" onclick="assignTechnician('<%= job.id %>')">
+                                                         <i class="bi bi-person-plus me-2"></i>Tugaskan Teknisi
+                                                     </a></li>
+                                                 <% } %>
+                                                 <% if (job.status === 'assigned') { %>
+                                                     <li><a class="dropdown-item" href="#" onclick="startInstallation('<%= job.id %>')">
+                                                         <i class="bi bi-play-circle me-2"></i>Mulai Instalasi
+                                                     </a></li>
+                                                 <% } %>
+                                                 <% if (job.status === 'in_progress') { %>
+                                                     <li><a class="dropdown-item" href="#" onclick="completeInstallation('<%= job.id %>')">
+                                                         <i class="bi bi-check-circle me-2"></i>Tandai Selesai
+                                                     </a></li>
+                                                 <% } %>
+                                                 <li><hr class="dropdown-divider"></li>
+                                                 <li><a class="dropdown-item text-danger" href="#" onclick="cancelInstallation('<%= job.id %>')">
+                                                     <i class="bi bi-x-circle me-2"></i>Batal
+                                                 </a></li>
+                                                 <% if (job.status !== 'completed') { %>
+                                                     <li><a class="dropdown-item text-danger" href="#" onclick="deleteInstallation('<%= job.id %>')">
+                                                         <i class="bi bi-trash me-2"></i>Hapus
+                                                     </a></li>
+                                                 <% } %>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <% if (job.notes) { %>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-chat-text me-1"></i><strong>Notes:</strong> <%= job.notes %>
+                                        </small>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (job.equipment_needed) { %>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-tools me-1"></i><strong>Equipment:</strong> <%= job.equipment_needed %>
+                                        </small>
+                                    </div>
+                                <% } %>
+                            </div>
+                        <% }); %>
+                        
+                        <!-- Pagination -->
+                        <% if (typeof pagination !== 'undefined' && pagination && pagination.totalPages > 1) { %>
+                            <nav aria-label="Installation pagination" class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    <% if (pagination.hasPrev) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=<%= pagination.currentPage - 1 %><%= typeof search !== 'undefined' && search ? '&search=' + search : '' %><%= typeof status !== 'undefined' && status ? '&status=' + status : '' %><%= typeof selectedTechnician !== 'undefined' && selectedTechnician ? '&technician=' + selectedTechnician : '' %>">
+                                                <i class="bi bi-chevron-left"></i> Sebelumnya
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                                        <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                                            <a class="page-link" href="?page=<%= i %><%= typeof search !== 'undefined' && search ? '&search=' + search : '' %><%= typeof status !== 'undefined' && status ? '&status=' + status : '' %><%= typeof selectedTechnician !== 'undefined' && selectedTechnician ? '&technician=' + selectedTechnician : '' %>"><%= i %></a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% if (pagination.hasNext) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=<%= pagination.currentPage + 1 %><%= typeof search !== 'undefined' && search ? '&search=' + search : '' %><%= typeof status !== 'undefined' && status ? '&status=' + status : '' %><%= typeof selectedTechnician !== 'undefined' && selectedTechnician ? '&technician=' + selectedTechnician : '' %>">
+                                                Selanjutnya <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+                        <% } %>
+                    <% } else { %>
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3 text-muted">Tidak ada job instalasi ditemukan</h5>
+                            <p class="text-muted">
+                                <% if ((typeof search !== 'undefined' && search) || (typeof status !== 'undefined' && status) || (typeof selectedTechnician !== 'undefined' && selectedTechnician)) { %>
+                                    Tidak ada job yang cocok dengan filter yang dipilih.
+                                    <a href="/admin/installations" class="text-decoration-none">Hapus filter</a>
+                                <% } else { %>
+                                    Belum ada job instalasi yang dibuat.
+                                    <a href="/admin/installations/create" class="text-decoration-none">Buat job pertama Anda</a>
+                                <% } %>
+                            </p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function refreshPage() {
+        window.location.reload();
+    }
+    
+    let currentJobId = null;
+    let currentJobData = null;
+    
+    function assignTechnician(jobId) {
+        currentJobId = jobId;
+        
+        // Get job data from the current page
+        const jobElement = document.querySelector(`[data-job-id="${jobId}"]`);
+        if (!jobElement) {
+            alert('Data job tidak ditemukan');
+            return;
+        }
+        
+        // Extract job data from DOM
+        currentJobData = {
+            id: jobId,
+            job_number: jobElement.querySelector('.job-number').textContent,
+            customer_name: jobElement.querySelector('.customer-name').textContent,
+            customer_phone: jobElement.querySelector('.customer-phone').textContent,
+            customer_address: jobElement.querySelector('.customer-address')?.textContent || '',
+            package_name: jobElement.querySelector('.package-name').textContent,
+            installation_date: jobElement.querySelector('.installation-date').textContent,
+            installation_time: jobElement.querySelector('.installation-time')?.textContent || ''
+        };
+        
+        // Populate job details in modal
+        document.getElementById('jobDetails').innerHTML = `
+            <div class="mb-2">
+                <strong>Job Number:</strong><br>
+                <span class="text-primary">${currentJobData.job_number}</span>
+            </div>
+            <div class="mb-2">
+                <strong>Pelanggan:</strong><br>
+                ${currentJobData.customer_name}<br>
+                <small class="text-muted">${currentJobData.customer_phone}</small>
+            </div>
+            <div class="mb-2">
+                <strong>Alamat:</strong><br>
+                <small class="text-muted">${currentJobData.customer_address || 'Tidak ada alamat'}</small>
+            </div>
+            <div class="mb-2">
+                <strong>Paket:</strong><br>
+                ${currentJobData.package_name}
+            </div>
+            <div class="mb-2">
+                <strong>Tanggal Instalasi:</strong><br>
+                ${currentJobData.installation_date}
+                ${currentJobData.installation_time ? `<br><small class="text-muted">${currentJobData.installation_time}</small>` : ''}
+            </div>
+        `;
+        
+        // Reset form
+        document.getElementById('technicianSelect').value = '';
+        document.getElementById('assignmentNotes').value = '';
+        document.getElementById('priorityLevel').value = 'normal';
+        
+        // Show modal
+        new bootstrap.Modal(document.getElementById('assignTechnicianModal')).show();
+    }
+    
+    function confirmAssignment() {
+        const technicianSelect = document.getElementById('technicianSelect');
+        const assignmentNotes = document.getElementById('assignmentNotes').value;
+        const priorityLevel = document.getElementById('priorityLevel').value;
+        
+        if (!technicianSelect.value) {
+            alert('Pilih teknisi terlebih dahulu');
+            return;
+        }
+        
+        const selectedOption = technicianSelect.options[technicianSelect.selectedIndex];
+        const technicianName = selectedOption.text;
+        const technicianPhone = selectedOption.dataset.phone;
+        
+        // Generate WhatsApp message
+        const message = generateWhatsAppMessage(currentJobData, technicianName, assignmentNotes, priorityLevel);
+        
+        // Show WhatsApp preview modal
+        document.getElementById('technicianPhoneDisplay').textContent = `${technicianName} (${technicianPhone})`;
+        document.getElementById('whatsappMessagePreview').innerHTML = message.replace(/\n/g, '<br>');
+        
+        // Close assignment modal and show preview modal
+        bootstrap.Modal.getInstance(document.getElementById('assignTechnicianModal')).hide();
+        new bootstrap.Modal(document.getElementById('whatsappPreviewModal')).show();
+    }
+    
+    function generateWhatsAppMessage(jobData, technicianName, notes, priority) {
+        const priorityText = {
+            'normal': 'Normal',
+            'high': 'Tinggi',
+            'urgent': 'Urgent'
+        }[priority];
+        
+        let message = `🔧 *TUGAS INSTALASI BARU* 🔧\n\n`;
+        message += `*Job Number:* ${jobData.job_number}\n`;
+        message += `*Pelanggan:* ${jobData.customer_name}\n`;
+        message += `*No. HP:* ${jobData.customer_phone}\n`;
+        message += `*Alamat:* ${jobData.customer_address || 'Tidak ada alamat'}\n`;
+        message += `*Paket:* ${jobData.package_name}\n`;
+        message += `*Tanggal Instalasi:* ${jobData.installation_date}\n`;
+        if (jobData.installation_time) {
+            message += `*Waktu:* ${jobData.installation_time}\n`;
+        }
+        message += `*Prioritas:* ${priorityText}\n`;
+        if (notes) {
+            message += `*Catatan:* ${notes}\n`;
+        }
+        message += `\n📱 *Silakan konfirmasi penerimaan tugas ini*\n`;
+        message += `⏰ *Deadline:* ${jobData.installation_date}\n`;
+        message += `\n_Message otomatis dari sistem GEMBOK_`;
+        
+        return message;
+    }
+    
+    function sendWhatsAppAndAssign() {
+        const technicianSelect = document.getElementById('technicianSelect');
+        const assignmentNotes = document.getElementById('assignmentNotes').value;
+        const priorityLevel = document.getElementById('priorityLevel').value;
+        
+        const selectedOption = technicianSelect.options[technicianSelect.selectedIndex];
+        const technicianId = technicianSelect.value;
+        const technicianPhone = selectedOption.dataset.phone;
+        
+        // Generate WhatsApp message
+        const message = generateWhatsAppMessage(currentJobData, selectedOption.text, assignmentNotes, priorityLevel);
+        
+        // Send WhatsApp message
+        const whatsappUrl = `https://wa.me/${technicianPhone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+        
+        // Assign technician via API
+        assignTechnicianToJob(currentJobId, technicianId, assignmentNotes, priorityLevel);
+        
+        // Close modal
+        bootstrap.Modal.getInstance(document.getElementById('whatsappPreviewModal')).hide();
+    }
+    
+    function assignTechnicianToJob(jobId, technicianId, notes, priority) {
+        // Show loading state
+        const assignBtn = document.getElementById('assignTechnicianBtn');
+        const originalText = assignBtn.innerHTML;
+        assignBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+        assignBtn.disabled = true;
+        
+        fetch(`/admin/installations/assign-technician`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                jobId: jobId,
+                technicianId: technicianId,
+                notes: notes,
+                priority: priority
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showToast('success', 'Teknisi berhasil ditugaskan!', 'Job instalasi telah ditugaskan dan notifikasi WhatsApp telah dikirim ke teknisi.');
+                
+                // Refresh page after delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                showToast('error', 'Gagal menugaskan teknisi', data.message || 'Terjadi kesalahan saat menugaskan teknisi');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('error', 'Gagal menugaskan teknisi', 'Terjadi kesalahan pada sistem');
+        })
+        .finally(() => {
+            // Reset button state
+            assignBtn.innerHTML = originalText;
+            assignBtn.disabled = false;
+        });
+    }
+    
+    function showToast(type, title, message) {
+        // Create toast element
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <strong>${title}</strong><br>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+        
+        // Add toast to container
+        const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        
+        // Show toast
+        const toastElement = toastContainer.lastElementChild;
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+        
+        // Remove toast after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    }
+    
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+        return container;
+    }
+    
+    function startInstallation(jobId) {
+        if (!confirm('Mulai instalasi untuk job ini?')) return;
+        fetch(`/admin/installations/start/${jobId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                showToast('success', 'Job dimulai', res.message || 'Job berhasil dimulai');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showToast('error', 'Gagal memulai', res.message || 'Terjadi kesalahan');
+            }
+        })
+        .catch(() => showToast('error', 'Gagal memulai', 'Kesalahan jaringan/server'));
+    }
+    
+    function completeInstallation(jobId) {
+        if (!confirm('Tandai instalasi ini sebagai selesai?')) return;
+        const note = prompt('Catatan (opsional):', 'Selesai oleh admin');
+        fetch(`/admin/installations/complete/${jobId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ note })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                showToast('success', 'Job selesai', res.message || 'Job berhasil ditandai selesai');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showToast('error', 'Gagal menyelesaikan', res.message || 'Terjadi kesalahan');
+            }
+        })
+        .catch(() => showToast('error', 'Gagal menyelesaikan', 'Kesalahan jaringan/server'));
+    }
+    
+    function cancelInstallation(jobId) {
+        if (!confirm('Apakah Anda yakin ingin membatalkan instalasi ini?')) return;
+        const reason = prompt('Alasan pembatalan (opsional):', 'Dibatalkan oleh admin');
+        fetch(`/admin/installations/cancel/${jobId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ reason })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                showToast('success', 'Job dibatalkan', res.message || 'Job instalasi berhasil dibatalkan');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showToast('error', 'Gagal membatalkan', res.message || 'Terjadi kesalahan saat membatalkan job');
+            }
+        })
+        .catch(() => {
+            showToast('error', 'Gagal membatalkan', 'Kesalahan jaringan/server');
+        });
+    }
+
+    function deleteInstallation(jobId) {
+        if (!confirm('Hapus job instalasi ini?')) return;
+        fetch(`/admin/installations/delete/${jobId}`, {
+            method: 'DELETE',
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                showToast('success', 'Job dihapus', res.message || 'Job instalasi berhasil dihapus');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showToast('error', 'Gagal menghapus', res.message || 'Terjadi kesalahan');
+            }
+        })
+        .catch(() => {
+            showToast('error', 'Gagal menghapus', 'Kesalahan jaringan/server');
+        });
+    }
+    
+    // Auto-refresh every 5 minutes
+    setInterval(() => {
+        // Only refresh if user is not actively using the page
+        if (!document.hidden) {
+            refreshPage();
+        }
+    }, 5 * 60 * 1000);
+
+        // Bulk actions functions
+        function getSelectedJobIds() {
+            return Array.from(document.querySelectorAll('.job-checkbox:checked')).map(c => c.value);
+        }
+
+        function onJobSelectionChange() {
+            const any = getSelectedJobIds().length > 0;
+            document.getElementById('bulkDeleteJobs').disabled = !any;
+        }
+
+        document.getElementById('selectAllJobs').addEventListener('change', function() {
+            const checked = this.checked;
+            document.querySelectorAll('.job-checkbox:not(:disabled)').forEach(c => c.checked = checked);
+            onJobSelectionChange();
+        });
+
+        document.getElementById('bulkDeleteJobs').addEventListener('click', function() {
+            const selectedIds = getSelectedJobIds();
+            if (!selectedIds.length) return;
+            if (!confirm(`Hapus ${selectedIds.length} job instalasi terpilih?`)) return;
+            
+            // Show loading state
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+            this.disabled = true;
+            
+            // Delete jobs one by one
+            let successCount = 0;
+            let failCount = 0;
+            
+            Promise.all(selectedIds.map(id => 
+                fetch(`/admin/installations/delete/${id}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+                    .then(r => r.json())
+                    .then(res => res.success ? successCount++ : failCount++)
+                    .catch(() => failCount++)
+            )).then(() => {
+                // Reset button
+                this.innerHTML = 'Hapus Terpilih';
+                this.disabled = true;
+                
+                // Show result
+                const message = `Bulk delete selesai: ${successCount} berhasil, ${failCount} gagal`;
+                showToast(successCount > 0 ? 'success' : 'error', 'Bulk Delete', message);
+                
+                // Reload after delay
+                setTimeout(() => window.location.reload(), 2000);
+            });
+        });
+</script>
+
+<!-- Assign Technician Modal -->
+<div class="modal fade" id="assignTechnicianModal" tabindex="-1" aria-labelledby="assignTechnicianModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignTechnicianModalLabel">
+                    <i class="bi bi-person-plus me-2"></i>Tugaskan Teknisi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">Detail Job Instalasi</h6>
+                        <div id="jobDetails">
+                            <!-- Job details will be populated here -->
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">Pilih Teknisi</h6>
+                        <div class="mb-3">
+                            <label for="technicianSelect" class="form-label">Teknisi</label>
+                            <select class="form-select" id="technicianSelect" required>
+                                <option value="">Pilih teknisi...</option>
+                                <% if (typeof technicians !== 'undefined' && technicians.length > 0) { %>
+                                    <% technicians.forEach(tech => { %>
+                                        <option value="<%= tech.id %>" data-phone="<%= tech.phone %>" data-name="<%= tech.name %>">
+                                            <%= tech.name %> (<%= tech.phone %>)
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="assignmentNotes" class="form-label">Catatan Penugasan</label>
+                            <textarea class="form-control" id="assignmentNotes" rows="3" 
+                                      placeholder="Tambahkan catatan khusus untuk teknisi..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="priorityLevel" class="form-label">Prioritas</label>
+                            <select class="form-select" id="priorityLevel">
+                                <option value="normal">Normal</option>
+                                <option value="high">Tinggi</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Notifikasi WhatsApp:</strong> Teknisi akan menerima pesan otomatis berisi detail job instalasi.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="assignTechnicianBtn" onclick="confirmAssignment()">
+                    <i class="bi bi-send me-2"></i>Tugaskan & Kirim WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WhatsApp Preview Modal -->
+<div class="modal fade" id="whatsappPreviewModal" tabindex="-1" aria-labelledby="whatsappPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="whatsappPreviewModalLabel">
+                    <i class="bi bi-whatsapp me-2"></i>Preview Pesan WhatsApp
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <i class="bi bi-whatsapp text-success" style="font-size: 3rem;"></i>
+                    <h6 class="mt-2">Pesan akan dikirim ke:</h6>
+                    <p class="text-muted" id="technicianPhoneDisplay"></p>
+                </div>
+                <div class="border rounded p-3 bg-light">
+                    <h6 class="text-primary">Isi Pesan:</h6>
+                    <div id="whatsappMessagePreview">
+                        <!-- Message preview will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-success" onclick="sendWhatsAppAndAssign()">
+                    <i class="bi bi-whatsapp me-2"></i>Kirim WhatsApp & Tugaskan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

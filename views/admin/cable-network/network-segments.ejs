@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .network-segment-card {
+            border-left: 4px solid #007bff;
+            transition: all 0.3s ease;
+        }
+        .network-segment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .segment-type-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .cable-length {
+            font-weight: 600;
+            color: #28a745;
+        }
+        .action-buttons {
+            gap: 0.5rem;
+        }
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin">
+                <i class="bx bx-wifi"></i> Admin Portal
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin">
+                    <i class="bx bx-home"></i> Dashboard
+                </a>
+                <a class="nav-link" href="/admin/cable-network">
+                    <i class="bx bx-network-chart"></i> Cable Network
+                </a>
+                <a class="nav-link" href="/admin/cable-network/odp">
+                    <i class="bx bx-broadcast"></i> ODP Management
+                </a>
+                <a class="nav-link" href="/admin/cable-network/cables">
+                    <i class="bx bx-cable-car"></i> Cable Routes
+                </a>
+                <a class="nav-link active" href="/admin/cable-network/network-segments">
+                    <i class="bx bx-network-chart"></i> Network Segments
+                </a>
+                <a class="nav-link" href="/admin/billing/mapping">
+                    <i class="bx bx-map"></i> Map View
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/admin">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admin/cable-network">Cable Network</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Network Segments</li>
+                    </ol>
+                </nav>
+
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2><i class="bx bx-network-chart me-2"></i>Network Segments Management</h2>
+                        <p class="text-muted mb-0">Kelola jalur kabel antar ODP (Optical Distribution Point)</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="/admin/cable-network" class="btn btn-outline-secondary">
+                            <i class="bx bx-arrow-back me-2"></i>Kembali
+                        </a>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNetworkSegmentModal">
+                            <i class="bx bx-plus me-2"></i>Tambah Network Segment
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0"><%= networkSegments.length %></h4>
+                                        <p class="mb-0">Total Segments</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="bx bx-network-chart" style="font-size: 2rem; opacity: 0.7;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0"><%= networkSegments.filter(ns => ns.status === 'active').length %></h4>
+                                        <p class="mb-0">Active Segments</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="bx bx-check-circle" style="font-size: 2rem; opacity: 0.7;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0"><%= networkSegments.filter(ns => ns.status === 'maintenance').length %></h4>
+                                        <p class="mb-0">Maintenance</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="bx bx-wrench" style="font-size: 2rem; opacity: 0.7;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0"><%= networkSegments.filter(ns => ns.segment_type === 'Backbone').length %></h4>
+                                        <p class="mb-0">Backbone</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="bx bx-pulse" style="font-size: 2rem; opacity: 0.7;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Segments List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bx bx-list-ul me-2"></i>Daftar Network Segments</h5>
+                    </div>
+                    <div class="card-body">
+                        <% if (networkSegments.length === 0) { %>
+                            <div class="empty-state">
+                                <i class="bx bx-network-chart"></i>
+                                <h4>Belum ada Network Segments</h4>
+                                <p>Mulai dengan menambahkan network segment pertama untuk menghubungkan ODP-ODP Anda.</p>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNetworkSegmentModal">
+                                    <i class="bx bx-plus me-2"></i>Tambah Network Segment
+                                </button>
+                            </div>
+                        <% } else { %>
+                            <div class="row">
+                                <% networkSegments.forEach(function(segment) { %>
+                                    <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="card network-segment-card h-100">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <h6 class="card-title mb-0"><%= segment.name %></h6>
+                                                    <% 
+                                                        let typeClass = 'info';
+                                                        if (segment.segment_type === 'Backbone') typeClass = 'primary';
+                                                        else if (segment.segment_type === 'Distribution') typeClass = 'warning';
+                                                    %>
+                                                    <span class="badge segment-type-badge bg-<%= typeClass %>">
+                                                        <%= segment.segment_type %>
+                                                    </span>
+                                                </div>
+                                                
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Start ODP:</small><br>
+                                                    <strong><%= segment.start_odp_name %> (<%= segment.start_odp_code %>)</strong>
+                                                </div>
+                                                
+                                                <% if (segment.end_odp_name) { %>
+                                                    <div class="mb-2">
+                                                        <small class="text-muted">End ODP:</small><br>
+                                                        <strong><%= segment.end_odp_name %> (<%= segment.end_odp_code %>)</strong>
+                                                    </div>
+                                                <% } %>
+                                                
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Cable Length:</small><br>
+                                                    <span class="cable-length">
+                                                        <%= segment.cable_length ? (parseFloat(segment.cable_length) / 1000).toFixed(2) + ' km' : 'N/A' %>
+                                                    </span>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <% 
+                                                        let statusClass = 'danger';
+                                                        if (segment.status === 'active') statusClass = 'success';
+                                                        else if (segment.status === 'maintenance') statusClass = 'warning';
+                                                    %>
+                                                    <span class="badge status-badge bg-<%= statusClass %>">
+                                                        <%= segment.status %>
+                                                    </span>
+                                                </div>
+                                                
+                                                <% if (segment.notes) { %>
+                                                    <div class="mb-3">
+                                                        <small class="text-muted">Notes:</small><br>
+                                                        <small><%= segment.notes %></small>
+                                                    </div>
+                                                <% } %>
+                                                
+                                                <div class="d-flex action-buttons">
+                                                    <button class="btn btn-outline-primary btn-sm flex-fill" onclick="editNetworkSegment(<%= segment.id %>)">
+                                                        <i class="bx bx-edit me-1"></i>Edit
+                                                    </button>
+                                                    <button class="btn btn-outline-danger btn-sm flex-fill" onclick="deleteNetworkSegment(<%= segment.id %>, '<%= segment.name.replace(/'/g, "\\'") %>')">
+                                                        <i class="bx bx-trash me-1"></i>Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Network Segment Modal -->
+    <div class="modal fade" id="addNetworkSegmentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bx bx-plus me-2"></i>Tambah Network Segment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addNetworkSegmentForm">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="segmentName" class="form-label">Nama Segment *</label>
+                                    <input type="text" class="form-control" id="segmentName" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="segmentType" class="form-label">Tipe Segment *</label>
+                                    <select class="form-select" id="segmentType" name="segment_type" required>
+                                        <option value="Backbone">Backbone</option>
+                                        <option value="Distribution">Distribution</option>
+                                        <option value="Access">Access</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="startODP" class="form-label">Start ODP *</label>
+                                    <select class="form-select" id="startODP" name="start_odp_id" required>
+                                        <option value="">Pilih Start ODP</option>
+                                        <% odps.forEach(function(odp) { %>
+                                            <option value="<%= odp.id %>"><%= odp.name %> (<%= odp.code %>)</option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="endODP" class="form-label">End ODP</label>
+                                    <select class="form-select" id="endODP" name="end_odp_id">
+                                        <option value="">Pilih End ODP (Opsional)</option>
+                                        <% odps.forEach(function(odp) { %>
+                                            <option value="<%= odp.id %>"><%= odp.name %> (<%= odp.code %>)</option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cableLength" class="form-label">Panjang Kabel (meter)</label>
+                                    <input type="number" class="form-control" id="cableLength" name="cable_length" step="0.01" min="0">
+                                    <small class="form-text text-muted">Kosongkan untuk menghitung otomatis</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="segmentStatus" class="form-label">Status</label>
+                                    <select class="form-select" id="segmentStatus" name="status">
+                                        <option value="active">Active</option>
+                                        <option value="maintenance">Maintenance</option>
+                                        <option value="damaged">Damaged</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="segmentNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="segmentNotes" name="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bx bx-plus me-2"></i>Tambah Network Segment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Network Segment Modal -->
+    <div class="modal fade" id="editNetworkSegmentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bx bx-edit me-2"></i>Edit Network Segment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editNetworkSegmentForm">
+                    <input type="hidden" id="editSegmentId" name="id">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editSegmentName" class="form-label">Nama Segment *</label>
+                                    <input type="text" class="form-control" id="editSegmentName" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editSegmentType" class="form-label">Tipe Segment *</label>
+                                    <select class="form-select" id="editSegmentType" name="segment_type" required>
+                                        <option value="Backbone">Backbone</option>
+                                        <option value="Distribution">Distribution</option>
+                                        <option value="Access">Access</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editStartODP" class="form-label">Start ODP *</label>
+                                    <select class="form-select" id="editStartODP" name="start_odp_id" required>
+                                        <option value="">Pilih Start ODP</option>
+                                        <% odps.forEach(function(odp) { %>
+                                            <option value="<%= odp.id %>"><%= odp.name %> (<%= odp.code %>)</option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editEndODP" class="form-label">End ODP</label>
+                                    <select class="form-select" id="editEndODP" name="end_odp_id">
+                                        <option value="">Pilih End ODP (Opsional)</option>
+                                        <% odps.forEach(function(odp) { %>
+                                            <option value="<%= odp.id %>"><%= odp.name %> (<%= odp.code %>)</option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editCableLength" class="form-label">Panjang Kabel (meter)</label>
+                                    <input type="number" class="form-control" id="editCableLength" name="cable_length" step="0.01" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editSegmentStatus" class="form-label">Status</label>
+                                    <select class="form-select" id="editSegmentStatus" name="status">
+                                        <option value="active">Active</option>
+                                        <option value="maintenance">Maintenance</option>
+                                        <option value="damaged">Damaged</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editSegmentNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="editSegmentNotes" name="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bx bx-save me-2"></i>Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Add Network Segment Form
+        document.getElementById('addNetworkSegmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/admin/cable-network/network-segments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('success', result.message);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('error', result.message);
+                }
+            } catch (error) {
+                showToast('error', 'Terjadi kesalahan saat menambahkan network segment');
+            }
+        });
+        
+        // Edit Network Segment
+        window.editNetworkSegment = async function(id) {
+            try {
+                // Get segment data from server
+                const response = await fetch(`/admin/cable-network/network-segments/${id}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const segment = result.data;
+                    document.getElementById('editSegmentId').value = segment.id;
+                    document.getElementById('editSegmentName').value = segment.name;
+                    document.getElementById('editSegmentType').value = segment.segment_type;
+                    document.getElementById('editStartODP').value = segment.start_odp_id;
+                    document.getElementById('editEndODP').value = segment.end_odp_id || '';
+                    document.getElementById('editCableLength').value = segment.cable_length || '';
+                    document.getElementById('editSegmentStatus').value = segment.status;
+                    document.getElementById('editSegmentNotes').value = segment.notes || '';
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('editNetworkSegmentModal'));
+                    modal.show();
+                } else {
+                    showToast('error', 'Network segment tidak ditemukan');
+                }
+            } catch (error) {
+                showToast('error', 'Terjadi kesalahan saat memuat data network segment');
+            }
+        }
+        
+        // Edit Network Segment Form
+        document.getElementById('editNetworkSegmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            const id = data.id;
+            delete data.id;
+            
+            try {
+                const response = await fetch(`/admin/cable-network/network-segments/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('success', result.message);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('error', result.message);
+                }
+            } catch (error) {
+                showToast('error', 'Terjadi kesalahan saat memperbarui network segment');
+            }
+        });
+        
+        // Delete Network Segment
+        window.deleteNetworkSegment = async function(id, name) {
+            if (!confirm(`Apakah Anda yakin ingin menghapus network segment "${name}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/cable-network/network-segments/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('success', result.message);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('error', result.message);
+                }
+            } catch (error) {
+                showToast('error', 'Terjadi kesalahan saat menghapus network segment');
+            }
+        }
+        
+        // Toast notification function
+        function showToast(type, message) {
+            const toastContainer = document.getElementById('toast-container') || createToastContainer();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+        
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+            return container;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Keuangan - Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .financial-card { transition: transform 0.2s; }
+        .financial-card:hover { transform: translateY(-2px); }
+        .income-card { border-left: 4px solid #28a745; }
+        .expense-card { border-left: 4px solid #dc3545; }
+        .profit-card { border-left: 4px solid #17a2b8; }
+        .transaction-row:hover { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <%- include('../../partials/billing-sidebar') %>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="bx bx-line-chart"></i> Laporan Keuangan</h1>
+                    <div>
+                        <button class="btn btn-success" onclick="exportToExcel()">
+                            <i class="bx bx-download"></i> Export Excel
+                        </button>
+                        <button class="btn btn-primary" onclick="printReport()">
+                            <i class="bx bx-printer"></i> Print
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form id="filterForm" class="row g-3">
+                            <div class="col-md-3">
+                                <label for="start_date" class="form-label">Tanggal Mulai</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" value="<%= startDate %>">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="end_date" class="form-label">Tanggal Akhir</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date" value="<%= endDate %>">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="type" class="form-label">Tipe Laporan</label>
+                                <select class="form-select" id="type" name="type">
+                                    <option value="all" <%= type === 'all' ? 'selected' : '' %>>Semua</option>
+                                    <option value="income" <%= type === 'income' ? 'selected' : '' %>>Pemasukan</option>
+                                    <option value="expense" <%= type === 'expense' ? 'selected' : '' %>>Pengeluaran</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bx bx-search"></i> Filter
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="resetFilter()">
+                                    <i class="bx bx-reset"></i> Reset
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card financial-card income-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0">Total Pemasukan</h5>
+                                        <h3 class="mt-3 mb-3 text-success">Rp <%= (financialData.summary.totalIncome || 0).toLocaleString('id-ID') %></h3>
+                                        <p class="mb-0 text-muted">
+                                            <span class="text-success me-2">
+                                                <i class="bx bx-arrow-up"></i> <%= financialData.summary.incomeCount || 0 %>
+                                            </span>
+                                            <span class="text-nowrap">Transaksi</span>
+                                        </p>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-success rounded">
+                                            <i class="bx bx-trending-up font-20 text-success"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card financial-card expense-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0">Total Pengeluaran</h5>
+                                        <h3 class="mt-3 mb-3 text-danger">Rp <%= (financialData.summary.totalExpense || 0).toLocaleString('id-ID') %></h3>
+                                        <p class="mb-0 text-muted">
+                                            <span class="text-danger me-2">
+                                                <i class="bx bx-arrow-down"></i> <%= financialData.summary.expenseCount || 0 %>
+                                            </span>
+                                            <span class="text-nowrap">Transaksi</span>
+                                        </p>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-danger rounded">
+                                            <i class="bx bx-trending-down font-20 text-danger"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card financial-card profit-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0">Laba Bersih</h5>
+                                        <h3 class="mt-3 mb-3 <%= (financialData.summary.netProfit || 0) >= 0 ? 'text-info' : 'text-danger' %>">
+                                            Rp <%= (financialData.summary.netProfit || 0).toLocaleString('id-ID') %>
+                                        </h3>
+                                        <p class="mb-0 text-muted">
+                                            <span class="<%= (financialData.summary.netProfit || 0) >= 0 ? 'text-info' : 'text-danger' %> me-2">
+                                                <i class="bx <%= (financialData.summary.netProfit || 0) >= 0 ? 'bx-trending-up' : 'bx-trending-down' %>"></i>
+                                                <%= financialData.summary.transactionCount || 0 %>
+                                            </span>
+                                            <span class="text-nowrap">Total Transaksi</span>
+                                        </p>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-info rounded">
+                                            <i class="bx <%= (financialData.summary.netProfit || 0) >= 0 ? 'bx-trending-up' : 'bx-trending-down' %> font-20 text-info"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card financial-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0">Total Transaksi</h5>
+                                        <h3 class="mt-3 mb-3 text-primary"><%= financialData.summary.transactionCount || 0 %></h3>
+                                        <p class="mb-0 text-muted">
+                                            <span class="text-primary me-2">
+                                                <i class="bx bx-transfer"></i>
+                                                <%= financialData.summary.incomeCount || 0 %> + <%= financialData.summary.expenseCount || 0 %>
+                                            </span>
+                                            <span class="text-nowrap">Pemasukan + Pengeluaran</span>
+                                        </p>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-primary rounded">
+                                            <i class="bx bx-transfer font-20 text-primary"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transactions Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-list-ul"></i> Detail Transaksi
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Tipe</th>
+                                        <th>Jumlah</th>
+                                        <th>Metode Pembayaran</th>
+                                        <th>Gateway</th>
+                                        <th>No. Invoice</th>
+                                        <th>Pelanggan</th>
+                                        <th>Telepon</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (financialData.transactions && financialData.transactions.length > 0) { %>
+                                        <% financialData.transactions.forEach(function(transaction) { %>
+                                            <tr class="transaction-row">
+                                                <td><%= new Date(transaction.date).toLocaleDateString('id-ID') %></td>
+                                                <td>
+                                                    <% if (transaction.type === 'income') { %>
+                                                        <span class="badge bg-success">Pemasukan</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-danger">Pengeluaran</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="<%= transaction.type === 'income' ? 'text-success' : 'text-danger' %>">
+                                                    Rp <%= (transaction.amount || 0).toLocaleString('id-ID') %>
+                                                </td>
+                                                <td><%= transaction.payment_method || '-' %></td>
+                                                <td><%= transaction.gateway_name || '-' %></td>
+                                                <td><%= transaction.invoice_number || '-' %></td>
+                                                <td><%= transaction.customer_name || '-' %></td>
+                                                <td><%= transaction.customer_phone || '-' %></td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="8" class="text-center text-muted">
+                                                <i class="bx bx-info-circle"></i> Tidak ada data transaksi untuk periode yang dipilih
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Filter form submission
+        document.getElementById('filterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const params = new URLSearchParams(formData);
+            window.location.href = '/admin/billing/financial-report?' + params.toString();
+        });
+
+        // Reset filter
+        function resetFilter() {
+            const now = new Date();
+            const startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+            
+            document.getElementById('start_date').value = startDate;
+            document.getElementById('end_date').value = endDate;
+            document.getElementById('type').value = 'all';
+            
+            window.location.href = '/admin/billing/financial-report?start_date=' + startDate + '&end_date=' + endDate + '&type=all';
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            const type = document.getElementById('type').value;
+            
+            window.open(`/admin/billing/export/financial-report.xlsx?start_date=${startDate}&end_date=${endDate}&type=${type}`, '_blank');
+        }
+
+        // Print report
+        function printReport() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

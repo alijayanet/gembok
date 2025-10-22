@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Billing - Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include('../../partials/billing-sidebar') %>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bx bx-speedometer"></i> Dashboard Billing
+                    </h1>
+                    <div>
+                        <a href="/admin/billing/payment-settings" class="btn btn-primary">
+                            <i class="bx bx-cog"></i> Payment Settings
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Statistik Cards -->
+                <div class="row">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0" title="Total Customers">Total Pelanggan</h5>
+                                        <h3 class="mt-3 mb-3"><%= stats.total_customers || 0 %></h3>
+                                        <p class="mb-0 text-muted">
+                                            <span class="text-success me-2">
+                                                <i class="mdi mdi-arrow-up-bold"></i> <%= stats.active_customers || 0 %>
+                                            </span>
+                                            <span class="text-nowrap">Aktif</span>
+                                        </p>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-primary rounded">
+                                            <i class="mdi mdi-account-group font-20 text-primary"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0" title="Total Revenue">Total Pendapatan</h5>
+                                        <h3 class="mt-3 mb-3">Rp <%= (stats.total_revenue || 0).toLocaleString('id-ID') %></h3>
+                                        <p class="mb-0 text-muted">
+                                            <span class="text-success me-2">
+                                                <i class="mdi mdi-arrow-up-bold"></i> <%= stats.paid_invoices || 0 %>
+                                            </span>
+                                            <span class="text-nowrap">Tagihan Lunas</span>
+                                        </p>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-success rounded">
+                                            <i class="mdi mdi-currency-usd font-20 text-success"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0" title="Unpaid Invoices">Tagihan Belum Lunas</h5>
+                                        <h3 class="mt-3 mb-3">Rp <%= (stats.total_unpaid || 0).toLocaleString('id-ID') %></h3>
+                                        <p class="mb-0 text-muted">
+                                            <span class="text-danger me-2">
+                                                <i class="mdi mdi-arrow-down-bold"></i> <%= stats.unpaid_invoices || 0 %>
+                                            </span>
+                                            <span class="text-nowrap">Tagihan</span>
+                                        </p>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-warning rounded">
+                                            <i class="mdi mdi-receipt font-20 text-warning"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0" title="Total Invoices">Total Tagihan</h5>
+                                        <h3 class="mt-3 mb-3"><%= stats.total_invoices || 0 %></h3>
+                                        <p class="mb-0 text-muted">
+                                            <span class="text-info me-2">
+                                                <i class="mdi mdi-chart-line"></i> <%= stats.paid_invoices || 0 %>/<%= stats.total_invoices || 0 %>
+                                            </span>
+                                            <span class="text-nowrap">Lunas</span>
+                                        </p>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-info rounded">
+                                            <i class="mdi mdi-file-document font-20 text-info"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Tagihan Terbaru -->
+                    <div class="col-xl-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="bx bx-receipt"></i> Tagihan Terbaru
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 class="header-title">Tagihan Terbaru</h4>
+                                    <a href="/admin/billing/invoices" class="btn btn-sm btn-primary">Lihat Semua</a>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-centered table-nowrap table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>No. Tagihan</th>
+                                                <th>Pelanggan</th>
+                                                <th>Paket</th>
+                                                <th>Jumlah</th>
+                                                <th>Status</th>
+                                                <th>Jatuh Tempo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% if (recentInvoices && recentInvoices.length > 0) { %>
+                                                <% recentInvoices.forEach(function(invoice) { %>
+                                                    <tr>
+                                                        <td>
+                                                            <a href="/admin/billing/invoices/<%= invoice.id %>" class="text-body fw-bold">
+                                                                <%= invoice.invoice_number %>
+                                                            </a>
+                                                        </td>
+                                                        <td>
+                                                            <span class="text-body fw-bold"><%= invoice.customer_name %></span>
+                                                            <br>
+                                                            <small class="text-muted"><%= invoice.customer_phone %></small>
+                                                        </td>
+                                                        <td><%= invoice.package_name %></td>
+                                                        <td>Rp <%= parseFloat(invoice.amount).toLocaleString('id-ID') %></td>
+                                                        <td>
+                                                            <% if (invoice.status === 'paid') { %>
+                                                                <span class="badge bg-success">Lunas</span>
+                                                            <% } else if (invoice.status === 'unpaid') { %>
+                                                                <% if (new Date(invoice.due_date) < new Date()) { %>
+                                                                    <span class="badge bg-danger">Terlambat</span>
+                                                                <% } else { %>
+                                                                    <span class="badge bg-warning">Belum Lunas</span>
+                                                                <% } %>
+                                                            <% } %>
+                                                        </td>
+                                                        <td><%= new Date(invoice.due_date).toLocaleDateString('id-ID') %></td>
+                                                    </tr>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted">Belum ada tagihan</td>
+                                                </tr>
+                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tagihan Terlambat -->
+                    <div class="col-xl-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="bx bx-time"></i> Tagihan Terlambat
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 class="header-title">Tagihan Terlambat</h4>
+                                    <span class="badge bg-danger"><%= overdueInvoices.length %></span>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-centered table-nowrap table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Pelanggan</th>
+                                                <th>Jumlah</th>
+                                                <th>Jatuh Tempo</th>
+                                                <th>Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% if (overdueInvoices && overdueInvoices.length > 0) { %>
+                                                <% overdueInvoices.forEach(function(invoice) { %>
+                                                    <tr>
+                                                        <td>
+                                                            <span class="text-body fw-bold"><%= invoice.customer_name %></span>
+                                                            <br>
+                                                            <small class="text-muted"><%= invoice.customer_phone %></small>
+                                                        </td>
+                                                        <td>Rp <%= parseFloat(invoice.amount).toLocaleString('id-ID') %></td>
+                                                        <td>
+                                                            <span class="text-danger">
+                                                                <%= new Date(invoice.due_date).toLocaleDateString('id-ID') %>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <div class="btn-group btn-group-sm" role="group">
+                                                                <button type="button" class="btn btn-outline-danger" onclick="suspendCustomer('<%= invoice.username %>')">
+                                                                    <i class="bx bx-block"></i> Isolir
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-success" onclick="restoreCustomer('<%= invoice.username %>')">
+                                                                    <i class="bx bx-rotate-left"></i> Restore
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-secondary"
+                                                                    data-phone="<%= invoice.customer_phone || '' %>"
+                                                                    data-name="<%= invoice.customer_name || '' %>"
+                                                                    data-invoicenumber="<%= invoice.invoice_number || '' %>"
+                                                                    data-amount="<%= invoice.amount || 0 %>"
+                                                                    onclick="sendWaReminderFromBtn(this)">
+                                                                    <i class="bx bx-message-rounded-dots"></i> Reminder
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="4" class="text-center text-muted">Tidak ada tagihan terlambat</td>
+                                                </tr>
+                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Fungsi toast notification
+    function showToast(type, title, message, duration = 5000) {
+        const toastId = 'toast-' + Date.now();
+        const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : 'bi-info-circle';
+        const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-primary';
+        
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi ${iconClass} me-2"></i>
+                        <strong>${title}</strong><br>
+                        <small>${message}</small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+        
+        $('#toast-container').append(toastHtml);
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, { delay: duration });
+        toast.show();
+        
+        // Auto remove after hide
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    }
+
+    // Auto refresh stats setiap 30 detik dengan toast feedback
+    setInterval(function() {
+        fetch('/admin/billing/api/stats')
+            .then(response => response.json())
+            .then(data => {
+                // Update stats cards
+                document.querySelector('[title="Total Customers"]').nextElementSibling.textContent = data.total_customers || 0;
+                document.querySelector('[title="Total Revenue"]').nextElementSibling.textContent = 'Rp ' + (data.total_revenue || 0).toLocaleString('id-ID');
+                document.querySelector('[title="Unpaid Invoices"]').nextElementSibling.textContent = 'Rp ' + (data.total_unpaid || 0).toLocaleString('id-ID');
+                document.querySelector('[title="Total Invoices"]').nextElementSibling.textContent = data.total_invoices || 0;
+                
+                // Show success toast jika ada perubahan
+                showToast('success', 'Data Diperbarui', 'Statistik billing berhasil diperbarui');
+            })
+            .catch(error => {
+                console.error('Error updating stats:', error);
+                showToast('error', 'Error', 'Gagal memperbarui statistik');
+            });
+    }, 30000);
+
+    // ====== Actions: Isolir, Restore, Reminder WA ======
+    async function suspendCustomer(username) {
+        const reason = prompt('Masukkan alasan isolir (opsional):', 'Telat bayar');
+        if (reason === null) return; // cancelled
+        try {
+            const res = await fetch(`/admin/billing/service-suspension/suspend/${encodeURIComponent(username)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('success', 'Isolir Berhasil', `Pelanggan ${username} diisolir. ${reason ? 'Alasan: ' + reason : ''}`);
+            } else {
+                showToast('error', 'Isolir Gagal', data.message || 'Gagal melakukan isolir');
+            }
+        } catch (e) {
+            console.error(e);
+            showToast('error', 'Error', e.message || 'Terjadi kesalahan');
+        }
+    }
+
+    async function restoreCustomer(username) {
+        const reason = prompt('Masukkan alasan pemulihan (opsional):', 'Manual restore');
+        if (reason === null) return; // cancelled
+        try {
+            const res = await fetch(`/admin/billing/service-suspension/restore/${encodeURIComponent(username)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('success', 'Restore Berhasil', `Pelanggan ${username} dipulihkan. ${reason ? 'Alasan: ' + reason : ''}`);
+            } else {
+                showToast('error', 'Restore Gagal', data.message || 'Gagal melakukan restore');
+            }
+        } catch (e) {
+            console.error(e);
+            showToast('error', 'Error', e.message || 'Terjadi kesalahan');
+        }
+    }
+
+    function sendWaReminder(phone, name, invoiceNumber, amount) {
+        if (!phone) {
+            showToast('error', 'Nomor tidak tersedia', 'Nomor WhatsApp pelanggan kosong.');
+            return;
+        }
+        const rupiah = (() => {
+            const n = parseFloat(amount || 0);
+            if (isNaN(n)) return '0';
+            return n.toLocaleString('id-ID');
+        })();
+        const text = `Halo ${name}, ini pengingat tagihan Anda${invoiceNumber ? ' #' + invoiceNumber : ''} sebesar Rp ${rupiah}. Mohon segera melakukan pembayaran. Terima kasih.`;
+        const url = `https://wa.me/${encodeURIComponent(phone)}?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    // Helper agar onclick tidak mengandung ekspresi kompleks EJS
+    function sendWaReminderFromBtn(btn) {
+        const phone = btn.getAttribute('data-phone') || '';
+        const name = btn.getAttribute('data-name') || '';
+        const invoiceNumber = btn.getAttribute('data-invoicenumber') || '';
+        const amount = btn.getAttribute('data-amount') || 0;
+        sendWaReminder(phone, name, invoiceNumber, amount);
+    }
+    </script>
+
+</body>
+</html>

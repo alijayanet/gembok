@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'Kelola Pelanggan' %> - <%= typeof isTechnicianView !== 'undefined' && isTechnicianView ? 'Portal Teknisi' : 'Admin Portal' %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .toast-container {
+            z-index: 9999;
+        }
+        .toast {
+            min-width: 300px;
+        }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px !important;
+                margin-left: 0 !important;
+            }
+            
+            /* Header responsive */
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn-group {
+                flex-wrap: wrap;
+                gap: 5px;
+                width: 100%;
+            }
+            
+            .btn-group .btn {
+                font-size: 12px;
+                padding: 8px 12px;
+                flex: 1;
+                min-width: auto;
+            }
+            
+            /* Summary cards responsive */
+            .row.mb-4 .col-xl-2 {
+                margin-bottom: 15px;
+            }
+            
+            .card-body {
+                padding: 1rem 0.75rem;
+            }
+            
+            .card-body h5 {
+                font-size: 0.85rem;
+            }
+            
+            .card-body h3 {
+                font-size: 1.5rem;
+            }
+            
+            /* Table responsive */
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+            
+            .table th, .table td {
+                padding: 8px 4px;
+                white-space: nowrap;
+            }
+            
+            .btn-sm {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+            
+            /* Modal responsive */
+            .modal-dialog {
+                margin: 10px;
+                max-width: calc(100vw - 20px);
+            }
+            
+            .modal-body {
+                padding: 1rem;
+            }
+            
+            .form-label {
+                font-size: 0.9rem;
+                margin-bottom: 4px;
+            }
+            
+            .form-control, .form-select {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            /* Action buttons in table */
+            .btn-group-vertical .btn {
+                padding: 6px 10px;
+                font-size: 11px;
+                margin-bottom: 2px;
+            }
+            
+            /* Search and filter */
+            .dataTables_filter input {
+                width: 100% !important;
+                margin: 0 !important;
+            }
+            
+            .dataTables_length select {
+                width: auto !important;
+            }
+            
+            /* Pagination */
+            .dataTables_paginate {
+                text-align: center !important;
+            }
+            
+            .dataTables_paginate .paginate_button {
+                padding: 6px 10px !important;
+                margin: 0 2px !important;
+            }
+            
+            /* Touch friendly buttons */
+            .btn {
+                min-height: 42px;
+                touch-action: manipulation;
+            }
+            
+            .btn-sm {
+                min-height: 36px;
+            }
+            
+            /* Map responsive (jika ada) */
+            #customerMap {
+                height: 300px !important;
+            }
+            
+            /* Checkbox and form controls */
+            .form-check-input {
+                width: 1.2em;
+                height: 1.2em;
+            }
+            
+            /* Alert messages */
+            .alert {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .h2 {
+                font-size: 1.3rem;
+            }
+            
+            .card {
+                margin-bottom: 1rem;
+            }
+            
+            .table-responsive {
+                font-size: 0.8rem;
+            }
+            
+            .btn-group .btn {
+                font-size: 11px;
+                padding: 6px 8px;
+            }
+            
+            /* Stack summary cards vertically on very small screens */
+            .col-xl-2.col-md-6 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+        }
+        
+        /* GPS Button Enhancements */
+        #gpsButton, #editGpsButton {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        #gpsButton:hover:not(:disabled), #editGpsButton:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        
+        #gpsButton:disabled, #editGpsButton:disabled {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .bx-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Location help styling */
+        .accordion-button {
+            font-size: 0.9rem;
+        }
+        
+        .accordion-body ol li {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Mobile responsive adjustments for GPS buttons */
+        @media (max-width: 767.98px) {
+            #gpsButton, #editGpsButton {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .d-grid.gap-2.d-md-flex {
+                display: block !important;
+            }
+            
+            .d-grid.gap-2.d-md-flex .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <% if (typeof isTechnicianView !== 'undefined' && isTechnicianView) { %>
+                <%- include('../../partials/technician-responsive-sidebar', { page: 'customers', technician: technician }) %>
+            <% } else { %>
+                <%- include('../../partials/billing-sidebar') %>
+            <% } %>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bx bx-user"></i> <%= title || 'Kelola Pelanggan' %>
+                    </h1>
+                    <div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                            <i class="bx bx-plus"></i> Tambah Pelanggan
+                        </button>
+                        <div class="btn-group ms-2" role="group" aria-label="Backup Restore Pelanggan">
+                            <button id="exportCustomersJsonBtn" type="button" class="btn btn-outline-success">
+                                <i class="bi bi-cloud-download"></i> Backup Pelanggan (JSON)
+                            </button>
+                            <button id="exportCustomersXlsxBtn" type="button" class="btn btn-outline-success">
+                                <i class="bi bi-file-earmark-spreadsheet"></i> Backup Pelanggan (XLSX)
+                            </button>
+                            <button id="openImportCustomersModalBtn" type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#importCustomersModal">
+                                <i class="bi bi-cloud-upload"></i> Restore Pelanggan
+                            </button>
+                        </div>
+
+
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="row mb-4">
+                    <div class="col-xl-2 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0" title="Total Customers">Total Pelanggan</h5>
+                                        <h3 class="mt-3 mb-3"><%= customers ? customers.length : 0 %></h3>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-primary rounded">
+                                            <i class="mdi mdi-account-group font-20 text-primary"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-2 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0" title="Paid Customers">Sudah Bayar</h5>
+                                        <h3 class="mt-3 mb-3">
+                                            <%= customers ? customers.filter(c => c.payment_status === 'paid').length : 0 %>
+                                        </h3>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-success rounded">
+                                            <i class="mdi mdi-cash-check font-20 text-success"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-2 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0" title="Unpaid Customers">Belum Bayar</h5>
+                                        <h3 class="mt-3 mb-3">
+                                            <%= customers ? customers.filter(c => c.payment_status === 'unpaid').length : 0 %>
+                                        </h3>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-warning rounded">
+                                            <i class="mdi mdi-cash-remove font-20 text-warning"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-2 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0" title="Overdue Customers">Isolir</h5>
+                                        <h3 class="mt-3 mb-3">
+                                            <%= customers ? customers.filter(c => c.payment_status === 'overdue' || c.status === 'suspended').length : 0 %>
+                                        </h3>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-danger rounded">
+                                            <i class="mdi mdi-alert-circle font-20 text-danger"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-2 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0" title="No Invoice Customers">Non Tagihan</h5>
+                                        <h3 class="mt-3 mb-3">
+                                            <%= customers ? customers.filter(c => c.payment_status === 'no_invoice').length : 0 %>
+                                        </h3>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-info rounded">
+                                            <i class="mdi mdi-receipt-outline font-20 text-info"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-2 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="text-muted fw-normal mt-0" title="Active Customers">Pelanggan Aktif</h5>
+                                        <h3 class="mt-3 mb-3">
+                                            <%= customers ? customers.filter(c => c.status === 'active').length : 0 %>
+                                        </h3>
+                                    </div>
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-soft-success rounded">
+                                            <i class="mdi mdi-account-check font-20 text-success"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-list-ul"></i> Daftar Pelanggan
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAllCustomers">
+                                    <label class="form-check-label" for="selectAllCustomers">
+                                        Pilih Semua
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <button id="bulkDeleteBtn" class="btn btn-danger btn-sm" disabled>
+                                    <i class="bx bx-trash"></i> Hapus Terpilih
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="customersTable" class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width:32px">
+                                            <!-- header checkbox already above -->
+                                        </th>
+                                        <th>Nama</th>
+                                        <th>Username</th>
+                                        <th>Telepon</th>
+                                        <th>PPPoE Username</th>
+                                        <th>Paket</th>
+                                        <th>PPPoE Profile</th>
+                                        <th>Auto Suspension</th>
+                                        <th>Status Pelanggan</th>
+                                        <th>Status Pembayaran</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (customers && customers.length > 0) { %>
+                                        <% customers.forEach(function(customer) { %>
+                                            <tr data-phone="<%= customer.phone %>" data-username="<%= customer.pppoe_username %>">
+                                                <td>
+                                                    <input type="checkbox" class="form-check-input customer-checkbox" value="<%= customer.phone %>">
+                                                </td>
+                                                <td><a href="/admin/billing/customers/<%= customer.phone %>" class="text-decoration-none fw-bold"><%= customer.name %></a></td>
+                                                <td><%= customer.username || '-' %></td>
+                                                <td><a href="/admin/billing/customers/<%= customer.phone %>" class="text-decoration-none text-primary"><%= customer.phone %></a></td>
+                                                <td><%= customer.pppoe_username || '-' %></td>
+                                                <td><%= customer.package_name || '-' %></td>
+                                                <td class="pppoe-profile"><span class="badge bg-info"><%= customer.pppoe_profile || 'default' %></span></td>
+                                                <td>
+                                                    <% if (customer.auto_suspension === 1) { %>
+                                                        <span class="badge bg-success">Ya</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-secondary">Tidak</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="cust-status">
+                                                    <% if (customer.status === 'active') { %>
+                                                        <span class="badge bg-success">Aktif</span>
+                                                    <% } else if (customer.status === 'suspended') { %>
+                                                        <span class="badge bg-danger">Isolir</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-secondary">Nonaktif</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="pay-status">
+                                                    <% if (customer.payment_status === 'paid') { %>
+                                                        <span class="badge bg-success">Lunas</span>
+                                                    <% } else if (customer.payment_status === 'unpaid') { %>
+                                                        <span class="badge bg-warning">Belum Lunas</span>
+                                                    <% } else if (customer.payment_status === 'overdue') { %>
+                                                        <span class="badge bg-danger">Terlambat</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-info">Belum Ada Tagihan</span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <button class="btn btn-sm btn-info" onclick="viewCustomerDetail('<%= customer.phone %>')" title="Lihat Detail">
+                                                            <i class="bx bx-show"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-primary" onclick="editCustomer('<%= customer.phone %>')">
+                                                            <i class="bx bx-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger" onclick="deleteCustomer('<%= customer.phone %>')">
+                                                            <i class="bx bx-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+    // Update summary cards dynamically
+    function updateSummaryCards(data) {
+        try {
+            const mappings = [
+                { selector: 'h3.mt-3.mb-3', index: 0, value: data.total }, // first card total customers
+            ];
+            // Because the structure is uniform, query all h3s inside summary row and set by order.
+            const row = document.querySelectorAll('.row.mb-4 .card .card-body h3.mt-3.mb-3');
+            if (row && row.length >= 6) {
+                row[0].textContent = data.total;
+                row[1].textContent = data.paid;
+                row[2].textContent = data.unpaid;
+                row[3].textContent = data.isolir;
+                row[4].textContent = data.noInvoice;
+                row[5].textContent = data.active;
+            }
+        } catch (e) {
+            console.warn('Failed to update summary cards:', e);
+        }
+    }
+
+    async function fetchSummary() {
+        try {
+            const resp = await fetch('/admin/billing/customers/summary');
+            const res = await resp.json();
+            if (res.success && res.data) {
+                updateSummaryCards(res.data);
+            }
+        } catch (e) {
+            console.warn('Failed to fetch summary:', e);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchSummary();
+        setInterval(fetchSummary, 5000);
+    });
+    </script>
+
+    <!-- Add Customer Modal -->
+    <div class="modal fade" id="addCustomerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Pelanggan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addCustomerForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nama * <small class="text-muted">(username & email akan auto-generate dari nama)</small></label>
+                            <input type="text" class="form-control" id="name" name="name" required onblur="generateCredentialsFromName()" oninput="generateCredentialsFromName()">
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username *</label>
+                            <input type="text" class="form-control" id="username" name="username" required placeholder="Akan otomatis terisi dari nama + tanggal (contoh: test_280825)">
+                            <small class="form-text text-muted">Username akan digunakan untuk login pelanggan dan payment gateway. Format otomatis: nama_DDMMYY</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Telepon *</label>
+                            <input type="text" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Akan otomatis terisi dari nama (contoh: test@gembok.com)">
+                            <small class="form-text text-muted">Email akan digunakan untuk notifikasi. Format otomatis: nama@gembok.com</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pppoe_username" class="form-label">PPPoE Username (opsional)</label>
+                            <input type="text" class="form-control" id="pppoe_username" name="pppoe_username" placeholder="username@domain">
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="create_pppoe_user" name="create_pppoe_user">
+                            <label class="form-check-label" for="create_pppoe_user">
+                                Buat user PPPoE di Mikrotik sekarang (pakai profile dari paket)
+                            </label>
+                        </div>
+                        <div class="row g-2 align-items-end mb-3" id="pppoe_password_row" style="display:none;">
+                            <div class="col-8">
+                                <label for="pppoe_password" class="form-label">PPPoE Password</label>
+                                <input type="text" class="form-control" id="pppoe_password" name="pppoe_password" placeholder="Minimal 6 karakter">
+                                <small class="text-muted">Jika tidak diisi, sistem akan generate otomatis.</small>
+                            </div>
+                            <div class="col-4">
+                                <button class="btn btn-outline-secondary w-100" type="button" id="genPppoePassBtn">Generate</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Static IP Configuration Section -->
+                        <div class="card border-info mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-ethernet me-2"></i>Konfigurasi IP Statik (Opsional)</h6>
+                                <small class="text-white">Untuk pelanggan yang menggunakan IP statik atau DHCP dengan MAC tetap</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="static_ip" class="form-label">Static IP Address</label>
+                                            <input type="text" class="form-control" id="static_ip" name="static_ip" placeholder="192.168.1.100">
+                                            <small class="text-muted">IP address tetap untuk pelanggan (format: 192.168.1.100)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="assigned_ip" class="form-label">Assigned IP Address</label>
+                                            <input type="text" class="form-control" id="assigned_ip" name="assigned_ip" placeholder="192.168.1.100">
+                                            <small class="text-muted">IP yang di-assign ke pelanggan (bisa sama dengan Static IP)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="mac_address" class="form-label">MAC Address</label>
+                                    <input type="text" class="form-control" id="mac_address" name="mac_address" placeholder="00:11:22:33:44:55" pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$">
+                                    <small class="text-muted">MAC address perangkat untuk DHCP blocking (format: 00:11:22:33:44:55)</small>
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Info Sistem Isolir:</strong><br>
+                                    • Jika ada PPPoE Username: Sistem akan gunakan isolir profile<br>
+                                    • Jika ada Static IP: Sistem akan gunakan method <strong><%= settings.static_ip_suspension_method || 'address_list' %></strong><br>
+                                    • Jika ada MAC Address: Bisa gunakan DHCP blocking<br>
+                                    • Priority: PPPoE → Static IP → DHCP
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cable Connection Section -->
+                        <div class="card border-success mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bx bx-cable-car me-2"></i>Sambungkan Kabel (Opsional)</h6>
+                                <small class="text-muted">Konfigurasi jalur kabel dari ODP ke pelanggan</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="cable_type" class="form-label">Tipe Kabel</label>
+                                            <select class="form-select" id="cable_type" name="cable_type">
+                                                <option value="">Pilih Tipe Kabel</option>
+                                                <option value="fiber">Fiber Optic</option>
+                                                <option value="copper">Copper</option>
+                                                <option value="wireless">Wireless</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="cable_length" class="form-label">Panjang Kabel (meter)</label>
+                                            <input type="number" class="form-control" id="cable_length" name="cable_length" placeholder="50" min="1">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="port_number" class="form-label">Nomor Port ODP</label>
+                                            <input type="number" class="form-control" id="port_number" name="port_number" placeholder="1" min="1" max="24">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="cable_status" class="form-label">Status Kabel</label>
+                                            <select class="form-select" id="cable_status" name="cable_status">
+                                                <option value="connected">Terhubung</option>
+                                                <option value="disconnected">Terputus</option>
+                                                <option value="maintenance">Maintenance</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="cable_notes" class="form-label">Catatan Kabel</label>
+                                    <textarea class="form-control" id="cable_notes" name="cable_notes" rows="2" placeholder="Catatan khusus tentang instalasi kabel..."></textarea>
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="bx bx-info-circle me-2"></i>
+                                    <strong>Info:</strong> Jika ODP sudah dipilih di atas, sistem akan otomatis membuat jalur kabel. Pastikan ODP memiliki kapasitas port yang tersedia.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Alamat</label>
+                            <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="latitude" class="form-label">Latitude (Koordinat)</label>
+                                    <input type="number" class="form-control" id="latitude" name="latitude" step="0.00000001" placeholder="-6.2088">
+                                    <small class="text-muted">Contoh: -6.2088 (Jakarta)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="longitude" class="form-label">Longitude (Koordinat)</label>
+                                    <input type="number" class="form-control" id="longitude" name="longitude" step="0.00000001" placeholder="106.8456">
+                                    <small class="text-muted">Contoh: 106.8456 (Jakarta)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                <button type="button" class="btn btn-success" onclick="getCurrentLocation()" id="gpsButton">
+                                    <i class="bx bx-location-plus me-1"></i> <span class="btn-text">Ambil Lokasi GPS</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="openMapPicker()">
+                                    <i class="bx bx-map me-1"></i> Pilih dari Peta
+                                </button>
+                            </div>
+                            <small class="text-muted mt-1 d-block">
+                                <i class="bi bi-info-circle me-1"></i>
+                                GPS: Pastikan perangkat di area terbuka untuk akurasi terbaik
+                            </small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="package_id" class="form-label">Paket *</label>
+                            <select class="form-control" id="package_id" name="package_id" onchange="updateProfileField()" required>
+                                <option value="">Pilih Paket</option>
+                                <% if (packages && packages.length > 0) { %>
+                                    <% packages.forEach(function(package) { %>
+                                        <option value="<%= package.id %>" data-profile="<%= package.pppoe_profile || 'default' %>"><%= package.name %> - Rp <%= parseFloat(package.price).toLocaleString('id-ID') %></option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="odp_id" class="form-label">ODP (Optical Distribution Point)</label>
+                            <select class="form-control" id="odp_id" name="odp_id">
+                                <option value="">Pilih ODP (Opsional)</option>
+                                <% if (odps && odps.length > 0) { %>
+                                    <% odps.forEach(function(odp) { %>
+                                        <option value="<%= odp.id %>" data-capacity="<%= odp.capacity %>" data-used="<%= odp.used_ports %>">
+                                            <% if (odp.parent_name) { %>
+                                                └─ <%= odp.name %> (<%= odp.code %>) - <%= odp.used_ports %>/<%= odp.capacity %> ports
+                                            <% } else { %>
+                                                <%= odp.name %> (<%= odp.code %>) - <%= odp.used_ports %>/<%= odp.capacity %> ports
+                                            <% } %>
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                            <small class="form-text text-muted">Pilih ODP tempat pelanggan akan disambungkan (opsional, bisa ditambahkan nanti). Sub ODP ditandai dengan └─</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pppoe_profile" class="form-label">PPPoE Profile</label>
+                            <input type="text" class="form-control" id="pppoe_profile" name="pppoe_profile" placeholder="Profile akan otomatis terisi sesuai paket">
+                            <small class="form-text text-muted">Profile PPPoE yang akan digunakan untuk pelanggan ini</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="auto_suspension" class="form-label">Auto Suspension</label>
+                            <select class="form-control" id="auto_suspension" name="auto_suspension">
+                                <option value="1">Ya - Isolir otomatis saat telat bayar</option>
+                                <option value="0">Tidak - Tidak diisolir otomatis</option>
+                            </select>
+                            <small class="form-text text-muted">Pilih apakah pelanggan akan diisolir otomatis saat telat bayar</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="billing_day" class="form-label">Tanggal Penagihan (1-28)</label>
+                            <input type="number" class="form-control" id="billing_day" name="billing_day" min="1" max="28" value="15">
+                            <small class="form-text text-muted">Tanggal jatuh tempo tagihan setiap bulan. Nilai di luar 28 akan disesuaikan.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Customer Modal -->
+    <div class="modal fade" id="editCustomerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Pelanggan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editCustomerForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="edit_name" class="form-label">Nama *</label>
+                            <input type="text" class="form-control" id="edit_name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_username" class="form-label">Username *</label>
+                            <input type="text" class="form-control" id="edit_username" name="username" required placeholder="username untuk login dan payment gateway">
+                            <small class="form-text text-muted">Username akan digunakan untuk login pelanggan dan payment gateway. Harus unik dan tanpa spasi.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_phone" class="form-label">Telepon *</label>
+                            <input type="text" class="form-control" id="edit_phone" name="phone" required>
+                            <small class="form-text text-muted">Pastikan nomor telepon unik dan benar</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="edit_email" name="email" placeholder="customer@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_pppoe_username" class="form-label">PPPoE Username</label>
+                            <input type="text" class="form-control" id="edit_pppoe_username" name="pppoe_username">
+                        </div>
+                        
+                        <!-- Static IP Configuration Section for Edit -->
+                        <div class="card border-info mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-ethernet me-2"></i>Konfigurasi IP Statik (Opsional)</h6>
+                                <small class="text-white">Untuk pelanggan yang menggunakan IP statik atau DHCP dengan MAC tetap</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_static_ip" class="form-label">Static IP Address</label>
+                                            <input type="text" class="form-control" id="edit_static_ip" name="static_ip" placeholder="192.168.1.100">
+                                            <small class="text-muted">IP address tetap untuk pelanggan (format: 192.168.1.100)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_assigned_ip" class="form-label">Assigned IP Address</label>
+                                            <input type="text" class="form-control" id="edit_assigned_ip" name="assigned_ip" placeholder="192.168.1.100">
+                                            <small class="text-muted">IP yang di-assign ke pelanggan (bisa sama dengan Static IP)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_mac_address" class="form-label">MAC Address</label>
+                                    <input type="text" class="form-control" id="edit_mac_address" name="mac_address" placeholder="00:11:22:33:44:55" pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$">
+                                    <small class="text-muted">MAC address perangkat untuk DHCP blocking (format: 00:11:22:33:44:55)</small>
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Info Sistem Isolir:</strong><br>
+                                    • Jika ada PPPoE Username: Sistem akan gunakan isolir profile<br>
+                                    • Jika ada Static IP: Sistem akan gunakan method <strong><%= settings.static_ip_suspension_method || 'address_list' %></strong><br>
+                                    • Jika ada MAC Address: Bisa gunakan DHCP blocking<br>
+                                    • Priority: PPPoE → Static IP → DHCP
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_address" class="form-label">Alamat</label>
+                            <textarea class="form-control" id="edit_address" name="address" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="edit_latitude" class="form-label">Latitude (Koordinat)</label>
+                                    <input type="number" class="form-control" id="edit_latitude" name="latitude" step="0.00000001" placeholder="-6.2088">
+                                    <small class="text-muted">Contoh: -6.2088 (Jakarta)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="edit_longitude" class="form-label">Longitude (Koordinat)</label>
+                                    <input type="number" class="form-control" id="edit_longitude" name="longitude" step="0.00000001" placeholder="106.8456">
+                                    <small class="text-muted">Contoh: 106.8456 (Jakarta)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                <button type="button" class="btn btn-success" onclick="getCurrentLocation()" id="editGpsButton">
+                                    <i class="bx bx-location-plus me-1"></i> <span class="btn-text">Ambil Lokasi GPS</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="openMapPicker()">
+                                    <i class="bx bx-map me-1"></i> Pilih dari Peta
+                                </button>
+                            </div>
+                            <small class="text-muted mt-1 d-block">
+                                <i class="bi bi-info-circle me-1"></i>
+                                GPS: Pastikan perangkat di area terbuka untuk akurasi terbaik
+                            </small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_package_id" class="form-label">Paket *</label>
+                            <select class="form-control" id="edit_package_id" name="package_id" onchange="updateEditProfileField()" required>
+                                <option value="">Pilih Paket</option>
+                                <% if (packages && packages.length > 0) { %>
+                                    <% packages.forEach(function(package) { %>
+                                        <option value="<%= package.id %>" data-profile="<%= package.pppoe_profile || 'default' %>"><%= package.name %> - Rp <%= parseFloat(package.price).toLocaleString('id-ID') %></option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_odp_id" class="form-label">ODP (Optical Distribution Point)</label>
+                            <select class="form-control" id="edit_odp_id" name="odp_id">
+                                <option value="">Pilih ODP (Opsional)</option>
+                                <% if (odps && odps.length > 0) { %>
+                                    <% odps.forEach(function(odp) { %>
+                                        <option value="<%= odp.id %>" data-capacity="<%= odp.capacity %>" data-used="<%= odp.used_ports %>">
+                                            <% if (odp.parent_name) { %>
+                                                └─ <%= odp.name %> (<%= odp.code %>) - <%= odp.used_ports %>/<%= odp.capacity %> ports
+                                            <% } else { %>
+                                                <%= odp.name %> (<%= odp.code %>) - <%= odp.used_ports %>/<%= odp.capacity %> ports
+                                            <% } %>
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                            <small class="form-text text-muted">Pilih ODP tempat pelanggan akan disambungkan (opsional). Sub ODP ditandai dengan └─</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_pppoe_profile" class="form-label">PPPoE Profile</label>
+                            <input type="text" class="form-control" id="edit_pppoe_profile" name="pppoe_profile" placeholder="Profile akan otomatis terisi sesuai paket">
+                            <small class="form-text text-muted">Profile PPPoE yang akan digunakan untuk pelanggan ini</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_auto_suspension" class="form-label">Auto Suspension</label>
+                            <select class="form-control" id="edit_auto_suspension" name="auto_suspension">
+                                <option value="1">Ya - Isolir otomatis saat telat bayar</option>
+                                <option value="0">Tidak - Tidak diisolir otomatis</option>
+                            </select>
+                            <small class="form-text text-muted">Pilih apakah pelanggan akan diisolir otomatis saat telat bayar</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_billing_day" class="form-label">Tanggal Penagihan (1-28)</label>
+                            <input type="number" class="form-control" id="edit_billing_day" name="billing_day" min="1" max="28" value="15">
+                            <small class="form-text text-muted">Tanggal jatuh tempo tagihan setiap bulan. Nilai di luar 28 akan disesuaikan.</small>
+                        </div>
+                        
+                        <!-- Cable Connection Section for Edit -->
+                        <div class="card border-success mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bx bx-cable-car me-2"></i>Sambungkan Kabel (Opsional)</h6>
+                                <small class="text-muted">Konfigurasi jalur kabel dari ODP ke pelanggan</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_cable_type" class="form-label">Tipe Kabel</label>
+                                            <select class="form-select" id="edit_cable_type" name="cable_type">
+                                                <option value="">Pilih Tipe Kabel</option>
+                                                <option value="fiber">Fiber Optic</option>
+                                                <option value="copper">Copper</option>
+                                                <option value="wireless">Wireless</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_cable_length" class="form-label">Panjang Kabel (meter)</label>
+                                            <input type="number" class="form-control" id="edit_cable_length" name="cable_length" placeholder="50" min="1">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_port_number" class="form-label">Nomor Port ODP</label>
+                                            <input type="number" class="form-control" id="edit_port_number" name="port_number" placeholder="1" min="1" max="24">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_cable_status" class="form-label">Status Kabel</label>
+                                            <select class="form-select" id="edit_cable_status" name="cable_status">
+                                                <option value="connected">Terhubung</option>
+                                                <option value="disconnected">Terputus</option>
+                                                <option value="maintenance">Maintenance</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_cable_notes" class="form-label">Catatan Kabel</label>
+                                    <textarea class="form-control" id="edit_cable_notes" name="cable_notes" rows="2" placeholder="Catatan khusus tentang instalasi kabel..."></textarea>
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="bx bx-info-circle me-2"></i>
+                                    <strong>Info:</strong> Jika ODP sudah dipilih di atas, sistem akan otomatis membuat jalur kabel. Pastikan ODP memiliki kapasitas port yang tersedia.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="edit_status" class="form-label">Status</label>
+                            <select class="form-control" id="edit_status" name="status">
+                                <option value="active">Aktif</option>
+                                <option value="suspended">Isolir</option>
+                                <option value="inactive">Nonaktif</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Customers Modal -->
+    <div class="modal fade" id="importCustomersModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Restore Data Pelanggan (Import)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="importCustomersForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Pilih File (JSON atau XLSX)</label>
+                            <input type="file" id="customersFile" name="file" accept="application/json,.json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.xlsx" class="form-control" required>
+                            <small class="form-text text-muted">Dukungan: JSON (disarankan) atau Excel XLSX. JSON bisa berupa array atau { customers: [...] }.</small>
+                        </div>
+                        <div class="alert alert-info" role="alert">
+                            Catatan: Data dengan nomor telepon yang sama akan diupdate. Data baru akan dibuat otomatis.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-cloud-upload"></i> Import
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        $(document).ready(function() {
+            const dt = $('#customersTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/id.json'
+                },
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]]
+            });
+
+            // Update bulk delete button state
+            function updateBulkState() {
+                const anyChecked = $('.customer-checkbox:checked').length > 0;
+                $('#bulkDeleteBtn').prop('disabled', !anyChecked);
+                const total = $('.customer-checkbox').length;
+                const checked = $('.customer-checkbox:checked').length;
+                const selectAll = document.getElementById('selectAllCustomers');
+                selectAll.indeterminate = checked > 0 && checked < total;
+                selectAll.checked = checked > 0 && checked === total;
+            }
+
+            // Select all handler
+            $('#selectAllCustomers').on('change', function() {
+                const checked = this.checked;
+                $('.customer-checkbox').prop('checked', checked);
+                updateBulkState();
+            });
+
+            // Row checkbox handler
+            $(document).on('change', '.customer-checkbox', updateBulkState);
+
+            // Re-bind after table draw (pagination/search)
+            dt.on('draw', function() {
+                updateBulkState();
+            });
+
+            // Bulk delete click
+            $('#bulkDeleteBtn').on('click', function() {
+                const phones = $('.customer-checkbox:checked').map(function(){ return this.value; }).get();
+                if (phones.length === 0) return;
+                if (!confirm(`Hapus ${phones.length} pelanggan terpilih?`)) return;
+
+                const btn = $(this);
+                const original = btn.html();
+                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Menghapus...');
+
+                fetch('/admin/billing/customers/bulk-delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phones })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const s = data.summary || {}; 
+                        showToast('success', `Hapus massal selesai. Berhasil: ${s.success||0}, Gagal: ${s.failed||0}`);
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast('error', data.message || 'Gagal hapus massal');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('error', 'Terjadi kesalahan saat hapus massal');
+                })
+                .finally(() => {
+                    btn.prop('disabled', false).html(original);
+                });
+            });
+            
+            // Reset form when modal is hidden
+            $('#addCustomerModal').on('hidden.bs.modal', function() {
+                $('#addCustomerForm')[0].reset();
+            });
+            
+            $('#editCustomerModal').on('hidden.bs.modal', function() {
+                $('#editCustomerForm')[0].reset();
+            });
+
+            // Export customers JSON
+            $('#exportCustomersJsonBtn').on('click', function() {
+                window.location.href = '/admin/billing/export/customers.json';
+            });
+
+            // Export customers XLSX
+            $('#exportCustomersXlsxBtn').on('click', function() {
+                window.location.href = '/admin/billing/export/customers.xlsx';
+            });
+
+            // Import customers JSON
+            $('#importCustomersForm').on('submit', function(e) {
+                e.preventDefault();
+                const fileInput = document.getElementById('customersFile');
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    showToast('error', 'Silakan pilih file JSON terlebih dahulu');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+                submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Mengunggah...');
+
+                const isXlsx = /\.xlsx$/i.test(fileInput.files[0].name);
+                const url = isXlsx ? '/admin/billing/import/customers/xlsx' : '/admin/billing/import/customers/json';
+                fetch(url, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const s = data.summary || {};
+                        showToast('success', `Import selesai. Dibuat: ${s.created||0}, Diupdate: ${s.updated||0}, Gagal: ${s.failed||0}`);
+                        $('#importCustomersModal').modal('hide');
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        showToast('error', data.message || 'Gagal import data pelanggan');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('error', 'Terjadi kesalahan saat import');
+                })
+                .finally(() => {
+                    submitBtn.prop('disabled', false).html(originalText);
+                });
+            });
+        });
+
+        // Test function to manually set credentials
+        function testGenerateCredentials() {
+            const nameField = document.getElementById('name');
+            const usernameField = document.getElementById('username');
+            const emailField = document.getElementById('email');
+            
+            if (nameField && usernameField && emailField) {
+                const testValue = "jajaltest";
+                usernameField.value = testValue + "_280825";
+                emailField.value = testValue + "@gembok.com";
+                console.log("Manually set test values");
+            }
+        }
+
+        // Final clean function to generate both username and email from name
+        function generateCredentialsFromName() {
+            try {
+                const nameField = document.getElementById('name');
+                const usernameField = document.getElementById('username');
+                const emailField = document.getElementById('email');
+                
+                // Only proceed if name field has value
+                if (nameField && nameField.value) {
+                    const fullName = nameField.value;
+                    
+                    // Generate username if field is empty
+                    if (usernameField && !usernameField.value) {
+                        // Process character by character for username
+                        let cleanUsername = '';
+                        for (let i = 0; i < fullName.length && i < 15; i++) {
+                            const char = fullName[i].toLowerCase();
+                            if (char >= 'a' && char <= 'z') {
+                                cleanUsername += char;
+                            } else if (char >= '0' && char <= '9') {
+                                cleanUsername += char;
+                            } else if (char === ' ') {
+                                cleanUsername += '_';
+                            } else if (char === '_' && cleanUsername.length > 0 && cleanUsername[cleanUsername.length - 1] !== '_') {
+                                cleanUsername += char;
+                            }
+                            // Skip all other characters
+                        }
+                        
+                        // Remove trailing underscores
+                        cleanUsername = cleanUsername.replace(/_+$/, '');
+                        
+                        // If result is empty, use default
+                        if (!cleanUsername) {
+                            cleanUsername = 'user';
+                        }
+                        
+                        // Add date
+                        const now = new Date();
+                        const dateStr = String(now.getDate()).padStart(2, '0') + 
+                                       String(now.getMonth() + 1).padStart(2, '0') + 
+                                       String(now.getFullYear()).slice(-2);
+                        const finalUsername = cleanUsername + '_' + dateStr;
+                        
+                        usernameField.value = finalUsername;
+                    }
+                    
+                    // Generate email if field is empty
+                    if (emailField && !emailField.value) {
+                        // Process character by character for email
+                        let cleanEmail = '';
+                        for (let i = 0; i < fullName.length && i < 30; i++) {
+                            const char = fullName[i].toLowerCase();
+                            if (char >= 'a' && char <= 'z') {
+                                cleanEmail += char;
+                            } else if (char >= '0' && char <= '9') {
+                                cleanEmail += char;
+                            } else if (char === ' ') {
+                                cleanEmail += '.';
+                            } else if (char === '.' && cleanEmail.length > 0 && cleanEmail[cleanEmail.length - 1] !== '.') {
+                                cleanEmail += char;
+                            }
+                            // Skip all other characters
+                        }
+                        
+                        // Remove trailing dots
+                        cleanEmail = cleanEmail.replace(/\.+$/, '');
+                        
+                        // If result is empty, use default
+                        if (!cleanEmail) {
+                            cleanEmail = 'user';
+                        }
+                        
+                        const finalEmail = cleanEmail + '@gembok.com';
+                        emailField.value = finalEmail;
+                    }
+                }
+            } catch (error) {
+                console.error('Error in generateCredentialsFromName:', error);
+            }
+        }
+
+        function generateUsernameFromName() {
+            generateCredentialsFromName();
+        }
+        
+        function generateEmailFromName() {
+            generateCredentialsFromName();
+        }
+
+        // Debug function to test name value retrieval
+        function debugNameValue() {
+            const nameField = document.getElementById('name');
+            if (nameField) {
+                console.log('=== DEBUG NAME VALUE ===');
+                console.log('Raw value:', '"' + nameField.value + '"');
+                console.log('Length:', nameField.value.length);
+                console.log('Trimmed:', '"' + nameField.value.trim() + '"');
+                console.log('Char codes:', Array.from(nameField.value).map(c => c.charCodeAt(0)));
+                console.log('========================');
+            }
+        }
+
+        // Function to update profile field when package is selected
+        function updateProfileField() {
+            const packageSelect = document.getElementById('package_id');
+            const profileInput = document.getElementById('pppoe_profile');
+            const selectedOption = packageSelect.options[packageSelect.selectedIndex];
+            
+            if (selectedOption && selectedOption.dataset.profile) {
+                profileInput.value = selectedOption.dataset.profile;
+            }
+        }
+
+        // Function to update profile field in edit modal
+        function updateEditProfileField() {
+            const packageSelect = document.getElementById('edit_package_id');
+            const profileInput = document.getElementById('edit_pppoe_profile');
+            const selectedOption = packageSelect.options[packageSelect.selectedIndex];
+            
+            if (selectedOption && selectedOption.dataset.profile) {
+                profileInput.value = selectedOption.dataset.profile;
+            }
+        }
+
+        // Add Customer Form
+        $('#addCustomerForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Client-side validation
+            const name = $('#name').val().trim();
+            const username = $('#username').val().trim();
+            const phone = $('#phone').val().trim();
+            const package_id = $('#package_id').val();
+            const createPppoe = $('#create_pppoe_user').is(':checked');
+            const pppoeUser = $('#pppoe_username').val().trim();
+            
+            if (!name || !username || !phone || !package_id) {
+                showToast('error', 'Nama, username, telepon, dan paket wajib diisi');
+                return;
+            }
+            
+            // Validate username format
+            if (!/^[a-z0-9_]+$/.test(username)) {
+                showToast('error', 'Username hanya boleh berisi huruf kecil, angka, dan underscore');
+                return;
+            }
+            if (createPppoe && !pppoeUser) {
+                showToast('error', 'Isi PPPoE Username jika ingin membuat user di Mikrotik');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.text();
+            submitBtn.prop('disabled', true).text('Menyimpan...');
+            
+            const formData = {
+                name: name,
+                username: username,
+                phone: phone,
+                email: $('#email').val().trim(),
+                pppoe_username: pppoeUser,
+                address: $('#address').val().trim(),
+                package_id: package_id,
+                odp_id: $('#odp_id').val() || null,
+                pppoe_profile: $('#pppoe_profile').val().trim() || 'default',
+                auto_suspension: $('#auto_suspension').val(),
+                create_pppoe_user: createPppoe ? 1 : 0,
+                pppoe_password: $('#pppoe_password').val().trim(),
+                billing_day: (function() {
+                    const v = parseInt($('#billing_day').val(), 10);
+                    if (Number.isFinite(v)) return Math.min(Math.max(v, 1), 28);
+                    return 15;
+                })(),
+                latitude: $('#latitude').val().trim(),
+                longitude: $('#longitude').val().trim(),
+                static_ip: $('#static_ip').val().trim(),
+                assigned_ip: $('#assigned_ip').val().trim(),
+                mac_address: $('#mac_address').val().trim(),
+                // Cable connection data
+                cable_type: $('#cable_type').val().trim(),
+                cable_length: $('#cable_length').val() ? parseInt($('#cable_length').val()) : null,
+                port_number: $('#port_number').val() ? parseInt($('#port_number').val()) : null,
+                cable_status: $('#cable_status').val().trim() || 'connected',
+                cable_notes: $('#cable_notes').val().trim()
+            };
+            
+            fetch('/admin/billing/customers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setTimeout(() => {
+                        showToast('success', 'Pelanggan berhasil ditambahkan');
+                        setTimeout(() => location.reload(), 1000);
+                    }, 300);
+                } else {
+                    showToast('error', data.message || 'Gagal menambahkan pelanggan');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Terjadi kesalahan');
+            })
+            .finally(() => {
+                submitBtn.prop('disabled', false).text(originalText);
+            });
+        });
+
+        // Toggle PPPoE password row visibility
+        $('#create_pppoe_user').on('change', function(){
+            const show = $(this).is(':checked');
+            $('#pppoe_password_row').css('display', show ? '' : 'none');
+        });
+
+        // Generate password button
+        $('#genPppoePassBtn').on('click', function(){
+            const pass = Math.random().toString(36).slice(-8) + Math.floor(Math.random()*10);
+            $('#pppoe_password').val(pass);
+        });
+
+        // Edit Customer
+        function editCustomer(phone) {
+            fetch(`/admin/billing/api/customers/${phone}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const customer = data.customer;
+                        $('#edit_name').val(customer.name);
+                        $('#edit_username').val(customer.username || '');
+                        $('#edit_phone').val(customer.phone).data('original-phone', customer.phone);
+                        $('#edit_email').val(customer.email || '');
+                        $('#edit_pppoe_username').val(customer.pppoe_username || '');
+                        $('#edit_address').val(customer.address || '');
+                        $('#edit_latitude').val(customer.latitude || '');
+                        $('#edit_longitude').val(customer.longitude || '');
+                        $('#edit_package_id').val(customer.package_id || '');
+                        $('#edit_odp_id').val(customer.odp_id || '');
+                        $('#edit_pppoe_profile').val(customer.pppoe_profile || '');
+                        $('#edit_auto_suspension').val(customer.auto_suspension !== undefined ? customer.auto_suspension : 1);
+                        $('#edit_status').val(customer.status);
+                        $('#edit_billing_day').val((function(){
+                            const v = parseInt(customer.billing_day, 10);
+                            if (Number.isFinite(v)) return Math.min(Math.max(v, 1), 28);
+                            return 15;
+                        })());
+                        // Fill static IP fields
+                        $('#edit_static_ip').val(customer.static_ip || '');
+                        $('#edit_assigned_ip').val(customer.assigned_ip || '');
+                        $('#edit_mac_address').val(customer.mac_address || '');
+                        // Fill cable connection fields
+                        $('#edit_cable_type').val(customer.cable_type || '');
+                        $('#edit_cable_length').val(customer.cable_length || '');
+                        $('#edit_port_number').val(customer.port_number || '');
+                        $('#edit_cable_status').val(customer.cable_status || 'connected');
+                        $('#edit_cable_notes').val(customer.cable_notes || '');
+                        $('#editCustomerModal').modal('show');
+                    } else {
+                        showToast('error', data.message || 'Gagal mengambil data pelanggan');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('error', 'Terjadi kesalahan');
+                });
+        }
+
+        // Update Customer Form
+        $('#editCustomerForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Helper aman untuk ambil nilai
+            const safeVal = (sel) => {
+                const $el = $(sel);
+                if (!$el.length) return '';
+                const v = $el.val();
+                return (v == null ? '' : String(v)).trim();
+            };
+            const safeInt = (sel) => {
+                const $el = $(sel);
+                if (!$el.length) return null;
+                const v = parseInt($el.val(), 10);
+                return Number.isFinite(v) ? v : null;
+            };
+            
+            // Client-side validation
+            const name = safeVal('#edit_name');
+            const username = safeVal('#edit_username');
+            const phone = safeVal('#edit_phone');
+            const package_id = $('#edit_package_id').val();
+            
+            if (!name || !username || !phone || !package_id) {
+                showToast('error', 'Nama, username, telepon, dan paket wajib diisi');
+                return;
+            }
+            
+            // Validate username format
+            if (!/^[a-z0-9_]+$/.test(username)) {
+                showToast('error', 'Username hanya boleh berisi huruf kecil, angka, dan underscore');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.text();
+            submitBtn.prop('disabled', true).text('Mengupdate...');
+            
+            const originalPhone = $('#edit_phone').data('original-phone'); // Store original phone for API call
+            const formData = {
+                name: name,
+                username: username,
+                phone: phone,
+                email: safeVal('#edit_email'),
+                pppoe_username: safeVal('#edit_pppoe_username'),
+                address: safeVal('#edit_address'),
+                package_id: package_id,
+                odp_id: $('#edit_odp_id').length ? ($('#edit_odp_id').val() || null) : null,
+                pppoe_profile: safeVal('#edit_pppoe_profile') || 'default',
+                auto_suspension: $('#edit_auto_suspension').length ? $('#edit_auto_suspension').val() : undefined,
+                status: $('#edit_status').length ? $('#edit_status').val() : undefined,
+                billing_day: (function() {
+                    const v = parseInt($('#edit_billing_day').val(), 10);
+                    if (Number.isFinite(v)) return Math.min(Math.max(v, 1), 28);
+                    return 15;
+                })(),
+                latitude: safeVal('#edit_latitude'),
+                longitude: safeVal('#edit_longitude'),
+                static_ip: safeVal('#edit_static_ip'),
+                assigned_ip: safeVal('#edit_assigned_ip'),
+                mac_address: safeVal('#edit_mac_address'),
+                // Cable connection data
+                cable_type: safeVal('#edit_cable_type'),
+                cable_length: safeInt('#edit_cable_length'),
+                port_number: safeInt('#edit_port_number'),
+                cable_status: safeVal('#edit_cable_status') || 'connected',
+                cable_notes: safeVal('#edit_cable_notes')
+            };
+            
+            fetch(`/admin/billing/customers/${originalPhone || phone}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setTimeout(() => {
+                        showToast('success', 'Pelanggan berhasil diupdate');
+                        setTimeout(() => location.reload(), 1000);
+                    }, 300);
+                } else {
+                    showToast('error', data.message || 'Gagal mengupdate pelanggan');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Terjadi kesalahan');
+            })
+            .finally(() => {
+                submitBtn.prop('disabled', false).text(originalText);
+            });
+        });
+
+        // View customer detail
+        function viewCustomerDetail(phone) {
+            // Navigate to customer detail page
+            window.location.href = `/admin/billing/customers/${phone}`;
+        }
+
+        // Delete customer
+        async function deleteCustomer(phone) {
+            if (!confirm('Apakah Anda yakin ingin menghapus pelanggan ini?')) return;
+            
+            try {
+                const response = await fetch(`/admin/billing/customers/${phone}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast(result.message, 'error');
+                }
+            } catch (error) {
+                showToast('Terjadi kesalahan saat menghapus data', 'error');
+            }
+        }
+
+        // Get current location using GPS with improved permission handling
+        async function getCurrentLocation() {
+            // Find the GPS button that was clicked
+            const gpsButton = document.getElementById('gpsButton') || document.getElementById('editGpsButton');
+            const originalButtonHtml = gpsButton ? gpsButton.innerHTML : '';
+            
+            // Update button to show loading state
+            if (gpsButton) {
+                gpsButton.disabled = true;
+                gpsButton.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i> <span class="btn-text">Mengambil Lokasi...</span>';
+                gpsButton.className = 'btn btn-warning';
+            }
+            
+            // Check if geolocation is supported
+            if (!navigator.geolocation) {
+                showToast('Geolocation tidak didukung di browser ini', 'error');
+                showLocationHelp();
+                resetGPSButton(gpsButton, originalButtonHtml);
+                return;
+            }
+
+            // Check permission first (modern browsers)
+            if ('permissions' in navigator) {
+                try {
+                    const permission = await navigator.permissions.query({name: 'geolocation'});
+                    
+                    if (permission.state === 'denied') {
+                        showLocationPermissionDeniedDialog();
+                        resetGPSButton(gpsButton, originalButtonHtml);
+                        return;
+                    }
+                    
+                    if (permission.state === 'prompt') {
+                        showLocationPermissionPromptDialog();
+                    }
+                } catch (error) {
+                    console.log('Permission API not supported, continuing with geolocation request');
+                }
+            }
+
+            // Show loading state
+            showToast('Mengambil lokasi GPS...', 'info');
+            
+            // Request location with enhanced options
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    
+                    // Update form fields
+                    $('#latitude').val(lat.toFixed(8));
+                    $('#longitude').val(lng.toFixed(8));
+                    
+                    // Update edit form if open
+                    if ($('#edit_latitude').length) {
+                        $('#edit_latitude').val(lat.toFixed(8));
+                        $('#edit_longitude').val(lng.toFixed(8));
+                    }
+                    
+                    let message = 'Lokasi berhasil diambil dari GPS!';
+                    if (accuracy > 100) {
+                        message += ` (Akurasi: ${Math.round(accuracy)}m - coba di area terbuka untuk akurasi lebih baik)`;
+                    } else {
+                        message += ` (Akurasi: ${Math.round(accuracy)}m)`;
+                    }
+                    
+                    showToast(message, 'success');
+                    
+                    // Update button to show success state briefly
+                    if (gpsButton) {
+                        gpsButton.className = 'btn btn-success';
+                        gpsButton.innerHTML = '<i class="bx bx-check me-1"></i> <span class="btn-text">Lokasi Berhasil!</span>';
+                        
+                        setTimeout(() => {
+                            resetGPSButton(gpsButton, originalButtonHtml);
+                        }, 2000);
+                    }
+                },
+                function(error) {
+                    handleLocationError(error);
+                    resetGPSButton(gpsButton, originalButtonHtml);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000, // Increased timeout
+                    maximumAge: 60000
+                }
+            );
+        }
+        
+        // Reset GPS button to original state
+        function resetGPSButton(button, originalHtml) {
+            if (button && originalHtml) {
+                button.disabled = false;
+                button.className = 'btn btn-success';
+                button.innerHTML = originalHtml;
+            }
+        }
+
+        // Handle location errors with detailed guidance
+        function handleLocationError(error) {
+            let errorMessage = 'Gagal mengambil lokasi: ';
+            let showHelp = false;
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = 'Izin lokasi ditolak';
+                    showLocationPermissionDeniedDialog();
+                    return;
+                    
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage += 'Sinyal GPS tidak tersedia. Pastikan Anda berada di area terbuka.';
+                    showHelp = true;
+                    break;
+                    
+                case error.TIMEOUT:
+                    errorMessage += 'Timeout mengambil lokasi. Coba lagi atau pindah ke area dengan sinyal GPS lebih baik.';
+                    showHelp = true;
+                    break;
+                    
+                default:
+                    errorMessage += 'Error tidak diketahui. Coba lagi atau gunakan input manual.';
+                    showHelp = true;
+            }
+            
+            showToast(errorMessage, 'error');
+            
+            if (showHelp) {
+                setTimeout(() => showLocationHelp(), 2000);
+            }
+        }
+
+        // Show dialog when permission is denied
+        function showLocationPermissionDeniedDialog() {
+            const modalHtml = `
+                <div class="modal fade" id="locationPermissionModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning text-dark">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-geo-alt-fill me-2"></i>Izin Lokasi Ditolak
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Untuk menggunakan fitur GPS, ikuti langkah berikut:</strong>
+                                </div>
+                                
+                                <div class="accordion" id="locationHelpAccordion">
+                                    <!-- Chrome/Android -->
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chromeHelp">
+                                                <i class="bi bi-google me-2"></i>Chrome / Android
+                                            </button>
+                                        </h2>
+                                        <div id="chromeHelp" class="accordion-collapse collapse show">
+                                            <div class="accordion-body">
+                                                <ol>
+                                                    <li>Klik ikon <strong>🔒</strong> di sebelah kiri URL</li>
+                                                    <li>Pilih <strong>"Izinkan"</strong> untuk Lokasi</li>
+                                                    <li>Refresh halaman dan coba lagi</li>
+                                                    <li>Atau masuk ke <strong>Pengaturan > Situs > Izin > Lokasi</strong></li>
+                                                </ol>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Safari/iOS -->
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#safariHelp">
+                                                <i class="bi bi-phone me-2"></i>Safari / iPhone
+                                            </button>
+                                        </h2>
+                                        <div id="safariHelp" class="accordion-collapse collapse">
+                                            <div class="accordion-body">
+                                                <ol>
+                                                    <li>Buka <strong>Pengaturan iPhone</strong></li>
+                                                    <li>Scroll ke <strong>Safari</strong></li>
+                                                    <li>Pilih <strong>Lokasi</strong></li>
+                                                    <li>Pilih <strong>"Tanya" atau "Izinkan"</strong></li>
+                                                    <li>Kembali ke browser dan refresh halaman</li>
+                                                </ol>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <strong>Alternatif:</strong>
+                                    <ul>
+                                        <li>Gunakan <strong>"Pilih dari Peta"</strong> untuk memilih lokasi manual</li>
+                                        <li>Input koordinat langsung jika Anda mengetahuinya</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                <button type="button" class="btn btn-primary" onclick="openMapPicker(); $('#locationPermissionModal').modal('hide');">Pilih dari Peta</button>
+                                <button type="button" class="btn btn-success" onclick="location.reload()">Coba Lagi</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal
+            $('#locationPermissionModal').remove();
+            $('body').append(modalHtml);
+            
+            // Show modal
+            new bootstrap.Modal(document.getElementById('locationPermissionModal')).show();
+        }
+
+        // Show dialog when permission prompt will appear
+        function showLocationPermissionPromptDialog() {
+            const modalHtml = `
+                <div class="modal fade" id="locationPromptModal" tabindex="-1">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content">
+                            <div class="modal-header bg-info text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-geo-alt me-2"></i>Izin Lokasi Diperlukan
+                                </h5>
+                            </div>
+                            <div class="modal-body text-center">
+                                <i class="bi bi-geo-alt-fill text-info" style="font-size: 3rem;"></i>
+                                <p class="mt-3">Browser akan meminta izin akses lokasi.</p>
+                                <p><strong>Silakan klik "Izinkan" atau "Allow"</strong> untuk melanjutkan.</p>
+                            </div>
+                            <div class="modal-footer justify-content-center">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Mengerti</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            $('#locationPromptModal').remove();
+            $('body').append(modalHtml);
+            
+            const modal = new bootstrap.Modal(document.getElementById('locationPromptModal'));
+            modal.show();
+            
+            // Auto close after 3 seconds
+            setTimeout(() => modal.hide(), 3000);
+        }
+
+        // Show general location help
+        function showLocationHelp() {
+            const modalHtml = `
+                <div class="modal fade" id="locationHelpModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-question-circle me-2"></i>Tips Menggunakan GPS
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6><i class="bi bi-check-circle text-success me-2"></i>Untuk GPS Akurat:</h6>
+                                        <ul>
+                                            <li>Berada di area terbuka</li>
+                                            <li>Jauh dari gedung tinggi</li>
+                                            <li>GPS di perangkat sudah aktif</li>
+                                            <li>Koneksi internet stabil</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="bi bi-x-circle text-danger me-2"></i>Hindari:</h6>
+                                        <ul>
+                                            <li>Di dalam ruangan tertutup</li>
+                                            <li>Di bawah jembatan</li>
+                                            <li>Area dengan gangguan sinyal</li>
+                                            <li>Cuaca buruk (hujan deras)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info mt-3">
+                                    <i class="bi bi-lightbulb me-2"></i>
+                                    <strong>Alternatif:</strong> Jika GPS tidak berhasil, gunakan "Pilih dari Peta" untuk memilih lokasi secara manual.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                <button type="button" class="btn btn-primary" onclick="openMapPicker(); $('#locationHelpModal').modal('hide');">Pilih dari Peta</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            $('#locationHelpModal').remove();
+            $('body').append(modalHtml);
+            new bootstrap.Modal(document.getElementById('locationHelpModal')).show();
+        }
+
+        // Open map picker modal
+        function openMapPicker() {
+            // Create map picker modal
+            const modalHtml = `
+                <div class="modal fade" id="mapPickerModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Pilih Lokasi dari Peta</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" id="mapSearch" placeholder="Cari lokasi (contoh: Jakarta, Bandung)">
+                                </div>
+                                <div id="map" style="height: 400px; width: 100%; border: 1px solid #ddd;"></div>
+                                <div class="mt-3">
+                                    <strong>Koordinat yang dipilih:</strong><br>
+                                    Latitude: <span id="selectedLat">-</span><br>
+                                    Longitude: <span id="selectedLng">-</span>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="button" class="btn btn-primary" onclick="applyMapLocation()">Gunakan Lokasi Ini</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            $('#mapPickerModal').remove();
+            
+            // Add modal to body
+            $('body').append(modalHtml);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('mapPickerModal'));
+            modal.show();
+            
+            // Initialize map after modal is shown
+            setTimeout(() => {
+                initMapPicker();
+            }, 500);
+        }
+
+        // Initialize map picker
+        function initMapPicker() {
+            // Default location (Jakarta)
+            const defaultLat = -6.2088;
+            const defaultLng = 106.8456;
+            
+            // Create map using Leaflet (free alternative to Google Maps)
+            const map = L.map('map').setView([defaultLat, defaultLng], 10);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Add marker
+            let marker = L.marker([defaultLat, defaultLng]).addTo(map);
+            
+            // Update coordinates display
+            document.getElementById('selectedLat').textContent = defaultLat.toFixed(8);
+            document.getElementById('selectedLng').textContent = defaultLng.toFixed(8);
+            
+            // Handle map click
+            map.on('click', function(e) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                
+                // Update marker
+                marker.setLatLng([lat, lng]);
+                
+                // Update coordinates display
+                document.getElementById('selectedLat').textContent = lat.toFixed(8);
+                document.getElementById('selectedLng').textContent = lng.toFixed(8);
+            });
+            
+            // Handle search
+            document.getElementById('mapSearch').addEventListener('input', function(e) {
+                const query = e.target.value;
+                if (query.length > 3) {
+                    // Simple geocoding using OpenStreetMap Nominatim
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.length > 0) {
+                                const lat = parseFloat(data[0].lat);
+                                const lng = parseFloat(data[0].lon);
+                                
+                                map.setView([lat, lng], 15);
+                                marker.setLatLng([lat, lng]);
+                                
+                                document.getElementById('selectedLat').textContent = lat.toFixed(8);
+                                document.getElementById('selectedLng').textContent = lng.toFixed(8);
+                            }
+                        })
+                        .catch(error => console.error('Geocoding error:', error));
+                }
+            });
+        }
+
+        // Apply selected map location to form
+        function applyMapLocation() {
+            const lat = document.getElementById('selectedLat').textContent;
+            const lng = document.getElementById('selectedLng').textContent;
+            
+            if (lat !== '-' && lng !== '-') {
+                // Update add form
+                $('#latitude').val(lat);
+                $('#longitude').val(lng);
+                
+                // Update edit form if open
+                if ($('#edit_latitude').length) {
+                    $('#edit_latitude').val(lat);
+                    $('#edit_longitude').val(lng);
+                }
+                
+                showToast('Lokasi berhasil diterapkan!', 'success');
+                
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('mapPickerModal')).hide();
+            } else {
+                showToast('Pilih lokasi terlebih dahulu', 'error');
+            }
+        }
+
+        // Toast notification function
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+            
+            const toastHtml = `
+                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = toastContainer.lastElementChild;
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+            
+            // Remove toast element after it's hidden
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+            return container;
+        }
+        
+        // Function to generate username and email from name
+        function generateCredentialsFromName() {
+            const nameInput = document.getElementById('name');
+            const usernameInput = document.getElementById('username');
+            const emailInput = document.getElementById('email');
+            
+            if (!nameInput || !usernameInput) return;
+            
+            const name = nameInput.value.trim();
+            if (!name) {
+                usernameInput.value = '';
+                if (emailInput) emailInput.value = '';
+                return;
+            }
+            
+            // Get current date in DDMMYY format
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2);
+            const dateStr = day + month + year;
+            
+            // Process name: remove special characters, replace spaces with underscores
+            let processedName = name.toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')  // Remove special characters
+                .replace(/\s+/g, '_')         // Replace spaces with underscores
+                .replace(/_+/g, '_')          // Replace multiple underscores with single
+                .replace(/^_|_$/g, '');       // Remove leading/trailing underscores
+            
+            // If processed name is empty, use 'user'
+            if (!processedName) processedName = 'user';
+            
+            // Generate username
+            const baseUsername = processedName + '_' + dateStr;
+            usernameInput.value = baseUsername;
+            
+            // Generate email if email field exists
+            if (emailInput) {
+                emailInput.value = processedName + '@gembok.com';
+            }
+        }
+    </script>
+</body>
+</html> 

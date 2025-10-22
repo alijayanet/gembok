@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %> - Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        .job-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .status-badge {
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+        }
+        
+        .detail-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-section {
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .history-item {
+            border-left: 3px solid #dee2e6;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .history-item.scheduled { border-left-color: #ffc107; }
+        .history-item.assigned { border-left-color: #17a2b8; }
+        .history-item.in_progress { border-left-color: #007bff; }
+        .history-item.completed { border-left-color: #28a745; }
+        .history-item.cancelled { border-left-color: #dc3545; }
+        
+        .action-buttons {
+            position: sticky;
+            top: 20px;
+        }
+        
+        .priority-badge {
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .priority-normal { background-color: #6c757d; }
+        .priority-high { background-color: #fd7e14; }
+        .priority-urgent { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Include Admin Responsive Sidebar -->
+        <%- include('../partials/admin-responsive-sidebar', { page: 'installations', settings: settings, versionInfo: versionInfo, versionBadge: versionBadge }) %>
+        
+        <main class="col-md-10 ms-sm-auto main-content">
+            <!-- Header -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-tools me-2"></i>Detail Job Instalasi
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="/admin/installations" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Kembali
+                        </a>
+                        <a href="/admin/installations/edit/<%= job.id %>" class="btn btn-primary">
+                            <i class="bi bi-pencil me-2"></i>Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Header -->
+            <div class="job-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">
+                            <i class="bi bi-tools me-2"></i><%= job.job_number || 'N/A' %>
+                        </h2>
+                        <p class="mb-1">
+                            <i class="bi bi-person me-2"></i><%= job.customer_name || 'N/A' %>
+                        </p>
+                        <p class="mb-0">
+                            <i class="bi bi-geo-alt me-2"></i><%= job.customer_address || 'Alamat tidak tersedia' %>
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <span class="badge status-badge 
+                            <%= job.status === 'scheduled' ? 'bg-warning' : '' %>
+                            <%= job.status === 'assigned' ? 'bg-info' : '' %>
+                            <%= job.status === 'in_progress' ? 'bg-primary' : '' %>
+                            <%= job.status === 'completed' ? 'bg-success' : '' %>
+                            <%= job.status === 'cancelled' ? 'bg-danger' : '' %>">
+                            <%= job.status === 'scheduled' ? 'Terjadwal' : '' %>
+                            <%= job.status === 'assigned' ? 'Ditugaskan' : '' %>
+                            <%= job.status === 'in_progress' ? 'Sedang Proses' : '' %>
+                            <%= job.status === 'completed' ? 'Selesai' : '' %>
+                            <%= job.status === 'cancelled' ? 'Dibatalkan' : '' %>
+                        </span>
+                        <% if (job.priority) { %>
+                            <br><span class="badge priority-badge priority-<%= job.priority %> mt-2">
+                                Prioritas: <%= job.priority === 'normal' ? 'Normal' : job.priority === 'high' ? 'Tinggi' : 'Urgent' %>
+                            </span>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-md-8">
+                    <!-- Customer Information -->
+                    <div class="card detail-card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-person-circle me-2"></i>Informasi Pelanggan
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="detail-section">
+                                        <strong>Nama Pelanggan:</strong><br>
+                                        <%= job.customer_name || 'N/A' %>
+                                    </div>
+                                    <div class="detail-section">
+                                        <strong>Nomor Telepon:</strong><br>
+                                        <a href="tel:<%= job.customer_phone || '' %>" class="text-decoration-none">
+                                            <i class="bi bi-telephone me-1"></i><%= job.customer_phone || 'N/A' %>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-section">
+                                        <strong>Alamat:</strong><br>
+                                        <%= job.customer_address || 'Alamat tidak tersedia' %>
+                                    </div>
+                                                                         <div class="detail-section">
+                                         <strong>Koordinat GPS:</strong><br>
+                                         <% if (job.customer_latitude && job.customer_longitude) { %>
+                                             <%= job.customer_latitude %>, <%= job.customer_longitude %>
+                                             <a href="https://maps.google.com/?q=<%= job.customer_latitude %>,<%= job.customer_longitude %>" 
+                                                target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                                 <i class="bi bi-map me-1"></i>Lihat di Maps
+                                             </a>
+                                         <% } else { %>
+                                             Koordinat tidak tersedia
+                                         <% } %>
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Installation Details -->
+                    <div class="card detail-card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-tools me-2"></i>Detail Instalasi
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="detail-section">
+                                        <strong>Paket Internet:</strong><br>
+                                        <%= job.package_name || 'N/A' %>
+                                        <% if (job.package_price) { %>
+                                            <br><small class="text-muted">
+                                                Harga: Rp <%= new Intl.NumberFormat('id-ID').format(job.package_price) %>
+                                            </small>
+                                        <% } %>
+                                    </div>
+                                    <div class="detail-section">
+                                        <strong>Tanggal Instalasi:</strong><br>
+                                        <%= job.installation_date ? new Date(job.installation_date).toLocaleDateString('id-ID', {
+                                            weekday: 'long',
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        }) : 'TBD' %>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-section">
+                                        <strong>Waktu Instalasi:</strong><br>
+                                        <%= job.installation_time || 'Waktu tidak ditentukan' %>
+                                    </div>
+                                    <div class="detail-section">
+                                        <strong>Durasi Estimasi:</strong><br>
+                                        <%= job.estimated_duration || 'Durasi tidak ditentukan' %>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <% if (job.equipment_needed) { %>
+                                <div class="detail-section">
+                                    <strong>Peralatan yang Diperlukan:</strong><br>
+                                    <%= job.equipment_needed %>
+                                </div>
+                            <% } %>
+                            
+                            <% if (job.notes) { %>
+                                <div class="detail-section">
+                                    <strong>Catatan:</strong><br>
+                                    <%= job.notes %>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Technician Assignment -->
+                    <div class="card detail-card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-person-workspace me-2"></i>Penugasan Teknisi
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <% if (job.assigned_technician_id) { %>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="detail-section">
+                                            <strong>Teknisi:</strong><br>
+                                            <%= job.technician_name || 'N/A' %>
+                                        </div>
+                                        <div class="detail-section">
+                                            <strong>Nomor Telepon:</strong><br>
+                                            <a href="tel:<%= job.technician_phone || '' %>" class="text-decoration-none">
+                                                <i class="bi bi-telephone me-1"></i><%= job.technician_phone || 'N/A' %>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="detail-section">
+                                            <strong>Status Penugasan:</strong><br>
+                                            <span class="badge bg-info">Ditugaskan</span>
+                                        </div>
+                                        <div class="detail-section">
+                                            <strong>Tanggal Penugasan:</strong><br>
+                                            <%= job.assigned_at ? new Date(job.assigned_at).toLocaleDateString('id-ID') : 'Tidak diketahui' %>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } else { %>
+                                <div class="text-center py-4">
+                                    <i class="bi bi-person-x text-muted" style="font-size: 3rem;"></i>
+                                    <h6 class="mt-3 text-muted">Belum ada teknisi yang ditugaskan</h6>
+                                    <button class="btn btn-primary mt-2" onclick="assignTechnician('<%= job.id %>')">
+                                        <i class="bi bi-person-plus me-2"></i>Tugaskan Teknisi
+                                    </button>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Status History -->
+                    <div class="card detail-card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-clock-history me-2"></i>Riwayat Status
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <% if (statusHistory && statusHistory.length > 0) { %>
+                                <% statusHistory.forEach(history => { %>
+                                    <div class="history-item <%= history.new_status %>">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>Status berubah dari <%= history.old_status %> ke <%= history.new_status %></strong><br>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    <%= new Date(history.created_at).toLocaleString('id-ID') %>
+                                                </small>
+                                                <% if (history.notes) { %>
+                                                    <br><small class="text-muted"><%= history.notes %></small>
+                                                <% } %>
+                                            </div>
+                                            <span class="badge bg-secondary"><%= history.changed_by_type %></span>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="text-center py-4">
+                                    <i class="bi bi-clock text-muted" style="font-size: 3rem;"></i>
+                                    <h6 class="mt-3 text-muted">Belum ada riwayat status</h6>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Actions -->
+                <div class="col-md-4">
+                    <div class="action-buttons">
+                        <!-- Quick Actions -->
+                        <div class="card detail-card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-lightning me-2"></i>Aksi Cepat
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <% if (job.status === 'scheduled') { %>
+                                    <button class="btn btn-primary w-100 mb-2" onclick="assignTechnician('<%= job.id %>')">
+                                        <i class="bi bi-person-plus me-2"></i>Tugaskan Teknisi
+                                    </button>
+                                <% } %>
+                                
+                                <% if (job.status === 'assigned') { %>
+                                    <button class="btn btn-info w-100 mb-2" onclick="startInstallation('<%= job.id %>')">
+                                        <i class="bi bi-play-circle me-2"></i>Mulai Instalasi
+                                    </button>
+                                <% } %>
+                                
+                                <% if (job.status === 'in_progress') { %>
+                                    <button class="btn btn-success w-100 mb-2" onclick="completeInstallation('<%= job.id %>')">
+                                        <i class="bi bi-check-circle me-2"></i>Tandai Selesai
+                                    </button>
+                                <% } %>
+                                
+                                <button class="btn btn-warning w-100 mb-2" onclick="editJob('<%= job.id %>')">
+                                    <i class="bi bi-pencil me-2"></i>Edit Job
+                                </button>
+                                
+                                <button class="btn btn-danger w-100 mb-2" onclick="cancelJob('<%= job.id %>')">
+                                    <i class="bi bi-x-circle me-2"></i>Batal Job
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Job Information -->
+                        <div class="card detail-card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>Informasi Job
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    <small class="text-muted">Dibuat pada:</small><br>
+                                    <%= job.created_at ? new Date(job.created_at).toLocaleString('id-ID') : 'Tidak diketahui' %>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">Terakhir diupdate:</small><br>
+                                    <%= job.updated_at ? new Date(job.updated_at).toLocaleString('id-ID') : 'Tidak diketahui' %>
+                                </div>
+                                <% if (job.completed_at) { %>
+                                    <div class="mb-2">
+                                        <small class="text-muted">Selesai pada:</small><br>
+                                        <%= new Date(job.completed_at).toLocaleString('id-ID') %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <!-- WhatsApp Actions -->
+                        <div class="card detail-card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-whatsapp me-2"></i>Notifikasi WhatsApp
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <% if (job.customer_phone) { %>
+                                    <button class="btn btn-success w-100 mb-2" onclick="sendCustomerNotification('<%= job.customer_phone %>', '<%= job.job_number %>')">
+                                        <i class="bi bi-whatsapp me-2"></i>Kirim ke Pelanggan
+                                    </button>
+                                <% } %>
+                                
+                                <% if (job.technician_phone) { %>
+                                    <button class="btn btn-info w-100 mb-2" onclick="sendTechnicianNotification('<%= job.technician_phone %>', '<%= job.job_number %>')">
+                                        <i class="bi bi-whatsapp me-2"></i>Kirim ke Teknisi
+                                    </button>
+                                <% } %>
+                                
+                                <div class="alert alert-info mt-3">
+                                    <small>
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Notifikasi akan dibuka di WhatsApp Web/App
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function assignTechnician(jobId) {
+        // Redirect to main installations page with assignment modal
+        window.location.href = `/admin/installations?assign=${jobId}`;
+    }
+    
+    function startInstallation(jobId) {
+        if (confirm('Mulai instalasi untuk job ini?')) {
+            // TODO: Implement start installation
+            alert('Fitur mulai instalasi akan tersedia segera');
+        }
+    }
+    
+    function completeInstallation(jobId) {
+        if (confirm('Tandai instalasi ini sebagai selesai?')) {
+            // TODO: Implement complete installation
+            alert('Fitur tandai selesai akan tersedia segera');
+        }
+    }
+    
+    function editJob(jobId) {
+        window.location.href = `/admin/installations/edit/${jobId}`;
+    }
+    
+    function cancelJob(jobId) {
+        if (!confirm('Apakah Anda yakin ingin membatalkan job instalasi ini?')) return;
+        const reason = prompt('Alasan pembatalan (opsional):', 'Dibatalkan oleh admin');
+        fetch(`/admin/installations/cancel/${jobId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ reason })
+        }).then(r => r.json()).then(res => {
+            if (res.success) {
+                window.location.reload();
+            } else {
+                alert(res.message || 'Gagal membatalkan job');
+            }
+        }).catch(() => alert('Gagal membatalkan job'));
+    }
+    
+    function sendCustomerNotification(phone, jobNumber) {
+        const message = `🔧 *UPDATE JOB INSTALASI* 🔧\n\n` +
+                       `*Job Number:* ${jobNumber}\n` +
+                       `*Status:* Sedang dalam proses\n\n` +
+                       `Tim teknisi kami akan menghubungi Anda segera untuk konfirmasi jadwal instalasi.\n\n` +
+                       `_Message otomatis dari sistem GEMBOK_`;
+        
+        const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+    
+    function sendTechnicianNotification(phone, jobNumber) {
+        const message = `🔧 *REMINDER JOB INSTALASI* 🔧\n\n` +
+                       `*Job Number:* ${jobNumber}\n` +
+                       `*Status:* <%= job.status === 'scheduled' ? 'Terjadwal' : job.status === 'assigned' ? 'Ditugaskan' : job.status === 'in_progress' ? 'Sedang Proses' : job.status === 'completed' ? 'Selesai' : 'Dibatalkan' %>\n\n` +
+                       `Mohon update status job ini sesuai progress instalasi.\n\n` +
+                       `_Message otomatis dari sistem GEMBOK_`;
+        
+        const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+</script>
+</body>
+</html>

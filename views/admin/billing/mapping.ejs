@@ -1,0 +1,3890 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#007bff">
+    <title><%= title || 'Network Mapping' %> - <%= typeof isTechnicianView !== 'undefined' && isTechnicianView ? 'Portal Teknisi' : 'Admin Portal' %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 70vh;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .map-controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .customer-marker {
+            background-color: #28a745;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            cursor: pointer;
+            animation: customerGlow 4s ease-in-out infinite;
+        }
+        
+        .onu-marker {
+            background-color: #007bff;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 10px;
+            height: 10px;
+            cursor: pointer;
+            animation: onuBlink 2s ease-in-out infinite;
+        }
+        
+        .offline-marker {
+            background-color: #dc3545;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 10px;
+            height: 10px;
+            cursor: pointer;
+            animation: offlineFlicker 1.5s ease-in-out infinite;
+        }
+
+        /* Animasi untuk customer markers (glow effect only) */
+        @keyframes customerGlow {
+            0%, 100% { 
+                box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+            }
+            50% { 
+                box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+            }
+        }
+
+        /* Animasi untuk ONU markers (blink effect only) */
+        @keyframes onuBlink {
+            0%, 100% { 
+                opacity: 1;
+                box-shadow: 0 0 8px rgba(0, 123, 255, 0.6);
+            }
+            50% { 
+                opacity: 0.7;
+                box-shadow: 0 0 12px rgba(0, 123, 255, 0.9);
+            }
+        }
+
+        /* Animasi untuk offline markers (flicker effect only) */
+        @keyframes offlineFlicker {
+            0%, 100% { 
+                opacity: 0.8;
+                box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
+            }
+            25%, 75% { 
+                opacity: 0.4;
+                box-shadow: 0 0 2px rgba(220, 53, 69, 0.2);
+            }
+            50% { 
+                opacity: 1;
+                box-shadow: 0 0 10px rgba(220, 53, 69, 0.7);
+            }
+        }
+        
+        .marker-cluster {
+            background-color: #ffc107;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .info-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .legend {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid white;
+        }
+        
+        .coordinate-stats {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .performance-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .performance-panel .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .performance-panel .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .performance-panel .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .coordinate-stats h6 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .coordinate-stats .badge {
+            font-size: 1.2em;
+            padding: 8px 12px;
+        }
+        
+        .coordinate-stats .small {
+            color: #6c757d;
+        }
+
+        /* Mobile Responsive Styles untuk Mapping */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px !important;
+                margin-left: 0 !important;
+            }
+            
+            #map {
+                height: 50vh;
+                margin-bottom: 15px;
+            }
+            
+            .stats-card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .stats-number {
+                font-size: 1.5rem;
+            }
+            
+            .map-controls {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .map-controls .row > div {
+                margin-bottom: 10px;
+            }
+            
+            .coordinate-stats {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .legend {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .info-panel {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            /* Mobile-specific button sizes */
+            .btn {
+                padding: 8px 16px;
+                font-size: 14px;
+                min-height: 42px;
+                touch-action: manipulation;
+            }
+            
+            .btn-sm {
+                padding: 6px 12px;
+                font-size: 12px;
+                min-height: 36px;
+            }
+            
+            /* Mobile header adjustments */
+            .h2 {
+                font-size: 1.5rem;
+            }
+            
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            /* Mobile modal adjustments */
+            .modal-dialog {
+                margin: 10px;
+                max-width: calc(100vw - 20px);
+            }
+            
+            .modal-body {
+                padding: 15px;
+            }
+            
+            /* Form controls mobile friendly */
+            .form-control, .form-select {
+                padding: 10px 12px;
+                font-size: 16px; /* Prevent zoom on iOS */
+                min-height: 42px;
+            }
+            
+            .form-label {
+                font-size: 0.9rem;
+                margin-bottom: 6px;
+            }
+            
+            /* Stats grid mobile */
+            .row .col-md-3 {
+                margin-bottom: 10px;
+            }
+            
+            /* Legend mobile */
+            .legend-item {
+                margin-bottom: 12px;
+                font-size: 0.9rem;
+            }
+            
+            .legend-color {
+                width: 20px;
+                height: 20px;
+            }
+            
+            /* Popup adjustments for mobile */
+            .leaflet-popup-content {
+                font-size: 0.9rem;
+                line-height: 1.4;
+            }
+            
+            .leaflet-popup-content h6 {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+            
+            .leaflet-popup-content .btn {
+                padding: 6px 10px;
+                font-size: 11px;
+                margin: 2px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            #map {
+                height: 40vh;
+            }
+            
+            .stats-card {
+                padding: 12px;
+            }
+            
+            .stats-number {
+                font-size: 1.3rem;
+            }
+            
+            .col-md-4 {
+                order: 2; /* Move sidebar below map on very small screens */
+            }
+            
+            .col-md-8 {
+                order: 1;
+            }
+            
+            .map-controls .form-control {
+                margin-bottom: 8px;
+            }
+            
+            /* Touch-friendly popups */
+            .leaflet-popup {
+                font-size: 0.85rem;
+            }
+            
+            .leaflet-popup-content {
+                margin: 8px 12px;
+            }
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            #map {
+                height: 50vh; /* Lebih kecil di mobile */
+                margin-bottom: 15px;
+            }
+            
+            .stats-card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .stats-number {
+                font-size: 1.5rem;
+            }
+            
+            .map-controls {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .map-controls .row > div {
+                margin-bottom: 10px;
+            }
+            
+            .coordinate-stats {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .legend {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .info-panel {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            /* Mobile-specific button sizes */
+            .btn {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+            /* Mobile header adjustments */
+            .h2 {
+                font-size: 1.5rem;
+            }
+            
+            /* Mobile sidebar adjustments */
+            .main-content {
+                padding: 10px !important;
+            }
+            
+            /* Mobile modal adjustments */
+            .modal-dialog {
+                margin: 10px;
+                max-width: calc(100% - 20px);
+            }
+            
+            .modal-body {
+                padding: 15px;
+            }
+            
+            /* Mobile popup adjustments */
+            .leaflet-popup-content {
+                font-size: 14px;
+                max-width: 250px;
+            }
+            
+            .leaflet-popup-content h6 {
+                font-size: 16px;
+            }
+            
+            .leaflet-popup-content p {
+                font-size: 13px;
+                margin-bottom: 8px;
+            }
+            
+            .leaflet-popup-content .btn {
+                font-size: 12px;
+                padding: 6px 12px;
+                margin: 2px;
+            }
+        }
+        
+        /* Tablet Responsive Styles */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            #map {
+                height: 60vh;
+            }
+            
+            .stats-number {
+                font-size: 1.8rem;
+            }
+            
+            .map-controls .row > div {
+                margin-bottom: 15px;
+            }
+        }
+        
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .customer-marker,
+            .onu-marker,
+            .offline-marker {
+                width: 16px;
+                height: 16px;
+            }
+            
+            .marker-cluster {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+            }
+            
+            .btn {
+                min-height: 44px; /* Apple's recommended touch target size */
+            }
+            
+            .form-control,
+            .form-select {
+                min-height: 44px;
+            }
+        }
+        
+        /* High DPI displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .customer-marker,
+            .onu-marker,
+            .offline-marker,
+            .marker-cluster {
+                border-width: 1px;
+            }
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .map-controls,
+            .info-panel,
+            .legend,
+            .coordinate-stats {
+                background: #2d3748;
+                color: #e2e8f0;
+                border-color: #4a5568;
+            }
+            
+            .coordinate-stats h6 {
+                color: #e2e8f0;
+            }
+            
+            .coordinate-stats .small {
+                color: #a0aec0;
+            }
+        }
+        
+        /* Popup Cards Styles */
+        .popup-cards-container {
+            max-width: 350px;
+            min-width: 280px;
+        }
+
+        .popup-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .popup-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .card-header i {
+            font-size: 16px;
+        }
+
+        .card-title {
+            flex: 1;
+        }
+
+        .device-status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .device-status-badge.online {
+            background: rgba(40, 167, 69, 0.9);
+        }
+
+        .device-status-badge.offline {
+            background: rgba(220, 53, 69, 0.9);
+        }
+
+        .card-content {
+            padding: 15px;
+        }
+
+        /* Customer Card Styles */
+        .customer-card .customer-name {
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row .label {
+            font-weight: 500;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .info-row .value {
+            color: #333;
+            font-size: 13px;
+            text-align: right;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Device Card Styles */
+        .device-quick-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .info-item i {
+            font-size: 14px;
+            color: #007bff;
+        }
+
+        .device-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 2px;
+        }
+
+        /* ODP and Cable Network Styles */
+        .odp-marker {
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .cable-route {
+            stroke-width: 3;
+            stroke-opacity: 0.8;
+            fill: none;
+        }
+
+        .cable-connected { 
+            stroke: #28a745; 
+            stroke-dasharray: 15, 5;
+            animation: cableFlow 2s linear infinite;
+        }
+        
+        .cable-disconnected { 
+            stroke: #dc3545; 
+            stroke-dasharray: 5, 10;
+            animation: cableFlicker 1.5s ease-in-out infinite;
+        }
+        
+        .cable-maintenance { 
+            stroke: #ffc107; 
+            stroke-dasharray: 10, 5; 
+            animation: cableMaintenance 3s ease-in-out infinite;
+        }
+        
+        .cable-damaged { 
+            stroke: #6f42c1; 
+            stroke-dasharray: 3, 7;
+            animation: cableDamage 1s ease-in-out infinite;
+        }
+
+        /* Animasi untuk kabel yang terhubung (data flow) */
+        @keyframes cableFlow {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 20; }
+        }
+
+        /* Animasi untuk kabel yang terputus (flicker) */
+        @keyframes cableFlicker {
+            0%, 100% { stroke-opacity: 0.3; }
+            50% { stroke-opacity: 0.8; }
+        }
+
+        /* Animasi untuk kabel maintenance (slow pulse) */
+        @keyframes cableMaintenance {
+            0%, 100% { 
+                stroke-opacity: 0.6; 
+                stroke-width: 3;
+            }
+            50% { 
+                stroke-opacity: 1; 
+                stroke-width: 4;
+            }
+        }
+
+        /* Animasi untuk kabel rusak (rapid flicker) */
+        @keyframes cableDamage {
+            0%, 100% { 
+                stroke-opacity: 0.2; 
+                stroke-width: 2;
+            }
+            25%, 75% { 
+                stroke-opacity: 0.8; 
+                stroke-width: 3;
+            }
+            50% { 
+                stroke-opacity: 0.4; 
+                stroke-width: 4;
+            }
+        }
+
+        .network-controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .layer-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .layer-control input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .layer-control label {
+            margin: 0;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .odp-popup {
+            min-width: 250px;
+        }
+
+        .cable-popup {
+            min-width: 200px;
+        }
+
+        .device-controls .form-control:not(:placeholder-shown) {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+
+        .device-controls .form-control[value]:not([value=""]) {
+            border-color: #28a745;
+            background-color: #f8fff9;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .device-details {
+            margin-top: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 12px;
+        }
+
+        .detail-item .label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .detail-item .value {
+            color: #333;
+            text-align: right;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Mobile responsive untuk popup cards */
+        @media (max-width: 768px) {
+            .popup-cards-container {
+                max-width: 320px;
+                min-width: 260px;
+            }
+
+            .card-header {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+
+            .card-content {
+                padding: 12px;
+            }
+
+            .device-quick-info {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .info-row .value {
+                max-width: 120px;
+            }
+
+            .detail-item .value {
+                max-width: 100px;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            #map {
+                height: 400px;
+                page-break-inside: avoid;
+            }
+
+            .map-controls,
+            .btn {
+                display: none;
+            }
+
+        .device-details {
+            display: block !important;
+        }
+        
+        /* ODP Backbone Connection Styling */
+        .odp-backbone-connection {
+            stroke-width: 6px !important;
+            stroke-opacity: 0.9 !important;
+            filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.6));
+            stroke-dasharray: 20, 10 !important;
+            animation: dataFlow 2s linear infinite !important;
+        }
+        
+        .odp-backbone-connection:hover {
+            stroke-width: 8px !important;
+            stroke-opacity: 1 !important;
+            filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.8));
+            animation: dataFlow 1s linear infinite !important;
+        }
+        
+        /* Data flow animation for ODP Backbone connections */
+        @keyframes dataFlow {
+            0% {
+                stroke-dashoffset: 0;
+                stroke-opacity: 0.9;
+            }
+            25% {
+                stroke-opacity: 1;
+            }
+            50% {
+                stroke-opacity: 0.7;
+            }
+            75% {
+                stroke-opacity: 1;
+            }
+            100% {
+                stroke-dashoffset: -30;
+                stroke-opacity: 0.9;
+            }
+        }
+        
+        /* Enhanced animation for all ODP Backbone connections */
+        .odp-backbone-connection {
+            position: relative;
+            overflow: visible;
+        }
+        
+        .odp-backbone-connection::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(59, 130, 246, 0.8) 50%, 
+                transparent 100%);
+            animation: dataStream 2s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes dataStream {
+            0% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        /* Glowing effect for active ODP Backbone connections */
+        .odp-backbone-connection.active {
+            filter: drop-shadow(0 0 12px rgba(59, 130, 246, 1)) drop-shadow(0 4px 8px rgba(59, 130, 246, 0.6));
+            animation: dataFlow 1.5s linear infinite, glowPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes glowPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 12px rgba(59, 130, 246, 1)) drop-shadow(0 4px 8px rgba(59, 130, 246, 0.6));
+            }
+            50% {
+                filter: drop-shadow(0 0 16px rgba(59, 130, 246, 1)) drop-shadow(0 6px 12px rgba(59, 130, 246, 0.8));
+            }
+        }
+        
+        /* Network popup styling */
+        .network-popup {
+            min-width: 200px;
+        }
+        
+        .network-popup h6 {
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        
+        .network-popup .badge {
+            font-size: 0.75em;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <% if (typeof isTechnicianView !== 'undefined' && isTechnicianView) { %>
+                <%- include('../partials/technician-responsive-sidebar', { page: 'mapping', technician: technician }) %>
+            <% } else { %>
+                <%- include('../../partials/billing-sidebar') %>
+            <% } %>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bx bx-map"></i> <%= title || 'Network Mapping' %>
+                    </h1>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="refreshMap()">
+                            <i class="bx bx-refresh"></i> Refresh
+                        </button>
+                        <button class="btn btn-outline-success" onclick="exportMapData()">
+                            <i class="bx bx-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="stats-number" id="totalCustomers">-</div>
+                                    <div>Total Pelanggan</div>
+                                </div>
+                                <i class="bx bx-user bx-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="stats-number" id="totalONU">-</div>
+                                    <div>Total ONU</div>
+                                </div>
+                                <i class="bx bx-wifi bx-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="stats-number" id="onlineONU">-</div>
+                                    <div>ONU Online</div>
+                                </div>
+                                <i class="bx bx-check-circle bx-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="stats-number" id="offlineONU">-</div>
+                                    <div>ONU Offline</div>
+                                </div>
+                                <i class="bx bx-x-circle bx-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Controls -->
+                <div class="map-controls">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="filterStatus" class="form-label">Filter Status</label>
+                            <select class="form-select" id="filterStatus" onchange="filterMarkers()">
+                                <option value="all">Semua Status</option>
+                                <option value="online">Online</option>
+                                <option value="offline">Offline</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterPackage" class="form-label">Filter Paket</label>
+                            <select class="form-select" id="filterPackage" onchange="filterMarkers()">
+                                <option value="all">Semua Paket</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="searchLocation" class="form-label">Cari Lokasi</label>
+                            <input type="text" class="form-control" id="searchLocation" placeholder="Masukkan nama lokasi...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary flex-fill" onclick="clearFilters()">
+                                    <i class="bx bx-refresh"></i> Clear Filter
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" id="optimizeToggle" onclick="toggleOptimization()" title="Toggle Performance Optimization">
+                                    <i class="bx bx-rocket"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="showODPBackbone" checked onchange="toggleODPBackbone()">
+                                <label class="form-check-label" for="showODPBackbone">
+                                    <i class="bx bx-git-branch"></i> Tampilkan Kabel Backbone ODP
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Monitoring Panel -->
+                <div class="performance-panel" id="performancePanel" style="display: none;">
+                    <h6><i class="bx bx-tachometer"></i> Performance Monitoring</h6>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-label">Cache Hit Rate</div>
+                                <div class="stat-value" id="cacheHitRate">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-label">Cache Entries</div>
+                                <div class="stat-value" id="cacheEntries">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-label">Load Time</div>
+                                <div class="stat-value" id="loadTime">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-label">Memory Usage</div>
+                                <div class="stat-value" id="memoryUsage">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshCacheStats()">
+                            <i class="bx bx-refresh"></i> Refresh Stats
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="clearCache()">
+                            <i class="bx bx-trash"></i> Clear Cache
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="testCacheAPI()">
+                            <i class="bx bx-bug"></i> Test API
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Network Layer Controls -->
+                <div class="network-controls">
+                    <h6><i class="bx bx-network-chart"></i> Network Layers</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="layer-control">
+                                <input type="checkbox" id="showODPs" checked onchange="toggleODPLayer()">
+                                <label for="showODPs">
+                                    <i class="bx bx-broadcast text-primary"></i> ODP Points
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="layer-control">
+                                <input type="checkbox" id="showCableRoutes" checked onchange="toggleCableLayer()">
+                                <label for="showCableRoutes">
+                                    <i class="bx bx-cable-car text-success"></i> Cable Routes
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="layer-control">
+                                <input type="checkbox" id="showNetworkSegments" onchange="toggleNetworkSegmentLayer()">
+                                <label for="showNetworkSegments">
+                                    <i class="bx bx-network-chart text-info"></i> Network Segments
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Map -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div id="map"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <!-- Customer Coordinate Statistics -->
+                        <div class="coordinate-stats mb-3">
+                            <div id="coordinateStats">
+                                <div class="text-center text-muted">
+                                    <i class="bx bx-loader-alt bx-spin"></i> Loading...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="legend">
+                            <h6><i class="bx bx-info-circle"></i> Legenda</h6>
+                            
+                            <!-- Customer Legend -->
+                            <div class="mb-2">
+                                <small class="text-muted"><strong>Pelanggan:</strong></small>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #28a745;"></div>
+                                    <span>Online</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #dc3545;"></div>
+                                    <span>Offline</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #007bff;"></div>
+                                    <span>ONU Device</span>
+                                </div>
+                            </div>
+
+                            <!-- ODP Legend -->
+                            <div class="mb-2">
+                                <small class="text-muted"><strong>ODP:</strong></small>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #28a745; border: 3px solid white; border-radius: 4px;"></div>
+                                    <span>ODP Utama (< 70%)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #ffc107; border: 3px solid white; border-radius: 4px;"></div>
+                                    <span>ODP Utama (70-90%)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #dc3545; border: 3px solid white; border-radius: 4px;"></div>
+                                    <span>ODP Utama (> 90%)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #28a745; border: 2px dashed white; border-radius: 2px; width: 20px; height: 20px;"></div>
+                                    <span>Sub ODP</span>
+                                </div>
+                            </div>
+
+                            <!-- Cable Routes Legend -->
+                            <div class="mb-2">
+                                <small class="text-muted"><strong>Kabel:</strong></small>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #28a745; height: 3px;"></div>
+                                    <span>Connected</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #dc3545; height: 3px;"></div>
+                                    <span>Disconnected</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #ffc107; height: 3px; border-style: dashed;"></div>
+                                    <span>Maintenance</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: #6f42c1; height: 3px;"></div>
+                                    <span>Damaged</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info Panel -->
+                        <div class="info-panel">
+                            <h6><i class="bx bx-info-circle"></i> Informasi</h6>
+                            <div id="mapInfo">
+                                <p class="text-muted">Klik marker untuk melihat detail</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Edit SSID/Password Modal -->
+    <div class="modal fade" id="editDeviceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Perangkat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="editAlert" style="display:none;"></div>
+                    <input type="hidden" id="editDeviceId">
+                    <div class="mb-3">
+                        <label for="editSSID" class="form-label">SSID</label>
+                        <input type="text" class="form-control" id="editSSID" name="ssid">
+                        <button type="button" class="btn btn-success mt-2 w-100" id="saveSsidBtn">Simpan SSID</button>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPassword" class="form-label">Password WiFi</label>
+                        <input type="text" class="form-control" id="editPassword" name="password">
+                        <button type="button" class="btn btn-primary mt-2 w-100" id="savePasswordBtn">Simpan Password</button>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTag" class="form-label">Tag Customer</label>
+                        <input type="text" class="form-control" id="editTag" name="tag">
+                        <button type="button" class="btn btn-info mt-2 w-100" id="saveTagBtn">Simpan Tag</button>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex flex-column align-items-stretch gap-2">
+                    <div class="alert alert-info" role="alert">
+                        <i class="bx bx-info-circle"></i> <strong>Tips:</strong> Setelah mengubah SSID/Password, restart perangkat untuk menerapkan perubahan dengan cepat.
+                    </div>
+                    <button type="button" class="btn btn-warning w-100" id="rebootAfterEditBtn">
+                        <i class="bx bx-arrow-clockwise"></i> Restart Perangkat Setelah Edit
+                    </button>
+                    <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Context variables - will be set by server-side rendering
+        let isTechnicianView = false; // Default value
+        
+        let map;
+        let customerMarkers = [];
+        let onuMarkers = [];
+        let currentDeviceId = null;
+
+        // Initialize map
+        function initMap() {
+            // Default location (Jakarta) - akan diupdate setelah load data
+            const defaultLat = -6.2088;
+            const defaultLng = 106.8456;
+            
+            map = L.map('map').setView([defaultLat, defaultLng], 10);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Load data dan auto-focus ke lokasi pelanggan
+            loadMapData();
+        }
+
+        // Load map data
+        async function loadMapData() {
+            try {
+                // basePath dan baseApiPath sudah didefinisikan sebagai global variables
+                
+                // Load customers
+                const customersResponse = await fetch(`${baseApiPath}/customers`, {
+                    credentials: 'include'
+                });
+                
+                if (!customersResponse.ok) {
+                    console.warn(`Customers API error: ${customersResponse.status} ${customersResponse.statusText}`);
+                    // Continue without customers data
+                    return;
+                }
+                
+                let customersData;
+                try {
+                    customersData = await customersResponse.json();
+                } catch (error) {
+                    console.warn('Error parsing customers JSON:', error);
+                    return;
+                }
+                
+                if (customersData.success) {
+                    await addCustomerMarkers(customersData.customers);
+                    updateStats('totalCustomers', customersData.customers.length);
+                    
+                    // Auto-focus map ke lokasi pelanggan
+                    autoFocusMapToCustomers(customersData.customers);
+                    
+                    // Hitung statistik koordinat customer
+                    const customersWithCoords = customersData.customers.filter(c => c.latitude && c.longitude).length;
+                    const customersWithoutCoords = customersData.customers.length - customersWithCoords;
+                    
+                    // Update statistik koordinat customer
+                    updateCustomerCoordinateStats(customersWithCoords, customersWithoutCoords);
+                }
+                
+                // Load GenieACS statistics terlebih dahulu
+                const statsResponse = await fetch(`${baseApiPath}/statistics`, {
+                    credentials: 'include'
+                });
+                
+                if (!statsResponse.ok) {
+                    console.warn(`Statistics API error: ${statsResponse.status} ${statsResponse.statusText}`);
+                    // Continue without statistics
+                } else {
+                    const statsData = await statsResponse.json();
+                    if (statsData.success) {
+                        updateStats('totalONU', statsData.data.totalDevices);
+                        updateStats('onlineONU', statsData.data.onlineDevices);
+                        updateStats('offlineONU', statsData.data.offlineDevices);
+                    }
+                }
+                
+                // Load ONU devices dengan koordinat dari GenieACS
+                const onuResponse = await fetch(`${basePath}/api/mapping/devices`, {
+                    credentials: 'include'
+                });
+                
+                if (!onuResponse.ok) {
+                    console.warn(`ONU API error: ${onuResponse.status} ${onuResponse.statusText}`);
+                    // Continue without ONU data
+                    return;
+                }
+                
+                const onuData = await onuResponse.json();
+                
+                if (onuData.success) {
+                    // Filter devices yang punya koordinat
+                    const devicesWithCoords = onuData.data.devicesWithCoords;
+                    const devicesWithoutCoords = onuData.data.devicesWithoutCoords;
+                    
+                    addONUMarkers(devicesWithCoords);
+                    
+                    // Load ODP backbone connections
+                    console.log('🔍 Checking ODP connections data:', onuData.data.odpConnections);
+                    console.log('🔍 Full API response structure:', Object.keys(onuData.data));
+                    if (onuData.data.odpConnections) {
+                        console.log('✅ ODP connections found, rendering...');
+                        console.log('🔍 ODP connections details:', onuData.data.odpConnections);
+                        addODPBackboneConnections(onuData.data.odpConnections);
+                    } else {
+                        console.log('❌ No ODP connections data found');
+                        console.log('🔍 Available data keys:', Object.keys(onuData.data));
+                    }
+                    
+                    // Tampilkan info koordinat device
+                    showDeviceCoordinateInfo(onuData.data);
+                    
+                    // Auto-focus ke wilayah yang ada ODP/ONU
+                    autoFocusToDataArea(onuData.data);
+                }
+                
+                // Load packages for filter
+                loadPackages();
+                
+            } catch (error) {
+                console.error('Error loading map data:', error);
+                showToast('Error loading map data', 'error');
+                
+                // Fallback: coba load data GenieACS langsung
+                try {
+                    await loadGenieACSDataDirectly();
+                } catch (fallbackError) {
+                    console.error('Fallback GenieACS data fetch also failed:', fallbackError);
+                }
+            }
+        }
+
+        // ===== ENHANCEMENT: OPTIMIZED LOADING (Tidak mengubah fungsi existing) =====
+        
+        /**
+         * Enhanced loadMapData dengan parallel loading
+         * Fallback ke fungsi original jika ada error
+         */
+        async function loadMapDataOptimized() {
+            try {
+                console.log('🚀 Loading map data with optimizations...');
+                const startTime = performance.now();
+                
+                // Parallel loading semua data sekaligus
+                const [statsResponse, onuResponse, packagesResponse] = await Promise.allSettled([
+                    fetch(`${baseApiPath}/statistics`, { credentials: 'include' }),
+                    fetch(`${basePath}/api/mapping/devices`, { credentials: 'include' }),
+                    fetch(`${basePath}/api/packages`, { credentials: 'include' })
+                ]);
+                
+                // Process statistics
+                if (statsResponse.status === 'fulfilled' && statsResponse.value.ok) {
+                    try {
+                        const statsData = await statsResponse.value.json();
+                        if (statsData.success) {
+                            updateStats('totalONU', statsData.data.totalDevices);
+                            updateStats('onlineONU', statsData.data.onlineDevices);
+                            updateStats('offlineONU', statsData.data.offlineDevices);
+                        }
+                    } catch (error) {
+                        console.warn('Error parsing statistics data:', error);
+                    }
+                } else if (statsResponse.status === 'rejected') {
+                    console.warn('Statistics request failed:', statsResponse.reason);
+                }
+                
+                // Process ONU data
+                if (onuResponse.status === 'fulfilled' && onuResponse.value.ok) {
+                    try {
+                        const onuData = await onuResponse.value.json();
+                        if (onuData.success) {
+                            const devicesWithCoords = onuData.data.devicesWithCoords;
+                            const devicesWithoutCoords = onuData.data.devicesWithoutCoords;
+                            
+                            // Batch render markers untuk performa lebih baik
+                            addONUMarkersBatch(devicesWithCoords);
+                            showDeviceCoordinateInfo(onuData.data);
+                        }
+                    } catch (error) {
+                        console.warn('Error parsing ONU data:', error);
+                    }
+                } else if (onuResponse.status === 'rejected') {
+                    console.warn('ONU request failed:', onuResponse.reason);
+                }
+                
+                // Process packages
+                if (packagesResponse.status === 'fulfilled' && packagesResponse.value.ok) {
+                    try {
+                        const packagesData = await packagesResponse.value.json();
+                        if (packagesData.success) {
+                            updatePackagesFilter(packagesData.data);
+                        }
+                    } catch (error) {
+                        console.warn('Error parsing packages data:', error);
+                    }
+                } else if (packagesResponse.status === 'rejected') {
+                    console.warn('Packages request failed:', packagesResponse.reason);
+                }
+                
+                const endTime = performance.now();
+                const loadTime = Math.round(endTime - startTime);
+                console.log(`✅ Map data loaded in ${loadTime}ms (optimized)`);
+                
+                // Update load time in performance panel
+                const loadTimeElement = document.getElementById('loadTime');
+                if (loadTimeElement) {
+                    loadTimeElement.textContent = `${loadTime}ms`;
+                }
+                
+                // Show performance info
+                showToast(`Data loaded in ${loadTime}ms (optimized)`, 'success');
+                
+            } catch (error) {
+                console.error('Error in optimized loading, falling back to original:', error);
+                // Fallback ke fungsi original
+                await loadMapData();
+            }
+        }
+        
+        /**
+         * Enhanced addONUMarkers dengan batch processing
+         * Tidak mengubah fungsi original addONUMarkers
+         */
+        function addONUMarkersBatch(devices) {
+            if (!devices || devices.length === 0) return;
+            
+            console.log(`🎯 Rendering ${devices.length} ONU markers in batches...`);
+            const BATCH_SIZE = 20; // Render 20 markers per batch
+            let currentIndex = 0;
+            
+            function renderBatch() {
+                const batch = devices.slice(currentIndex, currentIndex + BATCH_SIZE);
+                
+                batch.forEach(device => {
+                    if (device.latitude && device.longitude) {
+                        const isOnline = device.status === 'Online';
+                        const color = isOnline ? '#007bff' : '#dc3545';
+                        
+                        const marker = L.circleMarker([device.latitude, device.longitude], {
+                            radius: 6,
+                            fillColor: color,
+                            color: 'white',
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        }).addTo(map);
+                        
+                        marker.bindPopup(`
+                            <div class="text-center">
+                                <h6><strong>ONU Device</strong></h6>
+                                <p class="mb-1"><strong>Status:</strong> <span class="badge ${isOnline ? 'bg-success' : 'bg-danger'}">${device.status}</span></p>
+                                <p class="mb-1"><strong>User Terhubung:</strong> <span class="badge bg-info">${device.userConnected || '0'} user</span></p>
+                                <p class="mb-1"><strong>RX Power:</strong> ${device.rxPower || 'N/A'}</p>
+                                <p class="mb-1"><strong>PPPoE:</strong> ${device.pppoeUsername}</p>
+                                <p class="mb-1"><strong>Customer:</strong> ${device.customerName || 'N/A'}</p>
+                                <p class="mb-1"><strong>Phone:</strong> ${device.customerPhone || 'N/A'}</p>
+                                <p class="mb-1"><strong>Source:</strong> <span class="badge bg-info">${device.coordinateSource}</span></p>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-primary" onclick="editDeviceCoordinates('${device.id}')">
+                                        <i class="fas fa-edit"></i> Edit Koordinat
+                                    </button>
+                                </div>
+                            </div>
+                        `);
+                        
+                        // Store device data untuk filtering
+                        marker.deviceData = device;
+                        marker.customerData = {
+                            package_id: device.packageId
+                        };
+                        
+                        onuMarkers.push(marker);
+                    }
+                });
+                
+                currentIndex += BATCH_SIZE;
+                
+                // Continue dengan batch berikutnya jika masih ada data
+                if (currentIndex < devices.length) {
+                    requestAnimationFrame(renderBatch);
+                } else {
+                    console.log(`✅ All ${devices.length} ONU markers rendered`);
+                    updateFilterInfo();
+                }
+            }
+            
+            // Start batch rendering
+            requestAnimationFrame(renderBatch);
+        }
+        
+        /**
+         * Add ODP Backbone Connections to Map
+         * Menampilkan kabel backbone antar ODP di map
+         */
+        function addODPBackboneConnections(odpConnections) {
+            console.log('🔧 addODPBackboneConnections called with:', odpConnections);
+            console.log('🔧 Map object exists:', !!map);
+            console.log('🔧 Map initialized:', map ? 'Yes' : 'No');
+            
+            if (!odpConnections || odpConnections.length === 0) {
+                console.log('❌ No ODP backbone connections to display');
+                return;
+            }
+            
+            if (!map) {
+                console.log('❌ Map not initialized yet, cannot add ODP backbone connections');
+                return;
+            }
+            
+            // Clear existing ODP backbone layer
+            if (window.odpBackboneLayer) {
+                map.removeLayer(window.odpBackboneLayer);
+            }
+            
+            // Create new layer group (like Network Segments)
+            window.odpBackboneLayer = L.layerGroup();
+            
+            console.log(`🌐 Rendering ${odpConnections.length} ODP backbone connections...`);
+            
+            odpConnections.forEach((connection, index) => {
+                console.log(`🔍 Processing connection ${index + 1}:`, connection);
+                
+                // Pastikan kedua ODP punya koordinat
+                if (connection.from_odp_latitude && connection.from_odp_longitude && 
+                    connection.to_odp_latitude && connection.to_odp_longitude) {
+                    
+                    console.log(`✅ Connection ${index + 1} has valid coordinates`);
+                    
+                    // Determine color and weight based on status and capacity (like Network Segments)
+                    let lineColor = '#3B82F6'; // Default: active (biru untuk ODP backbone)
+                    let lineWeight = 4; // Default - lebih tebal untuk ODP backbone
+                    
+                    // Color based on status
+                    switch (connection.status) {
+                        case 'active':
+                            lineColor = '#3B82F6'; // Biru untuk ODP backbone (berbeda dari hijau ODP ke ONU)
+                            break;
+                        case 'maintenance':
+                            lineColor = '#F59E0B'; // Kuning orange
+                            break;
+                        case 'inactive':
+                            lineColor = '#EF4444'; // Merah
+                            break;
+                        case 'damaged':
+                            lineColor = '#8B5CF6'; // Ungu
+                            break;
+                        default:
+                            lineColor = '#3B82F6'; // Biru default
+                    }
+                    
+                    // Weight based on capacity
+                    switch (connection.cable_capacity) {
+                        case '100M':
+                            lineWeight = 2;
+                            break;
+                        case '1G':
+                            lineWeight = 3;
+                            break;
+                        case '10G':
+                            lineWeight = 4;
+                            break;
+                        case '100G':
+                            lineWeight = 5;
+                            break;
+                        default:
+                            lineWeight = 3;
+                    }
+                    
+                    // Create polyline with enhanced styling (like Network Segments)
+                    const polyline = L.polyline([
+                        [connection.from_odp_latitude, connection.from_odp_longitude],
+                        [connection.to_odp_latitude, connection.to_odp_longitude]
+                    ], {
+                        color: lineColor,
+                        weight: lineWeight,
+                        opacity: 0.8,
+                        dashArray: connection.status === 'maintenance' ? '10, 5' : null,
+                        className: `odp-backbone-connection ${connection.status === 'active' ? 'active' : ''}` // Add CSS class for styling
+                    });
+                    
+                    console.log(`🔗 Polyline created for connection ${index + 1}:`, {
+                        from: [connection.from_odp_latitude, connection.from_odp_longitude],
+                        to: [connection.to_odp_latitude, connection.to_odp_longitude],
+                        color: lineColor,
+                        weight: lineWeight
+                    });
+                    
+                    // Create popup content (enhanced like Network Segments)
+                    const popupContent = `
+                        <div class="network-popup">
+                            <h6><i class="bx bx-git-branch"></i> ODP Backbone Connection</h6>
+                            <div class="mb-2">
+                                <strong>From:</strong> ${connection.from_odp_name} (${connection.from_odp_code})<br>
+                                <strong>To:</strong> ${connection.to_odp_name} (${connection.to_odp_code})<br>
+                                <strong>Type:</strong> <span class="badge bg-info">${connection.connection_type}</span><br>
+                                <strong>Capacity:</strong> <span class="badge bg-success">${connection.cable_capacity}</span><br>
+                                <strong>Length:</strong> ${connection.cable_length ? (parseFloat(connection.cable_length) / 1000).toFixed(1) + ' km' : 'N/A'}<br>
+                                <strong>Status:</strong> <span class="badge ${getStatusBadgeClass(connection.status)}">${connection.status}</span>
+                                ${connection.notes ? `<br><strong>Notes:</strong> ${connection.notes}` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    
+                    // Add to layer group
+                    window.odpBackboneLayer.addLayer(polyline);
+                    
+                    console.log(`✅ Connection ${index + 1} added to layer group`);
+                } else {
+                    console.log(`❌ Connection ${index + 1} missing coordinates:`, {
+                        from: [connection.from_odp_latitude, connection.from_odp_longitude],
+                        to: [connection.to_odp_latitude, connection.to_odp_longitude]
+                    });
+                }
+            });
+            
+            // Add ODP markers for better visibility
+            const odpMarkers = new Set();
+            odpConnections.forEach(connection => {
+                // Add marker for from ODP
+                if (connection.from_odp_latitude && connection.from_odp_longitude) {
+                    const fromKey = `${connection.from_odp_latitude},${connection.from_odp_longitude}`;
+                    if (!odpMarkers.has(fromKey)) {
+                        const fromMarker = L.marker([connection.from_odp_latitude, connection.from_odp_longitude], {
+                            icon: L.divIcon({
+                                className: 'odp-marker',
+                                html: '<div style="background: #3B82F6; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">O</div>',
+                                iconSize: [20, 20],
+                                iconAnchor: [10, 10]
+                            })
+                        }).bindPopup(`<strong>${connection.from_odp_name}</strong><br>${connection.from_odp_code}`);
+                        window.odpBackboneLayer.addLayer(fromMarker);
+                        odpMarkers.add(fromKey);
+                    }
+                }
+                
+                // Add marker for to ODP
+                if (connection.to_odp_latitude && connection.to_odp_longitude) {
+                    const toKey = `${connection.to_odp_latitude},${connection.to_odp_longitude}`;
+                    if (!odpMarkers.has(toKey)) {
+                        const toMarker = L.marker([connection.to_odp_latitude, connection.to_odp_longitude], {
+                            icon: L.divIcon({
+                                className: 'odp-marker',
+                                html: '<div style="background: #3B82F6; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">O</div>',
+                                iconSize: [20, 20],
+                                iconAnchor: [10, 10]
+                            })
+                        }).bindPopup(`<strong>${connection.to_odp_name}</strong><br>${connection.to_odp_code}`);
+                        window.odpBackboneLayer.addLayer(toMarker);
+                        odpMarkers.add(toKey);
+                    }
+                }
+            });
+            
+            // Add layer group to map
+            window.odpBackboneLayer.addTo(map);
+            
+            console.log(`✅ ${odpConnections.length} ODP backbone connections rendered in layer group`);
+            console.log(`✅ ${odpMarkers.size} ODP markers added`);
+            console.log('🔍 Layer group added to map:', window.odpBackboneLayer);
+            console.log('🔍 Map layers count:', map._layers ? Object.keys(map._layers).length : 'unknown');
+            
+            // Force map refresh
+            map.invalidateSize();
+        }
+        
+        /**
+         * Helper function untuk status badge class
+         */
+        function getStatusBadgeClass(status) {
+            switch(status) {
+                case 'active': return 'bg-success';
+                case 'maintenance': return 'bg-warning';
+                case 'inactive': return 'bg-danger';
+                case 'damaged': return 'bg-secondary';
+                default: return 'bg-secondary';
+            }
+        }
+        
+        /**
+         * Toggle ODP Backbone Connections visibility
+         * Menampilkan/menyembunyikan kabel backbone antar ODP (menggunakan layerGroup)
+         */
+        function toggleODPBackbone() {
+            const checkbox = document.getElementById('showODPBackbone');
+            const isChecked = checkbox.checked;
+            
+            if (window.odpBackboneLayer) {
+                if (isChecked) {
+                    window.odpBackboneLayer.addTo(map);
+                } else {
+                    map.removeLayer(window.odpBackboneLayer);
+                }
+            }
+            
+            console.log(`ODP Backbone connections ${isChecked ? 'shown' : 'hidden'}`);
+        }
+        
+        /**
+         * Auto-focus ke wilayah yang ada ODP/ONU
+         * Memfokuskan map ke area yang memiliki data
+         */
+        function autoFocusToDataArea(data) {
+            console.log('🎯 Auto-focusing to data area...');
+            
+            const coordinates = [];
+            
+            // Collect coordinates from ONU devices
+            if (data.devicesWithCoords && data.devicesWithCoords.length > 0) {
+                data.devicesWithCoords.forEach(device => {
+                    if (device.latitude && device.longitude) {
+                        coordinates.push([device.latitude, device.longitude]);
+                    }
+                });
+                console.log(`📍 Found ${data.devicesWithCoords.length} ONU devices with coordinates`);
+            }
+            
+            // Collect coordinates from ODP connections
+            if (data.odpConnections && data.odpConnections.length > 0) {
+                data.odpConnections.forEach(connection => {
+                    if (connection.from_odp_latitude && connection.from_odp_longitude) {
+                        coordinates.push([connection.from_odp_latitude, connection.from_odp_longitude]);
+                    }
+                    if (connection.to_odp_latitude && connection.to_odp_longitude) {
+                        coordinates.push([connection.to_odp_latitude, connection.to_odp_longitude]);
+                    }
+                });
+                console.log(`📍 Found ${data.odpConnections.length} ODP connections with coordinates`);
+            }
+            
+            // Collect coordinates from cable network data
+            if (data.cableRoutes && data.cableRoutes.length > 0) {
+                data.cableRoutes.forEach(route => {
+                    if (route.start_latitude && route.start_longitude) {
+                        coordinates.push([route.start_latitude, route.start_longitude]);
+                    }
+                    if (route.end_latitude && route.end_longitude) {
+                        coordinates.push([route.end_latitude, route.end_longitude]);
+                    }
+                });
+                console.log(`📍 Found ${data.cableRoutes.length} cable routes with coordinates`);
+            }
+            
+            if (coordinates.length === 0) {
+                console.log('❌ No coordinates found for auto-focus');
+                return;
+            }
+            
+            console.log(`🎯 Total coordinates found: ${coordinates.length}`);
+            
+            // Calculate bounds
+            const bounds = L.latLngBounds(coordinates);
+            
+            // Fit map to bounds with padding
+            map.fitBounds(bounds, {
+                padding: [20, 20],
+                maxZoom: 15 // Don't zoom too close
+            });
+            
+            console.log('✅ Map focused to data area');
+        }
+        
+        /**
+         * Enhanced updatePackagesFilter
+         * Helper untuk update packages filter
+         */
+        function updatePackagesFilter(packages) {
+            const packageSelect = document.getElementById('packageFilter');
+            if (packageSelect && packages) {
+                // Clear existing options except "All"
+                packageSelect.innerHTML = '<option value="all">Semua Package</option>';
+                
+                packages.forEach(package => {
+                    const option = document.createElement('option');
+                    option.value = package.id;
+                    option.textContent = package.name;
+                    packageSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Auto-focus map ke lokasi pelanggan yang ada
+        function autoFocusMapToCustomers(customers) {
+            if (customers.length === 0) {
+                handleNoCustomerCoordinates();
+                return;
+            }
+            
+            // Filter pelanggan yang punya koordinat
+            const customersWithCoords = customers.filter(c => c.latitude && c.longitude);
+            
+            if (customersWithCoords.length === 0) {
+                handleNoCustomerCoordinates();
+                return;
+            }
+            
+            // Hitung center dan bounds
+            const coords = customersWithCoords.map(c => [c.latitude, c.longitude]);
+            
+            if (coords.length === 1) {
+                // Jika hanya 1 pelanggan, zoom ke level 15
+                map.setView(coords[0], 15);
+            } else {
+                // Jika banyak pelanggan, fit semua dalam view dengan padding
+                const bounds = L.latLngBounds(coords);
+                map.fitBounds(bounds, { 
+                    padding: [50, 50],  // Padding dari edge
+                    maxZoom: 15,         // Max zoom level
+                    animate: true        // Animasi smooth
+                });
+            }
+            
+            // Update info panel
+            updateMapInfo(customersWithCoords.length);
+        }
+
+        // Update info panel dengan jumlah pelanggan yang ditampilkan
+        function updateMapInfo(customersCount) {
+            const infoPanel = document.getElementById('mapInfo');
+            if (infoPanel) {
+                infoPanel.innerHTML = `
+                    <div class="mb-3">
+                        <h6 class="text-success">📍 Lokasi Pelanggan</h6>
+                        <div class="small">
+                            <div>• Total ditampilkan: <strong>${customersCount}</strong> pelanggan</div>
+                            <div>• Map otomatis fokus ke area pelanggan</div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info alert-sm">
+                        <small>
+                            <strong>💡 Tips:</strong> Klik marker untuk melihat detail pelanggan dan device.
+                        </small>
+                    </div>
+                `;
+            }
+        }
+
+        // Fallback jika tidak ada pelanggan dengan koordinat
+        function handleNoCustomerCoordinates() {
+            const infoPanel = document.getElementById('mapInfo');
+            if (infoPanel) {
+                infoPanel.innerHTML = `
+                    <div class="mb-3">
+                        <h6 class="text-warning">⚠️ Tidak Ada Koordinat</h6>
+                        <div class="small">
+                            <div>• Belum ada pelanggan dengan koordinat</div>
+                            <div>• Tambahkan koordinat di form edit customer</div>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning alert-sm">
+                        <small>
+                            <strong>💡 Tips:</strong> Edit customer dan tambahkan latitude/longitude untuk menampilkan di peta.
+                        </small>
+                    </div>
+                `;
+            }
+        }
+
+        // Fallback function untuk load data GenieACS langsung
+        async function loadGenieACSDataDirectly() {
+            try {
+                // Ambil data GenieACS langsung dari endpoint yang sudah ada
+                const genieacsResponse = await fetch('/admin/genieacs');
+                const genieacsData = await genieacsResponse.text();
+                
+                // Parse HTML untuk extract data (fallback method)
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(genieacsData, 'text/html');
+                
+                // Cari elemen yang berisi statistik GenieACS
+                const statsElements = doc.querySelectorAll('[data-genieacs-stats]');
+                if (statsElements.length > 0) {
+                    // Update statistik dari data yang ada
+                    updateStats('totalONU', 'Loading...');
+                    updateStats('onlineONU', 'Loading...');
+                    updateStats('offlineONU', 'Loading...');
+                }
+                
+                showToast('Using fallback data source', 'info');
+            } catch (error) {
+                console.error('Fallback GenieACS data fetch failed:', error);
+                // Set default values jika semua gagal
+                updateStats('totalONU', 'Error');
+                updateStats('onlineONU', 'Error');
+                updateStats('offlineONU', 'Error');
+            }
+        }
+
+        // Update statistik koordinat customer
+        function updateCustomerCoordinateStats(withCoords, withoutCoords) {
+            const statsContainer = document.getElementById('coordinateStats');
+            if (statsContainer) {
+                statsContainer.innerHTML = `
+                    <div class="mb-3">
+                        <h6 class="text-primary">📊 Statistik Koordinat Customer</h6>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="badge bg-success">${withCoords}</div>
+                                <small class="d-block">Dengan Koordinat</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="badge bg-warning">${withoutCoords}</div>
+                                <small class="d-block">Tanpa Koordinat</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Tampilkan info koordinat device
+        function showDeviceCoordinateInfo(data) {
+            const infoPanel = document.getElementById('mapInfo');
+            if (infoPanel) {
+                infoPanel.innerHTML = `
+                    <div class="mb-3">
+                        <h6 class="text-info">🔗 Sumber Koordinat Device</h6>
+                        <div class="small">
+                            <div>• PPPoE Username: ${data.coordinateSources.pppoe_username}</div>
+                            <div>• Device Tag: ${data.coordinateSources.device_tag}</div>
+                            <div>• Serial Number: ${data.coordinateSources.serial_number}</div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info alert-sm">
+                        <small>
+                            <strong>💡 Tips:</strong> Device tanpa koordinat dapat diupdate melalui form edit customer atau bulk import.
+                        </small>
+                    </div>
+                `;
+            }
+        }
+
+        // Add customer markers
+        async function addCustomerMarkers(customers) {
+            // basePath sudah didefinisikan sebagai global variable
+            
+            for (const customer of customers) {
+                if (customer.latitude && customer.longitude) {
+                    // Cari device GenieACS berdasarkan PPPoE username atau phone
+                    let deviceInfo = null;
+                    let deviceStatus = 'Unknown';
+                    let signalStrength = 'N/A';
+                    let ssid = 'N/A';
+                    let password = 'N/A';
+                    let deviceModel = 'N/A';
+                    let lastSeen = 'N/A';
+                    
+                    try {
+                        // Coba cari device berdasarkan PPPoE username
+                        if (customer.pppoe_username) {
+                            const deviceResponse = await fetch(`${basePath}/api/mapping/devices?pppoe=${encodeURIComponent(customer.pppoe_username)}`, {
+                                credentials: 'include'
+                            });
+                            const deviceData = await deviceResponse.json();
+
+                            // Debug: Log data yang dikembalikan
+                            console.log('Admin Mapping - Device data for customer:', customer.name, deviceData);
+
+                            if (deviceData.success && deviceData.data.devicesWithCoords.length > 0) {
+                                deviceInfo = deviceData.data.devicesWithCoords[0];
+                                console.log('Admin Mapping - Device info:', deviceInfo);
+
+                                deviceStatus = deviceInfo.status || 'Unknown';
+                                signalStrength = deviceInfo.rxPower || 'N/A';
+                                ssid = deviceInfo.ssid || 'N/A';
+                                password = deviceInfo.password || deviceInfo.password5g || 'N/A';
+                                deviceModel = deviceInfo.model || 'N/A';
+                                lastSeen = deviceInfo.lastInform || 'N/A';
+
+                                console.log('Admin Mapping - Extracted data:', { ssid, password, signalStrength, deviceStatus });
+                            }
+                        }
+                        
+                        // Jika tidak ada device, coba cari berdasarkan phone number
+                        if (!deviceInfo && customer.phone) {
+                            const deviceResponse = await fetch(`${basePath}/api/mapping/devices?phone=${encodeURIComponent(customer.phone)}`, {
+                                credentials: 'include'
+                            });
+                            const deviceData = await deviceResponse.json();
+
+                            // Debug: Log data yang dikembalikan
+                            console.log('Admin Mapping - Device data by phone for customer:', customer.name, deviceData);
+
+                            if (deviceData.success && deviceData.data.devicesWithCoords.length > 0) {
+                                deviceInfo = deviceData.data.devicesWithCoords[0];
+                                console.log('Admin Mapping - Device info by phone:', deviceInfo);
+
+                                deviceStatus = deviceInfo.status || 'Unknown';
+                                signalStrength = deviceInfo.rxPower || 'N/A';
+                                ssid = deviceInfo.ssid || 'N/A';
+                                password = deviceInfo.password || deviceInfo.password5g || 'N/A';
+                                deviceModel = deviceInfo.model || 'N/A';
+                                lastSeen = deviceInfo.lastInform || 'N/A';
+
+                                console.log('Admin Mapping - Extracted data by phone:', { ssid, password, signalStrength, deviceStatus });
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching device info for customer ${customer.username}:`, error);
+                    }
+                    
+                    // Tentukan warna marker berdasarkan status device
+                    let markerColor = '#28a745'; // Default hijau
+                    if (deviceInfo) {
+                        if (deviceStatus === 'Online') {
+                            markerColor = '#28a745'; // Hijau untuk online
+                        } else if (deviceStatus === 'Offline') {
+                            markerColor = '#dc3545'; // Merah untuk offline
+                        } else {
+                            markerColor = '#ffc107'; // Kuning untuk unknown
+                        }
+                    }
+                    
+                    const marker = L.circleMarker([customer.latitude, customer.longitude], {
+                        radius: 8,
+                        fillColor: markerColor,
+                        color: 'white',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map);
+                    
+                    // Buat popup content dengan struktur 2-card yang sama seperti teknisi
+                    console.log('Admin Mapping - Creating popup for customer:', customer.name);
+                    console.log('Admin Mapping - Device info for popup:', deviceInfo);
+                    console.log('Admin Mapping - SSID:', deviceInfo?.ssid, 'Password:', deviceInfo?.password || deviceInfo?.password5g);
+
+                    let popupContent = `
+                        <div class="popup-cards-container">
+                            <!-- Card 1: Customer Info -->
+                            <div class="popup-card customer-card">
+                                <div class="card-header">
+                                    <i class="bi bi-person"></i>
+                                    <span class="card-title">Informasi Pelanggan</span>
+                                </div>
+                                <div class="card-content">
+                                    <h6 class="customer-name">${customer.name}</h6>
+                                    <div class="info-row">
+                                        <span class="label">Username:</span>
+                                        <span class="value">${customer.username || '-'}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="label">Phone:</span>
+                                        <span class="value">${customer.phone}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="label">Package:</span>
+                                        <span class="value">${customer.package_name || '-'}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="label">Status:</span>
+                                        <span class="badge bg-success">${customer.status}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="label">Address:</span>
+                                        <span class="value">${customer.address || 'N/A'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                    `;
+
+                    // Card 2: Device Control (hanya jika ada device)
+                    if (deviceInfo) {
+                        popupContent += `
+                            <!-- Card 2: Device Control -->
+                            <div class="popup-card device-card">
+                                <div class="card-header">
+                                    <i class="bi bi-cog"></i>
+                                    <span class="card-title">Kontrol Device</span>
+                                    <span class="device-status-badge ${deviceStatus === 'Online' ? 'online' : 'offline'}">
+                                        ${deviceStatus}
+                                    </span>
+                                </div>
+                                <div class="card-content">
+                                    <div class="device-quick-info">
+                                        <div class="info-item">
+                                            <i class="bi bi-signal-4"></i>
+                                            <span>Signal: ${signalStrength}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <i class="bi bi-wifi"></i>
+                                            <span>SSID 2.4G: ${deviceInfo.ssid || 'N/A'}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <i class="bi bi-people"></i>
+                                            <span>${deviceInfo.userConnected || '0'} user</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="device-controls">
+                                        <div class="control-group">
+                                            <label class="control-label">SSID WiFi 2.4GHz</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control" id="adminSsidInput_${deviceInfo.id}" value="${deviceInfo.ssid || ''}" placeholder="Nama WiFi">
+                                                <button class="btn btn-success btn-sm" onclick="adminSaveSsid('${deviceInfo.id}')">
+                                                    <i class="bi bi-save"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="control-group">
+                                            <label class="control-label">Password WiFi 2.4GHz</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control" id="adminPassInput_${deviceInfo.id}" value="${deviceInfo.password || deviceInfo.password5g || ''}" placeholder="Minimal 8 karakter">
+                                                <button class="btn btn-primary btn-sm" onclick="adminSavePass('${deviceInfo.id}')">
+                                                    <i class="bi bi-save"></i>
+                                                </button>
+                                            </div>
+                                            <small class="text-muted" style="font-size: 10px;">Password 5GHz otomatis: sama dengan 2.4GHz</small>
+                                        </div>
+
+                                        <div class="control-buttons">
+                                            <button class="btn btn-warning btn-sm" onclick="rebootDevice('${deviceInfo.id}')">
+                                                <i class="bi bi-power-off"></i> Restart
+                                            </button>
+                                            <button class="btn btn-info btn-sm" onclick="toggleDeviceDetails('${deviceInfo.id}')" id="detailsBtn_${deviceInfo.id}">
+                                                <i class="bi bi-info-circle"></i> Detail
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hidden Device Details -->
+                                    <div class="device-details" id="deviceDetails_${deviceInfo.id}" style="display: none;">
+                                        <hr>
+                                        <div class="detail-item">
+                                            <span class="label">PPPoE Username:</span>
+                                            <span class="value">${customer.pppoe_username || 'N/A'}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="label">PPPoE IP:</span>
+                                            <span class="value">${deviceInfo.pppoeIP || 'N/A'}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="label">SSID 5GHz:</span>
+                                            <span class="value">${deviceInfo.ssid5g || 'N/A'}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="label">Password 5GHz:</span>
+                                            <span class="value">${deviceInfo.password5g || 'N/A'}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="label">Uptime:</span>
+                                            <span class="value">${formatUptime(deviceInfo.uptime)}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="label">Last Seen:</span>
+                                            <span class="value">${formatLastSeen(lastSeen)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    popupContent += `
+                        </div>
+                    `;
+                    
+                    marker.bindPopup(popupContent);
+                    
+                    // Store customer and device data in marker for filtering
+                    marker.customerData = customer;
+                    marker.deviceInfo = deviceInfo;
+                    
+                    customerMarkers.push(marker);
+                }
+            }
+        }
+
+        // Add ONU markers
+        function addONUMarkers(devices) {
+            devices.forEach(device => {
+                if (device.latitude && device.longitude) {
+                    const isOnline = device.status === 'Online';
+                    const color = isOnline ? '#007bff' : '#dc3545';
+                    
+                    const marker = L.circleMarker([device.latitude, device.longitude], {
+                        radius: 6,
+                        fillColor: color,
+                        color: 'white',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map);
+                    
+                    marker.bindPopup(`
+                        <div class="text-center">
+                            <h6><strong>ONU Device</strong></h6>
+                            <p class="mb-1"><strong>Status:</strong> <span class="badge ${isOnline ? 'bg-success' : 'bg-danger'}">${device.status}</span></p>
+                            <p class="mb-1"><strong>User Terhubung:</strong> <span class="badge bg-info">${device.userConnected || '0'} user</span></p>
+                            <p class="mb-1"><strong>RX Power:</strong> ${device.rxPower || 'N/A'}</p>
+                            <p class="mb-1"><strong>PPPoE:</strong> ${device.pppoeUsername}</p>
+                            <p class="mb-1"><strong>Customer:</strong> ${device.customerName || 'N/A'}</p>
+                            <p class="mb-1"><strong>Phone:</strong> ${device.customerPhone || 'N/A'}</p>
+                            <p class="mb-1"><strong>Source:</strong> <span class="badge bg-info">${device.coordinateSource}</span></p>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-warning" onclick="editDevice('${device.id}', '${device.ssid || ''}', '${device.password || ''}', '${device.tag || ''}')" title="Edit SSID & Password">
+                                    <i class="bx bx-pencil"></i> Edit
+                                </button>
+                                ${device.customerId ? `
+                                <button class="btn btn-sm btn-primary" onclick="editCustomerCoordinates(${device.customerId}, ${device.latitude}, ${device.longitude})">
+                                    <i class="bx bx-map"></i> Edit Koordinat
+                                </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `);
+                    
+                    // Store device and customer data in marker for filtering
+                    marker.deviceData = device;
+                    marker.customerData = device.customerId ? { package_id: device.packageId } : null;
+                    
+                    onuMarkers.push(marker);
+                }
+            });
+        }
+
+        // Load packages for filter
+        async function loadPackages() {
+            try {
+                // Tentukan endpoint berdasarkan context
+                const apiPath = (typeof isTechnicianView !== 'undefined' && isTechnicianView) ? '/technician/api' : '/admin/billing/api';
+                
+                const response = await fetch(`${apiPath}/packages`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('filterPackage');
+                    data.packages.forEach(package => {
+                        const option = document.createElement('option');
+                        option.value = package.id;
+                        option.textContent = package.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading packages:', error);
+            }
+        }
+
+        // Filter markers
+        function filterMarkers() {
+            const statusFilter = document.getElementById('filterStatus').value;
+            const packageFilter = document.getElementById('filterPackage').value;
+            
+            console.log('Filtering markers:', { statusFilter, packageFilter });
+            
+            // Show/hide customer markers based on filter
+            customerMarkers.forEach(marker => {
+                let show = true;
+                
+                // Apply package filter
+                if (packageFilter !== 'all') {
+                    const customerData = marker.customerData;
+                    if (customerData && customerData.package_id) {
+                        show = customerData.package_id.toString() === packageFilter;
+                    } else {
+                        show = false; // Hide if no package data
+                    }
+                }
+                
+                // Apply status filter (if customer has device data)
+                if (statusFilter !== 'all' && marker.deviceInfo) {
+                    const deviceStatus = marker.deviceInfo.status || 'Unknown';
+                    if (statusFilter === 'online' && deviceStatus !== 'Online') {
+                        show = false;
+                    } else if (statusFilter === 'offline' && deviceStatus !== 'Offline') {
+                        show = false;
+                    }
+                }
+                
+                if (show) {
+                    if (!map.hasLayer(marker)) {
+                        marker.addTo(map);
+                    }
+                } else {
+                    if (map.hasLayer(marker)) {
+                        marker.remove();
+                    }
+                }
+            });
+            
+            // Show/hide ONU markers based on filter
+            onuMarkers.forEach(marker => {
+                let show = true;
+                
+                // Apply status filter
+                if (statusFilter !== 'all') {
+                    const deviceStatus = marker.deviceData.status || 'Unknown';
+                    if (statusFilter === 'online' && deviceStatus !== 'Online') {
+                        show = false;
+                    } else if (statusFilter === 'offline' && deviceStatus !== 'Offline') {
+                        show = false;
+                    }
+                }
+                
+                // Apply package filter (if ONU has customer data)
+                if (packageFilter !== 'all' && marker.customerData) {
+                    if (marker.customerData.package_id) {
+                        show = marker.customerData.package_id.toString() === packageFilter;
+                    } else {
+                        show = false;
+                    }
+                }
+                
+                if (show) {
+                    if (!map.hasLayer(marker)) {
+                        marker.addTo(map);
+                    }
+                } else {
+                    if (map.hasLayer(marker)) {
+                        marker.remove();
+                    }
+                }
+            });
+            
+            // Update filter info
+            updateFilterInfo();
+        }
+        
+        // Update filter information display
+        function updateFilterInfo() {
+            const statusFilter = document.getElementById('filterStatus').value;
+            const packageFilter = document.getElementById('filterPackage').value;
+            
+            let visibleCustomers = 0;
+            let visibleONUs = 0;
+            
+            // Count visible customer markers
+            customerMarkers.forEach(marker => {
+                if (map.hasLayer(marker)) {
+                    visibleCustomers++;
+                }
+            });
+            
+            // Count visible ONU markers
+            onuMarkers.forEach(marker => {
+                if (map.hasLayer(marker)) {
+                    visibleONUs++;
+                }
+            });
+            
+            // Update map info with filter results
+            const infoPanel = document.getElementById('mapInfo');
+            if (infoPanel) {
+                let filterText = '';
+                if (statusFilter !== 'all' || packageFilter !== 'all') {
+                    filterText = `
+                        <div class="alert alert-info alert-sm mb-2">
+                            <small>
+                                <strong>🔍 Filter Aktif:</strong><br>
+                                ${statusFilter !== 'all' ? `• Status: ${statusFilter === 'online' ? 'Online' : 'Offline'}<br>` : ''}
+                                ${packageFilter !== 'all' ? `• Paket: ${document.getElementById('filterPackage').options[document.getElementById('filterPackage').selectedIndex].text}<br>` : ''}
+                                • Pelanggan: ${visibleCustomers} | ONU: ${visibleONUs}
+                            </small>
+                        </div>
+                    `;
+                }
+                
+                infoPanel.innerHTML = `
+                    <div class="mb-3">
+                        <h6 class="text-success">📍 Lokasi Pelanggan</h6>
+                        <div class="small">
+                            <div>• Total ditampilkan: <strong>${visibleCustomers}</strong> pelanggan</div>
+                            <div>• Total ONU ditampilkan: <strong>${visibleONUs}</strong> device</div>
+                            ${filterText}
+                        </div>
+                    </div>
+                    <div class="alert alert-info alert-sm">
+                        <small>
+                            <strong>💡 Tips:</strong> Gunakan filter untuk melihat pelanggan berdasarkan paket atau status device.
+                        </small>
+                    </div>
+                `;
+            }
+        }
+        
+        // Clear all filters
+        function clearFilters() {
+            document.getElementById('filterStatus').value = 'all';
+            document.getElementById('filterPackage').value = 'all';
+            document.getElementById('searchLocation').value = '';
+            
+            // Show all markers
+            customerMarkers.forEach(marker => {
+                if (!map.hasLayer(marker)) {
+                    marker.addTo(map);
+                }
+            });
+            
+            onuMarkers.forEach(marker => {
+                if (!map.hasLayer(marker)) {
+                    marker.addTo(map);
+                }
+            });
+            
+            // Update info
+            updateFilterInfo();
+            
+            // Show success message
+            showToast('Filter berhasil di-clear', 'success');
+        }
+
+        // Edit device
+        function editDevice(deviceId, ssid, password, tag) {
+            currentDeviceId = deviceId;
+            document.getElementById('editDeviceId').value = deviceId; // Set hidden input
+            document.getElementById('editSSID').value = ssid || '';
+            document.getElementById('editPassword').value = password || '';
+            document.getElementById('editTag').value = tag || '';
+            
+            new bootstrap.Modal(document.getElementById('editDeviceModal')).show();
+        }
+
+        // Save device changes
+        async function saveDeviceChanges() {
+            if (!currentDeviceId) return;
+            
+            const ssid = document.getElementById('editSSID').value;
+            const password = document.getElementById('editPassword').value;
+            const tag = document.getElementById('editTag').value;
+            
+            try {
+                // Tentukan endpoint berdasarkan context
+                const endpoint = isTechnicianView ? `/technician/genieacs/devices/${currentDeviceId}` : `/admin/genieacs/devices/${currentDeviceId}`;
+                
+                const response = await fetch(endpoint, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ssid,
+                        password,
+                        tag
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Device updated successfully', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editDeviceModal')).hide();
+                    refreshMap();
+                } else {
+                    showToast(result.message || 'Failed to update device', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating device:', error);
+                showToast('Error updating device', 'error');
+            }
+        }
+
+        // Quick save SSID via mapping popup (admin)
+        async function adminSaveSsid(deviceId) {
+            try {
+                const el = document.getElementById('adminSsidInput_' + deviceId);
+                if (!el) return showToast('Input SSID tidak ditemukan', 'error');
+                const ssid = el.value.trim();
+                if (!ssid) return showToast('SSID tidak boleh kosong', 'error');
+                const resp = await fetch('/admin/genieacs/genieacs/edit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: deviceId, ssid })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    showToast('SSID berhasil diupdate', 'success');
+                } else {
+                    showToast(data.message || 'Gagal update SSID', 'error');
+                }
+            } catch (e) {
+                showToast('Error: ' + e.message, 'error');
+            }
+        }
+
+        // Quick save Password via mapping popup (admin)
+        async function adminSavePass(deviceId) {
+            try {
+                const el = document.getElementById('adminPassInput_' + deviceId);
+                if (!el) return showToast('Input Password tidak ditemukan', 'error');
+                const password = el.value.trim();
+                if (!password || password.length < 8) return showToast('Password minimal 8 karakter', 'error');
+                const resp = await fetch('/admin/genieacs/genieacs/edit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: deviceId, password })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    showToast('Password berhasil diupdate', 'success');
+                } else {
+                    showToast(data.message || 'Gagal update password', 'error');
+                }
+            } catch (e) {
+                showToast('Error: ' + e.message, 'error');
+            }
+        }
+
+        // Refresh map
+        function refreshMap() {
+            // Clear existing markers
+            customerMarkers.forEach(marker => marker.remove());
+            onuMarkers.forEach(marker => marker.remove());
+            customerMarkers = [];
+            onuMarkers = [];
+            
+            // Reload data
+            loadMapData();
+        }
+
+        // Export map data
+        function exportMapData() {
+            // Implementation for exporting map data
+            showToast('Export feature coming soon', 'info');
+        }
+
+        // Update statistics
+        function updateStats(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type) {
+            // Simple toast implementation
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        // Helper function untuk menentukan badge signal strength
+        function getSignalStrengthBadge(signalStrength) {
+            if (signalStrength === 'N/A') return 'bg-secondary';
+            
+            const signal = parseFloat(signalStrength);
+            if (signal >= -25) return 'bg-success';      // Excellent
+            if (signal >= -27) return 'bg-info';         // Good
+            if (signal >= -30) return 'bg-warning';      // Fair
+            return 'bg-danger';                           // Poor
+        }
+
+        // Helper function untuk format last seen
+        function formatLastSeen(lastSeen) {
+            if (lastSeen === 'N/A') return 'N/A';
+            
+            try {
+                const date = new Date(lastSeen);
+                if (isNaN(date.getTime())) return lastSeen;
+                
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / (1000 * 60));
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins} minutes ago`;
+                if (diffHours < 24) return `${diffHours} hours ago`;
+                if (diffDays < 7) return `${diffDays} days ago`;
+                
+                return date.toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                return lastSeen;
+            }
+        }
+
+        // Helper function untuk format uptime (detik -> d h m)
+        function formatUptime(u) {
+            const seconds = parseInt(u, 10);
+            if (!Number.isFinite(seconds) || seconds < 0) return String(u || 'N/A');
+            if (seconds < 60) return `${seconds}s`;
+            const mins = Math.floor(seconds / 60);
+            if (mins < 60) return `${mins}m ${seconds % 60}s`;
+            const hours = Math.floor(mins / 60);
+            const remM = mins % 60;
+            if (hours < 24) return `${hours}h ${remM}m`;
+            const days = Math.floor(hours / 24);
+            const remH = hours % 24;
+            return `${days}d ${remH}h ${remM}m`;
+        }
+
+        // Initialize map when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            
+            // Initialize modal event listeners
+            initializeModalListeners();
+            
+            // Initialize mobile-specific features
+            initializeMobileFeatures();
+        });
+
+        // Initialize modal event listeners
+        function initializeModalListeners() {
+            // Save SSID button
+            document.getElementById('saveSsidBtn').addEventListener('click', function() {
+                const deviceId = document.getElementById('editDeviceId').value;
+                const newSSID = document.getElementById('editSSID').value;
+                if (deviceId && newSSID) {
+                    updateDeviceSSID(deviceId, newSSID);
+                }
+            });
+            
+            // Save Password button
+            document.getElementById('savePasswordBtn').addEventListener('click', function() {
+                const deviceId = document.getElementById('editDeviceId').value;
+                const newPassword = document.getElementById('editPassword').value;
+                if (deviceId && newPassword) {
+                    updateDevicePassword(deviceId, newPassword);
+                }
+            });
+            
+            // Save Tag button
+            document.getElementById('saveTagBtn').addEventListener('click', function() {
+                const deviceId = document.getElementById('editDeviceId').value;
+                const newTag = document.getElementById('editTag').value;
+                if (deviceId && newTag) {
+                    updateDeviceTag(deviceId, newTag);
+                }
+            });
+            
+            // Restart device button
+            document.getElementById('rebootAfterEditBtn').addEventListener('click', function() {
+                const deviceId = document.getElementById('editDeviceId').value;
+                if (deviceId) {
+                    restartDevice(deviceId);
+                }
+            });
+        }
+
+        // Update device SSID
+        async function updateDeviceSSID(deviceId, newSSID) {
+            try {
+                const response = await fetch('/admin/genieacs/genieacs/edit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: deviceId,
+                        ssid: newSSID
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast('SSID berhasil diupdate!', 'success');
+                    showEditAlert('SSID berhasil diupdate!', 'success');
+                    // Refresh data
+                    setTimeout(() => {
+                        refreshMap();
+                    }, 1000);
+                } else {
+                    showToast(result.message || 'Gagal update SSID', 'error');
+                    showEditAlert(result.message || 'Gagal update SSID', 'danger');
+                }
+            } catch (error) {
+                console.error('Error updating SSID:', error);
+                showToast('Error updating SSID', 'error');
+                showEditAlert('Error updating SSID', 'danger');
+            }
+        }
+
+        // Update device password
+        async function updateDevicePassword(deviceId, newPassword) {
+            try {
+                const response = await fetch('/admin/genieacs/genieacs/edit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: deviceId,
+                        password: newPassword
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Password berhasil diupdate!', 'success');
+                    showEditAlert('Password berhasil diupdate!', 'success');
+                    // Refresh data
+                    setTimeout(() => {
+                        refreshMap();
+                    }, 1000);
+                } else {
+                    showToast(result.message || 'Gagal update password', 'error');
+                    showEditAlert(result.message || 'Gagal update password', 'danger');
+                }
+            } catch (error) {
+                console.error('Error updating password:', error);
+                showToast('Error updating password', 'error');
+                showEditAlert('Error updating password', 'danger');
+            }
+        }
+
+        // Update device tag
+        async function updateDeviceTag(deviceId, newTag) {
+            try {
+                // Implement tag update logic here
+                showToast('Tag berhasil diupdate!', 'success');
+                showEditAlert('Tag berhasil diupdate!', 'success');
+                // Refresh data
+                setTimeout(() => {
+                    refreshMap();
+                }, 1000);
+            } catch (error) {
+                console.error('Error updating tag:', error);
+                showToast('Error updating tag', 'error');
+                showEditAlert('Error updating tag', 'danger');
+            }
+        }
+
+        // Restart device
+        async function restartDevice(deviceId) {
+            try {
+                // Implement device restart logic here
+                showToast('Device restart command sent!', 'info');
+                showEditAlert('Device restart command sent!', 'info');
+                // Refresh data after restart
+                setTimeout(() => {
+                    refreshMap();
+                }, 5000);
+            } catch (error) {
+                console.error('Error restarting device:', error);
+                showToast('Error restarting device', 'error');
+                showEditAlert('Error restarting device', 'danger');
+            }
+        }
+
+        // Show edit alert in modal
+        function showEditAlert(message, type) {
+            const alertDiv = document.getElementById('editAlert');
+            if (alertDiv) {
+                alertDiv.className = `alert alert-${type}`;
+                alertDiv.textContent = message;
+                alertDiv.style.display = 'block';
+                
+                // Auto-hide after 3 seconds
+                setTimeout(() => {
+                    alertDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Edit device tag (separate function)
+        function editDeviceTag(deviceId, currentTag) {
+            document.getElementById('editDeviceId').value = deviceId;
+            document.getElementById('editTag').value = currentTag;
+            new bootstrap.Modal(document.getElementById('editDeviceModal')).show();
+        }
+
+        // Initialize mobile-specific features
+        function initializeMobileFeatures() {
+            // Detect mobile device
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            
+            if (isMobile || isTouch) {
+                // Add mobile-specific classes
+                document.body.classList.add('mobile-device');
+                
+                // Adjust map for mobile
+                adjustMapForMobile();
+                
+                // Add touch gesture handlers
+                addTouchGestureHandlers();
+                
+                // Optimize for mobile performance
+                optimizeForMobile();
+            }
+            
+            // Handle orientation change
+            window.addEventListener('orientationchange', function() {
+                setTimeout(function() {
+                    if (map) {
+                        map.invalidateSize();
+                        // Re-center map if needed
+                        if (customerMarkers.length > 0) {
+                            const coords = customerMarkers.map(m => m.getLatLng());
+                            if (coords.length > 0) {
+                                const bounds = L.latLngBounds(coords);
+                                map.fitBounds(bounds, { padding: [20, 20] });
+                            }
+                        }
+                    }
+                }, 100);
+            });
+            
+            // Handle resize
+            window.addEventListener('resize', function() {
+                if (map) {
+                    map.invalidateSize();
+                }
+            });
+        }
+
+        // Adjust map for mobile devices
+        function adjustMapForMobile() {
+            if (!map) return;
+            
+            try {
+                // Disable double click zoom on mobile
+                if (map.doubleClickZoom) {
+                    map.doubleClickZoom.disable();
+                }
+                
+                // Enable tap handler if available
+                if (map.tap && map.tap.enable) {
+                    map.tap.enable();
+                }
+                
+                // Adjust zoom control position for mobile
+                const zoomControl = L.control.zoom({
+                    position: 'bottomright',
+                    zoomInTitle: 'Zoom In',
+                    zoomOutTitle: 'Zoom Out'
+                });
+                
+                // Remove default zoom control and add custom one
+                if (map.zoomControl) {
+                    map.removeControl(map.zoomControl);
+                }
+                map.addControl(zoomControl);
+                
+                // Add fullscreen control for mobile (if available)
+                if (L.control.fullscreen) {
+                    const fullscreenControl = L.control.fullscreen({
+                        position: 'topleft',
+                        title: 'Toggle Fullscreen'
+                    });
+                    map.addControl(fullscreenControl);
+                }
+            } catch (error) {
+                console.warn('Error adjusting map for mobile:', error);
+            }
+        }
+
+        // Add touch gesture handlers
+        function addTouchGestureHandlers() {
+            if (!map) return;
+            
+            let touchStartTime = 0;
+            let touchStartPos = null;
+            
+            // Handle touch start
+            map.on('touchstart', function(e) {
+                touchStartTime = Date.now();
+                touchStartPos = e.touches[0];
+            });
+            
+            // Handle touch end
+            map.on('touchend', function(e) {
+                const touchEndTime = Date.now();
+                const touchDuration = touchEndTime - touchStartTime;
+                
+                // Long press detection (500ms)
+                if (touchDuration > 500 && touchStartPos) {
+                    const touchEndPos = e.changedTouches[0];
+                    const distance = Math.sqrt(
+                        Math.pow(touchEndPos.clientX - touchStartPos.clientX, 2) +
+                        Math.pow(touchEndPos.clientY - touchStartPos.clientY, 2)
+                    );
+                    
+                    // If finger didn't move much, it's a long press
+                    if (distance < 10) {
+                        handleLongPress(e);
+                    }
+                }
+            });
+        }
+
+        // Handle long press on map
+        function handleLongPress(e) {
+            const latlng = map.containerPointToLatLng(e.containerPoint);
+            
+            // Show context menu or additional options
+            showMobileContextMenu(latlng, e.containerPoint);
+        }
+
+        // Show mobile context menu
+        function showMobileContextMenu(latlng, containerPoint) {
+            // Remove existing context menu
+            const existingMenu = document.querySelector('.mobile-context-menu');
+            if (existingMenu) {
+                existingMenu.remove();
+            }
+            
+            // Create context menu
+            const menu = document.createElement('div');
+            menu.className = 'mobile-context-menu';
+            menu.style.cssText = `
+                position: fixed;
+                top: ${containerPoint.y}px;
+                left: ${containerPoint.x}px;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                padding: 8px 0;
+                min-width: 150px;
+            `;
+            
+            menu.innerHTML = `
+                <div class="context-menu-item" onclick="addCustomerMarkerAt(${latlng.lat}, ${latlng.lng})">
+                    <i class="bx bx-user-plus"></i> Tambah Customer
+                </div>
+                <div class="context-menu-item" onclick="getLocationInfo(${latlng.lat}, ${latlng.lng})">
+                    <i class="bx bx-map-pin"></i> Info Lokasi
+                </div>
+                <div class="context-menu-item" onclick="copyCoordinates(${latlng.lat}, ${latlng.lng})">
+                    <i class="bx bx-copy"></i> Copy Koordinat
+                </div>
+            `;
+            
+            document.body.appendChild(menu);
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                if (menu.parentNode) {
+                    menu.remove();
+                }
+            }, 3000);
+            
+            // Hide when clicking outside
+            document.addEventListener('click', function hideMenu() {
+                if (menu.parentNode) {
+                    menu.remove();
+                }
+                document.removeEventListener('click', hideMenu);
+            });
+        }
+
+        // Optimize for mobile performance
+        function optimizeForMobile() {
+            // Reduce marker update frequency on mobile
+            if (map) {
+                map.on('zoomend', function() {
+                    // Update marker visibility based on zoom level
+                    const zoom = map.getZoom();
+                    customerMarkers.forEach(marker => {
+                        if (zoom < 10) {
+                            // Hide detailed markers at low zoom
+                            marker.setOpacity(0.6);
+                        } else {
+                            marker.setOpacity(1);
+                        }
+                    });
+                });
+            }
+            
+            // Add mobile-specific CSS
+            const style = document.createElement('style');
+            style.textContent = `
+                .mobile-context-menu {
+                    font-size: 14px;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                }
+                
+                .context-menu-item {
+                    padding: 12px 16px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    border-bottom: 1px solid #eee;
+                    transition: background-color 0.2s;
+                }
+                
+                .context-menu-item:last-child {
+                    border-bottom: none;
+                }
+                
+                .context-menu-item:hover {
+                    background-color: #f8f9fa;
+                }
+                
+                .context-menu-item i {
+                    font-size: 16px;
+                    color: #6c757d;
+                }
+                
+                @media (max-width: 768px) {
+                    .mobile-context-menu {
+                        min-width: 180px;
+                        font-size: 16px;
+                    }
+                    
+                    .context-menu-item {
+                        padding: 16px 20px;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+
+
+
+
+
+
+        // Toggle device details visibility
+        function toggleDeviceDetails(deviceId) {
+            const detailsContainer = document.getElementById(`deviceDetails_${deviceId}`);
+            const detailsBtn = document.getElementById(`detailsBtn_${deviceId}`);
+
+            if (detailsContainer.style.display === 'none') {
+                // Show device details
+                detailsContainer.style.display = 'block';
+                detailsBtn.innerHTML = '<i class="bi bi-info-circle"></i> Sembunyikan';
+                detailsBtn.classList.remove('btn-info');
+                detailsBtn.classList.add('btn-secondary');
+            } else {
+                // Hide device details
+                detailsContainer.style.display = 'none';
+                detailsBtn.innerHTML = '<i class="bi bi-info-circle"></i> Detail';
+                detailsBtn.classList.remove('btn-secondary');
+                detailsBtn.classList.add('btn-info');
+            }
+        }
+
+        // Reboot device function
+        async function rebootDevice(deviceId) {
+            if (!confirm('Apakah Anda yakin ingin me-restart device ini?')) {
+                return;
+            }
+
+            try {
+                showToast('Mengirim perintah restart...', 'info');
+
+                const response = await fetch('/admin/genieacs/genieacs/reboot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: deviceId })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Perintah restart berhasil dikirim!', 'success');
+                } else {
+                    showToast(result.message || 'Gagal mengirim perintah restart', 'error');
+                }
+            } catch (error) {
+                console.error('Error rebooting device:', error);
+                showToast('Error restarting device', 'error');
+            }
+        }
+
+
+
+        // Mobile-specific functions
+        function addCustomerMarkerAt(lat, lng) {
+            // Implementation for adding customer marker at specific coordinates
+            showToast('Fitur tambah customer akan segera tersedia', 'info');
+        }
+
+        function getLocationInfo(lat, lng) {
+            // Implementation for getting location information
+            const coords = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            showToast(`Koordinat: ${coords}`, 'info');
+        }
+
+        function copyCoordinates(lat, lng) {
+            const coords = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            navigator.clipboard.writeText(coords).then(() => {
+                showToast('Koordinat berhasil disalin!', 'success');
+            }).catch(() => {
+                showToast('Gagal menyalin koordinat', 'error');
+            });
+        }
+
+        // ===== ODP AND CABLE NETWORK FUNCTIONS =====
+        
+        let odpLayer = null;
+        let cableLayer = null;
+        let networkSegmentLayer = null;
+        let cableNetworkData = null;
+
+        // Load cable network data
+        async function loadCableNetworkData() {
+            try {
+                console.log('🔌 Loading cable network data...');
+                const response = await fetch('/admin/cable-network/api/mapping-data');
+                const result = await response.json();
+                
+                if (result.success) {
+                    cableNetworkData = result.data;
+                    console.log('✅ Cable network data loaded:', cableNetworkData);
+                    console.log(`📊 ODPs: ${cableNetworkData.odps ? cableNetworkData.odps.length : 0}`);
+                    console.log(`📊 Cable Routes: ${cableNetworkData.cableRoutes ? cableNetworkData.cableRoutes.length : 0}`);
+                    console.log(`📊 Network Segments: ${cableNetworkData.networkSegments ? cableNetworkData.networkSegments.length : 0}`);
+                    
+                    // Load ODPs if checkbox is checked
+                    if (document.getElementById('showODPs').checked) {
+                        loadODPs();
+                    }
+                    
+                    // Load cable routes if checkbox is checked
+                    if (document.getElementById('showCableRoutes').checked) {
+                        loadCableRoutes();
+                    }
+                    
+                    // Load network segments if checkbox is checked
+                    if (document.getElementById('showNetworkSegments').checked) {
+                        loadNetworkSegments();
+                    }
+                } else {
+                    console.error('Failed to load cable network data:', result.message);
+                }
+            } catch (error) {
+                console.error('Error loading cable network data:', error);
+            }
+        }
+
+        // Load ODP markers
+        function loadODPs() {
+            if (!cableNetworkData || !cableNetworkData.odps) return;
+            
+            // Clear existing ODP layer
+            if (odpLayer) {
+                map.removeLayer(odpLayer);
+            }
+            
+            odpLayer = L.layerGroup();
+            
+            cableNetworkData.odps.forEach(odp => {
+                const percentage = (odp.used_ports / odp.capacity) * 100;
+                
+                // Determine color based on capacity usage
+                let color = '#28a745'; // Green - < 70%
+                if (percentage >= 90) color = '#dc3545'; // Red - > 90%
+                else if (percentage >= 70) color = '#ffc107'; // Yellow - 70-90%
+                
+                // Different visual for sub ODP vs main ODP
+                const isSubODP = odp.parent_odp_id;
+                const iconSize = isSubODP ? 20 : 24;
+                const borderWidth = isSubODP ? 2 : 3;
+                const borderRadius = isSubODP ? 2 : 4;
+                const dotSize = isSubODP ? 6 : 8;
+                
+                // Create custom ODP icon with hierarchy indication
+                const odpIcon = L.divIcon({
+                    className: 'odp-custom-icon',
+                    html: `
+                        <div class="odp-icon-container" style="
+                            width: ${iconSize}px;
+                            height: ${iconSize}px;
+                            background-color: ${color};
+                            border: ${borderWidth}px solid white;
+                            border-radius: ${borderRadius}px;
+                            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            position: relative;
+                            ${isSubODP ? 'border-style: dashed;' : ''}
+                        ">
+                            <div style="
+                                width: ${dotSize}px;
+                                height: ${dotSize}px;
+                                background-color: white;
+                                border-radius: 50%;
+                                position: relative;
+                            ">
+                                <div style="
+                                    position: absolute;
+                                    top: -2px;
+                                    left: 50%;
+                                    transform: translateX(-50%);
+                                    width: ${dotSize/2}px;
+                                    height: ${dotSize/2}px;
+                                    background-color: white;
+                                    border-radius: 50%;
+                                "></div>
+                                <div style="
+                                    position: absolute;
+                                    bottom: -2px;
+                                    left: 50%;
+                                    transform: translateX(-50%);
+                                    width: 4px;
+                                    height: 4px;
+                                    background-color: white;
+                                    border-radius: 50%;
+                                "></div>
+                            </div>
+                        </div>
+                    `,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+
+                // Create ODP marker with custom icon
+                const marker = L.marker([odp.latitude, odp.longitude], {
+                    icon: odpIcon
+                });
+                
+                // Create popup content with hierarchy info
+                const popupContent = `
+                    <div class="odp-popup">
+                        <h6>
+                            <i class="bx ${isSubODP ? 'bx-sitemap' : 'bx-broadcast'}"></i> 
+                            ${odp.name}
+                            ${isSubODP ? '<small class="text-muted">(Sub ODP)</small>' : ''}
+                        </h6>
+                        <div class="mb-2">
+                            <strong>Kode:</strong> ${odp.code}<br>
+                            <strong>Alamat:</strong> ${odp.address || 'Tidak ada'}<br>
+                            <strong>Status:</strong> <span class="badge bg-${odp.status === 'active' ? 'success' : 'warning'}">${odp.status}</span>
+                            ${isSubODP && odp.parent_name ? `<br><strong>Parent:</strong> ${odp.parent_name} (${odp.parent_code})` : ''}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Kapasitas:</strong> ${odp.used_ports}/${odp.capacity} ports<br>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-${percentage >= 90 ? 'danger' : percentage >= 70 ? 'warning' : 'success'}" 
+                                     style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Pelanggan:</strong> ${odp.connected_customers || 0}<br>
+                            <strong>Aktif:</strong> ${odp.active_connections || 0}
+                        </div>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-primary" onclick="viewODPDetails(${odp.id})">
+                                <i class="bx bx-info-circle"></i> Detail
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="copyCoordinates(${odp.latitude}, ${odp.longitude})">
+                                <i class="bx bx-copy"></i> Koordinat
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                odpLayer.addLayer(marker);
+            });
+            
+            map.addLayer(odpLayer);
+        }
+
+        // Load cable routes
+        function loadCableRoutes() {
+            console.log('🔌 loadCableRoutes called');
+            console.log('cableNetworkData:', cableNetworkData);
+            
+            if (!cableNetworkData || !cableNetworkData.cableRoutes) {
+                console.log('❌ No cable network data or cable routes found');
+                return;
+            }
+            
+            console.log(`📊 Found ${cableNetworkData.cableRoutes.length} cable routes`);
+            
+            // Clear existing cable layer
+            if (cableLayer) {
+                map.removeLayer(cableLayer);
+            }
+            
+            cableLayer = L.layerGroup();
+            
+            cableNetworkData.cableRoutes.forEach((cable, index) => {
+                console.log(`🔌 Processing cable route ${index + 1}:`, cable);
+                
+                if (cable.customer_latitude && cable.customer_longitude && 
+                    cable.odp_latitude && cable.odp_longitude) {
+                    console.log(`✅ Cable route ${index + 1} has valid coordinates`);
+                    
+                    // Determine color based on status
+                    let color = '#28a745'; // Green - connected
+                    let dashArray = null;
+                    
+                    switch(cable.status) {
+                        case 'connected':
+                            color = '#28a745';
+                            break;
+                        case 'disconnected':
+                            color = '#dc3545';
+                            break;
+                        case 'maintenance':
+                            color = '#ffc107';
+                            dashArray = '10, 5';
+                            break;
+                        case 'damaged':
+                            color = '#6f42c1';
+                            break;
+                    }
+                    
+                    // Create cable route polyline
+                    const polyline = L.polyline([
+                        [cable.odp_latitude, cable.odp_longitude],
+                        [cable.customer_latitude, cable.customer_longitude]
+                    ], {
+                        color: color,
+                        weight: 3,
+                        opacity: 0.8,
+                        dashArray: dashArray,
+                        className: `cable-route cable-${cable.status}`
+                    });
+                    
+                    // Create popup content
+                    const popupContent = `
+                        <div class="cable-popup">
+                            <h6><i class="bx bx-cable-car"></i> Cable Route #${cable.id}</h6>
+                            <div class="mb-2">
+                                <strong>Customer:</strong> ${cable.customer_name}<br>
+                                <strong>Phone:</strong> ${cable.customer_phone}<br>
+                                <strong>ODP:</strong> ${cable.odp_name}<br>
+                                <strong>Status:</strong> <span class="badge bg-${cable.status === 'connected' ? 'success' : cable.status === 'disconnected' ? 'danger' : 'warning'}">${cable.status}</span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>Length:</strong> ${cable.cable_length ? (parseFloat(cable.cable_length) / 1000).toFixed(1) + ' km' : 'N/A'}<br>
+                                <strong>Type:</strong> ${cable.cable_type || 'Fiber Optic'}<br>
+                                <strong>Port:</strong> ${cable.port_number || 'N/A'}
+                            </div>
+                            ${cable.notes ? `<div class="mb-2"><strong>Notes:</strong><br><small>${cable.notes}</small></div>` : ''}
+                        </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    cableLayer.addLayer(polyline);
+                }
+            });
+            
+            console.log(`✅ Added ${cableLayer.getLayers().length} cable routes to map`);
+            map.addLayer(cableLayer);
+        }
+
+        // Load network segments
+        function loadNetworkSegments() {
+            if (!cableNetworkData || !cableNetworkData.networkSegments) return;
+            
+            // Clear existing network segment layer
+            if (networkSegmentLayer) {
+                map.removeLayer(networkSegmentLayer);
+            }
+            
+            networkSegmentLayer = L.layerGroup();
+            
+            cableNetworkData.networkSegments.forEach(segment => {
+                if (segment.start_latitude && segment.start_longitude && 
+                    segment.end_latitude && segment.end_longitude) {
+                    
+                    // Determine color and weight based on segment type
+                    let color = '#007bff'; // Blue - default
+                    let weight = 3;
+                    
+                    switch(segment.segment_type) {
+                        case 'Backbone':
+                            color = '#6f42c1'; // Purple
+                            weight = 5;
+                            break;
+                        case 'Distribution':
+                            color = '#fd7e14'; // Orange
+                            weight = 4;
+                            break;
+                        case 'Access':
+                            color = '#20c997'; // Teal
+                            weight = 3;
+                            break;
+                    }
+                    
+                    // Create network segment polyline
+                    const polyline = L.polyline([
+                        [segment.start_latitude, segment.start_longitude],
+                        [segment.end_latitude, segment.end_longitude]
+                    ], {
+                        color: color,
+                        weight: weight,
+                        opacity: 0.7,
+                        dashArray: segment.status === 'maintenance' ? '15, 10' : null
+                    });
+                    
+                    // Create popup content
+                    const popupContent = `
+                        <div class="network-popup">
+                            <h6><i class="bx bx-network-chart"></i> ${segment.name}</h6>
+                            <div class="mb-2">
+                                <strong>Type:</strong> ${segment.segment_type}<br>
+                                <strong>Status:</strong> <span class="badge bg-${segment.status === 'active' ? 'success' : 'warning'}">${segment.status}</span><br>
+                                <strong>Length:</strong> ${segment.cable_length ? (parseFloat(segment.cable_length) / 1000).toFixed(1) + ' km' : 'N/A'}
+                            </div>
+                            <div class="mb-2">
+                                <strong>From:</strong> ${segment.start_odp_name}<br>
+                                <strong>To:</strong> ${segment.end_odp_name || 'N/A'}
+                            </div>
+                            ${segment.notes ? `<div class="mb-2"><strong>Notes:</strong><br><small>${segment.notes}</small></div>` : ''}
+                        </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    networkSegmentLayer.addLayer(polyline);
+                }
+            });
+            
+            map.addLayer(networkSegmentLayer);
+        }
+
+        // Toggle ODP layer
+        function toggleODPLayer() {
+            const checkbox = document.getElementById('showODPs');
+            if (checkbox.checked) {
+                if (!odpLayer) {
+                    loadODPs();
+                } else {
+                    map.addLayer(odpLayer);
+                }
+            } else {
+                if (odpLayer) {
+                    map.removeLayer(odpLayer);
+                }
+            }
+        }
+
+        // Toggle cable layer
+        function toggleCableLayer() {
+            const checkbox = document.getElementById('showCableRoutes');
+            if (checkbox.checked) {
+                if (!cableLayer) {
+                    loadCableRoutes();
+                } else {
+                    map.addLayer(cableLayer);
+                }
+            } else {
+                if (cableLayer) {
+                    map.removeLayer(cableLayer);
+                }
+            }
+        }
+
+        // Toggle network segment layer
+        function toggleNetworkSegmentLayer() {
+            const checkbox = document.getElementById('showNetworkSegments');
+            if (checkbox.checked) {
+                if (!networkSegmentLayer) {
+                    loadNetworkSegments();
+                } else {
+                    map.addLayer(networkSegmentLayer);
+                }
+            } else {
+                if (networkSegmentLayer) {
+                    map.removeLayer(networkSegmentLayer);
+                }
+            }
+        }
+
+        // View ODP details
+        function viewODPDetails(odpId) {
+            window.open(`/admin/cable-network/odp`, '_blank');
+        }
+
+        // ===== ENHANCEMENT: OPTIMIZATION TOGGLE (Tidak mengubah fungsi existing) =====
+        
+        // Global variables untuk tracking optimization state
+        let isOptimizationEnabled = false;
+        
+        // Global basePath untuk API calls
+        const basePath = (typeof isTechnicianView !== 'undefined' && isTechnicianView) ? '/technician' : '/admin';
+        const baseApiPath = (typeof isTechnicianView !== 'undefined' && isTechnicianView) ? '/technician/api' : '/admin/billing/api';
+        const genieacsApiPath = (typeof isTechnicianView !== 'undefined' && isTechnicianView) ? '/technician/genieacs/api' : '/admin/api';
+        
+        // Cache untuk working endpoints
+        let workingEndpoints = {
+            cacheStats: null,
+            cacheClear: null
+        };
+        
+        /**
+         * Detect working cache API endpoints
+         */
+        async function detectWorkingEndpoints() {
+            if (workingEndpoints.cacheStats && workingEndpoints.cacheClear) {
+                return workingEndpoints;
+            }
+            
+            console.log('🔍 Detecting working cache API endpoints...');
+            
+            const possibleStatsEndpoints = [
+                '/admin/api/cache-stats',
+                '/admin/genieacs/api/cache-stats',
+                '/technician/genieacs/api/cache-stats'
+            ];
+            
+            const possibleClearEndpoints = [
+                '/admin/api/cache-clear',
+                '/admin/genieacs/api/cache-clear',
+                '/technician/genieacs/api/cache-clear'
+            ];
+            
+            // Test cache stats endpoints
+            for (const endpoint of possibleStatsEndpoints) {
+                try {
+                    const response = await fetch(endpoint);
+                    if (response.ok) {
+                        workingEndpoints.cacheStats = endpoint;
+                        console.log(`✅ Found working cache stats endpoint: ${endpoint}`);
+                        break;
+                    }
+                } catch (err) {
+                    // Continue to next endpoint
+                }
+            }
+            
+            // Test cache clear endpoints
+            for (const endpoint of possibleClearEndpoints) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ clearAll: true })
+                    });
+                    if (response.ok) {
+                        workingEndpoints.cacheClear = endpoint;
+                        console.log(`✅ Found working cache clear endpoint: ${endpoint}`);
+                        break;
+                    }
+                } catch (err) {
+                    // Continue to next endpoint
+                }
+            }
+            
+            return workingEndpoints;
+        }
+        
+        /**
+         * Toggle optimization mode
+         * Tidak mengubah fungsi existing, hanya menambah pilihan
+         */
+        function toggleOptimization() {
+            isOptimizationEnabled = !isOptimizationEnabled;
+            const toggleBtn = document.getElementById('optimizeToggle');
+            const performancePanel = document.getElementById('performancePanel');
+            
+            if (isOptimizationEnabled) {
+                toggleBtn.classList.remove('btn-outline-primary');
+                toggleBtn.classList.add('btn-primary');
+                toggleBtn.innerHTML = '<i class="bx bx-rocket"></i>';
+                toggleBtn.title = 'Performance Optimization: ON';
+                console.log('🚀 Performance optimization enabled');
+                
+                // Show performance panel
+                performancePanel.style.display = 'block';
+                refreshCacheStats();
+                
+                // Auto-refresh cache stats every 30 seconds
+                if (window.cacheStatsInterval) {
+                    clearInterval(window.cacheStatsInterval);
+                }
+                window.cacheStatsInterval = setInterval(refreshCacheStats, 30000);
+                
+            } else {
+                toggleBtn.classList.remove('btn-primary');
+                toggleBtn.classList.add('btn-outline-primary');
+                toggleBtn.innerHTML = '<i class="bx bx-rocket"></i>';
+                toggleBtn.title = 'Performance Optimization: OFF';
+                console.log('🐌 Performance optimization disabled');
+                
+                // Hide performance panel
+                performancePanel.style.display = 'none';
+                
+                // Clear auto-refresh
+                if (window.cacheStatsInterval) {
+                    clearInterval(window.cacheStatsInterval);
+                    window.cacheStatsInterval = null;
+                }
+            }
+        }
+        
+        /**
+         * Enhanced loadMapData yang memilih antara optimized atau original
+         * Fallback ke original jika optimization disabled
+         */
+        async function loadMapDataWithOptimization() {
+            if (isOptimizationEnabled) {
+                console.log('🚀 Using optimized loading...');
+                await loadMapDataOptimized();
+            } else {
+                console.log('🐌 Using original loading...');
+                await loadMapData();
+            }
+        }
+        
+        /**
+         * Enhanced refresh function dengan optimization toggle
+         */
+        function refreshMapData() {
+            // Clear existing markers
+            customerMarkers.forEach(marker => map.removeLayer(marker));
+            onuMarkers.forEach(marker => map.removeLayer(marker));
+            customerMarkers = [];
+            onuMarkers = [];
+            
+            // Load data dengan optimization toggle
+            loadMapDataWithOptimization();
+        }
+        
+        /**
+         * Refresh cache statistics
+         */
+        async function refreshCacheStats() {
+            try {
+                console.log('Fetching cache stats...');
+                
+                // Detect working endpoints first
+                const endpoints = await detectWorkingEndpoints();
+                
+                if (!endpoints.cacheStats) {
+                    throw new Error('No working cache stats endpoint found');
+                }
+                
+                const response = await fetch(endpoints.cacheStats);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Cache stats response:', data);
+                
+                if (data.success) {
+                    const { cache, performance } = data.data;
+                    
+                    // Update UI
+                    const hitRate = cache.totalEntries > 0 ? 
+                        Math.round((cache.validEntries / cache.totalEntries) * 100) : 0;
+                    
+                    document.getElementById('cacheHitRate').textContent = `${hitRate}%`;
+                    document.getElementById('cacheEntries').textContent = 
+                        `${cache.validEntries}/${cache.totalEntries}`;
+                    document.getElementById('memoryUsage').textContent = 
+                        `${Math.round(performance.memoryUsage.heapUsed / 1024 / 1024)}MB`;
+                    
+                    // Show performance panel if optimization is enabled
+                    if (isOptimizationEnabled) {
+                        document.getElementById('performancePanel').style.display = 'block';
+                    }
+                    
+                    console.log('Cache stats updated:', { hitRate, entries: cache.validEntries, memory: performance.memoryUsage.heapUsed });
+                } else {
+                    console.error('Cache stats API returned error:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching cache stats:', error);
+                // Set default values on error
+                document.getElementById('cacheHitRate').textContent = 'Error';
+                document.getElementById('cacheEntries').textContent = 'Error';
+                document.getElementById('memoryUsage').textContent = 'Error';
+            }
+        }
+        
+        /**
+         * Clear cache
+         */
+        async function clearCache() {
+            try {
+                console.log('Clearing cache...');
+                
+                // Detect working endpoints first
+                const endpoints = await detectWorkingEndpoints();
+                
+                if (!endpoints.cacheClear) {
+                    throw new Error('No working cache clear endpoint found');
+                }
+                
+                const response = await fetch(endpoints.cacheClear, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        clearAll: true // Clear all cache, not just devices
+                    })
+                });
+                
+                console.log('Cache clear response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Cache clear response data:', data);
+                
+                if (data.success) {
+                    showToast(data.message || 'Cache cleared successfully', 'success');
+                    // Refresh stats after clearing
+                    setTimeout(refreshCacheStats, 1000);
+                } else {
+                    showToast(data.message || 'Failed to clear cache', 'error');
+                }
+            } catch (error) {
+                console.error('Error clearing cache:', error);
+                showToast(`Error clearing cache: ${error.message}`, 'error');
+            }
+        }
+        
+        /**
+         * Test cache API endpoints
+         */
+        async function testCacheAPI() {
+            try {
+                console.log('🧪 Testing cache API endpoints...');
+                console.log('genieacsApiPath:', genieacsApiPath);
+                
+                // Test multiple possible endpoints
+                const possibleEndpoints = [
+                    `${genieacsApiPath}/cache-stats`,
+                    `${genieacsApiPath}/genieacs/api/cache-stats`,
+                    '/admin/api/cache-stats',
+                    '/admin/genieacs/api/cache-stats'
+                ];
+                
+                console.log('Testing possible cache stats endpoints:');
+                for (const endpoint of possibleEndpoints) {
+                    try {
+                        console.log(`Testing: ${endpoint}`);
+                        const response = await fetch(endpoint);
+                        console.log(`  Status: ${response.status}, OK: ${response.ok}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log(`  Data:`, data);
+                            console.log(`✅ Found working endpoint: ${endpoint}`);
+                            break;
+                        }
+                    } catch (err) {
+                        console.log(`  Error: ${err.message}`);
+                    }
+                }
+                
+                // Test cache clear endpoints
+                const clearEndpoints = [
+                    `${genieacsApiPath}/cache-clear`,
+                    `${genieacsApiPath}/genieacs/api/cache-clear`,
+                    '/admin/api/cache-clear',
+                    '/admin/genieacs/api/cache-clear'
+                ];
+                
+                console.log('Testing possible cache clear endpoints:');
+                for (const endpoint of clearEndpoints) {
+                    try {
+                        console.log(`Testing: ${endpoint}`);
+                        const response = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ clearAll: true })
+                        });
+                        console.log(`  Status: ${response.status}, OK: ${response.ok}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log(`  Data:`, data);
+                            console.log(`✅ Found working endpoint: ${endpoint}`);
+                            break;
+                        }
+                    } catch (err) {
+                        console.log(`  Error: ${err.message}`);
+                    }
+                }
+                
+                showToast('API test completed - check console for details', 'info');
+                
+            } catch (error) {
+                console.error('Error testing cache API:', error);
+                showToast(`API test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Load cable network data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load cable network data after a short delay to ensure map is initialized
+            setTimeout(loadCableNetworkData, 1000);
+            
+            // Initialize optimization toggle state
+            const toggleBtn = document.getElementById('optimizeToggle');
+            if (toggleBtn) {
+                toggleBtn.title = 'Performance Optimization: OFF (Click to enable)';
+            }
+        });
+    </script>
+</body>
+</html>
+

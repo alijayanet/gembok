@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran Saya - <%= appSettings.companyHeader %></title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0B1437">
+    <link rel="apple-touch-icon" href="/img/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/pwa.css">
+    <script defer src="/js/pwa-install.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar-brand img { max-height: 40px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .table th { border-top: none; font-weight: 600; }
+        .badge { font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+    <!-- Navbar atas dihilangkan untuk tampilan mobile minimalis -->
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">Riwayat Pembayaran</h2>
+                    <p class="text-muted mb-0">Semua pembayaran atas tagihan Anda</p>
+                </div>
+                <a href="/customer/billing/dashboard" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="card text-bg-primary">
+                    <div class="card-body text-center">
+                        <i class="bi bi-cash-stack fs-2 mb-2"></i>
+                        <div class="fw-bold">Total Pembayaran</div>
+                        <div class="fs-3"><%= payments ? payments.length : 0 %></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card text-bg-success">
+                    <div class="card-body text-center">
+                        <i class="bi bi-currency-dollar fs-2 mb-2"></i>
+                        <div class="fw-bold">Total Jumlah</div>
+                        <div class="fs-3">Rp <%= payments ? payments.reduce((sum, p) => sum + Number(p.amount || 0), 0).toLocaleString('id-ID') : '0' %></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card text-bg-warning">
+                    <div class="card-body text-center">
+                        <i class="bi bi-credit-card fs-2 mb-2"></i>
+                        <div class="fw-bold">Metode Terbanyak</div>
+                        <div class="fs-6">
+                            <%
+                              const methodCounts = {};
+                              (payments || []).forEach(p => { const m = (p.payment_method || 'lainnya'); methodCounts[m] = (methodCounts[m] || 0) + 1; });
+                              const topMethod = Object.keys(methodCounts).sort((a,b) => methodCounts[b]-methodCounts[a])[0];
+                            %>
+                            <%= topMethod ? topMethod.toUpperCase() : '-' %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-list-ul"></i> Daftar Pembayaran</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>No. Tagihan</th>
+                                        <th>Jumlah</th>
+                                        <th>Metode</th>
+                                        <th>Referensi</th>
+                                        <th>Catatan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (payments && payments.length > 0) { %>
+                                        <% payments.forEach(function(p) { %>
+                                            <tr>
+                                                <td><%= p.payment_date ? new Date(p.payment_date).toLocaleString('id-ID') : '-' %></td>
+                                                <td>
+                                                    <a href="/customer/billing/invoices/<%= p.invoice_id %>" class="text-body fw-bold">
+                                                        <%= p.invoice_number %>
+                                                    </a>
+                                                </td>
+                                                <td>Rp <%= Math.round(Number(p.amount || 0)).toLocaleString('id-ID') %></td>
+                                                <td>
+                                                    <% const m = (p.payment_method || '').toLowerCase(); %>
+                                                    <% if (m === 'cash') { %>
+                                                        <span class="badge bg-info">Tunai</span>
+                                                    <% } else if (m === 'transfer') { %>
+                                                        <span class="badge bg-primary">Transfer</span>
+                                                    <% } else if (m === 'qris') { %>
+                                                        <span class="badge bg-success">QRIS</span>
+                                                    <% } else if (m === 'ewallet') { %>
+                                                        <span class="badge bg-warning text-dark">E-Wallet</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-secondary"><%= p.payment_method || '-' %></span>
+                                                    <% } %>
+                                                </td>
+                                                <td><%= p.reference_number || '-' %></td>
+                                                <td><%= p.notes || '-' %></td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">
+                                                <i class="bi bi-credit-card fs-1 d-block mb-3"></i>
+                                                <h5>Belum ada pembayaran</h5>
+                                                <p>Pembayaran Anda akan muncul di sini setelah berhasil diproses.</p>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container text-center">
+            <p class="mb-0 text-muted">
+                <%= appSettings.footerInfo %>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Bottom nav (mobile) 5 menu -->
+    <nav class="bottom-nav d-md-none">
+        <a class="nav-item" href="/customer/billing/dashboard">
+            <i class="bi bi-speedometer2"></i>
+            <span>Billing</span>
+        </a>
+        <a class="nav-item" href="/customer/trouble/report">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>Laporan</span>
+        </a>
+        <a class="nav-item" href="/customer/dashboard">
+            <i class="bi bi-house"></i>
+            <span>Home</span>
+        </a>
+        <a class="nav-item" href="/customer/billing/invoices">
+            <i class="bi bi-receipt"></i>
+            <span>Invoice</span>
+        </a>
+        <a class="nav-item" href="/customer/billing/profile">
+            <i class="bi bi-person"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+</body>
+ </html>
+
+

@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .odp-card {
+            transition: transform 0.2s;
+        }
+        .odp-card:hover {
+            transform: translateY(-2px);
+        }
+        .capacity-bar {
+            height: 8px;
+            border-radius: 4px;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+        }
+        .odp-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        .odp-active { background-color: #28a745; }
+        .odp-maintenance { background-color: #ffc107; }
+        .odp-inactive { background-color: #6c757d; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin">
+                <i class="bx bx-wifi"></i> Admin Portal
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin">
+                    <i class="bx bx-home"></i> Dashboard
+                </a>
+                <a class="nav-link" href="/admin/cable-network">
+                    <i class="bx bx-network-chart"></i> Cable Network
+                </a>
+                <a class="nav-link" href="/admin/cable-network/cables">
+                    <i class="bx bx-cable-car"></i> Cable Routes
+                </a>
+                <a class="nav-link" href="/admin/billing/mapping">
+                    <i class="bx bx-map"></i> Map View
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="bx bx-broadcast"></i> ODP Management</h2>
+                        <p class="text-muted">Kelola Optical Distribution Point (ODP) dan kapasitas port</p>
+                    </div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addODPModal">
+                        <i class="bx bx-plus"></i> Tambah ODP
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4><%= odps.length %></h4>
+                                <p class="mb-0">Total ODP</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="bx bx-broadcast fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4><%= odps.filter(o => o.status && o.status === 'active').length %></h4>
+                                <p class="mb-0">Active ODP</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="bx bx-check-circle fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4><%= odps.filter(o => o.status && o.status === 'maintenance').length %></h4>
+                                <p class="mb-0">Maintenance</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="bx bx-wrench fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4><%= odps.reduce((sum, o) => sum + (o.used_ports || 0), 0) %></h4>
+                                <p class="mb-0">Used Ports</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="bx bx-plug fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ODP List -->
+        <div class="row">
+            <% odps.forEach(odp => { %>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card odp-card h-100" data-odp-id="<%= odp.id %>">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="odp-icon <%= 'odp-' + odp.status %>">
+                                    <i class="bx bx-broadcast"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h5 class="mb-0" data-field="name"><%= odp.name %></h5>
+                                    <small class="text-muted" data-field="code"><%= odp.code %></small>
+                                </div>
+                            </div>
+                            <span class="badge <%= odp.status === 'active' ? 'bg-success' : odp.status === 'maintenance' ? 'bg-warning' : 'bg-secondary' %> status-badge" data-field="status">
+                                <%= odp.status ? odp.status.charAt(0).toUpperCase() + odp.status.slice(1) : 'Unknown' %>
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Address</small>
+                            <p class="mb-1" data-field="address"><%= odp.address || 'No address' %></p>
+                            <% if (odp.parent_name) { %>
+                                <small class="text-info d-block">
+                                    <i class="bx bx-sitemap me-1"></i>
+                                    Sub ODP dari: <strong><%= odp.parent_name %> (<%= odp.parent_code %>)</strong>
+                                </small>
+                            <% } else { %>
+                                <small class="text-success d-block">
+                                    <i class="bx bx-home me-1"></i>
+                                    ODP Utama
+                                </small>
+                            <% } %>
+                            <!-- Hidden data fields for edit functionality -->
+                            <span data-field="latitude" style="display: none;"><%= odp.latitude %></span>
+                            <span data-field="longitude" style="display: none;"><%= odp.longitude %></span>
+                            <span data-field="parent_odp_id" style="display: none;"><%= odp.parent_odp_id || '' %></span>
+                            <span data-field="notes" style="display: none;"><%= odp.notes || '' %></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted">Port Usage</small>
+                                <small class="text-muted"><%= odp.used_ports || 0 %>/<span data-field="capacity"><%= odp.capacity || 0 %></span></small>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar capacity-bar <%= 
+                                    ((odp.used_ports || 0) / (odp.capacity || 1) * 100) >= 90 ? 'bg-danger' :
+                                    ((odp.used_ports || 0) / (odp.capacity || 1) * 100) >= 70 ? 'bg-warning' : 'bg-success'
+                                %>" 
+                                style="width: <%= ((odp.used_ports || 0) / (odp.capacity || 1) * 100) %>%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h6 class="mb-0 text-primary"><%= odp.connected_customers || 0 %></h6>
+                                        <small class="text-muted">Customers</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="mb-0 text-success"><%= odp.active_connections || 0 %></h6>
+                                    <small class="text-muted">Active</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editODP(<%= odp.id %>)">
+                                <i class="bx bx-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-outline-info" onclick="viewODPDetails(<%= odp.id %>)">
+                                <i class="bx bx-info-circle"></i> Details
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteODP(<%= odp.id %>)" 
+                                    <%= (odp.used_ports || 0) > 0 ? 'disabled' : '' %>>
+                                <i class="bx bx-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% }); %>
+        </div>
+    </div>
+
+    <!-- Add ODP Modal -->
+    <div class="modal fade" id="addODPModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah ODP Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addODPForm">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nama ODP *</label>
+                                    <input type="text" class="form-control" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Kode ODP *</label>
+                                    <input type="text" class="form-control" name="code" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Parent ODP (Sub ODP)</label>
+                            <select class="form-select" name="parent_odp_id">
+                                <option value="">Pilih Parent ODP (Opsional - untuk Sub ODP)</option>
+                                <% if (parentOdps && parentOdps.length > 0) { %>
+                                    <% parentOdps.forEach(function(parentOdp) { %>
+                                        <option value="<%= parentOdp.id %>">
+                                            <%= parentOdp.name %> (<%= parentOdp.code %>) - <%= parentOdp.used_ports %>/<%= parentOdp.capacity %> ports
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                            <small class="form-text text-muted">Pilih Parent ODP jika ini adalah Sub ODP. Kosongkan jika ini adalah ODP utama.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Koordinat Lokasi *</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="number" step="any" class="form-control" id="addODPLatitude" name="latitude" placeholder="Latitude" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="number" step="any" class="form-control" id="addODPLongitude" name="longitude" placeholder="Longitude" required>
+                                </div>
+                            </div>
+                            <small class="text-muted">Klik pada map untuk mengatur koordinat atau masukkan manual</small>
+                        </div>
+                        
+                        <!-- Map Container untuk Add -->
+                        <div class="mb-3">
+                            <label class="form-label">Peta Lokasi</label>
+                            <div id="addODPMap" style="height: 300px; border-radius: 8px; border: 1px solid #dee2e6;"></div>
+                            <small class="text-muted">Klik pada map untuk menambah posisi ODP</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" name="address" rows="2"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Kapasitas Port</label>
+                                    <input type="number" class="form-control" name="capacity" value="64" min="1">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-select" name="status">
+                                        <option value="active">Active</option>
+                                        <option value="maintenance">Maintenance</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="notes" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Tambah ODP</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit ODP Modal -->
+    <div class="modal fade" id="editODPModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit ODP</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editODPForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="editODPId" name="id">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nama ODP *</label>
+                                    <input type="text" class="form-control" id="editODPName" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Kode ODP *</label>
+                                    <input type="text" class="form-control" id="editODPCode" name="code" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Parent ODP (Sub ODP)</label>
+                            <select class="form-select" id="editODPParentId" name="parent_odp_id">
+                                <option value="">Pilih Parent ODP (Opsional - untuk Sub ODP)</option>
+                                <% if (parentOdps && parentOdps.length > 0) { %>
+                                    <% parentOdps.forEach(function(parentOdp) { %>
+                                        <option value="<%= parentOdp.id %>">
+                                            <%= parentOdp.name %> (<%= parentOdp.code %>) - <%= parentOdp.used_ports %>/<%= parentOdp.capacity %> ports
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                            <small class="form-text text-muted">Pilih Parent ODP jika ini adalah Sub ODP. Kosongkan jika ini adalah ODP utama.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Koordinat Lokasi *</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="number" step="any" class="form-control" id="editODPLatitude" name="latitude" placeholder="Latitude" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="number" step="any" class="form-control" id="editODPLongitude" name="longitude" placeholder="Longitude" required>
+                                </div>
+                            </div>
+                            <small class="text-muted">Klik pada map untuk mengatur koordinat atau masukkan manual</small>
+                        </div>
+                        
+                        <!-- Map Container untuk Edit -->
+                        <div class="mb-3">
+                            <label class="form-label">Peta Lokasi</label>
+                            <div id="editODPMap" style="height: 300px; border-radius: 8px; border: 1px solid #dee2e6;"></div>
+                            <small class="text-muted">Klik pada map untuk mengubah posisi ODP</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alamat</label>
+                            <textarea class="form-control" id="editODPAddress" name="address" rows="2"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Kapasitas *</label>
+                                    <input type="number" class="form-control" id="editODPCapacity" name="capacity" min="1" max="128" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-control" id="editODPStatus" name="status">
+                                        <option value="active">Active</option>
+                                        <option value="maintenance">Maintenance</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Catatan</label>
+                            <textarea class="form-control" id="editODPNotes" name="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update ODP</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail ODP Modal -->
+    <div class="modal fade" id="detailODPModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bx bx-broadcast"></i> ODP Details - <span id="detailODPNameTitle"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="bx bx-info-circle"></i> Basic Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-4"><strong>Name:</strong></div>
+                                        <div class="col-8" id="detailODPName"></div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-4"><strong>Code:</strong></div>
+                                        <div class="col-8" id="detailODPCode"></div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-4"><strong>Status:</strong></div>
+                                        <div class="col-8">
+                                            <span id="detailODPStatusBadge" class="badge"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-4"><strong>Address:</strong></div>
+                                        <div class="col-8" id="detailODPAddress"></div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-4"><strong>Coordinates:</strong></div>
+                                        <div class="col-8" id="detailODPCoordinates"></div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-4"><strong>Notes:</strong></div>
+                                        <div class="col-8" id="detailODPNotes"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Capacity & Statistics -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="bx bx-bar-chart-alt-2"></i> Capacity & Statistics</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <div class="text-center">
+                                                <h4 class="text-primary mb-0" id="detailODPConnectedCustomers">0</h4>
+                                                <small class="text-muted">Connected Customers</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="text-center">
+                                                <h4 class="text-success mb-0" id="detailODPActiveConnections">0</h4>
+                                                <small class="text-muted">Active Connections</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <small class="text-muted">Port Usage</small>
+                                            <small class="text-muted" id="detailODPUtilization">0%</small>
+                                        </div>
+                                        <div class="progress">
+                                            <div id="detailODPProgressBar" class="progress-bar" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-4"><strong>Capacity:</strong></div>
+                                        <div class="col-8" id="detailODPCapacity">0</div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-4"><strong>Available:</strong></div>
+                                        <div class="col-8" id="detailODPAvailable">0</div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-4"><strong>Utilization:</strong></div>
+                                        <div class="col-8">
+                                            <span id="detailODPUtilizationText" class="badge bg-info">0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cable Routes -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="bx bx-diagram-3"></i> Connected Cable Routes</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="cableRoutesContainer">
+                                        <div class="text-center">
+                                            <i class="bx bx-loader-alt bx-spin fs-1 text-muted"></i>
+                                            <p class="text-muted">Loading cable routes...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="editODPFromDetail()">
+                        <i class="bx bx-edit"></i> Edit ODP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Add ODP Form Handler
+        document.getElementById('addODPForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/admin/cable-network/odp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('success', result.message);
+                    bootstrap.Modal.getInstance(document.getElementById('addODPModal')).hide();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert('danger', result.message);
+                }
+            } catch (error) {
+                showAlert('danger', 'Error: ' + error.message);
+            }
+        });
+
+        // Initialize map untuk add ODP modal
+        document.getElementById('addODPModal').addEventListener('shown.bs.modal', function() {
+            setTimeout(() => {
+                initializeAddODPMap();
+            }, 300);
+        });
+
+        // Initialize map untuk edit ODP modal
+        document.getElementById('editODPModal').addEventListener('shown.bs.modal', function() {
+            setTimeout(() => {
+                initializeEditODPMap();
+            }, 300);
+        });
+
+        // Cleanup map ketika modal ditutup
+        document.getElementById('addODPModal').addEventListener('hidden.bs.modal', function() {
+            if (addODPMap) {
+                addODPMap.remove();
+                addODPMap = null;
+                addODPMarker = null;
+            }
+        });
+
+        document.getElementById('editODPModal').addEventListener('hidden.bs.modal', function() {
+            if (editODPMap) {
+                editODPMap.remove();
+                editODPMap = null;
+                editODPMarker = null;
+            }
+        });
+
+        // Initialize map untuk add ODP
+        function initializeAddODPMap() {
+            // Default center (Jakarta)
+            const defaultLat = -6.2088;
+            const defaultLng = 106.8456;
+            
+            // Check if map container exists
+            const mapContainer = document.getElementById('addODPMap');
+            if (!mapContainer) {
+                console.error('Add ODP map container not found');
+                return;
+            }
+            
+            // Destroy existing map jika ada
+            if (addODPMap) {
+                addODPMap.remove();
+            }
+            
+            // Initialize map
+            addODPMap = L.map('addODPMap').setView([defaultLat, defaultLng], 13);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(addODPMap);
+            
+            // Add marker
+            addODPMarker = L.marker([defaultLat, defaultLng], {
+                draggable: true
+            }).addTo(addODPMap);
+            
+            // Set initial coordinates
+            document.getElementById('addODPLatitude').value = defaultLat.toFixed(6);
+            document.getElementById('addODPLongitude').value = defaultLng.toFixed(6);
+            
+            // Update coordinates when marker is dragged
+            addODPMarker.on('dragend', function(e) {
+                const position = e.target.getLatLng();
+                document.getElementById('addODPLatitude').value = position.lat.toFixed(6);
+                document.getElementById('addODPLongitude').value = position.lng.toFixed(6);
+            });
+            
+            // Update marker when map is clicked
+            addODPMap.on('click', function(e) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                
+                // Update marker position
+                addODPMarker.setLatLng([lat, lng]);
+                
+                // Update form fields
+                document.getElementById('addODPLatitude').value = lat.toFixed(6);
+                document.getElementById('addODPLongitude').value = lng.toFixed(6);
+            });
+            
+            // Update marker when coordinates are manually changed
+            document.getElementById('addODPLatitude').addEventListener('input', updateAddMarkerFromInputs);
+            document.getElementById('addODPLongitude').addEventListener('input', updateAddMarkerFromInputs);
+        }
+
+        // Update marker position from input fields for add modal
+        function updateAddMarkerFromInputs() {
+            if (!addODPMap || !addODPMarker) return;
+            
+            const lat = parseFloat(document.getElementById('addODPLatitude').value);
+            const lng = parseFloat(document.getElementById('addODPLongitude').value);
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                addODPMarker.setLatLng([lat, lng]);
+                addODPMap.setView([lat, lng], addODPMap.getZoom());
+            }
+        }
+
+        // Edit ODP Form Handler
+        document.getElementById('editODPForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            const odpId = data.id;
+            
+            // Log data yang akan dikirim
+            console.log('Sending ODP update for ID:', odpId);
+            console.log('Form data:', data);
+            
+            try {
+                const response = await fetch(`/admin/cable-network/odp/${odpId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('Server response:', result);
+                
+                if (result.success) {
+                    showAlert('success', result.message);
+                    console.log('Update successful, reloading page...');
+                    bootstrap.Modal.getInstance(document.getElementById('editODPModal')).hide();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    console.error('Update failed:', result.message);
+                    showAlert('danger', result.message);
+                }
+            } catch (error) {
+                showAlert('danger', 'Error: ' + error.message);
+            }
+        });
+
+        // Global variables untuk map
+        let editODPMap = null;
+        let editODPMarker = null;
+        let addODPMap = null;
+        let addODPMarker = null;
+
+        // Global functions untuk onclick handlers
+        window.editODP = function(id) {
+            // Ambil data ODP dari tabel
+            const odpRow = document.querySelector(`[data-odp-id="${id}"]`);
+            if (!odpRow) {
+                console.error('ODP row not found for ID:', id);
+                return;
+            }
+            
+            // Helper function untuk safe element access
+            function safeSetValue(elementId, value) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.value = value || '';
+                } else {
+                    console.warn('Element not found:', elementId);
+                }
+            }
+            
+            // Ambil data dari DOM dengan null checks
+            const nameElement = odpRow.querySelector('[data-field="name"]');
+            const codeElement = odpRow.querySelector('[data-field="code"]');
+            const addressElement = odpRow.querySelector('[data-field="address"]');
+            const statusElement = odpRow.querySelector('[data-field="status"]');
+            const capacityElement = odpRow.querySelector('[data-field="capacity"]');
+            const latitudeElement = odpRow.querySelector('[data-field="latitude"]');
+            const longitudeElement = odpRow.querySelector('[data-field="longitude"]');
+            const parentOdpElement = odpRow.querySelector('[data-field="parent_odp_id"]');
+            const notesElement = odpRow.querySelector('[data-field="notes"]');
+            
+            // Isi form dengan data existing menggunakan safe access
+            safeSetValue('editODPId', id);
+            safeSetValue('editODPName', nameElement ? nameElement.textContent : '');
+            safeSetValue('editODPCode', codeElement ? codeElement.textContent : '');
+            safeSetValue('editODPLatitude', latitudeElement ? latitudeElement.textContent : '');
+            safeSetValue('editODPLongitude', longitudeElement ? longitudeElement.textContent : '');
+            safeSetValue('editODPAddress', addressElement ? addressElement.textContent : '');
+            safeSetValue('editODPCapacity', capacityElement ? capacityElement.textContent : '');
+            safeSetValue('editODPStatus', statusElement ? statusElement.textContent.toLowerCase() : '');
+            safeSetValue('editODPParentId', parentOdpElement ? parentOdpElement.textContent : '');
+            safeSetValue('editODPNotes', notesElement ? notesElement.textContent : '');
+            
+            // Tampilkan modal
+            const editModal = new bootstrap.Modal(document.getElementById('editODPModal'));
+            editModal.show();
+            
+            // Map akan diinisialisasi otomatis oleh event listener 'shown.bs.modal'
+        };
+
+        // Initialize map untuk edit ODP
+        function initializeEditODPMap() {
+            const latElement = document.getElementById('editODPLatitude');
+            const lngElement = document.getElementById('editODPLongitude');
+            
+            if (!latElement || !lngElement) {
+                console.error('Latitude or longitude input elements not found');
+                return;
+            }
+            
+            const lat = parseFloat(latElement.value) || -6.2088;
+            const lng = parseFloat(lngElement.value) || 106.8456;
+            
+            // Check if map container exists
+            const mapContainer = document.getElementById('editODPMap');
+            if (!mapContainer) {
+                console.error('Edit ODP map container not found');
+                return;
+            }
+            
+            // Destroy existing map jika ada
+            if (editODPMap) {
+                editODPMap.remove();
+            }
+            
+            // Initialize map
+            editODPMap = L.map('editODPMap').setView([lat, lng], 15);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(editODPMap);
+            
+            // Add marker
+            editODPMarker = L.marker([lat, lng], {
+                draggable: true
+            }).addTo(editODPMap);
+            
+            // Update coordinates when marker is dragged
+            editODPMarker.on('dragend', function(e) {
+                const position = e.target.getLatLng();
+                document.getElementById('editODPLatitude').value = position.lat.toFixed(6);
+                document.getElementById('editODPLongitude').value = position.lng.toFixed(6);
+            });
+            
+            // Update marker when map is clicked
+            editODPMap.on('click', function(e) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                
+                // Update marker position
+                editODPMarker.setLatLng([lat, lng]);
+                
+                // Update form fields
+                document.getElementById('editODPLatitude').value = lat.toFixed(6);
+                document.getElementById('editODPLongitude').value = lng.toFixed(6);
+            });
+            
+            // Update marker when coordinates are manually changed
+            document.getElementById('editODPLatitude').addEventListener('input', updateMarkerFromInputs);
+            document.getElementById('editODPLongitude').addEventListener('input', updateMarkerFromInputs);
+        }
+
+        // Update marker position from input fields
+        function updateMarkerFromInputs() {
+            if (!editODPMap || !editODPMarker) return;
+            
+            const lat = parseFloat(document.getElementById('editODPLatitude').value);
+            const lng = parseFloat(document.getElementById('editODPLongitude').value);
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                editODPMarker.setLatLng([lat, lng]);
+                editODPMap.setView([lat, lng], editODPMap.getZoom());
+            }
+        }
+
+        // View ODP Details
+        window.viewODPDetails = function(id) {
+            // Simpan ID untuk digunakan di editODPFromDetail
+            window.currentViewingODPId = id;
+            
+            // Ambil data ODP dari tabel
+            const odpRow = document.querySelector(`[data-odp-id="${id}"]`);
+            if (!odpRow) {
+                console.error('ODP row not found for ID:', id);
+                return;
+            }
+            
+            // Helper function untuk safe element access
+            function safeSetTextContent(elementId, value) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = value || '';
+                } else {
+                    console.warn('Element not found:', elementId);
+                }
+            }
+            
+            // Ambil data dari DOM dengan null checks
+            const nameElement = odpRow.querySelector('[data-field="name"]');
+            const codeElement = odpRow.querySelector('[data-field="code"]');
+            const addressElement = odpRow.querySelector('[data-field="address"]');
+            const statusElement = odpRow.querySelector('[data-field="status"]');
+            const capacityElement = odpRow.querySelector('[data-field="capacity"]');
+            const latitudeElement = odpRow.querySelector('[data-field="latitude"]');
+            const longitudeElement = odpRow.querySelector('[data-field="longitude"]');
+            const notesElement = odpRow.querySelector('[data-field="notes"]');
+            
+            // Isi data ke modal details dengan safe access
+            safeSetTextContent('detailODPNameTitle', nameElement ? nameElement.textContent : '');
+            safeSetTextContent('detailODPName', nameElement ? nameElement.textContent : '');
+            safeSetTextContent('detailODPCode', codeElement ? codeElement.textContent : '');
+            safeSetTextContent('detailODPAddress', addressElement ? (addressElement.textContent || 'No address') : 'No address');
+            safeSetTextContent('detailODPStatus', statusElement ? statusElement.textContent : '');
+            safeSetTextContent('detailODPCapacity', capacityElement ? capacityElement.textContent : '');
+            
+            // Ambil data tersembunyi dengan null checks
+            const latitude = latitudeElement ? latitudeElement.textContent : '';
+            const longitude = longitudeElement ? longitudeElement.textContent : '';
+            const notes = notesElement ? notesElement.textContent : '';
+            
+            safeSetTextContent('detailODPCoordinates', `${latitude}, ${longitude}`);
+            safeSetTextContent('detailODPNotes', notes || 'No notes');
+            
+            // Update status badge dengan null checks
+            const status = statusElement ? statusElement.textContent.toLowerCase() : '';
+            const statusBadge = document.getElementById('detailODPStatusBadge');
+            if (statusBadge && status) {
+                statusBadge.className = `badge ${status === 'active' ? 'bg-success' : status === 'maintenance' ? 'bg-warning' : 'bg-secondary'}`;
+                statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            }
+            
+            // Ambil statistik dari card
+            const connectedCustomers = odpRow.querySelector('.text-primary')?.textContent || '0';
+            const activeConnections = odpRow.querySelector('.text-success')?.textContent || '0';
+            
+            safeSetTextContent('detailODPConnectedCustomers', connectedCustomers);
+            safeSetTextContent('detailODPActiveConnections', activeConnections);
+            
+            // Hitung utilization dan available ports dengan null checks
+            const detailCapacityElement = document.getElementById('detailODPCapacity');
+            const capacity = detailCapacityElement ? parseInt(detailCapacityElement.textContent) || 0 : 0;
+            const used = parseInt(connectedCustomers) || 0;
+            const available = capacity - used;
+            const utilization = capacity > 0 ? ((used / capacity) * 100).toFixed(1) : '0';
+            
+            safeSetTextContent('detailODPUtilization', `${utilization}%`);
+            safeSetTextContent('detailODPAvailable', available.toString());
+            
+            // Update utilization badge dengan null checks
+            const utilizationBadge = document.getElementById('detailODPUtilizationText');
+            if (utilizationBadge) {
+                utilizationBadge.textContent = `${utilization}%`;
+                utilizationBadge.className = `badge ${parseFloat(utilization) >= 90 ? 'bg-danger' : parseFloat(utilization) >= 70 ? 'bg-warning' : 'bg-info'}`;
+            }
+            
+            // Update progress bar dengan null checks
+            const progressBar = document.getElementById('detailODPProgressBar');
+            if (progressBar) {
+                progressBar.style.width = `${utilization}%`;
+                progressBar.className = `progress-bar ${parseFloat(utilization) >= 90 ? 'bg-danger' : parseFloat(utilization) >= 70 ? 'bg-warning' : 'bg-success'}`;
+            }
+            
+            // Tampilkan modal
+            const detailModal = new bootstrap.Modal(document.getElementById('detailODPModal'));
+            detailModal.show();
+            
+            // Load cable routes untuk ODP ini
+            loadODPCableRoutes(id);
+        };
+
+        // Load cable routes untuk ODP
+        async function loadODPCableRoutes(odpId) {
+            try {
+                const response = await fetch(`/admin/cable-network/api/odp/${odpId}/cable-routes`);
+                const result = await response.json();
+                
+                const container = document.getElementById('cableRoutesContainer');
+                
+                if (result.success && result.data.length > 0) {
+                    let html = '<div class="table-responsive"><table class="table table-sm">';
+                    html += '<thead><tr><th>Customer</th><th>Phone</th><th>Status</th><th>Length</th><th>Port</th><th>Created</th></tr></thead>';
+                    html += '<tbody>';
+                    
+                    result.data.forEach(route => {
+                        const statusClass = route.status === 'connected' ? 'bg-success' : 
+                                          route.status === 'disconnected' ? 'bg-danger' : 
+                                          route.status === 'maintenance' ? 'bg-warning' : 'bg-secondary';
+                        
+                        html += `<tr>
+                            <td>${route.customer_name}</td>
+                            <td>${route.customer_phone}</td>
+                            <td><span class="badge ${statusClass}">${route.status}</span></td>
+                            <td>${route.cable_length ? (parseFloat(route.cable_length) / 1000).toFixed(1) + ' km' : 'N/A'}</td>
+                            <td>${route.port_number || 'N/A'}</td>
+                            <td>${new Date(route.created_at).toLocaleDateString()}</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table></div>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<div class="text-center text-muted"><i class="bx bx-info-circle"></i><br>No cable routes found for this ODP</div>';
+                }
+            } catch (error) {
+                console.error('Error loading cable routes:', error);
+                document.getElementById('cableRoutesContainer').innerHTML = 
+                    '<div class="text-center text-danger"><i class="bx bx-error"></i><br>Error loading cable routes</div>';
+            }
+        }
+
+        // Edit ODP from detail modal
+        window.editODPFromDetail = function() {
+            // Tutup detail modal
+            bootstrap.Modal.getInstance(document.getElementById('detailODPModal')).hide();
+            
+            // Ambil ID dari detail modal (kita perlu menyimpan ID saat view details)
+            const odpId = window.currentViewingODPId;
+            if (odpId) {
+                editODP(odpId);
+            }
+        };
+
+        // Delete ODP
+        window.deleteODP = async function(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus ODP ini?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/cable-network/odp/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('success', result.message);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert('danger', result.message);
+                }
+            } catch (error) {
+                showAlert('danger', 'Error: ' + error.message);
+            }
+        };
+
+        // Show Alert
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+
+

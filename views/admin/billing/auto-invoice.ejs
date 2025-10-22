@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Invoice Otomatis - Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include('../../partials/billing-sidebar') %>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bx bx-calendar-check"></i> Auto Invoice
+                    </h1>
+                </div>
+                <div class="alert alert-info d-flex align-items-center mb-3" role="alert">
+                    <i class="bx bx-info-circle fs-3 me-2"></i>
+                    <div>
+                        Sistem auto-invoice aktif:
+                        <ul class="mb-0">
+                            <li>Generate bulanan otomatis setiap tanggal 1.</li>
+                            <li>Jatuh tempo invoice mengikuti <em>billing_day</em> pelanggan.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Status Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-info-circle"></i> Status Sistem Auto Invoice
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="mb-2">
+                                        <i class="bx bx-calendar text-primary" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <h6>Jadwal Berjalan</h6>
+                                    <p class="text-muted">Setiap tanggal 1 bulanan</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="mb-2">
+                                        <i class="bx bx-user-check text-success" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <h6>Pelanggan Aktif</h6>
+                                    <p class="text-muted"><%= activeCustomersCount %> pelanggan</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="mb-2">
+                                        <i class="bx bx-receipt text-info" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <h6>Invoice Bulan Ini</h6>
+                                    <p class="text-muted"><%= thisMonthInvoicesCount %> invoice</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="mb-2">
+                                        <i class="bx bx-time text-warning" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <h6>Berikutnya</h6>
+                                    <p class="text-muted"><%= nextRunDate %></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-cog"></i> Aksi Manual
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-primary btn-lg w-100 mb-3" id="generateInvoicesBtn">
+                                    <i class="bx bx-calendar-plus"></i> Generate Invoice Bulan Ini
+                                </button>
+                                <p class="text-muted small">Buat invoice untuk semua pelanggan aktif yang belum memiliki invoice bulan ini</p>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-outline-info btn-lg w-100 mb-3" id="previewInvoicesBtn">
+                                    <i class="bx bx-show"></i> Preview Invoice yang Akan Dibuat
+                                </button>
+                                <p class="text-muted small">Lihat daftar pelanggan yang akan dibuatkan invoice</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Section -->
+                <div class="card" id="previewSection" style="display: none;">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-list-ul"></i> Preview Invoice yang Akan Dibuat
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-centered table-nowrap table-hover mb-0" id="previewTable">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Nama</th>
+                                        <th>Paket</th>
+                                        <th>Harga</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="previewTableBody">
+                                    <!-- Preview data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-success" id="confirmGenerateBtn">
+                                <i class="bx bx-check"></i> Konfirmasi Generate Invoice
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="cancelPreviewBtn">
+                                <i class="bx bx-x"></i> Batal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section removed: now following per-customer billing_day and daily scheduler -->
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Generate Invoices
+        document.getElementById('generateInvoicesBtn').addEventListener('click', function() {
+            if (confirm('Apakah Anda yakin ingin generate invoice untuk semua pelanggan aktif?')) {
+                this.disabled = true;
+                this.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Generating...';
+                
+                fetch('/admin/billing/auto-invoice/generate', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('success', `Berhasil generate ${data.count} invoice`);
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        showAlert('danger', data.message || 'Gagal generate invoice');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('danger', 'Terjadi kesalahan');
+                })
+                .finally(() => {
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bx bx-calendar-plus"></i> Generate Invoice Bulan Ini';
+                });
+            }
+        });
+
+        // Preview Invoices
+        document.getElementById('previewInvoicesBtn').addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Loading...';
+            
+            fetch('/admin/billing/auto-invoice/preview')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayPreview(data.customers);
+                    document.getElementById('previewSection').style.display = 'block';
+                } else {
+                    showAlert('danger', data.message || 'Gagal memuat preview');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Terjadi kesalahan');
+            })
+            .finally(() => {
+                this.disabled = false;
+                this.innerHTML = '<i class="bx bx-show"></i> Preview Invoice yang Akan Dibuat';
+            });
+        });
+
+        // Display Preview
+        function displayPreview(customers) {
+            const tbody = document.getElementById('previewTableBody');
+            tbody.innerHTML = '';
+            
+            if (customers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Tidak ada pelanggan yang perlu dibuatkan invoice</td></tr>';
+                return;
+            }
+            
+            customers.forEach(customer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${customer.username}</td>
+                    <td>${customer.name}</td>
+                    <td>${customer.package_name || '-'}</td>
+                    <td>Rp ${Math.round(parseFloat(customer.package_price || 0)).toLocaleString('id-ID')}</td>
+                    <td><span class="badge bg-success">Aktif</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Confirm Generate
+        document.getElementById('confirmGenerateBtn').addEventListener('click', function() {
+            document.getElementById('generateInvoicesBtn').click();
+        });
+
+        // Cancel Preview
+        document.getElementById('cancelPreviewBtn').addEventListener('click', function() {
+            document.getElementById('previewSection').style.display = 'none';
+        });
+
+        // Settings form removed
+
+        function showAlert(type, message) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            document.querySelector('.main-content').insertAdjacentHTML('afterbegin', alertHtml);
+        }
+    </script>
+</body>
+</html> 

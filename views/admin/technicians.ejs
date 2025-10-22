@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Kelola Teknisi - Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <%- include('../partials/admin-responsive-sidebar', { page: 'technicians', settings: settings, versionInfo: versionInfo, versionBadge: versionBadge }) %>
+
+            <main class="col-md-10 ms-sm-auto main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-people-fill me-2"></i>Kelola Teknisi
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTechnicianModal">
+                            <i class="bi bi-plus-circle me-2"></i>Tambah Teknisi
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-3">
+                        <div>
+                            <input type="checkbox" id="selectAll" class="form-check-input me-2">
+                            <label for="selectAll" class="form-check-label">Pilih semua</label>
+                        </div>
+                        <div class="input-group input-group-sm" style="width: auto;">
+                            <label class="input-group-text" for="filterStatus">Filter</label>
+                            <select id="filterStatus" class="form-select">
+                                <option value="active" <%= (typeof filterStatus !== 'undefined' && filterStatus === 'active') ? 'selected' : '' %>>Aktif saja</option>
+                                <option value="all" <%= (typeof filterStatus !== 'undefined' && filterStatus === 'all') ? 'selected' : '' %>>Semua</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Bulk actions">
+                        <button class="btn btn-outline-success" id="bulkActivate" disabled>Aktifkan</button>
+                        <button class="btn btn-outline-secondary" id="bulkDeactivate" disabled>Nonaktifkan</button>
+                        <button class="btn btn-outline-danger" id="bulkDelete" disabled>Hapus</button>
+                    </div>
+                </div>
+
+                <div class="row" id="techniciansList">
+                    <% if (typeof technicians !== 'undefined' && technicians.length > 0) { %>
+                        <% technicians.forEach(function(technician) { %>
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input tech-checkbox" type="checkbox" value="<%- technician.id %>" onchange="onAnySelectionChange()">
+                                        </div>
+                                        <h6 class="card-title"><%= technician.name %></h6>
+                                        <p class="card-text">
+                                            <i class="bi bi-telephone me-1"></i><%= technician.phone %><br>
+                                            <span class="badge bg-primary"><%= technician.role %></span>
+                                            <span class="badge <%= technician.is_active ? 'bg-success' : 'bg-secondary' %>">
+                                                <%= technician.is_active ? 'Aktif' : 'Nonaktif' %>
+                                            </span><br>
+                                            <small class="text-muted">
+                                                <i class="bi bi-chat-dots me-1"></i>
+                                                Group: <%= technician.whatsapp_group_id || 'Tidak ada' %>
+                                            </small>
+                                        </p>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" onclick="openEditModal('<%- technician.id %>')">Edit</button>
+                                            <button class="btn btn-outline-secondary" onclick="toggleStatus('<%- technician.id %>', '<%- technician.is_active ? 1 : 0 %>')">
+                                                <%= technician.is_active ? 'Nonaktifkan' : 'Aktifkan' %>
+                                            </button>
+                                            <button class="btn btn-outline-danger" onclick="deleteTechnician('<%- technician.id %>')">Hapus</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="col-12 text-center py-5">
+                            <h5 class="text-muted">Belum ada teknisi</h5>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTechnicianModal">
+                                Tambah Teknisi Pertama
+                            </button>
+                        </div>
+                    <% } %>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Technician Modal -->
+    <div class="modal fade" id="addTechnicianModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Teknisi Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addTechnicianForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nama Lengkap *</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nomor Telepon *</label>
+                            <input type="tel" class="form-control" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role *</label>
+                            <select class="form-select" name="role" required>
+                                <option value="technician">Teknisi</option>
+                                <option value="field_officer">Field Officer</option>
+                                <option value="collector">Kolektor</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">WhatsApp Group ID</label>
+                            <input type="text" class="form-control" name="whatsapp_group_id" placeholder="120363xxxxxxxxx@g.us">
+                            <div class="form-text">
+                                <small>Opsional. Kosongkan jika menggunakan group default dari settings</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Tambah</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Technician Modal -->
+    <div class="modal fade" id="editTechnicianModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Teknisi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editTechnicianForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="editTechId">
+                        <div class="mb-3">
+                            <label class="form-label">Nama Lengkap *</label>
+                            <input type="text" class="form-control" id="editTechName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nomor Telepon *</label>
+                            <input type="tel" class="form-control" id="editTechPhone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role *</label>
+                            <select class="form-select" id="editTechRole" required>
+                                <option value="technician">Teknisi</option>
+                                <option value="field_officer">Field Officer</option>
+                                <option value="collector">Kolektor</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">WhatsApp Group ID</label>
+                            <input type="text" class="form-control" id="editTechWhatsAppGroup" placeholder="120363xxxxxxxxx@g.us">
+                            <div class="form-text">
+                                <small>Opsional. Kosongkan jika menggunakan group default dari settings</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Catatan/Area</label>
+                            <input type="text" class="form-control" id="editTechNotes" placeholder="Area liputan / catatan">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('addTechnicianForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/admin/technicians/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert('Teknisi berhasil ditambahkan');
+                    location.reload();
+                } else {
+                    alert('Gagal: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        document.getElementById('filterStatus').addEventListener('change', function(){
+            const v = this.value === 'all' ? 'all' : 'active';
+            const url = new URL(window.location.href);
+            url.searchParams.set('status', v);
+            window.location.href = url.toString();
+        });
+
+        function getSelectedIds() {
+            return Array.from(document.querySelectorAll('.tech-checkbox:checked')).map(c => c.value);
+        }
+
+        function onAnySelectionChange() {
+            const any = getSelectedIds().length > 0;
+            document.getElementById('bulkActivate').disabled = !any;
+            document.getElementById('bulkDeactivate').disabled = !any;
+            document.getElementById('bulkDelete').disabled = !any;
+        }
+
+        document.getElementById('selectAll').addEventListener('change', function() {
+            const checked = this.checked;
+            document.querySelectorAll('.tech-checkbox').forEach(c => c.checked = checked);
+            onAnySelectionChange();
+        });
+
+        async function bulkCall(url, payload, confirmText) {
+            if (!getSelectedIds().length) return;
+            if (confirmText && !confirm(confirmText)) return;
+            try {
+                const resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await resp.json();
+                if (data.success) {
+                    alert(data.message || 'Berhasil');
+                    location.reload();
+                } else {
+                    alert('Gagal: ' + (data.message || 'Tidak diketahui'));
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        document.getElementById('bulkActivate').addEventListener('click', () => bulkCall('/admin/technicians/bulk/activate', { ids: getSelectedIds() }));
+        document.getElementById('bulkDeactivate').addEventListener('click', () => bulkCall('/admin/technicians/bulk/deactivate', { ids: getSelectedIds() }));
+        document.getElementById('bulkDelete').addEventListener('click', () => bulkCall('/admin/technicians/bulk/delete', { ids: getSelectedIds() }, 'Yakin ingin menghapus teknisi terpilih?'));
+
+        async function openEditModal(id) {
+            try {
+                const resp = await fetch(`/admin/technicians/${id}`);
+                const data = await resp.json();
+                if (!data.success) return alert(data.message || 'Gagal mengambil data teknisi');
+                const t = data.technician;
+                document.getElementById('editTechId').value = t.id;
+                document.getElementById('editTechName').value = t.name || '';
+                document.getElementById('editTechPhone').value = t.phone || '';
+                document.getElementById('editTechRole').value = t.role || 'technician';
+                document.getElementById('editTechWhatsAppGroup').value = t.whatsapp_group_id || '';
+                document.getElementById('editTechNotes').value = t.area_coverage || '';
+                new bootstrap.Modal(document.getElementById('editTechnicianModal')).show();
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        document.getElementById('editTechnicianForm').addEventListener('submit', async function(e){
+            e.preventDefault();
+            const id = document.getElementById('editTechId').value;
+            const body = {
+                name: document.getElementById('editTechName').value.trim(),
+                phone: document.getElementById('editTechPhone').value.trim(),
+                role: document.getElementById('editTechRole').value,
+                whatsapp_group_id: document.getElementById('editTechWhatsAppGroup').value.trim(),
+                notes: document.getElementById('editTechNotes').value.trim()
+            };
+            if (!body.name || !body.phone || !body.role) return alert('Nama, Telepon, dan Role wajib diisi');
+            try {
+                const resp = await fetch(`/admin/technicians/${id}/update`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    alert('Teknisi berhasil diperbarui');
+                    location.reload();
+                } else {
+                    alert('Gagal: ' + (data.message || 'Tidak diketahui'));
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        });
+
+        async function deleteTechnician(id) {
+            if (!confirm('Yakin ingin menghapus teknisi ini?')) return;
+            try {
+                const resp = await fetch(`/admin/technicians/${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+                const data = await resp.json();
+                if (data.success) {
+                    alert('Teknisi berhasil dihapus');
+                    location.reload();
+                } else {
+                    alert('Gagal: ' + (data.message || 'Tidak diketahui'));
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function toggleStatus(id, currentStatus) {
+            if (confirm('Yakin ingin mengubah status teknisi ini?')) {
+                fetch(`/admin/technicians/${id}/toggle-status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_active: !currentStatus })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert('Gagal: ' + result.message);
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

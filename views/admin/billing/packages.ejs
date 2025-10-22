@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Paket Internet - Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include('../../partials/billing-sidebar') %>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bx bx-package"></i> Kelola Paket Internet
+                    </h1>
+                    <div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPackageModal">
+                            <i class="bx bx-plus"></i> Tambah Paket
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Packages Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-list-ul"></i> Daftar Paket
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="packagesTable" class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nama Paket</th>
+                                        <th>Kecepatan</th>
+                                        <th>Harga (Sebelum PPN)</th>
+                                        <th>PPN</th>
+                                        <th>Harga (Setelah PPN)</th>
+                                        <th>PPPoE Profile</th>
+                                        <th>Deskripsi</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (packages && packages.length > 0) { %>
+                                        <% packages.forEach(function(package) { %>
+                                            <tr>
+                                                <td>
+                                                    <span class="text-body fw-bold"><%= package.name %></span>
+                                                </td>
+                                                <td><%= package.speed %></td>
+                                                <td>Rp <%= parseFloat(package.price).toLocaleString('id-ID') %></td>
+                                                <td>
+                                                    <% if (package.tax_rate === 0) { %>
+                                                        <span class="badge bg-secondary">0% (Tidak Ada PPN)</span>
+                                                    <% } else if (package.tax_rate) { %>
+                                                        <span class="badge bg-warning"><%= package.tax_rate.toFixed(2) %>%</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-warning">11.00%</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="text-success fw-bold">
+                                                    <% if (package.tax_rate === 0) { %>
+                                                        Rp <%= parseFloat(package.price).toLocaleString('id-ID') %>
+                                                        <small class="text-muted d-block">(Harga sama, tidak ada PPN)</small>
+                                                    <% } else if (package.tax_rate) { %>
+                                                        Rp <%= ((parseFloat(package.price) * (1 + package.tax_rate / 100)).toFixed(0)).toLocaleString('id-ID') %>
+                                                    <% } else { %>
+                                                        Rp <%= ((parseFloat(package.price) * 1.11).toFixed(0)).toLocaleString('id-ID') %>
+                                                    <% } %>
+                                                </td>
+                                                <td><span class="badge bg-info"><%= package.pppoe_profile || 'default' %></span></td>
+                                                <td><%= package.description || '-' %></td>
+                                                <td>
+                                                    <span class="badge bg-success">Aktif</span>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <button class="btn btn-sm btn-primary" onclick="editPackage('<%= package.id %>')">
+                                                            <i class="bx bx-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-info" onclick="viewPackage('<%= package.id %>')">
+                                                            <i class="bx bx-show"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger" onclick="deletePackage('<%= package.id %>')">
+                                                            <i class="bx bx-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Package Modal -->
+    <div class="modal fade" id="addPackageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Paket Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addPackageForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nama Paket</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="speed" class="form-label">Kecepatan</label>
+                            <input type="text" class="form-control" id="speed" name="speed" placeholder="Contoh: 10 Mbps" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Harga (Sebelum PPN)</label>
+                            <input type="number" class="form-control" id="price" name="price" required>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="enable_tax" name="enable_tax" checked>
+                                <label class="form-check-label" for="enable_tax">
+                                    Aktifkan PPN
+                                </label>
+                                <small class="form-text text-muted d-block">Centang untuk mengaktifkan PPN, kosongkan untuk tidak ada PPN</small>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="tax_rate_group">
+                            <label for="tax_rate" class="form-label">PPN (%)</label>
+                            <input type="number" class="form-control" id="tax_rate" name="tax_rate" step="0.01" min="0" max="100" value="11.00">
+                            <small class="form-text text-muted">Persentase PPN yang akan ditambahkan ke harga paket.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Harga Setelah PPN</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="text" class="form-control" id="price_with_tax" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pppoe_profile" class="form-label">PPPoE Profile</label>
+                            <div class="input-group">
+                                <select class="form-select" id="pppoe_profile" name="pppoe_profile">
+                                    <option value="default">default</option>
+                                </select>
+                                <button class="btn btn-outline-secondary" type="button" id="reloadProfilesAdd">Reload</button>
+                            </div>
+                            <small class="form-text text-muted">Pilih profile PPPoE dari Mikrotik. Klik Reload bila daftar belum muncul.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan Paket</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Package Modal -->
+    <div class="modal fade" id="editPackageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Paket</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editPackageForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="edit_package_id" name="package_id">
+                        <div class="mb-3">
+                            <label for="edit_name" class="form-label">Nama Paket</label>
+                            <input type="text" class="form-control" id="edit_name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_speed" class="form-label">Kecepatan</label>
+                            <input type="text" class="form-control" id="edit_speed" name="speed" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_price" class="form-label">Harga (Sebelum PPN)</label>
+                            <input type="number" class="form-control" id="edit_price" name="price" required>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="edit_enable_tax" name="enable_tax">
+                                <label class="form-check-label" for="edit_enable_tax">
+                                    Aktifkan PPN
+                                </label>
+                                <small class="form-text text-muted d-block">Centang untuk mengaktifkan PPN, kosongkan untuk tidak ada PPN</small>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="edit_tax_rate_group">
+                            <label for="edit_tax_rate" class="form-label">PPN (%)</label>
+                            <input type="number" class="form-control" id="edit_tax_rate" name="tax_rate" step="0.01" min="0" max="100">
+                            <small class="form-text text-muted">Persentase PPN yang akan ditambahkan ke harga paket.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Harga Setelah PPN</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="text" class="form-control" id="edit_price_with_tax" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_description" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_pppoe_profile" class="form-label">PPPoE Profile</label>
+                            <div class="input-group">
+                                <select class="form-select" id="edit_pppoe_profile" name="pppoe_profile">
+                                    <option value="default">default</option>
+                                </select>
+                                <button class="btn btn-outline-secondary" type="button" id="reloadProfilesEdit">Reload</button>
+                            </div>
+                            <small class="form-text text-muted">Pilih profile PPPoE dari Mikrotik. Klik Reload bila daftar belum muncul.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Update Paket</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Package Modal -->
+    <div class="modal fade" id="viewPackageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detail Paket</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="packageDetails">
+                    <!-- Package details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#packagesTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/id.json'
+                },
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]]
+            });
+
+            // Load profiles into Add form on open
+            $('#addPackageModal').on('shown.bs.modal', function(){
+                loadPPPoEProfiles('#pppoe_profile');
+            });
+            // Preload on page ready for Add form
+            loadPPPoEProfiles('#pppoe_profile');
+            // Manual reload buttons
+            $('#reloadProfilesAdd').on('click', function(){ loadPPPoEProfiles('#pppoe_profile'); });
+            $('#reloadProfilesEdit').on('click', function(){ loadPPPoEProfiles('#edit_pppoe_profile'); });
+
+                    // Initialize PPN calculation
+        initializePPNCalculation();
+        
+        // Set default tax rate from settings if available
+        setDefaultTaxRate();
+        });
+
+        // PPN Calculation Functions
+        function initializePPNCalculation() {
+            // Add Package Modal PPN calculation
+            $('#price, #tax_rate').on('input', function() {
+                calculatePriceWithTax('price', 'tax_rate', 'price_with_tax');
+            });
+
+            // Edit Package Modal PPN calculation
+            $('#edit_price, #edit_tax_rate').on('input', function() {
+                calculatePriceWithTax('edit_price', 'edit_tax_rate', 'edit_price_with_tax');
+            });
+            
+            // Checkbox PPN event handlers
+            $('#enable_tax').on('change', function() {
+                toggleTaxRateGroup('tax_rate_group', this.checked);
+                calculatePriceWithTax('price', 'tax_rate', 'price_with_tax');
+            });
+            
+            $('#edit_enable_tax').on('change', function() {
+                toggleTaxRateGroup('edit_tax_rate_group', this.checked);
+                calculatePriceWithTax('edit_price', 'edit_tax_rate', 'edit_price_with_tax');
+            });
+        }
+
+        function toggleTaxRateGroup(groupId, enabled) {
+            const group = $('#' + groupId);
+            const inputs = group.find('input, select');
+            
+            if (enabled) {
+                group.show();
+                inputs.prop('disabled', false);
+            } else {
+                group.hide();
+                inputs.prop('disabled', true);
+                // Set tax rate to 0 when disabled
+                if (groupId === 'tax_rate_group') {
+                    $('#tax_rate').val(0);
+                } else {
+                    $('#edit_tax_rate').val(0);
+                }
+            }
+        }
+
+        function calculatePriceWithTax(priceId, taxId, resultId) {
+            const price = parseFloat($('#' + priceId).val()) || 0;
+            let taxRate = 0;
+            
+            // Check if tax is enabled
+            if (priceId === 'price') {
+                taxRate = $('#enable_tax').is(':checked') ? (parseFloat($('#' + taxId).val()) || 0) : 0;
+            } else {
+                taxRate = $('#edit_enable_tax').is(':checked') ? (parseFloat($('#' + taxId).val()) || 0) : 0;
+            }
+            
+            // Jika PPN = 0 atau tidak diaktifkan, harga tidak berubah
+            if (taxRate === 0) {
+                $('#' + resultId).val(Math.round(price).toLocaleString('id-ID'));
+                // Tambahkan class atau style untuk menunjukkan tidak ada PPN
+                $('#' + resultId).addClass('text-muted');
+                // Tambahkan tooltip atau info
+                $('#' + resultId).attr('title', 'Tidak ada PPN (0%)');
+            } else {
+                const priceWithTax = price * (1 + taxRate / 100);
+                $('#' + resultId).val(Math.round(priceWithTax).toLocaleString('id-ID'));
+                // Hapus class dan tooltip
+                $('#' + resultId).removeClass('text-muted');
+                $('#' + resultId).removeAttr('title');
+            }
+        }
+
+        function setDefaultTaxRate() {
+            // Fetch tax settings from server
+            fetch('/admin/settings/data')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.tax_settings && data.tax_settings.default_tax_rate) {
+                        const defaultTaxRate = data.tax_settings.default_tax_rate;
+                        $('#tax_rate').val(defaultTaxRate);
+                        $('#edit_tax_rate').val(defaultTaxRate);
+                        
+                        // Trigger calculation for initial display
+                        calculatePriceWithTax('price', 'tax_rate', 'price_with_tax');
+                    }
+                })
+                .catch(error => {
+                    console.log('Using default tax rate (11%)');
+                });
+        }
+
+        // Fetch and populate PPPoE Profiles from Mikrotik
+        function loadPPPoEProfiles(selectSelector, selectedValue = 'default') {
+            const sel = document.querySelector(selectSelector);
+            if (!sel) return;
+            // show loading option
+            sel.innerHTML = '<option>Loading...</option>';
+            fetch('/admin/mikrotik/profiles/api')
+                .then(r => r.json())
+                .then(data => {
+                    const profiles = (data && data.success && Array.isArray(data.profiles)) ? data.profiles : [];
+                    // Build unique name list
+                    const names = Array.from(new Set(profiles.map(p => p.name).filter(Boolean)));
+                    // Fallback ensure 'default' exists
+                    if (!names.includes('default')) names.unshift('default');
+                    sel.innerHTML = '';
+                    names.forEach(name => {
+                        const opt = document.createElement('option');
+                        opt.value = name;
+                        opt.textContent = name;
+                        sel.appendChild(opt);
+                    });
+                    sel.value = selectedValue || 'default';
+                    // if selected not in list, append and select it
+                    if (sel.value !== (selectedValue || 'default')) {
+                        const opt = document.createElement('option');
+                        opt.value = selectedValue;
+                        opt.textContent = selectedValue;
+                        sel.appendChild(opt);
+                        sel.value = selectedValue;
+                    }
+                })
+                .catch(err => {
+                    console.error('Gagal load PPPoE profiles:', err);
+                    if (typeof showAlert === 'function') {
+                        showAlert('danger', 'Gagal memuat PPPoE profiles dari Mikrotik');
+                    }
+                    // minimal fallback
+                    sel.innerHTML = '<option value="default">default</option>';
+                    sel.value = selectedValue || 'default';
+                });
+        }
+
+        // Add Package Form
+        $('#addPackageForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                name: $('#name').val().trim(),
+                speed: $('#speed').val().trim(),
+                price: parseFloat($('#price').val()),
+                tax_rate: $('#enable_tax').is(':checked') ? parseFloat($('#tax_rate').val()) : 0,
+                description: $('#description').val().trim(),
+                pppoe_profile: $('#pppoe_profile').val().trim() || 'default'
+            };
+            
+            // Validate required fields
+            if (!formData.name || !formData.speed || !formData.price || formData.price <= 0) {
+                showAlert('danger', 'Nama, kecepatan, dan harga harus diisi dengan benar');
+                return;
+            }
+            
+            // Validate tax rate if enabled
+            if ($('#enable_tax').is(':checked') && (formData.tax_rate < 0 || formData.tax_rate > 100)) {
+                showAlert('danger', 'PPN harus antara 0% dan 100%');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.text();
+            submitBtn.prop('disabled', true).text('Memproses...');
+            
+            fetch('/admin/billing/packages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Paket berhasil ditambahkan');
+                    // Close modal with a small delay to ensure toast is shown
+                    setTimeout(() => {
+                        $('#addPackageModal').modal('hide');
+                        setTimeout(() => location.reload(), 500);
+                    }, 100);
+                } else {
+                    showAlert('danger', data.message || 'Gagal menambahkan paket');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Terjadi kesalahan saat menambahkan paket');
+            })
+            .finally(() => {
+                // Restore button state
+                submitBtn.prop('disabled', false).text(originalText);
+            });
+        });
+
+        // Edit Package
+        function editPackage(packageId) {
+            fetch(`/admin/billing/api/packages/${packageId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const package = data.package;
+                        $('#edit_package_id').val(package.id);
+                        $('#edit_name').val(package.name);
+                        $('#edit_speed').val(package.speed);
+                        $('#edit_price').val(package.price);
+                        
+                        // Set tax rate and checkbox based on package data
+                        const taxRate = package.tax_rate || 0;
+                        if (taxRate > 0) {
+                            $('#edit_enable_tax').prop('checked', true);
+                            $('#edit_tax_rate').val(taxRate);
+                            $('#edit_tax_rate_group').show();
+                            $('#edit_tax_rate_group input').prop('disabled', false);
+                        } else {
+                            $('#edit_enable_tax').prop('checked', false);
+                            $('#edit_tax_rate').val(0);
+                            $('#edit_tax_rate_group').hide();
+                            $('#edit_tax_rate_group input').prop('disabled', true);
+                        }
+                        
+                        $('#edit_description').val(package.description || '');
+                        
+                        // Calculate and display price with tax
+                        calculatePriceWithTax('edit_price', 'edit_tax_rate', 'edit_price_with_tax');
+                        
+                        // Load profiles then set selection and show modal
+                        const selected = package.pppoe_profile || 'default';
+                        loadPPPoEProfiles('#edit_pppoe_profile', selected);
+                        $('#editPackageModal').modal('show');
+                    } else {
+                        showAlert('danger', data.message || 'Gagal mengambil data paket');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('danger', 'Terjadi kesalahan');
+                });
+        }
+
+        // Update Package Form
+        $('#editPackageForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const packageId = $('#edit_package_id').val();
+            const formData = {
+                name: $('#edit_name').val().trim(),
+                speed: $('#edit_speed').val().trim(),
+                price: parseFloat($('#edit_price').val()),
+                tax_rate: $('#edit_enable_tax').is(':checked') ? parseFloat($('#edit_tax_rate').val()) : 0,
+                description: $('#edit_description').val().trim(),
+                pppoe_profile: $('#edit_pppoe_profile').val().trim() || 'default'
+            };
+            
+            // Validate required fields
+            if (!formData.name || !formData.speed || !formData.price || formData.price <= 0) {
+                showAlert('danger', 'Nama, kecepatan, dan harga harus diisi dengan benar');
+                return;
+            }
+            
+            // Validate tax rate if enabled
+            if ($('#edit_enable_tax').is(':checked') && (formData.tax_rate < 0 || formData.tax_rate > 100)) {
+                showAlert('danger', 'PPN harus antara 0% dan 100%');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.text();
+            submitBtn.prop('disabled', true).text('Memproses...');
+            
+            fetch(`/admin/billing/packages/${packageId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Paket berhasil diupdate');
+                    // Close modal with a small delay to ensure toast is shown
+                    setTimeout(() => {
+                        $('#editPackageModal').modal('hide');
+                        setTimeout(() => location.reload(), 500);
+                    }, 100);
+                } else {
+                    showAlert('danger', data.message || 'Gagal mengupdate paket');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Terjadi kesalahan saat mengupdate paket');
+            })
+            .finally(() => {
+                // Restore button state
+                submitBtn.prop('disabled', false).text(originalText);
+            });
+        });
+
+        // View Package
+        function viewPackage(packageId) {
+            fetch(`/admin/billing/api/packages/${packageId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const package = data.package;
+                        const taxRate = package.tax_rate || 11;
+                        const isNoTax = taxRate === 0;
+                        
+                        const detailsHtml = `
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Nama Paket:</strong> ${package.name}</p>
+                                    <p><strong>Kecepatan:</strong> ${package.speed}</p>
+                                    <p><strong>Harga (Sebelum PPN):</strong> Rp ${parseFloat(package.price).toLocaleString('id-ID')}</p>
+                                    <p><strong>PPN:</strong> 
+                                        ${isNoTax ? 
+                                            '<span class="badge bg-secondary">0% (Tidak Ada PPN)</span>' : 
+                                            '<span class="badge bg-warning">' + taxRate.toFixed(2) + '%</span>'
+                                        }
+                                    </p>
+                                    <p><strong>Harga (Setelah PPN):</strong> 
+                                        ${isNoTax ? 
+                                            'Rp ' + parseFloat(package.price).toLocaleString('id-ID') + ' <small class="text-muted">(Harga sama, tidak ada PPN)</small>' :
+                                            'Rp ' + ((parseFloat(package.price) * (1 + taxRate / 100)).toFixed(0)).toLocaleString('id-ID')
+                                        }
+                                    </p>
+                                    <p><strong>PPPoE Profile:</strong> ${package.pppoe_profile || 'default'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Deskripsi:</strong></p>
+                                    <p>${package.description || 'Tidak ada deskripsi'}</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        $('#packageDetails').html(detailsHtml);
+                        $('#viewPackageModal').modal('show');
+                    } else {
+                        showAlert('danger', data.message || 'Gagal mengambil data paket');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('danger', 'Terjadi kesalahan');
+                });
+        }
+
+        // Delete Package
+        function deletePackage(packageId) {
+            if (confirm('Apakah Anda yakin ingin menghapus paket ini?')) {
+                fetch(`/admin/billing/packages/${packageId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('success', 'Paket berhasil dihapus');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showAlert('danger', data.message || 'Gagal menghapus paket');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('danger', 'Terjadi kesalahan');
+                });
+            }
+        }
+
+        function showToast(type, title, message) {
+            const toastHtml = `
+                <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <strong>${title}</strong><br>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing toasts
+            document.querySelectorAll('.toast').forEach(toast => toast.remove());
+            
+            // Add new toast
+            document.body.insertAdjacentHTML('beforeend', toastHtml);
+            
+            // Show toast
+            const toastElement = document.querySelector('.toast');
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (toastElement && toastElement.parentNode) {
+                    toastElement.remove();
+                }
+            }, 5000);
+        }
+
+        function showAlert(type, message) {
+            showToast(type === 'success' ? 'success' : type === 'danger' ? 'danger' : 'info', 
+                     type === 'success' ? 'Berhasil' : type === 'danger' ? 'Error' : 'Info', 
+                     message);
+        }
+    </script>
+    
+    <!-- Currency Helper -->
+    <%- include('../../partials/currency-helper') %>
+</body>
+</html> 

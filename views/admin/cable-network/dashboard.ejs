@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .stat-card {
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        .stat-odp { background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); }
+        .stat-cable { background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%); }
+        .stat-customer { background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-network { background: linear-gradient(45deg, #43e97b 0%, #38f9d7 100%); }
+        
+        .recent-item {
+            border-left: 4px solid #007bff;
+            transition: all 0.2s;
+        }
+        .recent-item:hover {
+            border-left-color: #0056b3;
+            background-color: #f8f9fa;
+        }
+        
+        .quick-action-card {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .quick-action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin">
+                <i class="bx bx-wifi"></i> Admin Portal
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin">
+                    <i class="bx bx-home"></i> Dashboard
+                </a>
+                <a class="nav-link active" href="/admin/cable-network">
+                    <i class="bx bx-network-chart"></i> Cable Network
+                </a>
+                <a class="nav-link" href="/admin/cable-network/odp">
+                    <i class="bx bx-broadcast"></i> ODP Management
+                </a>
+                <a class="nav-link" href="/admin/cable-network/cables">
+                    <i class="bx bx-cable-car"></i> Cable Routes
+                </a>
+                <a class="nav-link" href="/admin/cable-network/odp-connections">
+                    <i class="bx bx-git-branch"></i> ODP Connections
+                </a>
+                <a class="nav-link" href="/admin/billing/mapping">
+                    <i class="bx bx-map"></i> Map View
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="bx bx-network-chart"></i> Cable Network Dashboard</h2>
+                        <p class="text-muted">Overview jaringan kabel dan infrastruktur ODP</p>
+                    </div>
+                    <div>
+                        <a href="/admin/cable-network/odp" class="btn btn-primary me-2">
+                            <i class="bx bx-plus"></i> Tambah ODP
+                        </a>
+                        <a href="/admin/billing/mapping" class="btn btn-outline-primary">
+                            <i class="bx bx-map"></i> Lihat Peta
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon stat-odp me-3">
+                                <i class="bx bx-broadcast"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0 text-primary"><%= stats.total_odps || 0 %></h4>
+                                <p class="text-muted mb-0">Total ODP</p>
+                                <small class="text-success">
+                                    <i class="bx bx-check-circle"></i> 
+                                    <%= stats.active_odps || 0 %> Active
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon stat-cable me-3">
+                                <i class="bx bx-cable-car"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0 text-primary"><%= stats.total_cables || 0 %></h4>
+                                <p class="text-muted mb-0">Total Cable Routes</p>
+                                <small class="text-success">
+                                    <i class="bx bx-check-circle"></i> 
+                                    <%= stats.connected_cables || 0 %> Connected
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon stat-customer me-3">
+                                <i class="bx bx-user"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0 text-primary"><%= stats.mapped_customers || 0 %></h4>
+                                <p class="text-muted mb-0">Mapped Customers</p>
+                                <small class="text-info">
+                                    <i class="bx bx-map"></i> 
+                                    With Coordinates
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon stat-network me-3">
+                                <i class="bx bx-wrench"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0 text-primary"><%= stats.maintenance_odps || 0 %></h4>
+                                <p class="text-muted mb-0">Maintenance</p>
+                                <small class="text-warning">
+                                    <i class="bx bx-wrench"></i> 
+                                    In Progress
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5><i class="bx bx-zap"></i> Quick Actions</h5>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card quick-action-card h-100" onclick="window.location.href='/admin/cable-network/odp'">
+                    <div class="card-body text-center">
+                        <div class="stat-icon stat-odp mx-auto mb-3">
+                            <i class="bx bx-broadcast"></i>
+                        </div>
+                        <h6>Manage ODPs</h6>
+                        <p class="text-muted small">Add, edit, and manage Optical Distribution Points</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card quick-action-card h-100" onclick="window.location.href='/admin/cable-network/cables'">
+                    <div class="card-body text-center">
+                        <div class="stat-icon stat-cable mx-auto mb-3">
+                            <i class="bx bx-cable-car"></i>
+                        </div>
+                        <h6>Manage Cables</h6>
+                        <p class="text-muted small">Configure cable routes and connections</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card quick-action-card h-100" onclick="window.location.href='/admin/cable-network/odp-connections'">
+                    <div class="card-body text-center">
+                        <div class="stat-icon stat-customer mx-auto mb-3">
+                            <i class="bx bx-git-branch"></i>
+                        </div>
+                        <h6>ODP Connections</h6>
+                        <p class="text-muted small">Manage backbone connections between ODPs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card quick-action-card h-100" onclick="window.location.href='/admin/billing/mapping'">
+                    <div class="card-body text-center">
+                        <div class="stat-icon stat-customer mx-auto mb-3">
+                            <i class="bx bx-map"></i>
+                        </div>
+                        <h6>Network Map</h6>
+                        <p class="text-muted small">View interactive network map</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card quick-action-card h-100" onclick="window.location.href='/admin/cable-network/analytics'">
+                    <div class="card-body text-center">
+                        <div class="stat-icon stat-network mx-auto mb-3">
+                            <i class="bx bx-bar-chart-alt-2"></i>
+                        </div>
+                        <h6>Analytics</h6>
+                        <p class="text-muted small">View network analytics and reports</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bx bx-time"></i> Recent ODPs</h6>
+                    </div>
+                    <div class="card-body">
+                        <% if (recentODPs && recentODPs.length > 0) { %>
+                            <% recentODPs.forEach(odp => { %>
+                            <div class="recent-item p-3 mb-2 rounded">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1"><%= odp.name %></h6>
+                                        <small class="text-muted">
+                                            <i class="bx bx-map-pin"></i> <%= odp.address || 'No address' %>
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge <%= odp.status === 'active' ? 'bg-success' : odp.status === 'maintenance' ? 'bg-warning' : 'bg-secondary' %>">
+                                            <%= odp.status %>
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">
+                                            <%= new Date(odp.created_at).toLocaleDateString() %>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="text-center text-muted">
+                                <i class="bx bx-info-circle fs-1"></i>
+                                <p>No ODPs found</p>
+                                <a href="/admin/cable-network/odp" class="btn btn-sm btn-primary">Add First ODP</a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bx bx-cable-car"></i> Recent Cable Routes</h6>
+                    </div>
+                    <div class="card-body">
+                        <% if (recentCables && recentCables.length > 0) { %>
+                            <% recentCables.forEach(cable => { %>
+                            <div class="recent-item p-3 mb-2 rounded">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1"><%= cable.customer_name || 'Unknown Customer' %></h6>
+                                        <small class="text-muted">
+                                            <i class="bx bx-phone"></i> <%= cable.customer_phone || 'No phone' %>
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge <%= cable.status === 'connected' ? 'bg-success' : cable.status === 'disconnected' ? 'bg-danger' : cable.status === 'maintenance' ? 'bg-warning' : 'bg-secondary' %>">
+                                            <%= cable.status %>
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">
+                                            <%= new Date(cable.created_at).toLocaleDateString() %>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="text-center text-muted">
+                                <i class="bx bx-info-circle fs-1"></i>
+                                <p>No cable routes found</p>
+                                <a href="/admin/cable-network/cables" class="btn btn-sm btn-primary">Add First Cable Route</a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

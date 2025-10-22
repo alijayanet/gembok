@@ -1,0 +1,26 @@
+<%- include('../../partials/header') %>
+
+<%- include('../../partials/billing-navbar') %>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Detail Pelanggan - Test</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Debug Information:</h5>
+                    <pre><%= JSON.stringify({ customer, invoices, packages }, null, 2) %></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer') %> 

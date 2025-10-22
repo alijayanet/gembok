@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice <%= invoice.invoice_number %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 0.5cm;
+        }
+        
+        @media print {
+            body { 
+                margin: 0;
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            .no-print { 
+                display: none !important; 
+            }
+            .print-only { 
+                display: block !important; 
+            }
+            .container-fluid {
+                padding: 0.3cm;
+                width: 100%;
+                max-width: 100%;
+            }
+            .table th {
+                background-color: #f8f9fa !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            .amount-box {
+                background-color: #007bff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+            }
+        }
+        
+        @media screen {
+            .print-only { 
+                display: none; 
+            }
+            body {
+                background: #f5f5f5;
+                padding: 20px;
+            }
+            .container-fluid {
+                background: white;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                padding: 20px;
+                margin: 0 auto;
+            }
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.2;
+            color: #333;
+            font-size: 10px;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container-fluid {
+            max-width: 19.5cm;
+            margin: 0 auto;
+            background: white;
+            padding: 0.3cm;
+            min-height: 27.5cm;
+            position: relative;
+        }
+        
+        .invoice-header {
+            border-bottom: 1px solid #007bff;
+            padding-bottom: 3px;
+            margin-bottom: 5px;
+        }
+        
+        .company-logo {
+            max-height: 35px;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .invoice-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #007bff;
+            text-align: right;
+            margin: 0;
+            line-height: 1.1;
+        }
+        
+        .invoice-number {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #333;
+            margin-top: 3px;
+            display: block;
+        }
+        
+        .invoice-details {
+            background-color: #f8f9fa;
+            padding: 5px 8px;
+            border-radius: 3px;
+            margin: 5px 0;
+            font-size: 9px;
+        }
+        
+        .customer-info, .invoice-info {
+            margin-bottom: 5px;
+        }
+        
+        .amount-box {
+            background-color: #007bff;
+            color: white;
+            padding: 4px 6px;
+            border-radius: 3px;
+            text-align: center;
+            margin: 5px 0;
+        }
+        
+        .amount-text {
+            font-size: 1rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .table {
+            font-size: 9px;
+            margin-bottom: 5px;
+        }
+        
+        .table th {
+            background-color: #f8f9fa !important;
+            border-top: 1px solid #dee2e6;
+            padding: 3px 5px;
+        }
+        
+        .table td {
+            padding: 3px 5px;
+        }
+        
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+        }
+        
+        .footer {
+            margin-top: 5px;
+            padding-top: 3px;
+            border-top: 1px dashed #dee2e6;
+            font-size: 8px;
+            color: #6c757d;
+            position: absolute;
+            bottom: 0.3cm;
+            width: calc(100% - 0.6cm);
+            left: 0.3cm;
+            padding: 3px 10px;
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        h5 {
+            font-size: 0.85rem;
+            margin: 5px 0;
+        }
+        
+        h6 {
+            font-size: 0.8rem;
+            margin: 3px 0;
+        }
+        
+        .card {
+            margin-bottom: 5px;
+        }
+        
+        .card-body {
+            padding: 5px;
+        }
+        
+        .alert {
+            padding: 3px 5px;
+            margin: 2px 0;
+            font-size: 9px;
+        }
+        
+        .payment-section {
+            margin-top: 8px;
+        }
+        
+        .notes-section {
+            margin-top: 5px;
+        }
+        
+        .service-section {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Print Button (Screen Only) -->
+    <div class="no-print print-button">
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="bi bi-printer"></i> Cetak
+        </button>
+        <button onclick="downloadAsPDF()" class="btn btn-success ms-2">
+            <i class="bi bi-download"></i> Download PDF
+        </button>
+        <a href="/admin/billing/invoices" class="btn btn-secondary ms-2">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="invoice-header">
+            <div class="row">
+                <div class="col-8">
+                    <img src="/public/img/logo.png" alt="Logo" class="company-logo">
+                    <h5 class="mb-1"><%= appSettings.companyHeader %></h5>
+                    <p class="text-muted mb-0" style="font-size: 9px;"><%= appSettings.company_slogan || 'Internet Service Provider' %></p>
+                </div>
+                <div class="col-4 text-end">
+                    <div class="invoice-title">INVOICE</div>
+                    <span class="invoice-number"><%= invoice.invoice_number %></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Details -->
+        <div class="invoice-details">
+            <div class="row">
+                <div class="col-md-6 customer-info">
+                    <h5 class="text-primary mb-2">Informasi Pelanggan</h5>
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="fw-bold">Nama:</td>
+                            <td><%= invoice.customer_name %></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Username:</td>
+                            <td><%= invoice.customer_username %></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Telepon:</td>
+                            <td><%= invoice.customer_phone %></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Alamat:</td>
+                            <td><%= invoice.customer_address || 'Alamat tidak tersedia' %></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6 invoice-info">
+                    <h5 class="text-primary mb-2">Informasi Invoice</h5>
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="fw-bold">Tanggal Dibuat:</td>
+                            <td><%= new Date(invoice.created_at).toLocaleDateString('id-ID') %></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Jatuh Tempo:</td>
+                            <td><%= new Date(invoice.due_date).toLocaleDateString('id-ID') %></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Status:</td>
+                            <td>
+                                <% if (invoice.status === 'paid') { %>
+                                    <span class="badge bg-success status-badge">Lunas</span>
+                                <% } else if (invoice.status === 'unpaid') { %>
+                                    <% if (new Date(invoice.due_date) < new Date()) { %>
+                                        <span class="badge bg-danger status-badge">Terlambat</span>
+                                    <% } else { %>
+                                        <span class="badge bg-warning status-badge">Belum Lunas</span>
+                                    <% } %>
+                                <% } %>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amount Box -->
+        <div class="amount-box">
+            <div class="amount-text">
+                Total Tagihan: Rp <%= Math.round(parseFloat(invoice.amount)).toLocaleString('id-ID') %>
+            </div>
+        </div>
+
+        <!-- Service Details -->
+        <div class="service-section">
+            <h5 class="text-primary mb-2">Detail Layanan</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Layanan</th>
+                        <th>Kecepatan</th>
+                        <th>Harga Dasar</th>
+                        <th>PPN</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><%= invoice.package_name %></td>
+                        <td><%= invoice.package_speed || 'Kecepatan tidak tersedia' %></td>
+                        <td class="text-end">
+                            <% if (invoice.base_amount) { %>
+                                Rp <%= Math.round(parseFloat(invoice.base_amount)).toLocaleString('id-ID') %>
+                            <% } else { %>
+                                Rp <%= Math.round(parseFloat(invoice.amount)).toLocaleString('id-ID') %>
+                            <% } %>
+                        </td>
+                        <td class="text-end">
+                            <% if (invoice.tax_rate !== null && invoice.tax_rate !== undefined) { %>
+                                <% if (invoice.tax_rate === 0) { %>
+                                    <span class="badge bg-secondary">0% (Tidak Ada PPN)</span>
+                                <% } else { %>
+                                    <span class="badge bg-warning"><%= invoice.tax_rate.toFixed(2) %>%</span>
+                                <% } %>
+                            <% } else { %>
+                                <span class="badge bg-warning">11.00%</span>
+                            <% } %>
+                        </td>
+                        <td class="text-end">
+                            <strong>Rp <%= Math.round(parseFloat(invoice.amount)).toLocaleString('id-ID') %></strong>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="table-primary">
+                        <th colspan="2" class="text-end">Subtotal:</th>
+                        <th class="text-end">
+                            <% if (invoice.base_amount) { %>
+                                Rp <%= Math.round(parseFloat(invoice.base_amount)).toLocaleString('id-ID') %>
+                            <% } else { %>
+                                Rp <%= Math.round(parseFloat(invoice.amount)).toLocaleString('id-ID') %>
+                            <% } %>
+                        </th>
+                        <th class="text-end">
+                            <% if (invoice.tax_rate !== null && invoice.tax_rate !== undefined) { %>
+                                <% if (invoice.tax_rate === 0) { %>
+                                    Rp 0
+                                <% } else { %>
+                                    <% const taxAmount = invoice.base_amount ? (invoice.base_amount * invoice.tax_rate / 100) : 0; %>
+                                    Rp <%= Math.round(taxAmount).toLocaleString('id-ID') %>
+                                <% } %>
+                            <% } else { %>
+                                <% const taxAmount = invoice.base_amount ? (invoice.base_amount * 0.11) : 0; %>
+                                Rp <%= Math.round(taxAmount).toLocaleString('id-ID') %>
+                            <% } %>
+                        </th>
+                        <th class="text-end">
+                            <strong>Rp <%= Math.round(parseFloat(invoice.amount)).toLocaleString('id-ID') %></strong>
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Notes -->
+        <% if (invoice.notes && invoice.notes.trim() !== '') { %>
+        <div class="notes-section">
+            <h5 class="text-primary mb-2">Catatan</h5>
+            <div class="alert alert-info">
+                <%= invoice.notes %>
+            </div>
+        </div>
+        <% } %>
+        
+        <!-- Company Notes -->
+        <% if (appSettings.invoice_notes && appSettings.invoice_notes.trim() !== '') { %>
+        <div class="notes-section">
+            <h5 class="text-primary mb-2">Informasi Penting</h5>
+            <div class="alert alert-warning">
+                <%= appSettings.invoice_notes %>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Payment Instructions -->
+        <div class="payment-section">
+            <h5 class="text-primary mb-2">Cara Pembayaran</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Transfer Bank</h6>
+                            <p class="card-text" style="margin: 0; font-size: 9px;">
+                                <strong>Bank:</strong> <%= appSettings.payment_bank_name %><br>
+                                <strong>No. Rekening:</strong> <%= appSettings.payment_account_number %><br>
+                                <strong>Atas Nama:</strong> <%= appSettings.payment_account_holder %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Pembayaran Tunai</h6>
+                            <p class="card-text" style="margin: 0; font-size: 9px;">
+                                Pembayaran dapat dilakukan di kantor kami:<br>
+                                <strong>Alamat:</strong> <%= appSettings.payment_cash_address %><br>
+                                <strong>Jam Operasional:</strong> <%= appSettings.payment_cash_hours %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="row">
+                <div class="col-md-7">
+                    <p style="margin: 0 0 3px 0;"><strong>Terima kasih telah mempercayai layanan kami!</strong></p>
+                    <p style="margin: 0 0 3px 0; font-size: 8px;">
+                        <i class="bi bi-telephone"></i> <%= appSettings.contact_phone %><br>
+                        <i class="bi bi-envelope"></i> <%= appSettings.contact_email %><br>
+                        <i class="bi bi-geo-alt"></i> <%= appSettings.contact_address %>
+                    </p>
+                </div>
+                <div class="col-md-5 text-end">
+                    <p style="margin: 0 0 3px 0; font-size: 8px;"><%= appSettings.footerInfo %></p>
+                    <p class="text-muted" style="margin: 0; font-size: 7px;">
+                        Invoice ini dibuat secara otomatis oleh sistem.<br>
+                        Mohon simpan sebagai bukti pembayaran.
+                    </p>
+                    <p class="text-muted" style="margin: 3px 0 0 0; font-size: 7px;">
+                        <i class="bi bi-whatsapp"></i> WhatsApp: <%= appSettings.contact_whatsapp %><br>
+                        <i class="bi bi-globe"></i> Website: <%= appSettings.company_website %>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        function downloadAsPDF() {
+            const element = document.querySelector('.container-fluid');
+            const opt = {
+                margin: 0.5,
+                filename: 'invoice-<%= invoice.invoice_number %>.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // Sembunyikan tombol print sebelum generate PDF
+            const printButton = document.querySelector('.print-button');
+            printButton.style.display = 'none';
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Tampilkan kembali tombol print setelah PDF selesai
+                printButton.style.display = 'block';
+            });
+        }
+        
+        // Auto-hide print button when printing
+        window.addEventListener('beforeprint', function() {
+            document.querySelector('.print-button').style.display = 'none';
+        });
+        
+        window.addEventListener('afterprint', function() {
+            document.querySelector('.print-button').style.display = 'block';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Settings - Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .status-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            border-left: 5px solid #667eea;
+        }
+        
+        .template-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            border: 1px solid #e9ecef;
+        }
+        
+        .template-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        
+        .template-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .template-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn {
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .form-check-input:checked {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        
+        .form-check-input:not(:checked) {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .template-disabled {
+            opacity: 0.6;
+            background-color: #f8f9fa !important;
+        }
+        
+        .template-enabled {
+            opacity: 1;
+            background-color: #fff !important;
+        }
+        
+        .variable-item {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 2px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #495057;
+        }
+        
+        .variable-list {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Include Billing Sidebar -->
+            <%- include('../../partials/billing-sidebar') %>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bx bx-whatsapp"></i> WhatsApp Settings
+                    </h1>
+                </div>
+                
+                <!-- Status Cards -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="status-card">
+                            <h5><i class="bi bi-whatsapp text-success"></i> WhatsApp Status</h5>
+                            <p class="mb-0" id="whatsappStatus">Checking...</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="status-card">
+                            <h5><i class="bi bi-people text-primary"></i> Active Customers</h5>
+                            <p class="mb-0" id="activeCustomers">Loading...</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="status-card">
+                            <h5><i class="bi bi-receipt text-warning"></i> Pending Invoices</h5>
+                            <p class="mb-0" id="pendingInvoices">Loading...</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="status-card">
+                            <h5><i class="bi bi-calendar-check text-info"></i> Next Reminder</h5>
+                            <p class="mb-0" id="nextReminder">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rate Limiting Settings Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="template-card">
+                            <div class="template-header">
+                                <h4 class="template-title">
+                                    <i class="bi bi-speedometer2"></i> Rate Limiting Settings
+                                </h4>
+                            </div>
+                            
+                            <div class="template-description">
+                                Konfigurasi pengaturan pengiriman pesan untuk menghindari pemblokiran dari WhatsApp. Atur jumlah pesan maksimal per batch dan jeda waktu antar pengiriman.
+                            </div>
+                            
+                            <form id="rateLimitForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="maxMessagesPerBatch" class="form-label">
+                                                <i class="bi bi-envelope"></i> Maksimal Pesan per Batch
+                                            </label>
+                                            <input type="number" class="form-control" id="maxMessagesPerBatch" 
+                                                   min="1" max="100" value="10" 
+                                                   placeholder="Jumlah pesan maksimal yang dikirim sekaligus">
+                                            <div class="form-text">Rekomendasi: 5-20 pesan per batch untuk menghindari pemblokiran</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="delayBetweenBatches" class="form-label">
+                                                <i class="bi bi-clock"></i> Jeda Antar Batch (detik)
+                                            </label>
+                                            <input type="number" class="form-control" id="delayBetweenBatches" 
+                                                   min="1" max="300" value="30" 
+                                                   placeholder="Jeda waktu antar batch pengiriman">
+                                            <div class="form-text">Rekomendasi: 30-60 detik untuk keamanan</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="delayBetweenMessages" class="form-label">
+                                                <i class="bi bi-hourglass-split"></i> Jeda Antar Pesan (detik)
+                                            </label>
+                                            <input type="number" class="form-control" id="delayBetweenMessages" 
+                                                   min="0" max="10" value="2" 
+                                                   placeholder="Jeda waktu antar pesan dalam batch">
+                                            <div class="form-text">Rekomendasi: 1-3 detik untuk stabilitas</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="maxRetries" class="form-label">
+                                                <i class="bi bi-arrow-repeat"></i> Maksimal Retry
+                                            </label>
+                                            <input type="number" class="form-control" id="maxRetries" 
+                                                   min="0" max="5" value="2" 
+                                                   placeholder="Jumlah percobaan ulang jika gagal">
+                                            <div class="form-text">Rekomendasi: 2-3 kali untuk efisiensi</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="dailyMessageLimit" class="form-label">
+                                                <i class="bi bi-calendar-day"></i> Batas Harian (opsional)
+                                            </label>
+                                            <input type="number" class="form-control" id="dailyMessageLimit" 
+                                                   min="0" max="1000" value="0" 
+                                                   placeholder="0 = tidak terbatas">
+                                            <div class="form-text">Batasi total pesan per hari (0 = tidak terbatas)</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch mt-4">
+                                                <input class="form-check-input" type="checkbox" id="enableRateLimit" checked>
+                                                <label class="form-check-label" for="enableRateLimit">
+                                                    <strong>Aktifkan Rate Limiting</strong>
+                                                </label>
+                                            </div>
+                                            <div class="form-text">Nonaktifkan untuk pengiriman tanpa batasan (tidak disarankan)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-primary" onclick="saveRateLimitSettings()">
+                                        <i class="bi bi-save"></i> Simpan Pengaturan Rate Limiting
+                                    </button>
+                                    <button type="button" class="btn btn-warning ms-2" onclick="resetRateLimitSettings()">
+                                        <i class="bi bi-arrow-clockwise"></i> Reset ke Default
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- WhatsApp Groups Settings Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="template-card">
+                            <div class="template-header">
+                                <h4 class="template-title">
+                                    <i class="bi bi-people-fill"></i> WhatsApp Groups
+                                </h4>
+                            </div>
+
+                            <div class="template-description">
+                                Atur daftar Group WhatsApp untuk menerima broadcast (pengumuman/gangguan) secara otomatis.
+                            </div>
+
+                            <form id="waGroupForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="waGroupsEnabled" checked>
+                                            <label class="form-check-label" for="waGroupsEnabled">
+                                                <strong>Aktifkan Kirim ke Group</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label for="waGroupIds" class="form-label">
+                                                <i class="bi bi-hash"></i> Group IDs (satu per baris)
+                                            </label>
+                                            <textarea class="form-control" id="waGroupIds" rows="4" placeholder="1203630xxxxxxxx@g.us\n12036yyyyyyyy@g.us"></textarea>
+                                            <div class="form-text">Gunakan JID group WhatsApp, contoh: 120363031495796203@g.us. Baris kosong akan diabaikan.</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-primary" onclick="saveWAGroups()">
+                                        <i class="bi bi-save"></i> Simpan Pengaturan Group
+                                    </button>
+                                    <button type="button" class="btn btn-warning ms-2" onclick="resetWAGroupsToDefault()">
+                                        <i class="bi bi-arrow-clockwise"></i> Reset
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Templates Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="template-card">
+                            <div class="template-header">
+                                <h4 class="template-title">
+                                    <i class="bi bi-chat-text"></i> Message Templates
+                                </h4>
+                                <div>
+                                    <button class="btn btn-success btn-sm me-2" onclick="enableAllTemplates()">
+                                        <i class="bi bi-check-all"></i> Enable All
+                                    </button>
+                                    <button class="btn btn-danger btn-sm me-2" onclick="disableAllTemplates()">
+                                        <i class="bi bi-x-all"></i> Disable All
+                                    </button>
+                                    <button class="btn btn-primary" onclick="saveAllTemplates()">
+                                        <i class="bi bi-save"></i> Save All Templates
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="template-description">
+                                Manage WhatsApp notification templates for different billing events. Use variables in curly braces {} to insert dynamic data.
+                            </div>
+                            
+                            <!-- Template Forms -->
+                            <div id="templateForms">
+                                <!-- Invoice Created Template -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5>📋 Invoice Created Notification</h5>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="invoice_created_enabled" checked>
+                                            <label class="form-check-label" for="invoice_created_enabled">
+                                                <strong>Enable Notification</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="variable-list">
+                                        <strong>Available Variables:</strong>
+                                        <span class="variable-item">{customer_name}</span>
+                                        <span class="variable-item">{invoice_number}</span>
+                                        <span class="variable-item">{amount}</span>
+                                        <span class="variable-item">{due_date}</span>
+                                        <span class="variable-item">{package_name}</span>
+                                        <span class="variable-item">{package_speed}</span>
+                                        <span class="variable-item">{notes}</span>
+                                    </div>
+                                    <textarea class="form-control" id="invoice_created_template" rows="8" placeholder="Enter template message..."></textarea>
+                                    <div class="mt-2">
+                                        <button class="btn btn-warning btn-sm" onclick="testTemplate('invoice_created')">
+                                            <i class="bi bi-send"></i> Test Template
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Due Date Reminder Template -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5>⚠️ Due Date Reminder</h5>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="due_date_reminder_enabled" checked>
+                                            <label class="form-check-label" for="due_date_reminder_enabled">
+                                                <strong>Enable Notification</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="variable-list">
+                                        <strong>Available Variables:</strong>
+                                        <span class="variable-item">{customer_name}</span>
+                                        <span class="variable-item">{invoice_number}</span>
+                                        <span class="variable-item">{amount}</span>
+                                        <span class="variable-item">{due_date}</span>
+                                        <span class="variable-item">{days_remaining}</span>
+                                        <span class="variable-item">{package_name}</span>
+                                        <span class="variable-item">{package_speed}</span>
+                                    </div>
+                                    <textarea class="form-control" id="due_date_reminder_template" rows="8" placeholder="Enter template message..."></textarea>
+                                    <div class="mt-2">
+                                        <button class="btn btn-warning btn-sm" onclick="testTemplate('due_date_reminder')">
+                                            <i class="bi bi-send"></i> Test Template
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Payment Received Template -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5>✅ Payment Received Notification</h5>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="payment_received_enabled" checked>
+                                            <label class="form-check-label" for="payment_received_enabled">
+                                                <strong>Enable Notification</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="variable-list">
+                                        <strong>Available Variables:</strong>
+                                        <span class="variable-item">{customer_name}</span>
+                                        <span class="variable-item">{invoice_number}</span>
+                                        <span class="variable-item">{amount}</span>
+                                        <span class="variable-item">{payment_method}</span>
+                                        <span class="variable-item">{payment_date}</span>
+                                        <span class="variable-item">{reference_number}</span>
+                                    </div>
+                                    <textarea class="form-control" id="payment_received_template" rows="8" placeholder="Enter template message..."></textarea>
+                                    <div class="mt-2">
+                                        <button class="btn btn-warning btn-sm" onclick="testTemplate('payment_received')">
+                                            <i class="bi bi-send"></i> Test Template
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Service Disruption Template -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5>🚨 Service Disruption Notification</h5>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="service_disruption_enabled" checked>
+                                            <label class="form-check-label" for="service_disruption_enabled">
+                                                <strong>Enable Notification</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="variable-list">
+                                        <strong>Available Variables:</strong>
+                                        <span class="variable-item">{disruption_type}</span>
+                                        <span class="variable-item">{affected_area}</span>
+                                        <span class="variable-item">{estimated_resolution}</span>
+                                        <span class="variable-item">{support_phone}</span>
+                                    </div>
+                                    <textarea class="form-control" id="service_disruption_template" rows="8" placeholder="Enter template message..."></textarea>
+                                    <div class="mt-2">
+                                        <button class="btn btn-warning btn-sm" onclick="testTemplate('service_disruption')">
+                                            <i class="bi bi-send"></i> Test Template
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Service Announcement Template -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5>📢 Service Announcement</h5>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="service_announcement_enabled" checked>
+                                            <label class="form-check-label" for="service_announcement_enabled">
+                                                <strong>Enable Notification</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="variable-list">
+                                        <strong>Available Variables:</strong>
+                                        <span class="variable-item">{announcement_content}</span>
+                                    </div>
+                                    <textarea class="form-control" id="service_announcement_template" rows="8" placeholder="Enter template message..."></textarea>
+                                    <div class="mt-2">
+                                        <button class="btn btn-warning btn-sm" onclick="testTemplate('service_announcement')">
+                                            <i class="bi bi-send"></i> Test Template
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Service Suspension Template -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5>⏸️ Service Suspension Notification</h5>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="service_suspension_enabled" checked>
+                                            <label class="form-check-label" for="service_suspension_enabled">
+                                                <strong>Enable Notification</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="variable-list">
+                                        <strong>Available Variables:</strong>
+                                        <span class="variable-item">{customer_name}</span>
+                                        <span class="variable-item">{username}</span>
+                                        <span class="variable-item">{package_name}</span>
+                                        <span class="variable-item">{due_date}</span>
+                                        <span class="variable-item">{amount}</span>
+                                        <span class="variable-item">{days_overdue}</span>
+                                    </div>
+                                    <textarea class="form-control" id="service_suspension_template" rows="8" placeholder="Enter template message..."></textarea>
+                                    <div class="mt-2">
+                                        <button class="btn btn-warning btn-sm" onclick="testTemplate('service_suspension')">
+                                            <i class="bi bi-send"></i> Test Template
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Service Restoration Template -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5>✅ Service Restoration Notification</h5>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="service_restoration_enabled" checked>
+                                            <label class="form-check-label" for="service_restoration_enabled">
+                                                <strong>Enable Notification</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="variable-list">
+                                        <strong>Available Variables:</strong>
+                                        <span class="variable-item">{customer_name}</span>
+                                        <span class="variable-item">{username}</span>
+                                        <span class="variable-item">{package_name}</span>
+                                        <span class="variable-item">{payment_date}</span>
+                                        <span class="variable-item">{amount}</span>
+                                        <span class="variable-item">{payment_method}</span>
+                                    </div>
+                                    <textarea class="form-control" id="service_restoration_template" rows="8" placeholder="Enter template message..."></textarea>
+                                    <div class="mt-2">
+                                        <button class="btn btn-warning btn-sm" onclick="testTemplate('service_restoration')">
+                                            <i class="bi bi-send"></i> Test Template
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Welcome Message Template -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5>👋 Welcome Message</h5>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="welcome_message_enabled" checked>
+                                            <label class="form-check-label" for="welcome_message_enabled">
+                                                <strong>Enable Notification</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="variable-list">
+                                        <strong>Available Variables:</strong>
+                                        <span class="variable-item">{customer_name}</span>
+                                        <span class="variable-item">{username}</span>
+                                        <span class="variable-item">{package_name}</span>
+                                        <span class="variable-item">{package_speed}</span>
+                                        <span class="variable-item">{wifi_password}</span>
+                                        <span class="variable-item">{support_phone}</span>
+                                    </div>
+                                    <textarea class="form-control" id="welcome_message_template" rows="8" placeholder="Enter template message..."></textarea>
+                                    <div class="mt-2">
+                                        <button class="btn btn-warning btn-sm" onclick="testTemplate('welcome_message')">
+                                            <i class="bi bi-send"></i> Test Template
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Test Notification Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="template-card">
+                            <h4><i class="bi bi-send"></i> Test Notifications</h4>
+                            <div class="test-section">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Phone Number</label>
+                                        <input type="text" class="form-control" id="testPhoneNumber" placeholder="6281234567890">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Template Type</label>
+                                        <select class="form-select" id="testTemplateType">
+                                            <option value="invoice_created">Invoice Created</option>
+                                            <option value="due_date_reminder">Due Date Reminder</option>
+                                            <option value="payment_received">Payment Received</option>
+                                            <option value="service_disruption">Service Disruption</option>
+                                            <option value="service_announcement">Service Announcement</option>
+                                            <option value="service_suspension">Service Suspension</option>
+                                            <option value="service_restoration">Service Restoration</option>
+                                            <option value="welcome_message">Welcome Message</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn btn-success" onclick="sendTestNotification()">
+                                        <i class="bi bi-send"></i> Send Test Notification
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Broadcast Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="template-card">
+                            <h4><i class="bi bi-broadcast"></i> Send Broadcast Message</h4>
+                            <div class="test-section">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Message Type</label>
+                                        <select class="form-select" id="broadcastType">
+                                            <option value="service_disruption">Service Disruption</option>
+                                            <option value="service_announcement">Service Announcement</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Disruption Type (if applicable)</label>
+                                        <input type="text" class="form-control" id="disruptionType" placeholder="Gangguan Jaringan">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Affected Area</label>
+                                        <input type="text" class="form-control" id="affectedArea" placeholder="Seluruh Area">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Estimated Resolution</label>
+                                        <input type="text" class="form-control" id="estimatedResolution" placeholder="2 jam">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label class="form-label">Message Content</label>
+                                        <textarea class="form-control" id="broadcastMessage" rows="4" placeholder="Enter your message..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn btn-danger" onclick="sendBroadcast()">
+                                        <i class="bi bi-broadcast"></i> Send Broadcast
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+    let templates = {};
+
+    // Load templates on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTemplates();
+        loadStatus();
+        loadRateLimitSettings();
+        loadWAGroups();
+
+        // Auto-save on toggle change: Rate Limit enabled
+        const rateToggle = document.getElementById('enableRateLimit');
+        if (rateToggle) {
+            rateToggle.addEventListener('change', async function() {
+                try {
+                    await saveRateLimitSettings();
+                    // success handled inside saveRateLimitSettings via showAlert
+                } catch (e) {}
+            });
+        }
+
+        // Auto-save on toggle change: WhatsApp Groups enabled
+        const groupToggle = document.getElementById('waGroupsEnabled');
+        if (groupToggle) {
+            groupToggle.addEventListener('change', async function() {
+                try {
+                    await saveWAGroups();
+                    // success handled inside saveWAGroups via showAlert
+                } catch (e) {}
+            });
+        }
+    });
+
+    // Load templates from server
+    async function loadTemplates() {
+        try {
+            const response = await fetch('/admin/billing/whatsapp-settings/templates');
+            const data = await response.json();
+            
+            if (data.success) {
+                templates = data.templates;
+                
+                // Populate form fields
+                Object.keys(templates).forEach(key => {
+                    const textarea = document.getElementById(`${key}_template`);
+                    const toggle = document.getElementById(`${key}_enabled`);
+                    
+                    if (textarea) {
+                        textarea.value = templates[key].template || '';
+                    }
+                    
+                    if (toggle) {
+                        toggle.checked = templates[key].enabled !== false; // Default to true if not specified
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading templates:', error);
+            showAlert('Error loading templates', 'danger');
+        }
+    }
+
+    // Load status information
+    async function loadStatus() {
+        try {
+            const response = await fetch('/admin/billing/whatsapp-settings/status');
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('whatsappStatus').textContent = data.whatsappStatus;
+                document.getElementById('activeCustomers').textContent = data.activeCustomers;
+                document.getElementById('pendingInvoices').textContent = data.pendingInvoices;
+                document.getElementById('nextReminder').textContent = data.nextReminder;
+            }
+        } catch (error) {
+            console.error('Error loading status:', error);
+        }
+    }
+
+    // Save all templates
+    async function saveAllTemplates() {
+        try {
+            // Collect all template data
+            const templateData = {};
+            Object.keys(templates).forEach(key => {
+                const textarea = document.getElementById(`${key}_template`);
+                const toggle = document.getElementById(`${key}_enabled`);
+                
+                if (textarea) {
+                    templateData[key] = {
+                        title: templates[key].title,
+                        template: textarea.value,
+                        enabled: toggle ? toggle.checked : true
+                    };
+                }
+            });
+            
+            const response = await fetch('/admin/billing/whatsapp-settings/templates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(templateData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('Templates saved successfully!', 'success');
+            } else {
+                showAlert('Error saving templates: ' + data.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Error saving templates:', error);
+            showAlert('Error saving templates', 'danger');
+        }
+    }
+
+    // Test template
+    async function testTemplate(templateKey) {
+        const phoneNumber = prompt('Enter phone number for test (6281234567890):');
+        if (!phoneNumber) return;
+        
+        try {
+            const response = await fetch('/admin/billing/whatsapp-settings/test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    phoneNumber: phoneNumber,
+                    templateKey: templateKey
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('Test notification sent successfully!', 'success');
+            } else {
+                showAlert('Error sending test notification: ' + data.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Error sending test notification:', error);
+            showAlert('Error sending test notification', 'danger');
+        }
+    }
+
+    // Send test notification
+    async function sendTestNotification() {
+        const phoneNumber = document.getElementById('testPhoneNumber').value;
+        const templateType = document.getElementById('testTemplateType').value;
+        
+        if (!phoneNumber) {
+            showAlert('Please enter a phone number', 'danger');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/admin/billing/whatsapp-settings/test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    phoneNumber: phoneNumber,
+                    templateKey: templateType
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('Test notification sent successfully!', 'success');
+            } else {
+                showAlert('Error sending test notification: ' + data.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Error sending test notification:', error);
+            showAlert('Error sending test notification', 'danger');
+        }
+    }
+
+    // Send broadcast message
+    async function sendBroadcast() {
+        const broadcastType = document.getElementById('broadcastType').value;
+        const message = document.getElementById('broadcastMessage').value;
+        
+        if (!message) {
+            showAlert('Please enter a message', 'danger');
+            return;
+        }
+        
+        const broadcastData = {
+            type: broadcastType,
+            message: message
+        };
+        
+        if (broadcastType === 'service_disruption') {
+            broadcastData.disruptionType = document.getElementById('disruptionType').value;
+            broadcastData.affectedArea = document.getElementById('affectedArea').value;
+            broadcastData.estimatedResolution = document.getElementById('estimatedResolution').value;
+        }
+        
+        if (!confirm('Are you sure you want to send this broadcast to all active customers?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/admin/billing/whatsapp-settings/broadcast', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(broadcastData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                const summary = `Broadcast sukses!\n` +
+                    `Pelanggan: ${data.customer_sent || 0} sukses / ${data.customer_failed || 0} gagal\n` +
+                    `Group: ${data.group_sent || 0} sukses / ${data.group_failed || 0} gagal`;
+                showAlert(summary, 'success');
+            } else {
+                showAlert('Error sending broadcast: ' + data.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Error sending broadcast:', error);
+            showAlert('Error sending broadcast', 'danger');
+        }
+    }
+
+    // Show alert function (using global function from footer)
+    function showAlert(message, type) {
+        // Use global showAlert function from footer
+        if (typeof window.showAlert === 'function') {
+            window.showAlert(message, type);
+        } else {
+            // Fallback if global function not available
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.querySelector('.main-content').insertBefore(alertDiv, document.querySelector('.main-content').firstChild);
+            
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    }
+    
+    // Function to update template status display
+    function updateTemplateStatus() {
+        const templateKeys = [
+            'invoice_created', 'due_date_reminder', 'payment_received', 
+            'service_disruption', 'service_announcement', 'service_suspension',
+            'service_restoration', 'welcome_message'
+        ];
+        
+        templateKeys.forEach(key => {
+            const toggle = document.getElementById(`${key}_enabled`);
+            const textarea = document.getElementById(`${key}_template`);
+            
+            if (toggle && textarea) {
+                // Update textarea style based on toggle state
+                if (toggle.checked) {
+                    textarea.classList.remove('template-disabled');
+                    textarea.classList.add('template-enabled');
+                    textarea.disabled = false;
+                } else {
+                    textarea.classList.remove('template-enabled');
+                    textarea.classList.add('template-disabled');
+                    textarea.disabled = true;
+                }
+            }
+        });
+    }
+    
+    // Function to enable all templates
+    function enableAllTemplates() {
+        const toggles = document.querySelectorAll('input[type="checkbox"][id$="_enabled"]');
+        toggles.forEach(toggle => {
+            toggle.checked = true;
+        });
+        updateTemplateStatus();
+        showAlert('All templates enabled!', 'success');
+    }
+    
+    // Function to disable all templates
+    function disableAllTemplates() {
+        const toggles = document.querySelectorAll('input[type="checkbox"][id$="_enabled"]');
+        toggles.forEach(toggle => {
+            toggle.checked = false;
+        });
+        updateTemplateStatus();
+        showAlert('All templates disabled!', 'warning');
+    }
+    
+    // Add event listeners for toggles
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggles = document.querySelectorAll('input[type="checkbox"][id$="_enabled"]');
+        toggles.forEach(toggle => {
+            toggle.addEventListener('change', updateTemplateStatus);
+        });
+        
+        // Initial status update
+        updateTemplateStatus();
+    });
+    
+    // Load rate limit settings
+    async function loadRateLimitSettings() {
+        try {
+            const response = await fetch('/admin/billing/whatsapp-settings/rate-limit');
+            const data = await response.json();
+            
+            if (data.success) {
+                const settings = data.settings;
+                document.getElementById('maxMessagesPerBatch').value = settings.maxMessagesPerBatch || 10;
+                document.getElementById('delayBetweenBatches').value = settings.delayBetweenBatches || 30;
+                document.getElementById('delayBetweenMessages').value = settings.delayBetweenMessages || 2;
+                document.getElementById('maxRetries').value = settings.maxRetries || 2;
+                document.getElementById('dailyMessageLimit').value = settings.dailyMessageLimit || 0;
+                document.getElementById('enableRateLimit').checked = settings.enabled !== false;
+            }
+        } catch (error) {
+            console.error('Error loading rate limit settings:', error);
+            showAlert('Error loading rate limit settings', 'danger');
+        }
+    }
+    
+    // Save rate limit settings
+    async function saveRateLimitSettings() {
+        try {
+            const settings = {
+                maxMessagesPerBatch: parseInt(document.getElementById('maxMessagesPerBatch').value) || 10,
+                delayBetweenBatches: parseInt(document.getElementById('delayBetweenBatches').value) || 30,
+                delayBetweenMessages: parseInt(document.getElementById('delayBetweenMessages').value) || 2,
+                maxRetries: parseInt(document.getElementById('maxRetries').value) || 2,
+                dailyMessageLimit: parseInt(document.getElementById('dailyMessageLimit').value) || 0,
+                enabled: document.getElementById('enableRateLimit').checked
+            };
+            
+            // Validate settings
+            if (settings.maxMessagesPerBatch < 1 || settings.maxMessagesPerBatch > 100) {
+                showAlert('Maksimal pesan per batch harus antara 1-100', 'danger');
+                return;
+            }
+            
+            if (settings.delayBetweenBatches < 1 || settings.delayBetweenBatches > 300) {
+                showAlert('Jeda antar batch harus antara 1-300 detik', 'danger');
+                return;
+            }
+            
+            if (settings.delayBetweenMessages < 0 || settings.delayBetweenMessages > 10) {
+                showAlert('Jeda antar pesan harus antara 0-10 detik', 'danger');
+                return;
+            }
+            
+            if (settings.maxRetries < 0 || settings.maxRetries > 5) {
+                showAlert('Maksimal retry harus antara 0-5', 'danger');
+                return;
+            }
+            
+            if (settings.dailyMessageLimit < 0 || settings.dailyMessageLimit > 1000) {
+                showAlert('Batas harian harus antara 0-1000', 'danger');
+                return;
+            }
+            
+            const response = await fetch('/admin/billing/whatsapp-settings/rate-limit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(settings)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('Pengaturan rate limiting berhasil disimpan!', 'success');
+            } else {
+                showAlert('Error menyimpan pengaturan: ' + data.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Error saving rate limit settings:', error);
+            showAlert('Error menyimpan pengaturan rate limiting', 'danger');
+        }
+    }
+    
+    // Reset rate limit settings to default
+    function resetRateLimitSettings() {
+        if (confirm('Apakah Anda yakin ingin mereset pengaturan ke default?')) {
+            document.getElementById('maxMessagesPerBatch').value = 10;
+            document.getElementById('delayBetweenBatches').value = 30;
+            document.getElementById('delayBetweenMessages').value = 2;
+            document.getElementById('maxRetries').value = 2;
+            document.getElementById('dailyMessageLimit').value = 0;
+            document.getElementById('enableRateLimit').checked = true;
+            showAlert('Pengaturan telah direset ke default', 'info');
+        }
+    }
+
+    // Load WhatsApp groups
+    async function loadWAGroups() {
+        try {
+            const response = await fetch('/admin/billing/whatsapp-settings/groups');
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('waGroupsEnabled').checked = data.groups.enabled !== false;
+                const ids = (data.groups.ids || []).join('\n');
+                document.getElementById('waGroupIds').value = ids;
+            }
+        } catch (error) {
+            console.error('Error loading WhatsApp groups:', error);
+            showAlert('Error loading WhatsApp groups', 'danger');
+        }
+    }
+
+    // Save WhatsApp groups
+    async function saveWAGroups() {
+        try {
+            const enabled = document.getElementById('waGroupsEnabled').checked;
+            const idsRaw = document.getElementById('waGroupIds').value || '';
+            const ids = idsRaw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+
+            const response = await fetch('/admin/billing/whatsapp-settings/groups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled, ids })
+            });
+            const data = await response.json();
+            if (data.success) showAlert('Pengaturan group WhatsApp disimpan!', 'success');
+            else showAlert('Gagal menyimpan group: ' + data.message, 'danger');
+        } catch (error) {
+            console.error('Error saving WhatsApp groups:', error);
+            showAlert('Error menyimpan group WhatsApp', 'danger');
+        }
+    }
+
+    function resetWAGroupsToDefault() {
+        document.getElementById('waGroupsEnabled').checked = true;
+        document.getElementById('waGroupIds').value = '';
+    }
+    </script>
+</body>
+</html> 

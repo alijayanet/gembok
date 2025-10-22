@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title><%= job ? 'Edit Jadwal Instalasi' : 'Buat Jadwal Instalasi Baru' %> - Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/responsive-admin.css" rel="stylesheet">
+    <style>
+        .form-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .form-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-section h5 {
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .customer-search-result {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            background: #fff;
+            display: none;
+        }
+        
+        .customer-info {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .package-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .package-card:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        
+        .package-card.selected {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+
+        /* Simple toast */
+        .toast-container {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 1055;
+        }
+        .toast-item {
+            background: #212529;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            min-width: 280px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .toast-item.success { background: #198754; }
+        .toast-item.error { background: #dc3545; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Include Admin Responsive Sidebar -->
+        <%- include('../partials/admin-responsive-sidebar', { page: 'installations', settings: settings, versionInfo: versionInfo, versionBadge: versionBadge }) %>
+        
+        <main class="col-md-10 ms-sm-auto main-content">
+            <!-- Header -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-plus-circle me-2"></i><%= job ? 'Edit Jadwal Instalasi' : 'Buat Jadwal Instalasi Baru' %>
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="/admin/installations" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Kembali ke Daftar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card form-card">
+                        <div class="card-body">
+                            <form id="installationForm" method="POST" action="/admin/installations/create" onsubmit="return false;">
+                                <!-- Customer Information Section -->
+                                <div class="form-section">
+                                    <h5><i class="bi bi-person me-2"></i>Informasi Pelanggan</h5>
+                                    
+                                    <!-- Customer Search -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-8">
+                                            <label for="customerSearch" class="form-label">Cari Pelanggan</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="customerSearch" 
+                                                       placeholder="Masukkan nama, telepon, atau username pelanggan">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="searchCustomer()">
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">&nbsp;</label>
+                                            <div class="d-grid">
+                                                <button type="button" class="btn btn-outline-primary" onclick="showNewCustomerForm()">
+                                                    <i class="bi bi-person-plus me-2"></i>Pelanggan Baru
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Customer Search Results -->
+                                    <div id="customerSearchResult" class="customer-search-result">
+                                        <!-- Results will be populated here -->
+                                    </div>
+
+                                    <!-- Selected Customer Info -->
+                                    <div id="customerInfo" class="customer-info">
+                                        <!-- Customer details will be shown here -->
+                                    </div>
+
+                                    <!-- New Customer Form (Hidden by default) -->
+                                    <div id="newCustomerForm" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="newCustomerName" class="form-label">Nama Pelanggan *</label>
+                                                <input type="text" class="form-control" id="newCustomerName" name="newCustomerName" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="newCustomerPhone" class="form-label">Nomor Telepon *</label>
+                                                <input type="tel" class="form-control" id="newCustomerPhone" name="newCustomerPhone" required>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <label for="newCustomerEmail" class="form-label">Email</label>
+                                                <input type="email" class="form-control" id="newCustomerEmail" name="newCustomerEmail">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="newCustomerAddress" class="form-label">Alamat *</label>
+                                                <textarea class="form-control" id="newCustomerAddress" name="newCustomerAddress" rows="2" required></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Package Selection Section -->
+                                <div class="form-section">
+                                    <h5><i class="bi bi-box me-2"></i>Pemilihan Paket</h5>
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <label for="package_id" class="form-label">Paket Internet *</label>
+                                            <select class="form-select" id="package_id" name="package_id" required>
+                                                <option value="">Pilih Paket</option>
+                                                <% if (Array.isArray(packages)) { %>
+                                                    <% packages.forEach(p => { %>
+                                                        <option value="<%= p.id %>"><%= p.name %><% if (p.speed) { %> - <%= p.speed %><% } %><% if (p.price) { %> - Rp <%= Number(p.price).toLocaleString('id-ID') %><% } %></option>
+                                                    <% }) %>
+                                                <% } %>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Installation Details Section -->
+                                <div class="form-section">
+                                    <h5><i class="bi bi-calendar-event me-2"></i>Detail Instalasi</h5>
+                                    
+                                    <!-- Tanggal/Waktu Instalasi dihapus sesuai permintaan -->
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label for="assignedTechnician" class="form-label">Tugaskan Teknisi</label>
+                                            <select class="form-select" id="assignedTechnician" name="assigned_technician_id">
+                                                <option value="">Pilih Teknisi</option>
+                                                <% if (typeof technicians !== 'undefined' && technicians.length > 0) { %>
+                                                    <% technicians.forEach(tech => { %>
+                                                        <option value="<%= tech.id %>">
+                                                            <%= tech.name %> (<%= tech.phone %>)
+                                                        </option>
+                                                    <% }); %>
+                                                <% } %>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="priority" class="form-label">Prioritas</label>
+                                            <select class="form-select" id="priority" name="priority">
+                                                <option value="normal">Normal</option>
+                                                <option value="high">Tinggi</option>
+                                                <option value="urgent">Urgent</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Additional Information Section (simplified) -->
+                                <div class="form-section">
+                                    <h5><i class="bi bi-info-circle me-2"></i>Informasi Tambahan</h5>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label for="notes" class="form-label">Catatan</label>
+                                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Catatan tambahan"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Form Actions -->
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Reset Form
+                                    </button>
+                                    <div>
+                                        <button type="button" class="btn btn-outline-primary me-2" onclick="saveAsDraft()">
+                                            <i class="bi bi-save me-2"></i>Simpan sebagai Draft
+                                        </button>
+                                        <button type="button" id="submitBtn" class="btn btn-primary" onclick="submitInstallation()">
+                                            <i class="bi bi-check-circle me-2"></i><%= job ? 'Update Jadwal Instalasi' : 'Buat Jadwal Instalasi' %>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            <!-- Success Container -->
+                            <div id="successContainer" style="display:none;">
+                                <div class="text-center p-5">
+                                    <h3 class="mb-3">✅ Jadwal instalasi berhasil dibuat</h3>
+                                    <p id="successMessage" class="mb-1"></p>
+                                    <p id="successJobInfo" class="text-muted"></p>
+                                    <div class="mt-4 d-flex justify-content-center gap-2">
+                                        <a href="/admin/installations/create" class="btn btn-primary">Buat Job Baru</a>
+                                        <a href="/admin/installations" class="btn btn-outline-secondary">Kembali ke Daftar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar removed to simplify form -->
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Toast container -->
+<div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Optional: set minimum date to today if field exists
+    if (document.getElementById('installationDate')) {
+        document.getElementById('installationDate').min = new Date().toISOString().split('T')[0];
+    }
+    
+    // Customer search functionality
+    function searchCustomer() {
+        const searchTerm = document.getElementById('customerSearch').value;
+        if (!searchTerm) {
+            showToast('Mohon masukkan kata kunci pencarian', 'warning');
+            return;
+        }
+        
+        if (searchTerm.length < 2) {
+            showToast('Minimal 2 karakter untuk pencarian', 'warning');
+            return;
+        }
+        
+        // Show loading state
+        const resultDiv = document.getElementById('customerSearchResult');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+            <div class="text-center py-3">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Mencari...</span>
+                </div>
+                <p class="mt-2 text-muted">Mencari pelanggan...</p>
+            </div>
+        `;
+        
+        // Call real API
+        fetch(`/admin/installations/api/search-customers?q=${encodeURIComponent(searchTerm)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.customers && data.customers.length > 0) {
+                        showCustomerResults(searchTerm, data.customers);
+                    } else {
+                        showNoCustomerResults(searchTerm);
+                    }
+                } else {
+                    showCustomerSearchError(data.message || 'Error searching customers');
+                }
+            })
+            .catch(error => {
+                console.error('Error searching customers:', error);
+                showCustomerSearchError('Terjadi kesalahan saat mencari pelanggan');
+            });
+    }
+    
+    function showCustomerResults(searchTerm, customers) {
+        const resultDiv = document.getElementById('customerSearchResult');
+        resultDiv.innerHTML = `
+            <h6>Hasil Pencarian untuk "${searchTerm}" (${customers.length} pelanggan):</h6>
+            <div class="list-group">
+                ${customers.map(customer => `
+                    <a href="#" class="list-group-item list-group-item-action" 
+                       onclick="selectCustomerFromSearch(${customer.id}, '${customer.name}', '${customer.phone}', '${customer.email || ''}', '${customer.address || ''}', '${customer.pppoe_username || ''}')">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">${customer.name}</h6>
+                            <small class="text-primary">${customer.phone}</small>
+                        </div>
+                        ${customer.email ? `<p class="mb-1 text-muted">${customer.email}</p>` : ''}
+                        ${customer.address ? `<small class="text-muted">${customer.address}</small>` : ''}
+                        ${customer.pppoe_username ? `<br><small class="badge bg-info">PPPoE: ${customer.pppoe_username}</small>` : ''}
+                    </a>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    function showNoCustomerResults(searchTerm) {
+        const resultDiv = document.getElementById('customerSearchResult');
+        resultDiv.innerHTML = `
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Tidak ada pelanggan ditemukan untuk "${searchTerm}"
+                <br><small>Silakan buat pelanggan baru atau coba kata kunci lain</small>
+            </div>
+        `;
+    }
+    
+    function showCustomerSearchError(message) {
+        const resultDiv = document.getElementById('customerSearchResult');
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                ${message}
+            </div>
+        `;
+    }
+    
+    function selectCustomerFromSearch(id, name, phone, email, address, pppoeUsername) {
+        // Hide search results
+        document.getElementById('customerSearchResult').style.display = 'none';
+        
+        // Show customer info
+        const customerInfo = document.getElementById('customerInfo');
+        customerInfo.style.display = 'block';
+        customerInfo.innerHTML = `
+            <div class="alert alert-success">
+                <h6><i class="bi bi-person-check me-2"></i>Pelanggan yang Dipilih:</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Nama:</strong> ${name}<br>
+                        <strong>Telepon:</strong> ${phone}
+                        ${pppoeUsername ? `<br><strong>PPPoE:</strong> ${pppoeUsername}` : ''}
+                    </div>
+                    <div class="col-md-6">
+                        ${email ? `<strong>Email:</strong> ${email}<br>` : ''}
+                        <strong>Alamat:</strong> ${address || 'Tidak ada alamat'}
+                    </div>
+                </div>
+                <input type="hidden" name="customer_id" value="${id}">
+                <input type="hidden" name="customer_name" value="${name}">
+                <input type="hidden" name="customer_phone" value="${phone}">
+                <input type="hidden" name="customer_address" value="${address || ''}">
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="changeCustomer()">
+                    <i class="bi bi-arrow-repeat me-1"></i>Ganti Pelanggan
+                </button>
+            </div>
+        `;
+        
+        // Clear search input
+        document.getElementById('customerSearch').value = '';
+        
+        // Show success toast
+        showToast(`Pelanggan ${name} berhasil dipilih`, 'success');
+    }
+    
+    function selectCustomer(id, name, phone, email, address) {
+        // Legacy function - redirect to new function
+        selectCustomerFromSearch(id, name, phone, email, address, '');
+    }
+    
+    function changeCustomer() {
+        document.getElementById('customerInfo').style.display = 'none';
+        document.getElementById('customerSearch').value = '';
+        document.getElementById('customerSearch').focus();
+    }
+    
+    function showNewCustomerForm() {
+        document.getElementById('newCustomerForm').style.display = 'block';
+        document.getElementById('customerSearch').disabled = true;
+    }
+    
+    // Package search and selection
+    function searchPackages() {
+        const searchTerm = document.getElementById('packageSearch').value;
+        const category = document.getElementById('packageCategory').value;
+        
+        // TODO: Implement package search API call
+        console.log('Searching packages:', searchTerm, category);
+        
+        // Show mock packages for now
+        showMockPackages();
+    }
+    
+    function showMockPackages() {
+        const packageList = document.getElementById('packageList');
+        packageList.innerHTML = `
+            <div class="package-card" onclick="selectPackage(1, 'Home Basic', '10 Mbps', 150000)">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Home Basic</h6>
+                        <small class="text-muted">10 Mbps - Unlimited</small>
+                    </div>
+                    <div class="text-end">
+                        <strong class="text-primary">Rp 150.000</strong><br>
+                        <small class="text-muted">per bulan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="package-card" onclick="selectPackage(2, 'Home Plus', '25 Mbps', 250000)">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Home Plus</h6>
+                        <small class="text-muted">25 Mbps - Unlimited</small>
+                    </div>
+                    <div class="text-end">
+                        <strong class="text-primary">Rp 250.000</strong><br>
+                        <small class="text-muted">per bulan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="package-card" onclick="selectPackage(3, 'Business Standard', '50 Mbps', 500000)">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Business Standard</h6>
+                        <small class="text-muted">50 Mbps - Unlimited</small>
+                    </div>
+                    <div class="text-end">
+                        <strong class="text-primary">Rp 500.000</strong><br>
+                        <small class="text-muted">per bulan</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function selectPackage(id, name, speed, price) {
+        // Update hidden input
+        document.getElementById('selectedPackageId').value = id;
+        
+        // Update visual selection
+        document.querySelectorAll('.package-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+        
+        // Show confirmation
+        alert(`Paket yang dipilih: ${name} (${speed}) - Rp ${price.toLocaleString()}`);
+    }
+    
+    // Form actions
+    function resetForm() {
+        if (confirm('Apakah Anda yakin ingin mereset form? Semua data akan hilang.')) {
+            document.getElementById('installationForm').reset();
+            document.getElementById('customerInfo').style.display = 'none';
+            document.getElementById('newCustomerForm').style.display = 'none';
+            document.getElementById('customerSearch').disabled = false;
+            document.querySelectorAll('.package-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+        }
+    }
+    
+    function saveAsDraft() {
+        // TODO: Implement save as draft functionality
+        alert('Fitur simpan sebagai draft akan tersedia segera');
+    }
+    
+    // Auto-search packages when typing
+    document.getElementById('packageSearch').addEventListener('input', function() {
+        if (this.value.length >= 2) {
+            searchPackages();
+        }
+    });
+    
+    // Auto-search packages when category changes
+    document.getElementById('packageCategory').addEventListener('change', function() {
+        searchPackages();
+    });
+    
+    // Toast notification function
+    function showToast(message, type = 'info') {
+        // Create toast container if not exists
+        let toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            toastContainer.style.zIndex = '9999';
+            document.body.appendChild(toastContainer);
+        }
+        
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'warning' ? 'warning' : 'info'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+        toast.show();
+        
+        // Auto remove after hide
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    }
+    
+    // Auto-search customers when typing
+    let searchTimeout;
+    document.getElementById('customerSearch').addEventListener('input', function() {
+        const searchTerm = this.value.trim();
+        
+        // Clear previous timeout
+        clearTimeout(searchTimeout);
+        
+        // Hide previous results
+        document.getElementById('customerSearchResult').style.display = 'none';
+        
+        if (searchTerm.length >= 2) {
+            // Delay search to avoid too many API calls
+            searchTimeout = setTimeout(() => {
+                searchCustomer();
+            }, 500);
+        }
+    });
+    
+    // Submit handler via button to avoid native submit navigation
+    // Fallback attach if onclick removed by browser
+    const _btn = document.getElementById('submitBtn');
+    if (_btn) {
+        _btn.addEventListener('click', submitInstallation);
+    }
+
+    function submitInstallation() {
+        const form = document.getElementById('installationForm');
+        // Basic validation
+        const customerId = document.querySelector('input[name="customer_id"]');
+        const packageId = document.getElementById('package_id').value;
+        if (!customerId && !document.getElementById('newCustomerName').value) {
+            showToast('Mohon pilih atau buat pelanggan baru', 'error');
+            return;
+        }
+        if (!packageId) {
+            showToast('Mohon pilih paket internet', 'error');
+            return;
+        }
+        const fd = new FormData(form);
+        const body = new URLSearchParams([...fd.entries()]);
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            },
+            body
+        }).then(async (res) => {
+            const data = await res.json().catch(() => ({ success: false, message: 'Gagal parsing respons server' }));
+            if (data && data.success) {
+                form.style.display = 'none';
+                const sc = document.getElementById('successContainer');
+                const msg = document.getElementById('successMessage');
+                const info = document.getElementById('successJobInfo');
+                msg.textContent = data.message || 'Berhasil';
+                info.textContent = `Job Number: ${data.jobNumber} | ID: ${data.jobId}`;
+                sc.style.display = 'block';
+            } else {
+                showToast(data && data.message ? data.message : 'Gagal membuat jadwal instalasi', 'error');
+            }
+        }).catch(() => {
+            showToast('Terjadi kesalahan jaringan', 'error');
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Saya - <%= appSettings.companyHeader %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0B1437">
+    <link rel="apple-touch-icon" href="/img/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/pwa.css">
+    <script defer src="/js/pwa-install.js"></script>
+    <style>
+        body { background: #f8f9fa; }
+        .navbar-brand img { max-height: 40px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-control { border-radius: 10px; }
+        .btn { border-radius: 10px; }
+    </style>
+ </head>
+ <body>
+    <!-- Navbar atas dihilangkan untuk tampilan mobile minimalis -->
+
+    <div class="container mt-4">
+        <div class="row g-3">
+            <div class="col-12 col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-person-circle"></i> Profil Saya</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nama</label>
+                                <input class="form-control" value="<%= customer ? customer.name : '-' %>" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Username</label>
+                                <input class="form-control" value="<%= customer ? customer.username : '-' %>" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Telepon</label>
+                                <input class="form-control" value="<%= customer ? customer.phone : '-' %>" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Paket</label>
+                                <input class="form-control" value="<%= customer && customer.package_name ? customer.package_name : '-' %>" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Bantuan</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">Hubungi admin untuk perubahan data profil.</p>
+                        <a href="https://wa.me/62<%= (appSettings.contact_whatsapp || '081947215703').replace(/^0/, '') %>" class="btn btn-success w-100" target="_blank">
+                            <i class="bi bi-whatsapp"></i> WhatsApp Admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light mt-5 py-4">
+        <div class="container text-center">
+            <p class="mb-0 text-muted"><%= appSettings.footerInfo %></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Bottom nav (mobile) 5 menu -->
+    <nav class="bottom-nav d-md-none">
+        <a class="nav-item" href="/customer/billing/dashboard">
+            <i class="bi bi-speedometer2"></i>
+            <span>Billing</span>
+        </a>
+        <a class="nav-item" href="/customer/trouble/report">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>Laporan</span>
+        </a>
+        <a class="nav-item" href="/customer/dashboard">
+            <i class="bi bi-house"></i>
+            <span>Home</span>
+        </a>
+        <a class="nav-item" href="/customer/billing/invoices">
+            <i class="bi bi-receipt"></i>
+            <span>Invoice</span>
+        </a>
+        <a class="nav-item" href="/customer/billing/profile">
+            <i class="bi bi-person"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+ </body>
+ </html>
+
+

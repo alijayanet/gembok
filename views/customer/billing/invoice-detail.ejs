@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - <%= appSettings.companyHeader %></title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0B1437">
+    <link rel="apple-touch-icon" href="/img/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/pwa.css">
+    <script defer src="/js/pwa-install.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar-brand img { max-height: 40px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .invoice-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .status-badge { font-size: 1rem; padding: 0.5rem 1rem; }
+    </style>
+</head>
+<body>
+    <!-- Navbar atas dihilangkan untuk tampilan mobile minimalis -->
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1">Detail Tagihan</h2>
+                        <p class="text-muted mb-0">Informasi lengkap tagihan Anda</p>
+                    </div>
+                    <div>
+                        <a href="/customer/billing/invoices" class="btn btn-outline-primary me-2">
+                            <i class="bi bi-arrow-left"></i> Kembali
+                        </a>
+                        <a href="/customer/billing/invoices/<%= invoice.id %>/print" class="btn btn-primary" target="_blank">
+                            <i class="bi bi-printer"></i> Print
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Details -->
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Invoice Header -->
+                <div class="card invoice-header text-white mb-4">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h3 class="mb-2">Tagihan #<%= invoice.invoice_number %></h3>
+                                <p class="mb-0">
+                                    <strong>Status:</strong>
+                                    <% if (invoice.status === 'paid') { %>
+                                        <span class="badge bg-success status-badge">LUNAS</span>
+                                    <% } else if (invoice.status === 'unpaid') { %>
+                                        <% if (new Date(invoice.due_date) < new Date()) { %>
+                                            <span class="badge bg-danger status-badge">TERLAMBAT</span>
+                                        <% } else { %>
+                                            <span class="badge bg-warning status-badge">BELUM LUNAS</span>
+                                        <% } %>
+                                    <% } %>
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <h4 class="mb-0">Rp <%= parseFloat(invoice.amount).toLocaleString('id-ID') %></h4>
+                                <small>Total Tagihan</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Invoice Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-info-circle"></i> Informasi Tagihan
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>No. Tagihan:</strong></td>
+                                        <td><%= invoice.invoice_number %></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Paket:</strong></td>
+                                        <td><%= invoice.package_name %></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Kecepatan:</strong></td>
+                                        <td><%= invoice.package_speed %></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Jumlah:</strong></td>
+                                        <td>Rp <%= parseFloat(invoice.amount).toLocaleString('id-ID') %></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Tanggal Dibuat:</strong></td>
+                                        <td><%= new Date(invoice.created_at).toLocaleDateString('id-ID') %></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Jatuh Tempo:</strong></td>
+                                        <td>
+                                            <% if (new Date(invoice.due_date) < new Date() && invoice.status === 'unpaid') { %>
+                                                <span class="text-danger">
+                                                    <%= new Date(invoice.due_date).toLocaleDateString('id-ID') %>
+                                                </span>
+                                            <% } else { %>
+                                                <%= new Date(invoice.due_date).toLocaleDateString('id-ID') %>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td>
+                                            <% if (invoice.status === 'paid') { %>
+                                                <span class="badge bg-success">Lunas</span>
+                                            <% } else if (invoice.status === 'unpaid') { %>
+                                                <% if (new Date(invoice.due_date) < new Date()) { %>
+                                                    <span class="badge bg-danger">Terlambat</span>
+                                                <% } else { %>
+                                                    <span class="badge bg-warning">Belum Lunas</span>
+                                                <% } %>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                    <% if (invoice.payment_date) { %>
+                                        <tr>
+                                            <td><strong>Tanggal Bayar:</strong></td>
+                                            <td><%= new Date(invoice.payment_date).toLocaleDateString('id-ID') %></td>
+                                        </tr>
+                                    <% } %>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <% if (invoice.notes) { %>
+                            <div class="mt-3">
+                                <strong>Catatan:</strong>
+                                <p class="mb-0 text-muted"><%= invoice.notes %></p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Payment History -->
+                <% if (payments && payments.length > 0) { %>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-cash-stack"></i> Riwayat Pembayaran
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>Jumlah</th>
+                                            <th>Metode</th>
+                                            <th>Referensi</th>
+                                            <th>Catatan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% payments.forEach(function(payment) { %>
+                                            <tr>
+                                                <td><%= new Date(payment.payment_date).toLocaleDateString('id-ID') %></td>
+                                                <td>Rp <%= parseFloat(payment.amount).toLocaleString('id-ID') %></td>
+                                                <td>
+                                                    <% if (payment.payment_method === 'cash') { %>
+                                                        <span class="badge bg-success">Tunai</span>
+                                                    <% } else if (payment.payment_method === 'transfer') { %>
+                                                        <span class="badge bg-primary">Transfer</span>
+                                                    <% } else if (payment.payment_method === 'qris') { %>
+                                                        <span class="badge bg-info">QRIS</span>
+                                                    <% } else if (payment.payment_method === 'ewallet') { %>
+                                                        <span class="badge bg-warning">E-Wallet</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-secondary"><%= payment.payment_method %></span>
+                                                    <% } %>
+                                                </td>
+                                                <td><%= payment.reference_number || '-' %></td>
+                                                <td><%= payment.notes || '-' %></td>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Customer Info -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person"></i> Informasi Pelanggan
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Nama:</strong><br><%= invoice.customer_name %></p>
+                        <p><strong>Username:</strong><br><%= invoice.customer_username %></p>
+                        <p><strong>Telepon:</strong><br><%= invoice.customer_phone || '-' %></p>
+                    </div>
+                </div>
+
+                <!-- Payment Options - DEBUG ALWAYS SHOW -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-credit-card"></i> Pembayaran Online
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Debug info removed for production -->
+                        <% if (invoice.status === 'unpaid') { %>
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle"></i>
+                                Status UNPAID - Payment options tersedia!
+                            </div>
+                            <p class="mb-3">Pilih metode pembayaran yang Anda inginkan:</p>
+                        <% } else { %>
+                            <div class="alert alert-danger">
+                                <i class="bi bi-x-circle"></i>
+                                Status bukan UNPAID (status: "<%= invoice.status %>") - Payment tidak tersedia
+                            </div>
+                            <p class="mb-3 text-muted">Invoice ini tidak dapat dibayar karena statusnya bukan 'unpaid'.</p>
+                        <% } %>
+                            
+                            <!-- Payment Method Selection -->
+                            <% if (invoice.status === 'unpaid') { %>
+                            <div id="payment-methods-container">
+                                <div class="text-center py-3">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading payment methods...</span>
+                                </div>
+                                    <p class="mt-2 mb-0">Memuat metode pembayaran...</p>
+                                </div>
+                            </div>
+                            
+                            <div id="payment-processing" class="text-center" style="display: none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 mb-0">Memproses pembayaran...</p>
+                            </div>
+                            <% } else { %>
+                                <p class="text-center text-muted">
+                                    <i class="bi bi-lock"></i>
+                                    Pembayaran online tidak tersedia untuk invoice ini.
+                                </p>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Payment Instructions -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="bi bi-exclamation-triangle"></i> Pembayaran Manual
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">Atau lakukan pembayaran melalui:</p>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-cash text-success"></i> 
+                                    <strong>Tunai:</strong> <%= appSettings.payment_cash_address %>
+                                    <br><small class="text-muted">Jam: <%= appSettings.payment_cash_hours %></small>
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-bank text-primary"></i> 
+                                    <strong>Transfer:</strong> <%= appSettings.payment_bank_name %>
+                                    <br><small class="text-muted">
+                                        No. Rek: <%= appSettings.payment_account_number %>
+                                        <br>A/N: <%= appSettings.payment_account_holder %>
+                                    </small>
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-whatsapp text-success"></i>
+                                    <strong>Kontak:</strong> 
+                                    <a href="https://wa.me/62<%= appSettings.contact_whatsapp.replace(/^0/, '') %>" target="_blank" class="text-decoration-none">
+                                        <%= appSettings.contact_whatsapp %>
+                                    </a>
+                                </li>
+                            </ul>
+                            <p class="text-muted small mb-0">
+                                Hubungi admin untuk konfirmasi pembayaran manual.
+                            </p>
+                        </div>
+                    </div>
+
+                <!-- Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear"></i> Aksi
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="/customer/billing/invoices/<%= invoice.id %>/print" class="btn btn-primary" target="_blank">
+                                <i class="bi bi-printer"></i> Print Tagihan
+                            </a>
+                            <a href="/customer/billing/invoices" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Kembali ke Daftar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container text-center">
+            <p class="mb-0 text-muted">
+                <%= appSettings.footerInfo %>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Bottom nav (mobile) 5 menu -->
+    <nav class="bottom-nav d-md-none">
+        <a class="nav-item" href="/customer/billing/dashboard">
+            <i class="bi bi-speedometer2"></i>
+            <span>Billing</span>
+        </a>
+        <a class="nav-item" href="/customer/trouble/report">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>Laporan</span>
+        </a>
+        <a class="nav-item" href="/customer/dashboard">
+            <i class="bi bi-house"></i>
+            <span>Home</span>
+        </a>
+        <a class="nav-item" href="/customer/billing/invoices">
+            <i class="bi bi-receipt"></i>
+            <span>Invoice</span>
+        </a>
+        <a class="nav-item" href="/customer/billing/profile">
+            <i class="bi bi-person"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+    
+    <script>
+        // Load payment methods dynamically
+        async function loadPaymentMethods() {
+            try {
+                const response = await fetch('/customer/billing/api/payment-methods');
+                const result = await response.json();
+                
+                if (result.success && result.methods) {
+                    renderPaymentMethods(result.methods);
+                } else {
+                    showPaymentMethodsError('Gagal memuat metode pembayaran: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error loading payment methods:', error);
+                showPaymentMethodsError('Terjadi kesalahan saat memuat metode pembayaran');
+            }
+        }
+        
+        function renderPaymentMethods(methods) {
+            const container = document.getElementById('payment-methods-container');
+            
+            if (!methods || methods.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Tidak ada metode pembayaran yang tersedia saat ini.
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="row g-2 mb-3">';
+            
+            methods.forEach(method => {
+                // Check if amount meets minimum requirement
+                const invoiceAmount = <%= invoice.amount %>;
+                const isDisabled = method.minimum_amount && invoiceAmount < method.minimum_amount;
+                const disabledClass = isDisabled ? 'disabled' : '';
+                const disabledTitle = isDisabled ? `Minimal pembayaran: Rp ${method.minimum_amount?.toLocaleString('id-ID')}` : '';
+                
+                html += `
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-${method.color} w-100 payment-method ${disabledClass}" 
+                                data-gateway="${method.gateway}" 
+                                data-method="${method.method}"
+                                ${isDisabled ? 'disabled' : ''}
+                                title="${disabledTitle}">
+                            <i class="${method.icon}"></i><br>
+                            <small>${method.name}</small>
+                            <br><small class="text-muted">Fee: ${method.fee_customer || 'Gratis'}</small>
+                            ${isDisabled ? `<br><small class="text-danger">Min: Rp ${method.minimum_amount?.toLocaleString('id-ID')}</small>` : ''}
+                        </button>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+            
+            // Bind event listeners to new buttons
+            bindPaymentMethodEvents();
+        }
+        
+        function showPaymentMethodsError(message) {
+            const container = document.getElementById('payment-methods-container');
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle"></i>
+                    ${message}
+                </div>
+                <button class="btn btn-outline-primary w-100" onclick="loadPaymentMethods()">
+                    <i class="bi bi-arrow-clockwise"></i> Coba Lagi
+                </button>
+            `;
+        }
+        
+        // Handle payment method selection
+        function bindPaymentMethodEvents() {
+        document.querySelectorAll('.payment-method').forEach(button => {
+            button.addEventListener('click', async function() {
+                    if (this.disabled) return;
+                    
+                const gateway = this.dataset.gateway;
+                const method = this.dataset.method;
+                const invoiceId = <%= invoice.id %>;
+                
+                // Show loading
+                document.getElementById('payment-processing').style.display = 'block';
+                this.disabled = true;
+                
+                try {
+                    const response = await fetch('/customer/billing/create-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            invoice_id: invoiceId,
+                            gateway: gateway,
+                            method: method
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Redirect to payment URL
+                        if (result.data && result.data.payment_url) {
+                            window.open(result.data.payment_url, '_blank');
+                            
+                            // Refresh page after 3 seconds
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 3000);
+                        } else {
+                            alert('Error: Payment URL tidak ditemukan');
+                        }
+                    } else {
+                        alert('Error: ' + (result.message || 'Gagal membuat pembayaran'));
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    alert('Terjadi kesalahan saat membuat pembayaran: ' + error.message);
+                } finally {
+                    // Hide loading
+                    document.getElementById('payment-processing').style.display = 'none';
+                    this.disabled = false;
+                }
+            });
+        });
+        }
+        
+        // Load payment methods when page loads
+        <% if (invoice.status === 'unpaid') { %>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPaymentMethods();
+        });
+        <% } %>
+    </script>
+</body>
+</html> 
