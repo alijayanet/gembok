@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",
-    "@whiskeysockets/baileys": "^6.7.20",
+    "@whiskeysockets/baileys": "^7.0.0-rc.9",
     "axios": "^1.6.7",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",

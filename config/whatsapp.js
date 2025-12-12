@@ -329,7 +329,12 @@ async function connectToWhatsApp() {
         const { state, saveCreds } = authState;
         
         // Dapatkan versi WhatsApp yang akan digunakan
-        const whatsappVersion = WHATSAPP_WEB_VERSION.FALLBACK_VERSION;
+        let whatsappVersion;
+        try {
+            whatsappVersion = await WHATSAPP_WEB_VERSION.getVersion('ALIJAYA Genieacs Bot Mikrotik');
+        } catch (e) {
+            whatsappVersion = WHATSAPP_WEB_VERSION.FALLBACK_VERSION;
+        }
         
         sock = makeWASocket({
             auth: state,
@@ -337,8 +342,9 @@ async function connectToWhatsApp() {
             browser: ['ALIJAYA Genieacs Bot Mikrotik', 'Chrome', '1.0.0'],
             connectTimeoutMs: 60000,
             qrTimeout: 40000,
-            defaultQueryTimeoutMs: 30000, // Timeout untuk query
+            defaultQueryTimeoutMs: 30000,
             retryRequestDelayMs: 1000,
+            printQRInTerminal: true,
             version: whatsappVersion
         });
         
