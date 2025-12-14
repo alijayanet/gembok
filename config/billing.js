@@ -368,6 +368,7 @@ function createOrUpdateCustomer(customerData) {
         phone: customerData.phone,
         name: customerData.name,
         username: customerData.username || customerData.phone,
+        lid: customerData.lid || null, // Add LID field
         package_id: customerData.package_id,
         package_name: customerData.package_name,
         package_price: customerData.package_price,
@@ -410,8 +411,15 @@ function assignPackageToCustomer(phone, packageId, customerName = null, enableIs
       package_name: package.name,
       package_price: package.price,
       enable_isolir: enableIsolir, // New field for isolir setting
-      isolir_status: 'normal' // normal, isolated
+      isolir_status: 'normal', // normal, isolated
+      lid: null // Initialize LID as null for new assignments if not provided, but handled in createOrUpdateCustomer if provided in data
     };
+    
+    // If we have an existing customer, preserve their LID unless explicitly provided
+    const existing = getCustomerByPhone(phone);
+    if (existing && existing.lid) {
+        customerData.lid = existing.lid;
+    }
     
     return createOrUpdateCustomer(customerData);
   } catch (error) {

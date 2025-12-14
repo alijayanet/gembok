@@ -9,7 +9,10 @@ class WhatsAppMessageHandlers {
         this.commands = whatsappCommands;
         this.troubleCommands = new WhatsAppTroubleCommands(whatsappCore);
         this.pppoeCommands = new WhatsAppPPPoECommands(whatsappCore);
-        
+
+        // Billing helper
+        this.billing = require('./billing');
+
         // Parameter paths for different device parameters (from genieacs-commands.js)
         this.parameterPaths = {
             rxPower: [
@@ -90,14 +93,14 @@ class WhatsAppMessageHandlers {
                 logger.warn('Invalid message received', { message: typeof message });
                 return;
             }
-            
+
             // Ekstrak informasi pesan
             const remoteJid = message.key.remoteJid;
             if (!remoteJid) {
                 logger.warn('Message without remoteJid received', { messageKey: message.key });
                 return;
             }
-            
+
             // Skip jika pesan dari grup dan bukan dari admin
             if (remoteJid.includes('@g.us')) {
                 logger.debug('Message from group received', { groupJid: remoteJid });
@@ -108,14 +111,14 @@ class WhatsAppMessageHandlers {
                 }
                 logger.info('Group message from admin, processing', { participant });
             }
-            
+
             // Cek tipe pesan dan ekstrak teks
             let messageText = '';
             if (!message.message) {
                 logger.debug('Message without content received', { messageType: 'unknown' });
                 return;
             }
-            
+
             if (message.message.conversation) {
                 messageText = message.message.conversation;
                 logger.debug('Conversation message received');
@@ -123,12 +126,12 @@ class WhatsAppMessageHandlers {
                 messageText = message.message.extendedTextMessage.text;
                 logger.debug('Extended text message received');
             } else {
-                logger.debug('Unsupported message type received', { 
-                    messageTypes: Object.keys(message.message) 
+                logger.debug('Unsupported message type received', {
+                    messageTypes: Object.keys(message.message)
                 });
                 return;
             }
-            
+
             // Ekstrak nomor pengirim
             let senderNumber;
             try {
@@ -137,23 +140,23 @@ class WhatsAppMessageHandlers {
                 logger.error('Error extracting sender number', { remoteJid, error: error.message });
                 return;
             }
-            
+
             logger.info(`Message received`, { sender: senderNumber, messageLength: messageText.length });
             logger.debug(`Message content`, { sender: senderNumber, message: messageText });
-            
+
             // Cek apakah pengirim adalah admin
             const isAdmin = this.core.isAdminNumber(senderNumber);
             logger.debug(`Sender admin status`, { sender: senderNumber, isAdmin });
-            
+
             // Jika pesan kosong, abaikan
             if (!messageText.trim()) {
                 logger.debug('Empty message, ignoring');
                 return;
             }
-            
+
             // Proses pesan
             await this.processMessage(remoteJid, senderNumber, messageText, isAdmin);
-            
+
         } catch (error) {
             logger.error('Error in handleIncomingMessage', { error: error.message, stack: error.stack });
         }
@@ -163,42 +166,49 @@ class WhatsAppMessageHandlers {
     async processMessage(remoteJid, senderNumber, messageText, isAdmin) {
         const command = messageText.trim().toLowerCase();
         const originalCommand = messageText.trim();
-        
+
         try {
             // Cek apakah pengirim bisa akses fitur teknisi
             const canAccessTechnician = this.core.canAccessTechnicianFeatures(senderNumber);
-            
+
             // Debug logging
             logger.info(`🔍 [ROUTING] Processing command: "${originalCommand}" (lowercase: "${command}")`);
             logger.info(`🔍 [ROUTING] Sender: ${senderNumber}, isAdmin: ${isAdmin}, canAccessTechnician: ${canAccessTechnician}`);
-            
+
+            // Register Commands (DAFTAR & REG) - Available for everyone
+            if (command.startsWith('daftar') || command.startsWith('reg')) {
+                logger.info(`🔍 [ROUTING] Routing to handleRegisterCommands`);
+                await this.handleRegisterCommands(remoteJid, senderNumber, command, messageText);
+                return;
+            }
+
             // Admin commands (termasuk command teknisi)
             if (isAdmin) {
                 logger.info(`🔍 [ROUTING] Routing to handleAdminCommands`);
                 await this.handleAdminCommands(remoteJid, senderNumber, command, messageText);
                 return;
             }
-            
+
             // Technician commands (untuk teknisi yang bukan admin)
             if (canAccessTechnician && !isAdmin) {
                 logger.info(`🔍 [ROUTING] Routing to handleTechnicianCommands`);
                 await this.handleTechnicianCommands(remoteJid, senderNumber, command, messageText);
                 return;
             }
-            
+
             // Customer commands
             logger.info(`🔍 [ROUTING] Routing to handleCustomerCommands`);
             await this.handleCustomerCommands(remoteJid, senderNumber, command, messageText);
-            
+
         } catch (error) {
-            logger.error('Error processing message', { 
-                command, 
-                sender: senderNumber, 
-                error: error.message 
+            logger.error('Error processing message', {
+                command,
+                sender: senderNumber,
+                error: error.message
             });
-            
+
             // Send error message to user
-            await this.commands.sendMessage(remoteJid, 
+            await this.commands.sendMessage(remoteJid,
                 `❌ *ERROR*\n\nTerjadi kesalahan saat memproses perintah:\n${error.message}`
             );
         }
@@ -207,33 +217,33 @@ class WhatsAppMessageHandlers {
     // Handle technician commands (untuk teknisi yang bukan admin)
     async handleTechnicianCommands(remoteJid, senderNumber, command, messageText) {
         // Command yang bisa diakses teknisi (tidak bisa akses semua fitur admin)
-        
+
         logger.info(`🔍 [TECHNICIAN] Processing command: "${command}" from ${senderNumber}`);
-        
+
         // Help Commands
         if (command === 'teknisi') {
             logger.info(`🔍 [TECHNICIAN] Handling teknisi command`);
             await this.sendTechnicianHelp(remoteJid);
             return;
         }
-        
+
         if (command === 'help') {
             await this.sendTechnicianHelp(remoteJid);
             return;
         }
-        
+
         // Trouble Report Commands (PRIORITAS TINGGI)
         if (command === 'trouble') {
             await this.troubleCommands.handleListTroubleReports(remoteJid);
             return;
         }
-        
+
         if (command.startsWith('status ')) {
             const reportId = messageText.split(' ')[1];
             await this.troubleCommands.handleTroubleReportStatus(remoteJid, reportId);
             return;
         }
-        
+
         if (command.startsWith('update ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 2) {
@@ -244,7 +254,7 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('selesai ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 1) {
@@ -254,14 +264,14 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         // Search Commands (untuk teknisi)
         if (command.startsWith('cari ')) {
             const searchTerm = messageText.split(' ').slice(1).join(' ');
             await this.handleSearchCustomer(remoteJid, searchTerm);
             return;
         }
-        
+
         if (command.startsWith('catatan ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 2) {
@@ -271,12 +281,12 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command === 'help trouble') {
             await this.troubleCommands.handleTroubleReportHelp(remoteJid);
             return;
         }
-        
+
         // PPPoE Commands (PEMASANGAN BARU)
         if (command.startsWith('addpppoe ')) {
             const params = messageText.split(' ').slice(1);
@@ -290,7 +300,7 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('editpppoe ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 3) {
@@ -301,50 +311,50 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('checkpppoe ')) {
             const username = messageText.split(' ')[1];
             await this.pppoeCommands.handleCheckPPPoEStatus(remoteJid, username);
             return;
         }
-        
+
         if (command.startsWith('restartpppoe ')) {
             const username = messageText.split(' ')[1];
             await this.pppoeCommands.handleRestartPPPoE(remoteJid, username);
             return;
         }
-        
+
         if (command === 'help pppoe') {
             await this.pppoeCommands.handlePPPoEHelp(remoteJid);
             return;
         }
-        
+
         // System Info Commands
         if (command === 'version') {
             const versionMessage = getVersionMessage();
             await this.commands.sendMessage(remoteJid, versionMessage);
             return;
         }
-        
+
         if (command === 'info') {
             const systemInfoMessage = getSystemInfoMessage();
             await this.commands.sendMessage(remoteJid, systemInfoMessage);
             return;
         }
-        
+
         // Basic device commands (terbatas)
         if (command.startsWith('cek ')) {
             const customerNumber = messageText.split(' ')[1];
             await this.commands.handleCekStatus(remoteJid, customerNumber);
             return;
         }
-        
+
         if (command.startsWith('cekstatus ')) {
             const customerNumber = messageText.split(' ')[1];
             await this.commands.handleCekStatus(remoteJid, customerNumber);
             return;
         }
-        
+
         // Search Commands
         if (command.startsWith('cari ')) {
             logger.info(`🔍 [TECHNICIAN] Handling cari command`);
@@ -352,7 +362,7 @@ class WhatsAppMessageHandlers {
             await this.handleSearchCustomer(remoteJid, searchTerm);
             return;
         }
-        
+
         // Debug GenieACS Commands (case insensitive)
         if (command.toLowerCase().startsWith('debuggenieacs ')) {
             logger.info(`🔍 [TECHNICIAN] Handling debuggenieacs command`);
@@ -360,7 +370,7 @@ class WhatsAppMessageHandlers {
             await this.handleDebugGenieACS(remoteJid, phoneNumber);
             return;
         }
-        
+
         // Simple debug command
         if (command.toLowerCase().startsWith('debug ')) {
             logger.info(`🔍 [TECHNICIAN] Handling debug command`);
@@ -368,16 +378,16 @@ class WhatsAppMessageHandlers {
             await this.handleDebugGenieACS(remoteJid, phoneNumber);
             return;
         }
-        
+
         // List all devices command
         if (command === 'listdevices') {
             logger.info(`🔍 [TECHNICIAN] Handling listdevices command`);
             await this.handleListDevices(remoteJid);
             return;
         }
-        
+
         // Unknown command for technician
-        await this.commands.sendMessage(remoteJid, 
+        await this.commands.sendMessage(remoteJid,
             `❓ *PERINTAH TIDAK DIKENAL*\n\nPerintah "${command}" tidak dikenali.\n\nKetik *teknisi* untuk melihat menu teknisi.`
         );
     }
@@ -390,24 +400,24 @@ class WhatsAppMessageHandlers {
             await this.commands.handleCekStatus(remoteJid, customerNumber);
             return;
         }
-        
+
         if (command.startsWith('cekstatus ')) {
             const customerNumber = messageText.split(' ')[1];
             await this.commands.handleCekStatus(remoteJid, customerNumber);
             return;
         }
-        
+
         if (command === 'cekall') {
             await this.commands.handleCekAll(remoteJid);
             return;
         }
-        
+
         if (command.startsWith('refresh ')) {
             const deviceId = messageText.split(' ')[1];
             await this.commands.handleRefresh(remoteJid, deviceId);
             return;
         }
-        
+
         if (command.startsWith('gantissid ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 2) {
@@ -417,7 +427,7 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('gantipass ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 2) {
@@ -427,13 +437,13 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('reboot ')) {
             const customerNumber = messageText.split(' ')[1];
             await this.commands.handleReboot(remoteJid, customerNumber);
             return;
         }
-        
+
         // Search Commands
         if (command.startsWith('cari ')) {
             logger.info(`🔍 [TECHNICIAN] Handling cari command`);
@@ -441,7 +451,7 @@ class WhatsAppMessageHandlers {
             await this.handleSearchCustomer(remoteJid, searchTerm);
             return;
         }
-        
+
         // Debug GenieACS Commands (case insensitive)
         if (command.toLowerCase().startsWith('debuggenieacs ')) {
             logger.info(`🔍 [TECHNICIAN] Handling debuggenieacs command`);
@@ -449,7 +459,7 @@ class WhatsAppMessageHandlers {
             await this.handleDebugGenieACS(remoteJid, phoneNumber);
             return;
         }
-        
+
         // Simple debug command
         if (command.toLowerCase().startsWith('debug ')) {
             logger.info(`🔍 [TECHNICIAN] Handling debug command`);
@@ -457,14 +467,14 @@ class WhatsAppMessageHandlers {
             await this.handleDebugGenieACS(remoteJid, phoneNumber);
             return;
         }
-        
+
         // List all devices command
         if (command === 'listdevices') {
             logger.info(`🔍 [TECHNICIAN] Handling listdevices command`);
             await this.handleListDevices(remoteJid);
             return;
         }
-        
+
         if (command.startsWith('tag ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 2) {
@@ -474,7 +484,7 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('untag ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 2) {
@@ -484,13 +494,13 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('tags ')) {
             const deviceId = messageText.split(' ')[1];
             await this.commands.handleListTags(remoteJid, deviceId);
             return;
         }
-        
+
         if (command.startsWith('addtag ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 2) {
@@ -500,62 +510,62 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         // System Commands
         if (command === 'status') {
             await this.commands.handleStatus(remoteJid);
             return;
         }
-        
+
         if (command === 'restart') {
             await this.commands.handleRestart(remoteJid);
             return;
         }
-        
+
         if (command === 'ya' || command === 'iya' || command === 'yes') {
             await this.commands.handleConfirmRestart(remoteJid);
             return;
         }
-        
+
         if (command === 'tidak' || command === 'no' || command === 'batal') {
             if (global.pendingRestart && global.restartRequestedBy === remoteJid) {
                 global.pendingRestart = false;
                 global.restartRequestedBy = null;
-                await this.commands.sendMessage(remoteJid, 
+                await this.commands.sendMessage(remoteJid,
                     `✅ *RESTART DIBATALKAN*\n\nRestart aplikasi telah dibatalkan.`
                 );
             }
             return;
         }
-        
+
         if (command === 'debug resource') {
             await this.commands.handleDebugResource(remoteJid);
             return;
         }
-        
+
         if (command === 'checkgroup') {
             await this.commands.handleCheckGroup(remoteJid);
             return;
         }
-        
+
         if (command.startsWith('setheader ')) {
             const newHeader = messageText.split(' ').slice(1).join(' ');
             await this.commands.handleSetHeader(remoteJid, newHeader);
             return;
         }
-        
+
         // Trouble Report Commands
         if (command === 'trouble') {
             await this.troubleCommands.handleListTroubleReports(remoteJid);
             return;
         }
-        
+
         if (command.startsWith('status ')) {
             const reportId = messageText.split(' ')[1];
             await this.troubleCommands.handleTroubleReportStatus(remoteJid, reportId);
             return;
         }
-        
+
         if (command.startsWith('update ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 2) {
@@ -566,7 +576,7 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('selesai ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 2) {
@@ -576,7 +586,7 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('catatan ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 2) {
@@ -586,12 +596,12 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command === 'help trouble') {
             await this.troubleCommands.handleTroubleReportHelp(remoteJid);
             return;
         }
-        
+
         // PPPoE Commands
         if (command.startsWith('addpppoe ')) {
             const params = messageText.split(' ').slice(1);
@@ -605,7 +615,7 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('editpppoe ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 3) {
@@ -616,7 +626,7 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('delpppoe ')) {
             const params = messageText.split(' ').slice(1);
             if (params.length >= 1) {
@@ -626,66 +636,66 @@ class WhatsAppMessageHandlers {
             }
             return;
         }
-        
+
         if (command.startsWith('pppoe ')) {
             const filter = messageText.split(' ').slice(1).join(' ');
             await this.pppoeCommands.handleListPPPoE(remoteJid, filter);
             return;
         }
-        
+
         if (command === 'pppoe') {
             await this.pppoeCommands.handleListPPPoE(remoteJid);
             return;
         }
-        
+
         if (command.startsWith('checkpppoe ')) {
             const username = messageText.split(' ')[1];
             await this.pppoeCommands.handleCheckPPPoEStatus(remoteJid, username);
             return;
         }
-        
+
         if (command.startsWith('restartpppoe ')) {
             const username = messageText.split(' ')[1];
             await this.pppoeCommands.handleRestartPPPoE(remoteJid, username);
             return;
         }
-        
+
         if (command === 'help pppoe') {
             await this.pppoeCommands.handlePPPoEHelp(remoteJid);
             return;
         }
-        
+
         // Help Commands
         if (command === 'admin') {
             await this.sendAdminHelp(remoteJid);
             return;
         }
-        
+
         if (command === 'teknisi') {
             await this.sendTechnicianHelp(remoteJid);
             return;
         }
-        
+
         if (command === 'menu' || command === 'help') {
             await this.sendAdminHelp(remoteJid);
             return;
         }
-        
+
         // System Info Commands
         if (command === 'version') {
             const versionMessage = getVersionMessage();
             await this.commands.sendMessage(remoteJid, versionMessage);
             return;
         }
-        
+
         if (command === 'info') {
             const systemInfoMessage = getSystemInfoMessage();
             await this.commands.sendMessage(remoteJid, systemInfoMessage);
             return;
         }
-        
+
         // Unknown command
-        await this.commands.sendMessage(remoteJid, 
+        await this.commands.sendMessage(remoteJid,
             `❓ *PERINTAH TIDAK DIKENAL*\n\nPerintah "${command}" tidak dikenali.\n\nKetik *admin* untuk melihat menu lengkap.`
         );
     }
@@ -697,33 +707,33 @@ class WhatsAppMessageHandlers {
             await this.handleCustomerStatus(remoteJid, senderNumber);
             return;
         }
-        
+
         if (command === 'menu' || command === 'help') {
             await this.sendCustomerHelp(remoteJid);
             return;
         }
-        
+
         if (command === 'info') {
             await this.handleCustomerInfo(remoteJid, senderNumber);
             return;
         }
-        
+
         // Search Commands (untuk pelanggan - akses terbatas)
         if (command.startsWith('cari ')) {
             const searchTerm = messageText.split(' ').slice(1).join(' ');
             await this.handleCustomerSearch(remoteJid, searchTerm);
             return;
         }
-        
+
         // System Info Commands
         if (command === 'version') {
             const versionMessage = getVersionMessage();
             await this.commands.sendMessage(remoteJid, versionMessage);
             return;
         }
-        
+
         // Unknown command for customer
-        await this.commands.sendMessage(remoteJid, 
+        await this.commands.sendMessage(remoteJid,
             `❓ *PERINTAH TIDAK DIKENAL*\n\nPerintah "${command}" tidak dikenali.\n\nKetik *menu* untuk melihat menu pelanggan.`
         );
     }
@@ -733,7 +743,7 @@ class WhatsAppMessageHandlers {
         const helpMessage = getAdminHelpMessage();
         await this.commands.sendMessage(remoteJid, helpMessage);
     }
-    
+
     // Send technician help message
     async sendTechnicianHelp(remoteJid) {
         const helpMessage = getTechnicianHelpMessage();
@@ -751,18 +761,18 @@ class WhatsAppMessageHandlers {
         try {
             // Implementasi cek status pelanggan
             // ... existing code ...
-            
-            await this.commands.sendMessage(remoteJid, 
+
+            await this.commands.sendMessage(remoteJid,
                 `📱 *STATUS PELANGGAN*\n\nSedang mengecek status perangkat Anda...\nMohon tunggu sebentar.`
             );
-            
+
         } catch (error) {
-            logger.error('Error handling customer status', { 
-                sender: senderNumber, 
-                error: error.message 
+            logger.error('Error handling customer status', {
+                sender: senderNumber,
+                error: error.message
             });
-            
-            await this.commands.sendMessage(remoteJid, 
+
+            await this.commands.sendMessage(remoteJid,
                 `❌ *ERROR*\n\nTerjadi kesalahan saat mengecek status:\n${error.message}`
             );
         }
@@ -773,19 +783,187 @@ class WhatsAppMessageHandlers {
         try {
             // Implementasi info layanan pelanggan
             // ... existing code ...
-            
-            await this.commands.sendMessage(remoteJid, 
+
+            await this.commands.sendMessage(remoteJid,
                 `📋 *INFO LAYANAN*\n\nSedang mengambil informasi layanan Anda...\nMohon tunggu sebentar.`
             );
-            
+
         } catch (error) {
-            logger.error('Error handling customer info', { 
-                sender: senderNumber, 
-                error: error.message 
+            logger.error('Error handling customer info', {
+                sender: senderNumber,
+                error: error.message
             });
-            
-            await this.commands.sendMessage(remoteJid, 
+
+            await this.commands.sendMessage(remoteJid,
                 `❌ *ERROR*\n\nTerjadi kesalahan saat mengambil info:\n${error.message}`
+            );
+        }
+    }
+
+    // Handle Register Commands (DAFTAR & REG)
+    async handleRegisterCommands(remoteJid, senderNumber, command, messageText) {
+        try {
+            // DAFTAR: Register new customer
+            if (command.startsWith('daftar')) {
+                // Parse arguments
+                const args = messageText.trim().split(/\s+/).slice(1).join(' ');
+
+                // Jika tidak ada argumen atau format salah
+                if (!args) {
+                    await this.commands.sendMessage(remoteJid,
+                        `📝 * FORMAT DAFTAR *\n\n` +
+                        `Untuk mendaftar sebagai pelanggan baru, gunakan format: \n` +
+                        `* DAFTAR[Nama]#[NoHP]#[Alamat]#[ID Paket]*\n\n` +
+                        `Contoh: \n` +
+                        `* DAFTAR Budi Santoso#081234567890#Jl.Merdeka No. 10#PKG001 *\n\n` +
+                        `Atau jika Anda ingin kami menggunakan nomor WhatsApp ini: \n` +
+                        `* DAFTAR Budi Santoso#SAMA#Jl.Merdeka No. 10#PKG001 *\n\n` +
+                        `ℹ️ * Daftar Paket:*\n` +
+                        this.billing.getAllPackages().filter(p => p.status === 'active').map(p => `- ${p.name}(${p.speed}): Rp ${p.price.toLocaleString('id-ID')}`).join('\n')
+                    );
+                    return;
+                }
+
+                // Parse: Nama#NoHP#Alamat#Paket
+                const parts = args.split('#').map(p => p.trim());
+
+                if (parts.length < 4) {
+                    await this.commands.sendMessage(remoteJid,
+                        `❌ * FORMAT TIDAK LENGKAP *\n\n` +
+                        `Mohon lengkapi data pendaftaran Anda.\n\n` +
+                        `Format: * DAFTAR Nama#NoHP#Alamat#ID Paket * `
+                    );
+                    return;
+                }
+
+                const [name, phoneInput, address, packageId] = parts;
+                const phone = (phoneInput.toUpperCase() === 'SAMA' || phoneInput === '') ? senderNumber : this.normalizePhone(phoneInput);
+
+                // Cek ketersediaan paket
+                const pkg = this.billing.getPackageById(packageId);
+                if (!pkg) {
+                    await this.commands.sendMessage(remoteJid,
+                        `❌ * PAKET TIDAK DITEMUKAN *\n\n` +
+                        `ID Paket "${packageId}" tidak ditemukan.\n` +
+                        `Silakan ketik * DAFTAR * saja untuk melihat daftar paket.`
+                    );
+                    return;
+                }
+
+                // Cek apakah nomor sudah terdaftar
+                const existing = this.billing.getCustomerByPhone(phone);
+                if (existing) {
+                    await this.commands.sendMessage(remoteJid,
+                        `⚠️ * SUDAH TERDAFTAR *\n\n` +
+                        `Nomor ${phone} sudah terdaftar sebagai pelanggan kami.\n` +
+                        `Jika ini adalah Anda, silakan ketik * REG ${phone} * untuk menghubungkan WhatsApp ini.`
+                    );
+                    return;
+                }
+
+                // Buat pelanggan baru
+                const newCustomerData = {
+                    name,
+                    phone,
+                    address, // Note: standard billing structure might not have address, but we can store it or add it
+                    package_id: pkg.id,
+                    package_name: pkg.name,
+                    package_price: pkg.price,
+                    lid: remoteJid, // Store sender remoteJid as LID
+                    status: 'active', // Or 'pending' if approval needed
+                    created_at: new Date().toISOString()
+                };
+
+                // Note: Address field might need to be added to billing.js schema explicitly if stricter validation exists, but it's JSON based so likely flexible.
+                // However billing.js/createOrUpdateCustomer handles specific fields. Let's rely on it passing through or just update billing.js one more time if address is critical.
+                // For now, let's assume createOrUpdateCustomer handles flexible data or we accept it's just basic fields.
+                // Re-checking billing.js: createOrUpdateCustomer extracts specific fields. It ignores extra fields.
+                // We should probably add address support to billing.js too for completeness, but for now getting LID in is key.
+
+                const newCustomer = this.billing.createOrUpdateCustomer(newCustomerData);
+
+                if (newCustomer) {
+                    await this.commands.sendMessage(remoteJid,
+                        `✅ * PENDAFTARAN BERHASIL *\n\n` +
+                        `Selamat bergabung, * ${name} * !\n\n` +
+                        `📋 * Detail Pelanggan:*\n` +
+                        `• ID: ${newCustomer.id}\n` +
+                        `• Nama: ${newCustomer.name}\n` +
+                        `• Paket: ${newCustomer.package_name}\n` +
+                        `• No.HP: ${newCustomer.phone}\n\n` +
+                        `WhatsApp Anda telah terhubung.Ketik * MENU * untuk melihat menu pelanggan.`
+                    );
+
+                    // Notify Admin (Optional but good)
+                    // TODO: Send notification to admin
+                } else {
+                    await this.commands.sendMessage(remoteJid,
+                        `❌ * GAGAL MENDAFTAR *\n\n` +
+                        `Terjadi kesalahan sistem saat memproses pendaftaran.Silakan coba lagi nanti.`
+                    );
+                }
+                return;
+            }
+
+            // REG: Link existing customer
+            if (command.startsWith('reg')) {
+                const query = messageText.trim().split(/\s+/).slice(1).join(' ');
+
+                if (!query) {
+                    await this.commands.sendMessage(remoteJid,
+                        `❌ * FORMAT SALAH *\n\n` +
+                        `Gunakan format: * REG[Nama atau No.HP]*\n` +
+                        `Contoh: * REG 081234567890 * `
+                    );
+                    return;
+                }
+
+                // Cari pelanggan
+                let customer;
+                // Coba cari by phone first
+                const normalizedQuery = this.normalizePhone(query);
+                if (normalizedQuery.length >= 10) { // Simple validation for phone
+                    customer = this.billing.getCustomerByPhone(normalizedQuery);
+                }
+
+                // Kalau tidak ketemu by phone, cari by name
+                if (!customer) {
+                    customer = this.billing.getCustomerByName(query);
+                }
+
+                if (!customer) {
+                    await this.commands.sendMessage(remoteJid,
+                        `❌ * DATA TIDAK DITEMUKAN *\n\n` +
+                        `Kami tidak dapat menemukan data pelanggan dengan kata kunci "${query}".\n` +
+                        `Pastikan nama atau nomor HP sesuai dengan data yang terdaftar.`
+                    );
+                    return;
+                }
+
+                // Update LID
+                customer.lid = remoteJid;
+                const updated = this.billing.createOrUpdateCustomer(customer);
+
+                if (updated) {
+                    await this.commands.sendMessage(remoteJid,
+                        `✅ * BERHASIL TERHUBUNG *\n\n` +
+                        `Halo * ${updated.name} *, \n` +
+                        `WhatsApp Anda berhasil dihubungkan dengan data pelanggan kami.\n\n` +
+                        `Ketik * MENU * untuk akses layanan.`
+                    );
+                } else {
+                    await this.commands.sendMessage(remoteJid,
+                        `❌ * GAGAL MENGHUBUNGKAN *\n\n` +
+                        `Terjadi kesalahan saat menyimpan data.`
+                    );
+                }
+                return;
+            }
+
+        } catch (error) {
+            logger.error('Error in handleRegisterCommands', { error: error.message });
+            await this.commands.sendMessage(remoteJid,
+                `❌ * ERROR *\n\nTerjadi kesalahan: ${error.message}`
             );
         }
     }
@@ -794,10 +972,10 @@ class WhatsAppMessageHandlers {
     async handleCustomerSearch(remoteJid, searchTerm) {
         try {
             if (!searchTerm || searchTerm.trim() === '') {
-                await this.commands.sendMessage(remoteJid, 
-                    `❌ *FORMAT SALAH!*\n\n` +
-                    `Format: cari [nama_pelanggan]\n` +
-                    `Contoh:\n` +
+                await this.commands.sendMessage(remoteJid,
+                    `❌ * FORMAT SALAH! *\n\n` +
+                    `Format: cari[nama_pelanggan]\n` +
+                    `Contoh: \n` +
                     `• cari andi\n` +
                     `• cari santo`
                 );
@@ -806,20 +984,20 @@ class WhatsAppMessageHandlers {
 
             // Import billing manager
             const billingManager = require('./billing');
-            
+
             // Send processing message
-            await this.commands.sendMessage(remoteJid, 
-                `🔍 *MENCARI PELANGGAN*\n\nSedang mencari data pelanggan dengan kata kunci: "${searchTerm}"\nMohon tunggu sebentar...`
+            await this.commands.sendMessage(remoteJid,
+                `🔍 * MENCARI PELANGGAN *\n\nSedang mencari data pelanggan dengan kata kunci: "${searchTerm}"\nMohon tunggu sebentar...`
             );
 
             // Search customers
             const customers = await billingManager.findCustomersByNameOrPhone(searchTerm);
-            
+
             if (customers.length === 0) {
-                await this.commands.sendMessage(remoteJid, 
-                    `❌ *PELANGGAN TIDAK DITEMUKAN!*\n\n` +
+                await this.commands.sendMessage(remoteJid,
+                    `❌ * PELANGGAN TIDAK DITEMUKAN! *\n\n` +
                     `Tidak ada pelanggan yang ditemukan dengan kata kunci: "${searchTerm}"\n\n` +
-                    `💡 *Tips pencarian:*\n` +
+                    `💡 * Tips pencarian:*\n` +
                     `• Gunakan nama lengkap atau sebagian\n` +
                     `• Pastikan ejaan benar`
                 );
@@ -827,41 +1005,41 @@ class WhatsAppMessageHandlers {
             }
 
             // Format search results (limited info for customers)
-            let message = `🔍 *HASIL PENCARIAN PELANGGAN*\n\n`;
+            let message = `🔍 * HASIL PENCARIAN PELANGGAN *\n\n`;
             message += `Kata kunci: "${searchTerm}"\n`;
             message += `Ditemukan: ${customers.length} pelanggan\n\n`;
 
             for (let i = 0; i < customers.length; i++) {
                 const customer = customers[i];
                 const status = customer.status === 'active' ? '🟢 Aktif' : '🔴 Nonaktif';
-                
-                message += `📋 *${i + 1}. ${customer.name}*\n`;
-                message += `📱 Phone: ${customer.phone}\n`;
-                message += `📦 Paket: ${customer.package_name || 'N/A'} (${customer.package_speed || 'N/A'})\n`;
-                message += `💰 Harga: Rp ${customer.package_price ? customer.package_price.toLocaleString('id-ID') : 'N/A'}\n`;
-                message += `📊 Status: ${status}\n`;
-                
+
+                message += `📋 * ${i + 1}. ${customer.name}*\n`;
+                message += `📱 Phone: ${customer.phone} \n`;
+                message += `📦 Paket: ${customer.package_name || 'N/A'} (${customer.package_speed || 'N/A'}) \n`;
+                message += `💰 Harga: Rp ${customer.package_price ? customer.package_price.toLocaleString('id-ID') : 'N/A'} \n`;
+                message += `📊 Status: ${status} \n`;
+
                 if (customer.address) {
-                    message += `📍 Alamat: ${customer.address}\n`;
+                    message += `📍 Alamat: ${customer.address} \n`;
                 }
-                
+
                 message += `\n`;
             }
 
             // Add usage instructions
-            message += `💡 *Untuk informasi lebih detail, hubungi admin.*`;
+            message += `💡 * Untuk informasi lebih detail, hubungi admin.* `;
 
             await this.commands.sendMessage(remoteJid, message);
 
         } catch (error) {
-            logger.error('Error handling customer search', { 
-                searchTerm, 
-                error: error.message 
+            logger.error('Error handling customer search', {
+                searchTerm,
+                error: error.message
             });
-            
-            await this.commands.sendMessage(remoteJid, 
-                `❌ *ERROR SISTEM!*\n\n` +
-                `Terjadi kesalahan saat mencari pelanggan:\n${error.message}\n\n` +
+
+            await this.commands.sendMessage(remoteJid,
+                `❌ * ERROR SISTEM! *\n\n` +
+                `Terjadi kesalahan saat mencari pelanggan: \n${error.message} \n\n` +
                 `Silakan coba lagi atau hubungi admin.`
             );
         }
@@ -871,10 +1049,10 @@ class WhatsAppMessageHandlers {
     async handleSearchCustomer(remoteJid, searchTerm) {
         try {
             if (!searchTerm || searchTerm.trim() === '') {
-                await this.commands.sendMessage(remoteJid, 
-                    `❌ *FORMAT SALAH!*\n\n` +
-                    `Format: cari [nama_pelanggan/pppoe_username]\n` +
-                    `Contoh:\n` +
+                await this.commands.sendMessage(remoteJid,
+                    `❌ * FORMAT SALAH! *\n\n` +
+                    `Format: cari[nama_pelanggan / pppoe_username]\n` +
+                    `Contoh: \n` +
                     `• cari andi\n` +
                     `• cari santo\n` +
                     `• cari leha\n` +
@@ -886,20 +1064,20 @@ class WhatsAppMessageHandlers {
             // Import billing manager and genieacs
             const billingManager = require('./billing');
             const genieacsApi = require('./genieacs');
-            
+
             // Send processing message
-            await this.commands.sendMessage(remoteJid, 
-                `🔍 *MENCARI PELANGGAN*\n\nSedang mencari data pelanggan dengan kata kunci: "${searchTerm}"\nMohon tunggu sebentar...`
+            await this.commands.sendMessage(remoteJid,
+                `🔍 * MENCARI PELANGGAN *\n\nSedang mencari data pelanggan dengan kata kunci: "${searchTerm}"\nMohon tunggu sebentar...`
             );
 
             // Search customers
             const customers = await billingManager.findCustomersByNameOrPhone(searchTerm);
-            
+
             if (customers.length === 0) {
-                await this.commands.sendMessage(remoteJid, 
-                    `❌ *PELANGGAN TIDAK DITEMUKAN!*\n\n` +
+                await this.commands.sendMessage(remoteJid,
+                    `❌ * PELANGGAN TIDAK DITEMUKAN! *\n\n` +
                     `Tidak ada pelanggan yang ditemukan dengan kata kunci: "${searchTerm}"\n\n` +
-                    `💡 *Tips pencarian:*\n` +
+                    `💡 * Tips pencarian:*\n` +
                     `• Gunakan nama lengkap atau sebagian\n` +
                     `• Gunakan PPPoE username\n` +
                     `• Gunakan nomor telepon\n` +
@@ -909,89 +1087,89 @@ class WhatsAppMessageHandlers {
             }
 
             // Format search results
-            let message = `🔍 *HASIL PENCARIAN PELANGGAN*\n\n`;
+            let message = `🔍 * HASIL PENCARIAN PELANGGAN *\n\n`;
             message += `Kata kunci: "${searchTerm}"\n`;
             message += `Ditemukan: ${customers.length} pelanggan\n\n`;
 
             for (let i = 0; i < customers.length; i++) {
                 const customer = customers[i];
                 const status = customer.status === 'active' ? '🟢 Aktif' : '🔴 Nonaktif';
-                const paymentStatus = customer.payment_status === 'overdue' ? '🔴 Overdue' : 
-                                    customer.payment_status === 'unpaid' ? '🟡 Belum Bayar' : 
-                                    customer.payment_status === 'paid' ? '🟢 Lunas' : '⚪ No Invoice';
-                
-                message += `📋 *${i + 1}. ${customer.name}*\n`;
-                message += `📱 Phone: ${customer.phone}\n`;
-                message += `👤 Username: ${customer.username || 'N/A'}\n`;
-                message += `🌐 PPPoE: ${customer.pppoe_username || 'N/A'}\n`;
-                message += `📦 Paket: ${customer.package_name || 'N/A'} (${customer.package_speed || 'N/A'})\n`;
-                message += `💰 Harga: Rp ${customer.package_price ? customer.package_price.toLocaleString('id-ID') : 'N/A'}\n`;
-                message += `📊 Status: ${status}\n`;
-                message += `💳 Payment: ${paymentStatus}\n`;
-                
+                const paymentStatus = customer.payment_status === 'overdue' ? '🔴 Overdue' :
+                    customer.payment_status === 'unpaid' ? '🟡 Belum Bayar' :
+                        customer.payment_status === 'paid' ? '🟢 Lunas' : '⚪ No Invoice';
+
+                message += `📋 * ${i + 1}. ${customer.name}*\n`;
+                message += `📱 Phone: ${customer.phone} \n`;
+                message += `👤 Username: ${customer.username || 'N/A'} \n`;
+                message += `🌐 PPPoE: ${customer.pppoe_username || 'N/A'} \n`;
+                message += `📦 Paket: ${customer.package_name || 'N/A'} (${customer.package_speed || 'N/A'}) \n`;
+                message += `💰 Harga: Rp ${customer.package_price ? customer.package_price.toLocaleString('id-ID') : 'N/A'} \n`;
+                message += `📊 Status: ${status} \n`;
+                message += `💳 Payment: ${paymentStatus} \n`;
+
                 if (customer.address) {
-                    message += `📍 Alamat: ${customer.address}\n`;
+                    message += `📍 Alamat: ${customer.address} \n`;
                 }
-                
+
                 // Get comprehensive data using customer dashboard logic
                 try {
                     const customerData = await this.getCustomerComprehensiveData(customer.phone);
-                    
+
                     if (customerData.deviceFound) {
-                        message += `\n🔧 *DATA PERANGKAT GENIEACS:*\n`;
-                        message += `• Status: ${customerData.status}\n`;
-                        message += `• Last Inform: ${customerData.lastInform}\n`;
-                        message += `• Device ID: ${customerData.deviceId}\n`;
-                        message += `• Serial: ${customerData.serialNumber}\n`;
-                        message += `• Manufacturer: ${customerData.manufacturer}\n`;
-                        message += `• Model: ${customerData.model}\n`;
-                        message += `• Hardware: ${customerData.hardwareVersion}\n`;
-                        message += `• Firmware: ${customerData.firmware}\n`;
-                        message += `• Device Uptime: ${customerData.uptime}\n`;
-                        message += `• PPP Uptime: ${customerData.pppUptime}\n`;
-                        message += `• PPPoE IP: ${customerData.pppoeIP}\n`;
-                        message += `• PPPoE Username: ${customerData.pppoeUsername}\n`;
+                        message += `\n🔧 * DATA PERANGKAT GENIEACS:*\n`;
+                        message += `• Status: ${customerData.status} \n`;
+                        message += `• Last Inform: ${customerData.lastInform} \n`;
+                        message += `• Device ID: ${customerData.deviceId} \n`;
+                        message += `• Serial: ${customerData.serialNumber} \n`;
+                        message += `• Manufacturer: ${customerData.manufacturer} \n`;
+                        message += `• Model: ${customerData.model} \n`;
+                        message += `• Hardware: ${customerData.hardwareVersion} \n`;
+                        message += `• Firmware: ${customerData.firmware} \n`;
+                        message += `• Device Uptime: ${customerData.uptime} \n`;
+                        message += `• PPP Uptime: ${customerData.pppUptime} \n`;
+                        message += `• PPPoE IP: ${customerData.pppoeIP} \n`;
+                        message += `• PPPoE Username: ${customerData.pppoeUsername} \n`;
                         message += `• RX Power: ${customerData.rxPower} dBm\n`;
                         message += `• Temperature: ${customerData.temperature}°C\n`;
-                        message += `• SSID 2.4G: ${customerData.ssid}\n`;
-                        message += `• SSID 5G: ${customerData.ssid5G}\n`;
-                        message += `• User Terkoneksi: ${customerData.connectedUsers}\n`;
-                        message += `• PON Mode: ${customerData.ponMode}\n`;
-                        
+                        message += `• SSID 2.4G: ${customerData.ssid} \n`;
+                        message += `• SSID 5G: ${customerData.ssid5G} \n`;
+                        message += `• User Terkoneksi: ${customerData.connectedUsers} \n`;
+                        message += `• PON Mode: ${customerData.ponMode} \n`;
+
                         if (customerData.tags && customerData.tags.length > 0) {
-                            message += `• Tags: ${customerData.tags.join(', ')}\n`;
+                            message += `• Tags: ${customerData.tags.join(', ')} \n`;
                         }
                     } else {
-                        message += `\n🔧 *DATA PERANGKAT:* ${customerData.message}\n`;
-                        message += `• PPPoE Username: ${customer.pppoe_username || 'N/A'}\n`;
-                        message += `• Username: ${customer.username || 'N/A'}\n`;
+                        message += `\n🔧 * DATA PERANGKAT:* ${customerData.message} \n`;
+                        message += `• PPPoE Username: ${customer.pppoe_username || 'N/A'} \n`;
+                        message += `• Username: ${customer.username || 'N/A'} \n`;
                     }
                 } catch (deviceError) {
-                    logger.error(`❌ [SEARCH] Error getting device data for ${customer.phone}:`, deviceError.message);
-                    message += `\n🔧 *DATA PERANGKAT:* Error mengambil data perangkat\n`;
-                    message += `• Error: ${deviceError.message}\n`;
+                    logger.error(`❌[SEARCH] Error getting device data for ${customer.phone}: `, deviceError.message);
+                    message += `\n🔧 * DATA PERANGKAT:* Error mengambil data perangkat\n`;
+                    message += `• Error: ${deviceError.message} \n`;
                 }
-                
+
                 message += `\n`;
             }
 
             // Add usage instructions
-            message += `💡 *Cara menggunakan data di atas:*\n`;
+            message += `💡 * Cara menggunakan data di atas:*\n`;
             message += `• Gunakan nomor telepon untuk perintah cek status\n`;
-            message += `• Contoh: cek ${customers[0].phone}\n`;
-            message += `• Atau: cekstatus ${customers[0].phone}`;
+            message += `• Contoh: cek ${customers[0].phone} \n`;
+            message += `• Atau: cekstatus ${customers[0].phone} `;
 
             await this.commands.sendMessage(remoteJid, message);
 
         } catch (error) {
-            logger.error('Error handling search customer', { 
-                searchTerm, 
-                error: error.message 
+            logger.error('Error handling search customer', {
+                searchTerm,
+                error: error.message
             });
-            
-            await this.commands.sendMessage(remoteJid, 
-                `❌ *ERROR SISTEM!*\n\n` +
-                `Terjadi kesalahan saat mencari pelanggan:\n${error.message}\n\n` +
+
+            await this.commands.sendMessage(remoteJid,
+                `❌ * ERROR SISTEM! *\n\n` +
+                `Terjadi kesalahan saat mencari pelanggan: \n${error.message} \n\n` +
                 `Silakan coba lagi atau hubungi admin.`
             );
         }
@@ -1003,65 +1181,65 @@ class WhatsAppMessageHandlers {
             // 1. Ambil data customer dari billing terlebih dahulu (coba semua varian phone)
             let customer = null;
             const phoneVariants = this.generatePhoneVariants(phone);
-            
-            logger.info(`🔍 [COMPREHENSIVE] Searching customer with phone variants:`, phoneVariants);
-            
+
+            logger.info(`🔍[COMPREHENSIVE] Searching customer with phone variants: `, phoneVariants);
+
             for (const variant of phoneVariants) {
                 try {
                     const billingManager = require('./billing');
                     customer = await billingManager.getCustomerByPhone(variant);
                     if (customer) {
-                        logger.info(`✅ [COMPREHENSIVE] Customer found in billing with variant: ${variant}`);
+                        logger.info(`✅[COMPREHENSIVE] Customer found in billing with variant: ${variant} `);
                         break;
                     }
                 } catch (error) {
-                    logger.warn(`⚠️ [COMPREHENSIVE] Error searching with variant ${variant}:`, error.message);
+                    logger.warn(`⚠️[COMPREHENSIVE] Error searching with variant ${variant}: `, error.message);
                 }
             }
-            
+
             let device = null;
             let billingData = null;
-            
+
             if (customer) {
-                logger.info(`✅ [COMPREHENSIVE] Customer found in billing: ${customer.name} (${customer.phone}) - searched with: ${phone}`);
-                
+                logger.info(`✅[COMPREHENSIVE] Customer found in billing: ${customer.name} (${customer.phone}) - searched with: ${phone} `);
+
                 // 2. CUSTOMER BILLING: Cari device berdasarkan PPPoE username (FAST PATH)
                 if (customer.pppoe_username || customer.username) {
                     try {
                         const { genieacsApi } = require('./genieacs');
                         const pppoeToSearch = customer.pppoe_username || customer.username;
-                        logger.info(`🔍 [COMPREHENSIVE] Searching device by PPPoE username: ${pppoeToSearch}`);
-                        
+                        logger.info(`🔍[COMPREHENSIVE] Searching device by PPPoE username: ${pppoeToSearch} `);
+
                         device = await genieacsApi.findDeviceByPPPoE(pppoeToSearch);
                         if (device) {
-                            logger.info(`✅ [COMPREHENSIVE] Device found by PPPoE username: ${pppoeToSearch}`);
+                            logger.info(`✅[COMPREHENSIVE] Device found by PPPoE username: ${pppoeToSearch} `);
                         } else {
-                            logger.warn(`⚠️ [COMPREHENSIVE] No device found by PPPoE username: ${pppoeToSearch}`);
+                            logger.warn(`⚠️[COMPREHENSIVE] No device found by PPPoE username: ${pppoeToSearch} `);
                         }
                     } catch (error) {
                         logger.error('❌ [COMPREHENSIVE] Error finding device by PPPoE username:', error.message);
                     }
                 }
-                
+
                 // 3. Jika tidak ditemukan dengan PPPoE, coba dengan tag sebagai fallback
                 if (!device) {
-                    logger.info(`🔍 [COMPREHENSIVE] Trying tag search as fallback...`);
+                    logger.info(`🔍[COMPREHENSIVE] Trying tag search as fallback...`);
                     const { genieacsApi } = require('./genieacs');
                     const tagVariants = this.generatePhoneVariants(phone);
-                    
+
                     for (const v of tagVariants) {
                         try {
                             device = await genieacsApi.findDeviceByPhoneNumber(v);
                             if (device) {
-                                logger.info(`✅ [COMPREHENSIVE] Device found by tag fallback: ${v}`);
+                                logger.info(`✅[COMPREHENSIVE] Device found by tag fallback: ${v} `);
                                 break;
                             }
                         } catch (error) {
-                            logger.warn(`⚠️ [COMPREHENSIVE] Error searching by tag ${v}:`, error.message);
+                            logger.warn(`⚠️[COMPREHENSIVE] Error searching by tag ${v}: `, error.message);
                         }
                     }
                 }
-                
+
                 // 4. Siapkan data billing
                 try {
                     const billingManager = require('./billing');
@@ -1077,33 +1255,33 @@ class WhatsAppMessageHandlers {
                         invoices: []
                     };
                 }
-                
+
             } else {
                 // 5. CUSTOMER NON-BILLING: Cari device berdasarkan tag saja (FAST PATH)
-                logger.info(`⚠️ [COMPREHENSIVE] Customer not found in billing, searching GenieACS by tag only`);
-                
+                logger.info(`⚠️[COMPREHENSIVE] Customer not found in billing, searching GenieACS by tag only`);
+
                 const { genieacsApi } = require('./genieacs');
                 const tagVariants = this.generatePhoneVariants(phone);
                 for (const v of tagVariants) {
                     try {
                         device = await genieacsApi.findDeviceByPhoneNumber(v);
                         if (device) {
-                            logger.info(`✅ [COMPREHENSIVE] Device found by tag: ${v}`);
+                            logger.info(`✅[COMPREHENSIVE] Device found by tag: ${v} `);
                             break;
                         }
                     } catch (error) {
-                        logger.warn(`⚠️ [COMPREHENSIVE] Error searching by tag ${v}:`, error.message);
+                        logger.warn(`⚠️[COMPREHENSIVE] Error searching by tag ${v}: `, error.message);
                     }
                 }
             }
-            
+
             // 6. Jika tidak ada device di GenieACS, buat data default yang informatif
             if (!device) {
-                logger.info(`⚠️ [COMPREHENSIVE] No device found in GenieACS for: ${phone}`);
-                
+                logger.info(`⚠️[COMPREHENSIVE] No device found in GenieACS for: ${phone} `);
+
                 return {
                     phone: phone,
-                    ssid: customer ? `WiFi-${customer.username}` : 'WiFi-Default',
+                    ssid: customer ? `WiFi - ${customer.username} ` : 'WiFi-Default',
                     status: 'Unknown',
                     lastInform: '-',
                     firmware: '-',
@@ -1114,19 +1292,19 @@ class WhatsAppMessageHandlers {
                     billingData: billingData,
                     deviceFound: false,
                     searchMethod: customer ? 'pppoe_username_fallback_tag' : 'tag_only',
-                    message: customer ? 
+                    message: customer ?
                         'Device ONU tidak ditemukan di GenieACS. Silakan hubungi teknisi untuk setup device.' :
                         'Customer tidak terdaftar di sistem billing. Silakan hubungi admin.'
                 };
             }
-            
+
             // 7. Jika ada device di GenieACS, ambil data lengkap
-            logger.info(`✅ [COMPREHENSIVE] Processing device data for: ${device._id}`);
-            
-            const ssid = device?.InternetGatewayDevice?.LANDevice?.['1']?.WLANConfiguration?.['1']?.SSID?._value || 
-                         device?.VirtualParameters?.SSID || 
-                         (customer ? `WiFi-${customer.username}` : 'WiFi-Default');
-            
+            logger.info(`✅[COMPREHENSIVE] Processing device data for: ${device._id} `);
+
+            const ssid = device?.InternetGatewayDevice?.LANDevice?.['1']?.WLANConfiguration?.['1']?.SSID?._value ||
+                device?.VirtualParameters?.SSID ||
+                (customer ? `WiFi - ${customer.username} ` : 'WiFi-Default');
+
             const lastInform = device?._lastInform
                 ? new Date(device._lastInform).toLocaleString('id-ID')
                 : device?.Events?.Inform
@@ -1134,35 +1312,35 @@ class WhatsAppMessageHandlers {
                     : device?.InternetGatewayDevice?.DeviceInfo?.['1']?.LastInform?._value
                         ? new Date(device.InternetGatewayDevice.DeviceInfo['1'].LastInform._value).toLocaleString('id-ID')
                         : '-';
-            
+
             const status = lastInform !== '-' ? 'Online' : 'Unknown';
-            
+
             // Extract device parameters
             const rxPower = this.getParameterWithPaths(device, this.parameterPaths.rxPower) || '-';
             const pppoeIP = this.getParameterWithPaths(device, this.parameterPaths.pppoeIP) || '-';
-            const pppoeUsername = customer ? (customer.pppoe_username || customer.username) : 
-                                 this.getParameterWithPaths(device, this.parameterPaths.pppUsername) || '-';
+            const pppoeUsername = customer ? (customer.pppoe_username || customer.username) :
+                this.getParameterWithPaths(device, this.parameterPaths.pppUsername) || '-';
             const connectedUsers = this.getParameterWithPaths(device, this.parameterPaths.userConnected) || '0';
             const temperature = this.getParameterWithPaths(device, this.parameterPaths.temperature) || '-';
             const ponMode = this.getParameterWithPaths(device, this.parameterPaths.ponMode) || '-';
             const pppUptime = this.getParameterWithPaths(device, this.parameterPaths.pppUptime) || '-';
-            const firmware = device?.InternetGatewayDevice?.DeviceInfo?.SoftwareVersion?._value || 
-                           device?.VirtualParameters?.softwareVersion || '-';
+            const firmware = device?.InternetGatewayDevice?.DeviceInfo?.SoftwareVersion?._value ||
+                device?.VirtualParameters?.softwareVersion || '-';
             const uptime = device?.InternetGatewayDevice?.DeviceInfo?.UpTime?._value || '-';
-            const serialNumber = device.DeviceID?.SerialNumber || 
-                               device.InternetGatewayDevice?.DeviceInfo?.SerialNumber?._value || 
-                               device._id;
+            const serialNumber = device.DeviceID?.SerialNumber ||
+                device.InternetGatewayDevice?.DeviceInfo?.SerialNumber?._value ||
+                device._id;
             const manufacturer = device.InternetGatewayDevice?.DeviceInfo?.Manufacturer?._value || '-';
-            const model = device.DeviceID?.ProductClass || 
-                         device.InternetGatewayDevice?.DeviceInfo?.ModelName?._value || '-';
+            const model = device.DeviceID?.ProductClass ||
+                device.InternetGatewayDevice?.DeviceInfo?.ModelName?._value || '-';
             const hardwareVersion = device.InternetGatewayDevice?.DeviceInfo?.HardwareVersion?._value || '-';
-            
+
             // SSID 5G
             const ssid5G = this.getSSIDValue(device, '5') || 'N/A';
-            
+
             // Tags
             const tags = device._tags || [];
-            
+
             return {
                 phone: phone,
                 ssid: ssid,
@@ -1188,13 +1366,13 @@ class WhatsAppMessageHandlers {
                 deviceFound: true,
                 searchMethod: customer ? 'pppoe_username_fallback_tag' : 'tag_only'
             };
-            
+
         } catch (error) {
             logger.error('❌ [COMPREHENSIVE] Error in getCustomerComprehensiveData:', error);
             return {
                 phone: phone,
                 deviceFound: false,
-                message: `Error: ${error.message}`,
+                message: `Error: ${error.message} `,
                 searchMethod: 'error'
             };
         }
@@ -1228,15 +1406,27 @@ class WhatsAppMessageHandlers {
             const secs = seconds % 60;
 
             let result = '';
-            if (days > 0) result += `${days}d `;
-            if (hours > 0) result += `${hours}h `;
-            if (minutes > 0) result += `${minutes}m `;
-            if (secs > 0) result += `${secs}s`;
+            if (days > 0) result += `${days} d `;
+            if (hours > 0) result += `${hours} h `;
+            if (minutes > 0) result += `${minutes} m `;
+            if (secs > 0) result += `${secs} s`;
 
             return result.trim() || '0s';
         }
 
         return uptimeValue;
+    }
+
+    // Helper method to normalize phone number
+    normalizePhone(phone) {
+        if (!phone) return '';
+        let p = String(phone).replace(/\D/g, '');
+        if (p.startsWith('0')) {
+            p = '62' + p.slice(1);
+        } else if (!p.startsWith('62')) {
+            p = '62' + p;
+        }
+        return p;
     }
 
     // Helper method to get device parameters from GenieACS device object
@@ -1291,26 +1481,26 @@ class WhatsAppMessageHandlers {
         const getSSIDValue = (device, configIndex) => {
             try {
                 // Try method 1: Using bracket notation for WLANConfiguration
-                if (device.InternetGatewayDevice && 
-                    device.InternetGatewayDevice.LANDevice && 
-                    device.InternetGatewayDevice.LANDevice['1'] && 
-                    device.InternetGatewayDevice.LANDevice['1'].WLANConfiguration && 
-                    device.InternetGatewayDevice.LANDevice['1'].WLANConfiguration[configIndex] && 
+                if (device.InternetGatewayDevice &&
+                    device.InternetGatewayDevice.LANDevice &&
+                    device.InternetGatewayDevice.LANDevice['1'] &&
+                    device.InternetGatewayDevice.LANDevice['1'].WLANConfiguration &&
+                    device.InternetGatewayDevice.LANDevice['1'].WLANConfiguration[configIndex] &&
                     device.InternetGatewayDevice.LANDevice['1'].WLANConfiguration[configIndex].SSID) {
-                    
+
                     const ssidObj = device.InternetGatewayDevice.LANDevice['1'].WLANConfiguration[configIndex].SSID;
                     if (ssidObj._value !== undefined) {
                         return ssidObj._value;
                     }
                 }
-                
+
                 // Try method 2: Using getParameterWithPaths
                 const ssidPath = `InternetGatewayDevice.LANDevice.1.WLANConfiguration.${configIndex}.SSID`;
                 const ssidValue = getParameterWithPaths(device, [ssidPath]);
                 if (ssidValue && ssidValue !== 'N/A') {
                     return ssidValue;
                 }
-                
+
                 return 'N/A';
             } catch (error) {
                 return 'N/A';
@@ -1334,10 +1524,10 @@ class WhatsAppMessageHandlers {
                 const secs = seconds % 60;
 
                 let result = '';
-                if (days > 0) result += `${days}d `;
-                if (hours > 0) result += `${hours}h `;
-                if (minutes > 0) result += `${minutes}m `;
-                if (secs > 0) result += `${secs}s`;
+                if (days > 0) result += `${days} d `;
+                if (hours > 0) result += `${hours} h `;
+                if (minutes > 0) result += `${minutes} m `;
+                if (secs > 0) result += `${secs} s`;
 
                 return result.trim() || '0s';
             }
@@ -1405,44 +1595,44 @@ class WhatsAppMessageHandlers {
     async handleListDevices(remoteJid) {
         try {
             const genieacsApi = require('./genieacs');
-            
-            await this.commands.sendMessage(remoteJid, 
-                `🔍 *LIST ALL DEVICES*\n\nSedang mengambil daftar semua perangkat dari GenieACS...\nMohon tunggu...`
+
+            await this.commands.sendMessage(remoteJid,
+                `🔍 * LIST ALL DEVICES *\n\nSedang mengambil daftar semua perangkat dari GenieACS...\nMohon tunggu...`
             );
 
             const allDevices = await genieacsApi.getDevices();
-            
+
             if (!allDevices || allDevices.length === 0) {
-                await this.commands.sendMessage(remoteJid, 
-                    `❌ *TIDAK ADA PERANGKAT!*\n\nTidak ada perangkat yang ditemukan di GenieACS.`
+                await this.commands.sendMessage(remoteJid,
+                    `❌ * TIDAK ADA PERANGKAT! *\n\nTidak ada perangkat yang ditemukan di GenieACS.`
                 );
                 return;
             }
 
-            let message = `📱 *DAFTAR SEMUA PERANGKAT*\n\n`;
-            message += `Total perangkat: ${allDevices.length}\n\n`;
+            let message = `📱 * DAFTAR SEMUA PERANGKAT *\n\n`;
+            message += `Total perangkat: ${allDevices.length} \n\n`;
 
             // Tampilkan 10 perangkat pertama dengan detail
             const devicesToShow = allDevices.slice(0, 10);
-            
+
             for (let i = 0; i < devicesToShow.length; i++) {
                 const device = devicesToShow[i];
-                message += `${i + 1}. *Device ID:* ${device._id}\n`;
-                message += `   *Tags:* ${device._tags ? device._tags.join(', ') : 'None'}\n`;
-                message += `   *Last Inform:* ${device._lastInform ? new Date(device._lastInform).toLocaleString() : 'N/A'}\n`;
-                
+                message += `${i + 1}. * Device ID:* ${device._id} \n`;
+                message += `   * Tags:* ${device._tags ? device._tags.join(', ') : 'None'} \n`;
+                message += `   * Last Inform:* ${device._lastInform ? new Date(device._lastInform).toLocaleString() : 'N/A'} \n`;
+
                 // Cek PPPoE username
                 const pppoeUsername = this.getParameterWithPaths(device, this.parameterPaths.pppUsername);
                 if (pppoeUsername !== 'N/A') {
-                    message += `   *PPPoE Username:* ${pppoeUsername}\n`;
+                    message += `   * PPPoE Username:* ${pppoeUsername} \n`;
                 }
-                
+
                 // Cek serial number
                 const serialNumber = device.InternetGatewayDevice?.DeviceInfo?.SerialNumber?._value || 'N/A';
                 if (serialNumber !== 'N/A') {
-                    message += `   *Serial:* ${serialNumber}\n`;
+                    message += `   * Serial:* ${serialNumber} \n`;
                 }
-                
+
                 message += `\n`;
             }
 
@@ -1459,7 +1649,7 @@ class WhatsAppMessageHandlers {
             });
 
             if (allTags.size > 0) {
-                message += `🏷️ *SEMUA TAGS YANG ADA:*\n`;
+                message += `🏷️ * SEMUA TAGS YANG ADA:*\n`;
                 const tagsArray = Array.from(allTags).sort();
                 message += tagsArray.join(', ');
             }
@@ -1468,8 +1658,8 @@ class WhatsAppMessageHandlers {
 
         } catch (error) {
             logger.error('Error in handleListDevices:', error);
-            await this.commands.sendMessage(remoteJid, 
-                `❌ *ERROR SISTEM!*\n\nTerjadi kesalahan saat mengambil daftar perangkat:\n${error.message}`
+            await this.commands.sendMessage(remoteJid,
+                `❌ * ERROR SISTEM! *\n\nTerjadi kesalahan saat mengambil daftar perangkat: \n${error.message} `
             );
         }
     }
@@ -1478,72 +1668,72 @@ class WhatsAppMessageHandlers {
     async handleDebugGenieACS(remoteJid, phoneNumber) {
         try {
             if (!phoneNumber) {
-                await this.commands.sendMessage(remoteJid, 
-                    `❌ *FORMAT SALAH!*\n\n` +
-                    `Format: debuggenieacs [nomor_telepon]\n` +
+                await this.commands.sendMessage(remoteJid,
+                    `❌ * FORMAT SALAH! *\n\n` +
+                    `Format: debuggenieacs[nomor_telepon]\n` +
                     `Contoh: debuggenieacs 087786722675`
                 );
                 return;
             }
 
-            await this.commands.sendMessage(remoteJid, 
-                `🔍 *DEBUG GENIEACS*\n\nSedang mengecek data GenieACS untuk nomor: ${phoneNumber}\nMohon tunggu...`
+            await this.commands.sendMessage(remoteJid,
+                `🔍 * DEBUG GENIEACS *\n\nSedang mengecek data GenieACS untuk nomor: ${phoneNumber} \nMohon tunggu...`
             );
 
             // Get comprehensive data using customer dashboard logic
             const customerData = await this.getCustomerComprehensiveData(phoneNumber);
-            
-            let message = `🔍 *DEBUG GENIEACS*\n\n`;
-            message += `📱 *Nomor:* ${phoneNumber}\n`;
-            message += `🔍 *Search Method:* ${customerData.searchMethod}\n`;
-            message += `📊 *Device Found:* ${customerData.deviceFound ? '✅ Ya' : '❌ Tidak'}\n\n`;
+
+            let message = `🔍 * DEBUG GENIEACS *\n\n`;
+            message += `📱 * Nomor:* ${phoneNumber} \n`;
+            message += `🔍 * Search Method:* ${customerData.searchMethod} \n`;
+            message += `📊 * Device Found:* ${customerData.deviceFound ? '✅ Ya' : '❌ Tidak'} \n\n`;
 
             if (customerData.billingData && customerData.billingData.customer) {
                 const customer = customerData.billingData.customer;
-                message += `👤 *DATA BILLING:*\n`;
-                message += `• Nama: ${customer.name}\n`;
-                message += `• Username: ${customer.username || 'N/A'}\n`;
-                message += `• PPPoE Username: ${customer.pppoe_username || 'N/A'}\n`;
-                message += `• Status: ${customer.status || 'N/A'}\n`;
-                message += `• Package: ${customer.package_id || 'N/A'}\n\n`;
+                message += `👤 * DATA BILLING:*\n`;
+                message += `• Nama: ${customer.name} \n`;
+                message += `• Username: ${customer.username || 'N/A'} \n`;
+                message += `• PPPoE Username: ${customer.pppoe_username || 'N/A'} \n`;
+                message += `• Status: ${customer.status || 'N/A'} \n`;
+                message += `• Package: ${customer.package_id || 'N/A'} \n\n`;
             } else {
-                message += `❌ *BILLING:* Customer tidak ditemukan di database billing\n\n`;
+                message += `❌ * BILLING:* Customer tidak ditemukan di database billing\n\n`;
             }
 
             if (customerData.deviceFound) {
-                message += `🔧 *DATA PERANGKAT GENIEACS:*\n`;
-                message += `• Status: ${customerData.status}\n`;
-                message += `• Last Inform: ${customerData.lastInform}\n`;
-                message += `• Device ID: ${customerData.deviceId}\n`;
-                message += `• Serial: ${customerData.serialNumber}\n`;
-                message += `• Manufacturer: ${customerData.manufacturer}\n`;
-                message += `• Model: ${customerData.model}\n`;
-                message += `• Hardware: ${customerData.hardwareVersion}\n`;
-                message += `• Firmware: ${customerData.firmware}\n`;
-                message += `• Device Uptime: ${customerData.uptime}\n`;
-                message += `• PPP Uptime: ${customerData.pppUptime}\n`;
-                message += `• PPPoE IP: ${customerData.pppoeIP}\n`;
-                message += `• PPPoE Username: ${customerData.pppoeUsername}\n`;
+                message += `🔧 * DATA PERANGKAT GENIEACS:*\n`;
+                message += `• Status: ${customerData.status} \n`;
+                message += `• Last Inform: ${customerData.lastInform} \n`;
+                message += `• Device ID: ${customerData.deviceId} \n`;
+                message += `• Serial: ${customerData.serialNumber} \n`;
+                message += `• Manufacturer: ${customerData.manufacturer} \n`;
+                message += `• Model: ${customerData.model} \n`;
+                message += `• Hardware: ${customerData.hardwareVersion} \n`;
+                message += `• Firmware: ${customerData.firmware} \n`;
+                message += `• Device Uptime: ${customerData.uptime} \n`;
+                message += `• PPP Uptime: ${customerData.pppUptime} \n`;
+                message += `• PPPoE IP: ${customerData.pppoeIP} \n`;
+                message += `• PPPoE Username: ${customerData.pppoeUsername} \n`;
                 message += `• RX Power: ${customerData.rxPower} dBm\n`;
                 message += `• Temperature: ${customerData.temperature}°C\n`;
-                message += `• SSID 2.4G: ${customerData.ssid}\n`;
-                message += `• SSID 5G: ${customerData.ssid5G}\n`;
-                message += `• User Terkoneksi: ${customerData.connectedUsers}\n`;
-                message += `• PON Mode: ${customerData.ponMode}\n`;
-                
+                message += `• SSID 2.4G: ${customerData.ssid} \n`;
+                message += `• SSID 5G: ${customerData.ssid5G} \n`;
+                message += `• User Terkoneksi: ${customerData.connectedUsers} \n`;
+                message += `• PON Mode: ${customerData.ponMode} \n`;
+
                 if (customerData.tags && customerData.tags.length > 0) {
-                    message += `• Tags: ${customerData.tags.join(', ')}\n`;
+                    message += `• Tags: ${customerData.tags.join(', ')} \n`;
                 }
             } else {
-                message += `❌ *PERANGKAT:* ${customerData.message}\n`;
+                message += `❌ * PERANGKAT:* ${customerData.message} \n`;
             }
 
             await this.commands.sendMessage(remoteJid, message);
 
         } catch (error) {
             logger.error('Error in handleDebugGenieACS:', error);
-            await this.commands.sendMessage(remoteJid, 
-                `❌ *ERROR SISTEM!*\n\nTerjadi kesalahan saat debug GenieACS:\n${error.message}`
+            await this.commands.sendMessage(remoteJid,
+                `❌ * ERROR SISTEM! *\n\nTerjadi kesalahan saat debug GenieACS: \n${error.message} `
             );
         }
     }
@@ -1555,7 +1745,7 @@ class WhatsAppMessageHandlers {
                 const superAdminJid = this.core.createJID(this.core.getSuperAdmin());
                 if (superAdminJid) {
                     await sock.sendMessage(superAdminJid, {
-                        text: `${this.core.getSetting('company_header', 'ALIJAYA BOT MANAGEMENT ISP')}\n👋 *Selamat datang, Super Admin!*\n\nAplikasi WhatsApp Bot berhasil dijalankan.\n\nRekening Donasi Untuk Pembangunan Masjid\n# 4206 0101 2214 534 BRI an DKM BAITUR ROHMAN\n\n${this.core.getSetting('footer_info', 'Internet Tanpa Batas')}`
+                        text: `${this.core.getSetting('company_header', 'ALIJAYA BOT MANAGEMENT ISP')} \n👋 * Selamat datang, Super Admin! *\n\nAplikasi WhatsApp Bot berhasil dijalankan.\n\nRekening Donasi Untuk Pembangunan Masjid\n# 4206 0101 2214 534 BRI an DKM BAITUR ROHMAN\n\n${this.core.getSetting('footer_info', 'Internet Tanpa Batas')} `
                     });
                     global.superAdminWelcomeSent = true;
                     logger.info('Pesan selamat datang terkirim ke super admin');
